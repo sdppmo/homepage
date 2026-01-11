@@ -1,14 +1,6 @@
 /**
  * SongDoPartners Homepage Styles
  * K-COL Steel Column Design Platform
- * 
- * Table of Contents:
- * 1. Reset & Base
- * 2. Page Layout
- * 3. Left Column
- * 4. Main Content Area
- * 5. Right Sidebar
- * 6. Footer
  */
 
 /* ==========================================================================
@@ -38,10 +30,25 @@ html, body {
 
 .page-wrapper {
   display: flex;
+  flex-direction: column;
   width: 100vw;
   height: 100vh;
   margin: 0;
   overflow: hidden;
+}
+
+/* Top Row - Contains left column and main area */
+.top-row {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* Bottom Row - Product logos and footer aligned (fixed height) */
+.bottom-row {
+  display: flex;
+  flex-shrink: 0;
+  height: 95px;
 }
 
 /* ==========================================================================
@@ -50,7 +57,6 @@ html, body {
 
 .left-column {
   width: 360px;
-  height: 100vh;
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
@@ -173,19 +179,24 @@ html, body {
   display: flex;
   flex-direction: column;
   background: #1a1a3a;
+  flex: 1;
 }
 
 .nav-item {
   background: linear-gradient(180deg, #1a2050 0%, #101535 100%);
   border-left: 3px solid #ffd700;
   border-bottom: 1px solid rgba(255, 215, 0, 0.3);
-  padding: 14px 18px;
+  padding: 0 16px;
   color: #ffd700;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 500;
   cursor: pointer;
   text-align: center;
   transition: background 0.2s;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .nav-item:hover {
@@ -203,14 +214,15 @@ html, body {
   display: grid;
   grid-template-columns: 1fr 1fr;
   background: #1a1a2a;
+  flex-shrink: 0;
 }
 
 .brochure-btn {
   background: linear-gradient(180deg, #1a1a2a 0%, #0a0a1a 100%);
   border: 1px solid #444;
-  padding: 14px 8px;
+  padding: 10px 8px;
   color: #fff;
-  font-size: 12px;
+  font-size: 11px;
   cursor: pointer;
   text-align: center;
   transition: background 0.2s;
@@ -230,19 +242,22 @@ html, body {
   font-weight: bold;
 }
 
-/* Product Logos */
+/* Product Logos - In bottom row, matches footer height */
 .product-logos {
+  width: 360px;
   background: #fff;
-  padding: 10px 12px;
+  padding: 8px 12px;
   display: flex;
   justify-content: center;
-  border-top: 2px solid #333;
-  margin-top: auto;
+  align-items: center;
+  border-top: 3px solid #333;
+  flex-shrink: 0;
 }
 
 .product-logos img {
-  height: 55px;
+  height: 65px;
   width: auto;
+  object-fit: contain;
 }
 
 /* ==========================================================================
@@ -251,7 +266,6 @@ html, body {
 
 .main-area {
   flex: 1;
-  height: 100vh;
   position: relative;
   display: flex;
   flex-direction: column;
@@ -279,12 +293,6 @@ html, body {
   z-index: 1;
   display: flex;
   flex-direction: column;
-}
-
-/* Middle area - transparent to show background */
-.middle-area {
-  flex: 1;
-  position: relative;
 }
 
 /* ==========================================================================
@@ -367,26 +375,28 @@ html, body {
 }
 
 /* ==========================================================================
-   6. FOOTER (Solid, covers bottom of image)
+   6. FOOTER (In bottom row, same height as product-logos)
    ========================================================================== */
 
 .footer {
+  flex: 1;
   background: #1a1a1a;
   display: flex;
   align-items: center;
-  padding: 15px 25px;
-  gap: 20px;
+  padding: 8px 20px;
+  gap: 15px;
   z-index: 2;
   position: relative;
-  flex-shrink: 0;
   border-top: 3px solid #333;
+  height: 100%;
+  overflow: hidden;
 }
 
 .footer-info {
   flex: 1;
-  font-size: 13px;
+  font-size: 12px;
   color: #ccc;
-  line-height: 1.6;
+  line-height: 1.4;
 }
 
 .footer-info a {
@@ -402,19 +412,19 @@ html, body {
 .db-button {
   background: linear-gradient(180deg, #ffd700 0%, #cc9900 100%);
   border: 2px solid #996600;
-  padding: 14px 22px;
+  padding: 8px 16px;
   text-align: center;
   cursor: pointer;
   flex-shrink: 0;
 }
 
 .db-button .click-text {
-  font-size: 12px;
+  font-size: 11px;
   color: #333;
 }
 
 .db-button .main-text {
-  font-size: 14px;
+  font-size: 13px;
   color: #000;
   font-weight: bold;
 }
@@ -428,15 +438,15 @@ html, body {
 
 .company-logo {
   background: #fff;
-  padding: 6px 10px;
-  font-size: 9px;
+  padding: 4px 8px;
+  font-size: 8px;
   color: #333;
   text-align: center;
   font-weight: bold;
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 36px;
+  height: 32px;
   border: 1px solid #ddd;
 }
 

@@ -8,77 +8,72 @@
 </head>
 <body>
   <div class="page-wrapper">
-    <!-- LEFT COLUMN -->
-    <aside class="left-column">
-      <!-- Logo Section -->
-      <div class="logo-section">
-        <div class="logo-container">
-          <img src="assets/images/sdppmo_logo.png" alt="SongDoPartners">
+    <!-- TOP ROW: Left Column + Main Content -->
+    <div class="top-row">
+      <!-- LEFT COLUMN -->
+      <aside class="left-column">
+        <!-- Logo Section -->
+        <div class="logo-section">
+          <div class="logo-container">
+            <img src="assets/images/sdppmo_logo.png" alt="SongDoPartners">
+          </div>
+          <div class="welcome-text">Welcome to SongDoPartners !!</div>
+
+          <!-- Language Toggle -->
+          <div class="lang-row">
+            <button class="lang-btn">English</button>
+            <button class="lang-btn">Korean</button>
+          </div>
+
+          <!-- Login Form -->
+          <form class="login-form" id="loginForm">
+            <span class="label">ID</span>
+            <input type="text" name="userId" placeholder="사업자번호">
+            <button type="submit" class="login-btn">Log<br>IN</button>
+            <span class="label">PW</span>
+            <input type="password" name="password">
+          </form>
+
+          <div class="login-help-text">무료회원 가입하시면 더 많은 정보를 공유해 드립니다.</div>
+          
+          <div class="help-buttons">
+            <button class="help-btn">회원가입</button>
+            <button class="help-btn">ID, PW저장</button>
+            <button class="help-btn">PW찾기</button>
+          </div>
         </div>
-        <div class="welcome-text">Welcome to SongDoPartners !!</div>
 
-        <!-- Language Toggle -->
-        <div class="lang-row">
-          <button class="lang-btn">English</button>
-          <button class="lang-btn">Korean</button>
+        <!-- Navigation Menu -->
+        <nav class="nav-menu">
+          <div class="nav-item">Consulting</div>
+          <div class="nav-item">Products</div>
+          <div class="nav-item">Design Software</div>
+          <div class="nav-item active">K-COL Web Software</div>
+          <div class="nav-item">Database & Download</div>
+          <div class="nav-item">New Methodology</div>
+          <div class="nav-item">Construction Schedule</div>
+          <div class="nav-item">Networks</div>
+          <div class="nav-item">About SDP</div>
+        </nav>
+
+        <!-- Brochure Grid -->
+        <div class="brochure-grid">
+          <button class="brochure-btn">K-COL Brochure</button>
+          <button class="brochure-btn">현대제철 H형강</button>
+          <button class="brochure-btn">Slimbox Brochure</button>
+          <button class="brochure-btn">POS H 형강</button>
+          <button class="brochure-btn yellow">Sunex MTL</button>
+          <button class="brochure-btn">KS Code</button>
         </div>
+      </aside>
 
-        <!-- Login Form -->
-        <form class="login-form" id="loginForm">
-          <span class="label">ID</span>
-          <input type="text" name="userId" placeholder="사업자번호">
-          <button type="submit" class="login-btn">Log<br>IN</button>
-          <span class="label">PW</span>
-          <input type="password" name="password">
-        </form>
+      <!-- MAIN CONTENT AREA (Right pane) -->
+      <div class="main-area">
+        <!-- Background Image - Covers entire right pane -->
+        <div class="bg-image"></div>
 
-        <div class="login-help-text">무료회원 가입하시면 더 많은 정보를 공유해 드립니다.</div>
-        
-        <div class="help-buttons">
-          <button class="help-btn">회원가입</button>
-          <button class="help-btn">ID, PW저장</button>
-          <button class="help-btn">PW찾기</button>
-        </div>
-      </div>
-
-      <!-- Navigation Menu -->
-      <nav class="nav-menu">
-        <div class="nav-item">Consulting</div>
-        <div class="nav-item">Products</div>
-        <div class="nav-item">Design Software</div>
-        <div class="nav-item active">K-COL Web Software</div>
-        <div class="nav-item">Database & Download</div>
-        <div class="nav-item">New Methodology</div>
-        <div class="nav-item">Construction Schedule</div>
-        <div class="nav-item">Networks</div>
-        <div class="nav-item">About SDP</div>
-      </nav>
-
-      <!-- Brochure Grid -->
-      <div class="brochure-grid">
-        <button class="brochure-btn">K-COL Brochure</button>
-        <button class="brochure-btn">현대제철 H형강</button>
-        <button class="brochure-btn">Slimbox Brochure</button>
-        <button class="brochure-btn">POS H 형강</button>
-        <button class="brochure-btn yellow">Sunex MTL</button>
-        <button class="brochure-btn">KS Code</button>
-      </div>
-
-      <!-- Product Logos -->
-      <div class="product-logos">
-        <img src="assets/images/product.png" alt="K-COL, SLIM-BOX, eSlim-Beam, O-COL">
-      </div>
-    </aside>
-
-    <!-- MAIN CONTENT AREA (Right pane) -->
-    <div class="main-area">
-      <!-- Background Image - Covers entire right pane -->
-      <div class="bg-image"></div>
-
-      <!-- Content Layer - On top of background -->
-      <div class="content-layer">
-        <!-- Middle Area (Shows background image) -->
-        <div class="middle-area">
+        <!-- Content Layer - On top of background -->
+        <div class="content-layer">
           <!-- Right Sidebar -->
           <aside class="right-sidebar">
             <!-- Exchange Table -->
@@ -115,28 +110,36 @@
             </div>
           </aside>
         </div>
-
-        <!-- FOOTER (Solid, covers bottom of image) -->
-        <footer class="footer">
-          <div class="footer-info">
-            <div>Homepage : http://www.kcol.kr</div>
-            <div>E-Mail Address : If any problems, contact me : <a href="mailto:sbd_pmo@naver.com">sbd_pmo@naver.com</a></div>
-            <div>HQ. Address : 77-bungi, 42-bungil, Conventia Daero, Yeonsu-ku, Incheon, KOREA</div>
-            <div>Seoul Office Address : TBD</div>
-          </div>
-          <div class="db-button">
-            <div class="click-text">CLICK</div>
-            <div class="main-text">Go to<br>SDP Database</div>
-          </div>
-          <div class="company-logos">
-            <div class="company-logo">DONG YANG<br>S·Tec</div>
-            <div class="company-logo posco">POSCO</div>
-            <div class="company-logo">Steel Ball</div>
-            <div class="company-logo">CLBS</div>
-            <div class="company-logo">HYUNDAI<br>STEEL</div>
-          </div>
-        </footer>
       </div>
+    </div>
+
+    <!-- BOTTOM ROW: Product Logos + Footer (Same height) -->
+    <div class="bottom-row">
+      <!-- Product Logos -->
+      <div class="product-logos">
+        <img src="assets/images/product.png" alt="K-COL, SLIM-BOX, eSlim-Beam, O-COL">
+      </div>
+
+      <!-- Footer -->
+      <footer class="footer">
+        <div class="footer-info">
+          <div>Homepage : http://www.kcol.kr</div>
+          <div>E-Mail Address : If any problems, contact me : <a href="mailto:sbd_pmo@naver.com">sbd_pmo@naver.com</a></div>
+          <div>HQ. Address : 77-bungi, 42-bungil, Conventia Daero, Yeonsu-ku, Incheon, KOREA</div>
+          <div>Seoul Office Address : TBD</div>
+        </div>
+        <div class="db-button">
+          <div class="click-text">CLICK</div>
+          <div class="main-text">Go to<br>SDP Database</div>
+        </div>
+        <div class="company-logos">
+          <div class="company-logo">DONG YANG<br>S·Tec</div>
+          <div class="company-logo posco">POSCO</div>
+          <div class="company-logo">Steel Ball</div>
+          <div class="company-logo">CLBS</div>
+          <div class="company-logo">HYUNDAI<br>STEEL</div>
+        </div>
+      </footer>
     </div>
   </div>
 
