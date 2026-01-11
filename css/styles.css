@@ -1,0 +1,446 @@
+/**
+ * SongDoPartners Homepage Styles
+ * K-COL Steel Column Design Platform
+ * 
+ * Table of Contents:
+ * 1. Reset & Base
+ * 2. Page Layout
+ * 3. Left Column
+ * 4. Main Content Area
+ * 5. Right Sidebar
+ * 6. Footer
+ */
+
+/* ==========================================================================
+   1. RESET & BASE
+   ========================================================================== */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  font-family: Arial, sans-serif;
+  background: #000;
+  color: #fff;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+/* ==========================================================================
+   2. PAGE LAYOUT
+   ========================================================================== */
+
+.page-wrapper {
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  overflow: hidden;
+}
+
+/* ==========================================================================
+   3. LEFT COLUMN (Fixed width 360px)
+   ========================================================================== */
+
+.left-column {
+  width: 360px;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  background: #d0d0d0;
+  position: relative;
+  z-index: 10;
+}
+
+/* Logo Section */
+.logo-section {
+  background: linear-gradient(180deg, #e8e8e8 0%, #c8c8c8 100%);
+  padding: 12px;
+  border-bottom: 2px solid #999;
+}
+
+.logo-container {
+  display: flex;
+  justify-content: center;
+}
+
+.logo-container img {
+  height: 55px;
+}
+
+.welcome-text {
+  text-align: center;
+  color: #000;
+  font-size: 16px;
+  font-weight: bold;
+  margin: 10px 0;
+}
+
+/* Language Toggle */
+.lang-row {
+  display: flex;
+  margin-bottom: 10px;
+}
+
+.lang-btn {
+  flex: 1;
+  padding: 7px;
+  border: 1px solid #666;
+  background: linear-gradient(180deg, #f0f0f0 0%, #d0d0d0 100%);
+  color: #000;
+  font-size: 13px;
+  cursor: pointer;
+  text-align: center;
+}
+
+.lang-btn:first-child {
+  border-right: none;
+}
+
+/* Login Form */
+.login-form {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 5px;
+  align-items: center;
+}
+
+.login-form .label {
+  background: #ffd700;
+  color: #000;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+.login-form input {
+  padding: 6px 8px;
+  border: 1px solid #999;
+  font-size: 13px;
+  background: #fff;
+}
+
+.login-form input::placeholder {
+  color: #888;
+  font-size: 12px;
+}
+
+.login-btn {
+  grid-column: 3;
+  grid-row: 1 / 3;
+  background: linear-gradient(180deg, #4a90d9 0%, #2a70b9 100%);
+  color: #fff;
+  border: 2px solid #1a5090;
+  padding: 12px 16px;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  line-height: 1.2;
+}
+
+.login-help-text {
+  font-size: 11px;
+  color: #444;
+  text-align: center;
+  margin: 10px 0 6px;
+}
+
+.help-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  padding-bottom: 6px;
+}
+
+.help-btn {
+  background: linear-gradient(180deg, #e8e8e8 0%, #c8c8c8 100%);
+  border: 1px solid #999;
+  padding: 5px 12px;
+  font-size: 12px;
+  color: #333;
+  cursor: pointer;
+}
+
+/* Navigation Menu */
+.nav-menu {
+  display: flex;
+  flex-direction: column;
+  background: #1a1a3a;
+}
+
+.nav-item {
+  background: linear-gradient(180deg, #1a2050 0%, #101535 100%);
+  border-left: 3px solid #ffd700;
+  border-bottom: 1px solid rgba(255, 215, 0, 0.3);
+  padding: 14px 18px;
+  color: #ffd700;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: center;
+  transition: background 0.2s;
+}
+
+.nav-item:hover {
+  background: linear-gradient(180deg, #252a60 0%, #1a1f45 100%);
+}
+
+.nav-item.active {
+  background: #000;
+  color: #fff;
+  font-weight: bold;
+}
+
+/* Brochure Grid */
+.brochure-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background: #1a1a2a;
+}
+
+.brochure-btn {
+  background: linear-gradient(180deg, #1a1a2a 0%, #0a0a1a 100%);
+  border: 1px solid #444;
+  padding: 14px 8px;
+  color: #fff;
+  font-size: 12px;
+  cursor: pointer;
+  text-align: center;
+  transition: background 0.2s;
+}
+
+.brochure-btn:nth-child(odd) {
+  border-right: none;
+}
+
+.brochure-btn:hover {
+  background: linear-gradient(180deg, #2a2a3a 0%, #1a1a2a 100%);
+}
+
+.brochure-btn.yellow {
+  background: linear-gradient(180deg, #ffd700 0%, #cc9900 100%);
+  color: #000;
+  font-weight: bold;
+}
+
+/* Product Logos */
+.product-logos {
+  background: #fff;
+  padding: 10px 12px;
+  display: flex;
+  justify-content: center;
+  border-top: 2px solid #333;
+  margin-top: auto;
+}
+
+.product-logos img {
+  height: 55px;
+  width: auto;
+}
+
+/* ==========================================================================
+   4. MAIN CONTENT AREA (Right pane - fills remaining space)
+   ========================================================================== */
+
+.main-area {
+  flex: 1;
+  height: 100vh;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Background Image - Covers entire right pane */
+.bg-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url('../assets/images/background_vessel_nyc.png') center center no-repeat;
+  background-size: cover;
+  z-index: 0;
+}
+
+/* Content layer - On top of background */
+.content-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Middle area - transparent to show background */
+.middle-area {
+  flex: 1;
+  position: relative;
+}
+
+/* ==========================================================================
+   5. RIGHT SIDEBAR (Transparent, fits naturally)
+   ========================================================================== */
+
+.right-sidebar {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 300px;
+  padding: 15px;
+  z-index: 2;
+}
+
+/* Exchange Table - Semi-transparent */
+.exchange-table {
+  background: rgba(255, 255, 255, 0.9);
+  border: 2px solid #666;
+  margin-bottom: 15px;
+}
+
+.exchange-header {
+  background: linear-gradient(180deg, #666 0%, #555 100%);
+  color: #fff;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+.exchange-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border-bottom: 1px solid #ddd;
+}
+
+.exchange-row:last-child {
+  border-bottom: none;
+}
+
+.exchange-cell {
+  padding: 5px 10px;
+  font-size: 12px;
+  color: #333;
+  border-right: 1px solid #ddd;
+}
+
+.exchange-cell:last-child {
+  border-right: none;
+}
+
+.exchange-cell.highlight {
+  background: #fffacd;
+}
+
+/* News Section - Semi-transparent */
+.news-section {
+  margin-top: 60px;
+}
+
+.news-title {
+  font-size: 32px;
+  font-weight: bold;
+  color: #fff;
+  text-shadow: 2px 2px 4px #000;
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+.news-item {
+  background: rgba(0, 0, 0, 0.7);
+  border: 1px solid rgba(255, 215, 0, 0.5);
+  padding: 14px 16px;
+  margin-bottom: 10px;
+  font-size: 14px;
+  font-style: italic;
+  color: #ffd700;
+  line-height: 1.5;
+  text-align: center;
+}
+
+/* ==========================================================================
+   6. FOOTER (Solid, covers bottom of image)
+   ========================================================================== */
+
+.footer {
+  background: #1a1a1a;
+  display: flex;
+  align-items: center;
+  padding: 15px 25px;
+  gap: 20px;
+  z-index: 2;
+  position: relative;
+  flex-shrink: 0;
+  border-top: 3px solid #333;
+}
+
+.footer-info {
+  flex: 1;
+  font-size: 13px;
+  color: #ccc;
+  line-height: 1.6;
+}
+
+.footer-info a {
+  color: #6af;
+  text-decoration: none;
+}
+
+.footer-info a:hover {
+  text-decoration: underline;
+}
+
+/* Database Button */
+.db-button {
+  background: linear-gradient(180deg, #ffd700 0%, #cc9900 100%);
+  border: 2px solid #996600;
+  padding: 14px 22px;
+  text-align: center;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.db-button .click-text {
+  font-size: 12px;
+  color: #333;
+}
+
+.db-button .main-text {
+  font-size: 14px;
+  color: #000;
+  font-weight: bold;
+}
+
+/* Company Logos */
+.company-logos {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 5px;
+}
+
+.company-logo {
+  background: #fff;
+  padding: 6px 10px;
+  font-size: 9px;
+  color: #333;
+  text-align: center;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 36px;
+  border: 1px solid #ddd;
+}
+
+.company-logo.posco {
+  background: #003;
+  color: #fff;
+}
