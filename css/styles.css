@@ -212,6 +212,18 @@ html, body {
   font-weight: bold;
 }
 
+/* 링크된 nav-item 스타일 */
+a.nav-item {
+  text-decoration: none;
+  color: #fff;
+  background: #000;
+}
+
+a.nav-item:hover {
+  color: #fff;
+  background: #222;
+}
+
 /* Brochure Grid */
 .brochure-grid {
   display: grid;
@@ -231,6 +243,21 @@ html, body {
   cursor: pointer;
   text-align: center;
   transition: background 0.2s;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+a.brochure-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+}
+
+a.brochure-btn:hover {
+  color: #fff;
 }
 
 .brochure-btn:nth-child(odd) {
@@ -481,6 +508,12 @@ html, body {
   padding: 0;
 }
 
+.company-logo.dongyang a {
+  display: flex;
+  width: 100%;
+  height: 100%;
+}
+
 .company-logo.dongyang img {
   width: 100%;
   height: 100%;
@@ -490,6 +523,12 @@ html, body {
 .company-logo.posco {
   background: transparent;
   padding: 0;
+}
+
+.company-logo.posco a {
+  display: flex;
+  width: 100%;
+  height: 100%;
 }
 
 .company-logo.posco img {
@@ -503,6 +542,12 @@ html, body {
   padding: 0;
 }
 
+.company-logo.steelball a {
+  display: flex;
+  width: 100%;
+  height: 100%;
+}
+
 .company-logo.steelball img {
   width: 100%;
   height: 100%;
@@ -512,6 +557,12 @@ html, body {
 .company-logo.clbs {
   background: transparent;
   padding: 0;
+}
+
+.company-logo.clbs a {
+  display: flex;
+  width: 100%;
+  height: 100%;
 }
 
 .company-logo.clbs img {
@@ -525,6 +576,12 @@ html, body {
   padding: 0;
 }
 
+.company-logo.p6sc a {
+  display: flex;
+  width: 100%;
+  height: 100%;
+}
+
 .company-logo.p6sc img {
   width: 100%;
   height: 100%;
@@ -534,6 +591,12 @@ html, body {
 .company-logo.hyundai {
   background: transparent;
   padding: 0;
+}
+
+.company-logo.hyundai a {
+  display: flex;
+  width: 100%;
+  height: 100%;
 }
 
 .company-logo.hyundai img {
@@ -581,6 +644,32 @@ html, body {
     inset 0 2px 4px rgba(0,0,0,0.2),
     0 4px 8px rgba(0,0,0,0.3);
   position: relative;
+  transition: all 0.5s ease;
+}
+
+/* 밤 시간 시계 스타일 (저녁 6시 ~ 아침 6시) */
+.clock.night {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  border-color: #4a4a6a;
+  box-shadow: 
+    0 0 0 2px #5a5a8a,
+    inset 0 2px 4px rgba(0,0,0,0.4),
+    0 4px 8px rgba(0,0,0,0.5),
+    0 0 15px rgba(100, 149, 237, 0.3);
+}
+
+.clock.night .hour-hand,
+.clock.night .minute-hand {
+  background: #e0e0e0;
+}
+
+.clock.night .second-hand {
+  background: #ff6b6b;
+}
+
+.clock.night .clock-center {
+  background: #ff6b6b;
+  box-shadow: 0 0 5px rgba(255, 107, 107, 0.5);
 }
 
 .clock-face {
@@ -632,6 +721,15 @@ html, body {
   border-radius: 50%;
   transform: translate(-50%, -50%);
   z-index: 10;
+}
+
+/* AM/PM 표시 (도시명과 함께) */
+.ampm-indicator {
+  font-size: 10px;
+  font-weight: bold;
+  color: #fff;
+  letter-spacing: 1px;
+  margin-left: 3px;
 }
 
 .clock-label {

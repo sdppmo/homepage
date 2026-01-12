@@ -29,11 +29,13 @@
           <!-- Login Form -->
           <form class="login-form" id="loginForm">
             <span class="label">ID</span>
-            <input type="text" name="userId" placeholder="사업자번호">
+            <input type="text" name="userId" id="userId" placeholder="사업자번호">
             <button type="submit" class="login-btn">Log<br>IN</button>
             <span class="label">PW</span>
-            <input type="password" name="password">
+            <input type="password" name="password" id="password">
           </form>
+          
+          <div id="login-status" style="display:none; padding:5px 10px; margin-top:5px; border-radius:4px; font-size:12px; text-align:center;"></div>
 
           <div class="login-help-text">무료회원 가입하시면 더 많은 정보를 공유해 드립니다.</div>
           
@@ -52,7 +54,7 @@
           <a href="pages/k-col web software/crossHcolumnCalculator.html" class="nav-item active">K-COL Web Software</a>
           <div class="nav-item">Database & Download</div>
           <div class="nav-item">New Patent</div>
-          <div class="nav-item">Construction Schedule</div>
+          <a href="pages/K-product/2H_steel_product.html" class="nav-item">K-COL Product Schedule</a>
           <div class="nav-item">Networks</div>
           <div class="nav-item">About SDP</div>
         </nav>
@@ -60,7 +62,7 @@
         <!-- Brochure Grid -->
         <div class="brochure-grid">
           <button class="brochure-btn">K-COL Brochure</button>
-          <button class="brochure-btn">현대제철 H형강</button>
+          <a href="assets/pdf/hyundai-steel-h-beam.pdf" target="_blank" class="brochure-btn">현대제철 H형강</a>
           <button class="brochure-btn">SLim-Box Brochure</button>
           <button class="brochure-btn">POS H 형강</button>
           <button class="brochure-btn yellow">Sunex MTL</button>
@@ -86,7 +88,7 @@
                   <div class="clock-center"></div>
                 </div>
               </div>
-              <div class="clock-label">Indonesia</div>
+              <div class="clock-label">Indonesia <span class="ampm-indicator" id="ampm-indonesia">AM</span></div>
             </div>
             <div class="clock-container">
               <div class="clock" id="clock-newyork">
@@ -97,7 +99,18 @@
                   <div class="clock-center"></div>
                 </div>
               </div>
-              <div class="clock-label">New York</div>
+              <div class="clock-label">New York <span class="ampm-indicator" id="ampm-newyork">AM</span></div>
+            </div>
+            <div class="clock-container">
+              <div class="clock" id="clock-sanfrancisco">
+                <div class="clock-face">
+                  <div class="hand hour-hand" id="hour-sanfrancisco"></div>
+                  <div class="hand minute-hand" id="minute-sanfrancisco"></div>
+                  <div class="hand second-hand" id="second-sanfrancisco"></div>
+                  <div class="clock-center"></div>
+                </div>
+              </div>
+              <div class="clock-label">San Francisco <span class="ampm-indicator" id="ampm-sanfrancisco">AM</span></div>
             </div>
           </div>
 
@@ -163,18 +176,95 @@
           <div class="main-text">Go to<br>SDP Database</div>
         </div>
         <div class="company-logos">
-          <div class="company-logo dongyang"><img src="assets/images/network-1.png" alt="DONG YANG S·Tec"></div>
-          <div class="company-logo posco"><img src="assets/images/network-2.png" alt="POSCO"></div>
-          <div class="company-logo steelball"><img src="assets/images/network-3.png" alt="Steel Ball"></div>
-          <div class="company-logo p6sc"><img src="assets/images/network-6.png" alt="p6sc"></div>
-          <div class="company-logo clbs"><img src="assets/images/network-5.png" alt="CLBS"></div>
-          <div class="company-logo hyundai"><img src="assets/images/network-4.jfif" alt="HYUNDAI STEEL"></div>
+          <div class="company-logo dongyang"><a href="https://dystec.co.kr/new/" target="_blank"><img src="assets/images/network-1.png" alt="DONG YANG S·Tec"></a></div>
+          <div class="company-logo posco"><a href="https://www.posco.co.kr" target="_blank"><img src="assets/images/network-2.png" alt="POSCO"></a></div>
+          <div class="company-logo steelball"><a href="https://www.steelall.co.kr" target="_blank"><img src="assets/images/network-3.png" alt="Steel Ball"></a></div>
+          <div class="company-logo p6sc"><a href="https://www.p6ix.co.kr" target="_blank"><img src="assets/images/network-6.png" alt="p6sc"></a></div>
+          <div class="company-logo clbs"><a href="https://www.clbs.co.kr/main.jsp" target="_blank"><img src="assets/images/network-5.png" alt="CLBS"></a></div>
+          <div class="company-logo hyundai"><a href="https://www.hyundai-steel.com" target="_blank"><img src="assets/images/network-4.jfif" alt="HYUNDAI STEEL"></a></div>
         </div>
       </footer>
     </div>
   </div>
 
   <script src="js/main.js"></script>
+  <script>
+    // 임시 로그인 시스템
+    (function() {
+      // 임시 계정 설정 (필요시 수정)
+        const TEMP_ACCOUNTS = {
+          '123456789': '@hakdong',
+          'admin': 'admin123',
+          'sdp': 'sdp2026',
+          'guest': 'guest'
+        };
+      
+      const loginForm = document.getElementById('loginForm');
+      const loginStatus = document.getElementById('login-status');
+      
+      // 로그인 상태 확인
+      function checkLoginStatus() {
+        const loggedInUser = sessionStorage.getItem('loggedInUser');
+        if (loggedInUser) {
+          showLoggedIn(loggedInUser);
+        }
+      }
+      
+      // 로그인 성공 표시
+      function showLoggedIn(userId) {
+        loginStatus.style.display = 'block';
+        loginStatus.style.background = '#e8f5e9';
+        loginStatus.style.color = '#2e7d32';
+        loginStatus.innerHTML = '✅ <strong>' + userId + '</strong>님 환영합니다! <button onclick="logout()" style="margin-left:10px;padding:2px 8px;cursor:pointer;">로그아웃</button>';
+        
+        // 입력 필드 비활성화
+        document.getElementById('userId').disabled = true;
+        document.getElementById('password').disabled = true;
+        document.querySelector('.login-btn').disabled = true;
+      }
+      
+      // 로그인 실패 표시
+      function showLoginFailed() {
+        loginStatus.style.display = 'block';
+        loginStatus.style.background = '#ffebee';
+        loginStatus.style.color = '#c62828';
+        loginStatus.textContent = '❌ ID 또는 PW가 올바르지 않습니다.';
+        setTimeout(() => {
+          loginStatus.style.display = 'none';
+        }, 3000);
+      }
+      
+      // 로그아웃
+      window.logout = function() {
+        sessionStorage.removeItem('loggedInUser');
+        loginStatus.style.display = 'none';
+        document.getElementById('userId').disabled = false;
+        document.getElementById('password').disabled = false;
+        document.getElementById('userId').value = '';
+        document.getElementById('password').value = '';
+        document.querySelector('.login-btn').disabled = false;
+      };
+      
+      // 폼 제출 처리
+      loginForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const userId = document.getElementById('userId').value.trim();
+        const password = document.getElementById('password').value;
+        
+        // 계정 확인
+        if (TEMP_ACCOUNTS[userId] && TEMP_ACCOUNTS[userId] === password) {
+          sessionStorage.setItem('loggedInUser', userId);
+          showLoggedIn(userId);
+        } else {
+          showLoginFailed();
+        }
+      });
+      
+      // 페이지 로드 시 로그인 상태 확인
+      checkLoginStatus();
+    })();
+  </script>
   <script>
     // World Clock - Inline script for immediate execution
     (function() {
@@ -185,11 +275,34 @@
         var hourNY = document.getElementById('hour-newyork');
         var minNY = document.getElementById('minute-newyork');
         var secNY = document.getElementById('second-newyork');
+        var hourSF = document.getElementById('hour-sanfrancisco');
+        var minSF = document.getElementById('minute-sanfrancisco');
+        var secSF = document.getElementById('second-sanfrancisco');
+        
+        // 시계 요소 (밤/낮 스타일 적용용)
+        var clockIndo = document.getElementById('clock-indonesia');
+        var clockNY = document.getElementById('clock-newyork');
+        var clockSF = document.getElementById('clock-sanfrancisco');
         
         if (!hourIndo) {
           console.error('Clock elements not found!');
           return;
         }
+        
+        // 밤 시간 확인 (저녁 6시 ~ 아침 6시)
+        function isNightTime(hours) {
+          return hours >= 18 || hours < 6;
+        }
+        
+        // AM/PM 반환
+        function getAmPm(hours) {
+          return hours >= 12 ? 'PM' : 'AM';
+        }
+        
+        // AM/PM 표시 요소
+        var ampmIndo = document.getElementById('ampm-indonesia');
+        var ampmNY = document.getElementById('ampm-newyork');
+        var ampmSF = document.getElementById('ampm-sanfrancisco');
         
         function tick() {
           var now = new Date();
@@ -203,6 +316,14 @@
           hourIndo.style.transform = 'rotate(' + indoH + 'deg)';
           minIndo.style.transform = 'rotate(' + indoM + 'deg)';
           secIndo.style.transform = 'rotate(' + indoS + 'deg)';
+          ampmIndo.textContent = getAmPm(indo.getHours());
+          
+          // Indonesia 밤/낮 스타일 적용
+          if (isNightTime(indo.getHours())) {
+            clockIndo.classList.add('night');
+          } else {
+            clockIndo.classList.remove('night');
+          }
           
           // New York (UTC-5)
           var ny = new Date(utc + (-5 * 3600000));
@@ -212,6 +333,31 @@
           hourNY.style.transform = 'rotate(' + nyH + 'deg)';
           minNY.style.transform = 'rotate(' + nyM + 'deg)';
           secNY.style.transform = 'rotate(' + nyS + 'deg)';
+          ampmNY.textContent = getAmPm(ny.getHours());
+          
+          // New York 밤/낮 스타일 적용
+          if (isNightTime(ny.getHours())) {
+            clockNY.classList.add('night');
+          } else {
+            clockNY.classList.remove('night');
+          }
+          
+          // San Francisco (UTC-8)
+          var sf = new Date(utc + (-8 * 3600000));
+          var sfH = ((sf.getHours() % 12) * 30) + (sf.getMinutes() * 0.5);
+          var sfM = (sf.getMinutes() * 6) + (sf.getSeconds() * 0.1);
+          var sfS = sf.getSeconds() * 6;
+          hourSF.style.transform = 'rotate(' + sfH + 'deg)';
+          minSF.style.transform = 'rotate(' + sfM + 'deg)';
+          secSF.style.transform = 'rotate(' + sfS + 'deg)';
+          ampmSF.textContent = getAmPm(sf.getHours());
+          
+          // San Francisco 밤/낮 스타일 적용
+          if (isNightTime(sf.getHours())) {
+            clockSF.classList.add('night');
+          } else {
+            clockSF.classList.remove('night');
+          }
         }
         
         tick();

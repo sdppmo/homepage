@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firebase 설정 가이드 - K-COLUMN 공정관리 시스템</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Malgun Gothic', '맑은 고딕', sans-serif;
+            line-height: 1.8;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            background: #fff;
+        }
+        h1 {
+            text-align: center;
+            color: #1565c0;
+            font-size: 28px;
+            margin-bottom: 10px;
+            border-bottom: 3px solid #1565c0;
+            padding-bottom: 15px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 40px;
+        }
+        h2 {
+            color: #2e7d32;
+            font-size: 20px;
+            margin-top: 40px;
+            margin-bottom: 15px;
+            padding: 10px 15px;
+            background: #e8f5e9;
+            border-left: 5px solid #2e7d32;
+        }
+        h3 {
+            color: #1565c0;
+            font-size: 16px;
+            margin-top: 25px;
+            margin-bottom: 10px;
+        }
+        p {
+            margin-bottom: 15px;
+            text-align: justify;
+        }
+        .step {
+            background: #f5f5f5;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .step-number {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            background: #1565c0;
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 30px;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        .step-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+        }
+        .step-content {
+            margin-top: 15px;
+            padding-left: 40px;
+        }
+        ul, ol {
+            margin: 15px 0;
+            padding-left: 25px;
+        }
+        li {
+            margin-bottom: 8px;
+        }
+        code {
+            background: #e3f2fd;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Consolas', monospace;
+            font-size: 14px;
+            color: #1565c0;
+        }
+        pre {
+            background: #263238;
+            color: #aed581;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Consolas', monospace;
+            font-size: 13px;
+            line-height: 1.5;
+            margin: 15px 0;
+        }
+        .warning {
+            background: #fff3e0;
+            border-left: 5px solid #ff9800;
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+        }
+        .warning-title {
+            color: #e65100;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .info {
+            background: #e3f2fd;
+            border-left: 5px solid #2196f3;
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+        }
+        .success {
+            background: #e8f5e9;
+            border-left: 5px solid #4caf50;
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background: #1565c0;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background: #f5f5f5;
+        }
+        .footer {
+            margin-top: 50px;
+            padding-top: 20px;
+            border-top: 2px solid #ddd;
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+        }
+        @media print {
+            body {
+                padding: 20px;
+            }
+            .step {
+                break-inside: avoid;
+            }
+            h2 {
+                break-after: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>🔥 Firebase 설정 가이드</h1>
+    <p class="subtitle">K-COLUMN 공정관리 시스템 - 실시간 데이터 공유 설정</p>
+
+    <div class="info">
+        <strong>📌 이 가이드의 목적</strong><br>
+        3개 업체(유석철강, 주신산업, 진흥기업)가 각자의 사무실에서 실시간으로 공정 데이터를 입력하고 공유할 수 있도록 Firebase Realtime Database를 설정합니다.
+    </div>
+
+    <h2>📋 사전 준비사항</h2>
+    <ul>
+        <li>Google 계정 (Gmail)</li>
+        <li>인터넷 연결</li>
+        <li>웹 브라우저 (Chrome 권장)</li>
+    </ul>
+
+    <h2>💰 비용 안내</h2>
+    <div class="success">
+        <strong>✅ 무료로 사용 가능합니다!</strong><br>
+        Firebase Spark Plan (무료)으로 충분하며, 신용카드 등록이 필요 없습니다.
+    </div>
+    
+    <table>
+        <tr>
+            <th>항목</th>
+            <th>무료 제공량</th>
+            <th>예상 사용량</th>
+        </tr>
+        <tr>
+            <td>데이터 저장</td>
+            <td>1GB</td>
+            <td>약 1MB (0.1%)</td>
+        </tr>
+        <tr>
+            <td>월간 다운로드</td>
+            <td>10GB</td>
+            <td>약 100MB</td>
+        </tr>
+        <tr>
+            <td>동시 접속</td>
+            <td>100명</td>
+            <td>3~10명</td>
+        </tr>
+    </table>
+
+    <h2>🚀 설정 단계</h2>
+
+    <div class="step">
+        <span class="step-number">1</span>
+        <span class="step-title">Firebase Console 접속</span>
+        <div class="step-content">
+            <ol>
+                <li>웹 브라우저에서 <code>https://console.firebase.google.com</code> 접속</li>
+                <li>Google 계정으로 로그인</li>
+                <li>처음 접속 시 이용약관 동의</li>
+            </ol>
+        </div>
+    </div>
+
+    <div class="step">
+        <span class="step-number">2</span>
+        <span class="step-title">새 프로젝트 생성</span>
+        <div class="step-content">
+            <ol>
+                <li><strong>"프로젝트 추가"</strong> 또는 <strong>"Add project"</strong> 클릭</li>
+                <li>프로젝트 이름 입력: <code>kcolumn-progress</code> (원하는 이름 가능)</li>
+                <li>Google Analytics: <strong>"사용 안함"</strong> 선택 (필요 없음)</li>
+                <li><strong>"프로젝트 만들기"</strong> 클릭</li>
+                <li>30초~1분 대기 후 <strong>"계속"</strong> 클릭</li>
+            </ol>
+        </div>
+    </div>
+
+    <div class="step">
+        <span class="step-number">3</span>
+        <span class="step-title">Realtime Database 생성</span>
+        <div class="step-content">
+            <ol>
+                <li>왼쪽 메뉴에서 <strong>"빌드"</strong> → <strong>"Realtime Database"</strong> 클릭</li>
+                <li><strong>"데이터베이스 만들기"</strong> 클릭</li>
+                <li>데이터베이스 위치: <strong>"asia-northeast3 (서울)"</strong> 선택</li>
+                <li><strong>"다음"</strong> 클릭</li>
+                <li>보안 규칙: <strong>"테스트 모드에서 시작"</strong> 선택</li>
+                <li><strong>"사용 설정"</strong> 클릭</li>
+            </ol>
+            <div class="warning">
+                <div class="warning-title">⚠️ 주의</div>
+                테스트 모드는 30일 후 만료됩니다. 만료 전에 보안 규칙을 업데이트하거나 연장해야 합니다.
+            </div>
+        </div>
+    </div>
+
+    <div class="step">
+        <span class="step-number">4</span>
+        <span class="step-title">웹 앱 등록 및 설정값 복사</span>
+        <div class="step-content">
+            <ol>
+                <li>왼쪽 상단 <strong>톱니바퀴(⚙️)</strong> 클릭 → <strong>"프로젝트 설정"</strong></li>
+                <li>페이지 아래로 스크롤하여 <strong>"내 앱"</strong> 섹션 찾기</li>
+                <li><strong>웹 아이콘 <code>&lt;/&gt;</code></strong> 클릭</li>
+                <li>앱 닉네임 입력: <code>kcolumn-web</code></li>
+                <li><strong>"앱 등록"</strong> 클릭</li>
+                <li>화면에 표시되는 <code>firebaseConfig</code> 값을 복사</li>
+            </ol>
+            
+            <h3>📝 복사해야 할 설정값 예시</h3>
+            <pre>const firebaseConfig = {
+  apiKey: "AIzaSyBxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+  authDomain: "kcolumn-progress.firebaseapp.com",
+  databaseURL: "https://kcolumn-progress-default-rtdb.asia-northeast3.firebasedatabase.app",
+  projectId: "kcolumn-progress",
+  storageBucket: "kcolumn-progress.appspot.com",
+  messagingSenderId: "123456789012",
+  appId: "1:123456789012:web:abcdef1234567890"
+};</pre>
+        </div>
+    </div>
+
+    <div class="step">
+        <span class="step-number">5</span>
+        <span class="step-title">코드에 설정값 적용</span>
+        <div class="step-content">
+            <p><code>2H_steel_product.html</code> 파일을 열어서 아래 부분을 찾아 수정합니다:</p>
+            
+            <h3>수정 전 (기본값)</h3>
+            <pre>const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_PROJECT.firebaseapp.com",
+    databaseURL: "https://YOUR_PROJECT-default-rtdb.firebaseio.com",
+    projectId: "YOUR_PROJECT",
+    storageBucket: "YOUR_PROJECT.appspot.com",
+    messagingSenderId: "YOUR_SENDER_ID",
+    appId: "YOUR_APP_ID"
+};</pre>
+
+            <h3>수정 후 (실제 값으로 교체)</h3>
+            <pre>const firebaseConfig = {
+    apiKey: "AIzaSyBxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    authDomain: "kcolumn-progress.firebaseapp.com",
+    databaseURL: "https://kcolumn-progress-default-rtdb.asia-northeast3.firebasedatabase.app",
+    projectId: "kcolumn-progress",
+    storageBucket: "kcolumn-progress.appspot.com",
+    messagingSenderId: "123456789012",
+    appId: "1:123456789012:web:abcdef1234567890"
+};</pre>
+        </div>
+    </div>
+
+    <div class="step">
+        <span class="step-number">6</span>
+        <span class="step-title">설정 확인</span>
+        <div class="step-content">
+            <ol>
+                <li>웹 서버를 재시작하거나 브라우저를 새로고침</li>
+                <li>K-COLUMN 공정관리 페이지 접속</li>
+                <li>하단에 <strong>"🟢 실시간 연결됨 (Firebase)"</strong> 메시지 확인</li>
+            </ol>
+            <div class="success">
+                <strong>✅ 설정 완료!</strong><br>
+                이제 3개 업체가 각자의 위치에서 동시에 데이터를 입력하고 실시간으로 공유할 수 있습니다.
+            </div>
+        </div>
+    </div>
+
+    <h2>🔐 보안 규칙 설정 (선택사항)</h2>
+    <p>테스트 모드 만료 전에 보안 규칙을 설정하여 데이터를 보호할 수 있습니다.</p>
+    
+    <h3>기본 보안 규칙 예시</h3>
+    <pre>{
+  "rules": {
+    "kcolumn": {
+      ".read": true,
+      ".write": true
+    }
+  }
+}</pre>
+
+    <div class="warning">
+        <div class="warning-title">⚠️ 보안 권장사항</div>
+        실제 운영 환경에서는 인증된 사용자만 접근할 수 있도록 보안 규칙을 강화하는 것이 좋습니다.
+    </div>
+
+    <h2>❓ 자주 묻는 질문</h2>
+    
+    <h3>Q1. 설정값이 노출되면 위험한가요?</h3>
+    <p>A: 이 설정값들은 클라이언트용 공개 키로, 웹사이트에서 사용되므로 노출되어도 됩니다. 실제 보안은 Firebase 보안 규칙으로 관리합니다.</p>
+
+    <h3>Q2. 테스트 모드 30일 후에는?</h3>
+    <p>A: Firebase Console에서 보안 규칙을 업데이트하거나, 테스트 모드를 연장할 수 있습니다.</p>
+
+    <h3>Q3. 데이터가 삭제되면 복구 가능한가요?</h3>
+    <p>A: Firebase에서는 자동 백업 기능이 있지만, 정기적으로 "내보내기" 기능을 사용하여 백업하는 것을 권장합니다.</p>
+
+    <h3>Q4. 여러 프로젝트에서 같은 데이터를 사용할 수 있나요?</h3>
+    <p>A: 네, 같은 Firebase 설정값을 사용하면 여러 컴퓨터/브라우저에서 동일한 데이터에 접근할 수 있습니다.</p>
+
+    <h2>📞 문의</h2>
+    <p>설정 중 문제가 발생하면 아래로 연락해 주세요:</p>
+    <ul>
+        <li>이메일: <code>sbd_pmo@naver.com</code></li>
+        <li>홈페이지: <code>http://www.kcol.kr</code></li>
+    </ul>
+
+    <div class="footer">
+        <p><strong>SongDo Partners</strong></p>
+        <p>K-COLUMN 공정관리 시스템 Firebase 설정 가이드</p>
+        <p>문서 작성일: 2026년 1월 12일</p>
+    </div>
+</body>
+</html>

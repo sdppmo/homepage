@@ -1,0 +1,1623 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>K-COLUMN 공정관리 시스템</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Malgun Gothic', 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #2c4a7c, #4a6fa5);
+            color: white;
+            padding: 20px 30px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .header-info {
+            text-align: right;
+            font-size: 14px;
+        }
+
+        /* Company Selector */
+        .company-selector {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .company-selector h3 {
+            margin-bottom: 15px;
+            color: #2c4a7c;
+        }
+
+        .company-buttons {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .company-btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .company-btn.yuseok {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+        }
+
+        .company-btn.jusin {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+        }
+
+        .company-btn.jinhung {
+            background: linear-gradient(135deg, #27ae60, #1e8449);
+            color: white;
+        }
+
+        /* Process Buttons */
+        .process-btn.p1 {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+        }
+        .process-btn.p2 {
+            background: linear-gradient(135deg, #ff9800, #f57c00);
+            color: white;
+        }
+        .process-btn.p3 {
+            background: linear-gradient(135deg, #2196f3, #1976d2);
+            color: white;
+        }
+        .process-btn.p4 {
+            background: linear-gradient(135deg, #00bcd4, #0097a7);
+            color: white;
+        }
+        .process-btn.p5 {
+            background: linear-gradient(135deg, #9c27b0, #7b1fa2);
+            color: white;
+        }
+        .process-btn.p6 {
+            background: linear-gradient(135deg, #4caf50, #388e3c);
+            color: white;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .process-btn.active {
+            box-shadow: 0 0 0 4px #ffd700;
+            transform: scale(1.05);
+        }
+
+        .company-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .company-btn.active {
+            box-shadow: 0 0 0 4px rgba(255,255,255,0.5), 0 4px 15px rgba(0,0,0,0.3);
+            transform: scale(1.02);
+        }
+
+        .company-btn small {
+            display: block;
+            font-weight: 400;
+            margin-top: 5px;
+            opacity: 0.9;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tab-btn {
+            padding: 12px 25px;
+            background: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: #666;
+        }
+
+        .tab-btn.active {
+            background: #2c4a7c;
+            color: white;
+        }
+
+        .tab-btn:hover:not(.active) {
+            background: #f0f0f0;
+        }
+
+        /* Content Panels */
+        .panel {
+            display: none;
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .panel.active {
+            display: block;
+        }
+
+        /* Input Panel */
+        .input-section {
+            margin-bottom: 20px;
+        }
+
+        .input-section h3 {
+            margin-bottom: 15px;
+            color: #2c4a7c;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .date-selector {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .date-selector label {
+            font-weight: 600;
+            color: #555;
+        }
+
+        .date-selector input[type="date"] {
+            padding: 10px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        /* Column Grid */
+        .column-grid {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .column-item {
+            position: relative;
+            aspect-ratio: 1;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #f8f9fa;
+            font-size: 12px;
+        }
+
+        .column-item:hover {
+            border-color: #2c4a7c;
+            transform: scale(1.05);
+            z-index: 10;
+        }
+
+        .column-item .col-num {
+            font-weight: 700;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .column-item .col-status {
+            font-size: 10px;
+            color: #666;
+            margin-top: 2px;
+        }
+
+        /* Status Colors */
+        .column-item.status-0 { background: #f8f9fa; border-color: #ddd; }
+        .column-item.status-1 { background: #ffebee; border-color: #e74c3c; }
+        .column-item.status-2 { background: #fff3e0; border-color: #ff9800; }
+        .column-item.status-3 { background: #e3f2fd; border-color: #2196f3; }
+        .column-item.status-4 { background: #e0f7fa; border-color: #00bcd4; }
+        .column-item.status-5 { background: #f3e5f5; border-color: #9c27b0; }
+        .column-item.status-6 { background: #4caf50; border-color: #2e7d32; color: white; }
+        .column-item.status-6 .col-num, .column-item.status-6 .col-status { color: white; }
+
+        /* Process Legend */
+        .process-legend {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+
+        /* Gantt Chart */
+        .gantt-container {
+            overflow-x: auto;
+            margin-top: 20px;
+        }
+
+        .gantt-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11px;
+            min-width: 2000px;
+        }
+
+        .gantt-table th, .gantt-table td {
+            border: 1px solid #ddd;
+            padding: 4px;
+            text-align: center;
+            min-width: 30px;
+        }
+
+        .gantt-table th {
+            background: #2c4a7c;
+            color: white;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .gantt-table th.col-header {
+            min-width: 80px;
+            background: #1a3a5c;
+        }
+
+        .gantt-table .date-header {
+            font-size: 10px;
+        }
+
+        .gantt-table .weekend {
+            background: #fff3e0 !important;
+        }
+
+        .gantt-table td.col-name {
+            background: #f5f5f5;
+            font-weight: 600;
+            text-align: left;
+            padding-left: 10px;
+            position: sticky;
+            left: 0;
+            z-index: 5;
+        }
+
+        .gantt-cell {
+            width: 100%;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .gantt-cell.p1 { background: #e74c3c; }
+        .gantt-cell.p2 { background: #ff9800; }
+        .gantt-cell.p3 { background: #2196f3; }
+        .gantt-cell.p4 { background: #00bcd4; }
+        .gantt-cell.p5 { background: #9c27b0; }
+        .gantt-cell.p6 { background: #4caf50; }
+
+        /* 휴무일 스타일 */
+        .gantt-table .holiday {
+            background: #ffcdd2 !important;
+            position: relative;
+        }
+        .gantt-table .holiday-header {
+            background: #e53935 !important;
+            color: white !important;
+        }
+        .holiday-label {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-45deg);
+            font-size: 8px;
+            color: #c62828;
+            white-space: nowrap;
+            font-weight: bold;
+        }
+
+        /* Progress Summary */
+        .progress-summary {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        @media (max-width: 1200px) {
+            .progress-summary {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .progress-summary {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .progress-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .progress-card h4 {
+            margin-bottom: 15px;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .progress-card .company-badge {
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 11px;
+            color: white;
+        }
+
+        .progress-card .company-badge.yuseok { background: #e74c3c; }
+        .progress-card .company-badge.jusin { background: #3498db; }
+        .progress-card .company-badge.jinhung { background: #27ae60; }
+
+        .progress-bar-container {
+            margin-bottom: 10px;
+        }
+
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 13px;
+        }
+
+        .progress-bar {
+            height: 24px;
+            background: #e0e0e0;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            border-radius: 12px;
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 11px;
+        }
+
+        .progress-bar-fill.p1 { background: linear-gradient(90deg, #e74c3c, #c0392b); }
+        .progress-bar-fill.p2 { background: linear-gradient(90deg, #ff9800, #f57c00); }
+        .progress-bar-fill.p3 { background: linear-gradient(90deg, #2196f3, #1976d2); }
+        .progress-bar-fill.p4 { background: linear-gradient(90deg, #00bcd4, #0097a7); }
+        .progress-bar-fill.p5 { background: linear-gradient(90deg, #9c27b0, #7b1fa2); }
+        .progress-bar-fill.p6 { background: linear-gradient(90deg, #4caf50, #388e3c); }
+
+        /* Chart Container */
+        .chart-container {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .chart-container h3 {
+            margin-bottom: 20px;
+            color: #2c4a7c;
+        }
+
+        #progressChart {
+            max-height: 400px;
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .action-btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .action-btn.primary {
+            background: #2c4a7c;
+            color: white;
+        }
+
+        .action-btn.secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .action-btn.danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-content h3 {
+            margin-bottom: 20px;
+            color: #2c4a7c;
+        }
+
+        .modal-content .form-group {
+            margin-bottom: 15px;
+        }
+
+        .modal-content label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .modal-content select, .modal-content input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .column-grid {
+                grid-template-columns: repeat(5, 1fr);
+            }
+            
+            .company-buttons {
+                flex-direction: column;
+            }
+            
+            .company-btn {
+                min-width: 100%;
+            }
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div>
+                <h1>🏗️ K-COLUMN 공정관리 시스템</h1>
+                <p style="margin-top:5px;opacity:0.9;">K-COLUMN 50EA 제작 및 설치 공정</p>
+            </div>
+            <div class="header-info">
+                <div>공사기간: 2025.12.26 ~ 2026.02.28</div>
+                <div style="margin-top:5px;">총 기둥수: <strong>50개</strong></div>
+            </div>
+        </div>
+
+        <!-- Company Selector -->
+        <div class="company-selector">
+            <h3>📌 공정별 입력 선택</h3>
+            <div class="company-buttons" style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px;">
+                <button class="company-btn process-btn p1" data-process="1" onclick="selectProcess(1)">
+                    1. 주기둥커팅
+                    <small>유석철강</small>
+                </button>
+                <button class="company-btn process-btn p2" data-process="2" onclick="selectProcess(2)">
+                    2. 소부재가공
+                    <small>유석철강</small>
+                </button>
+                <button class="company-btn process-btn p3" data-process="3" onclick="selectProcess(3)">
+                    3. 주기둥조립
+                    <small>주신산업</small>
+                </button>
+                <button class="company-btn process-btn p4" data-process="4" onclick="selectProcess(4)">
+                    4. 소부재조립
+                    <small>주신산업</small>
+                </button>
+                <button class="company-btn process-btn p5" data-process="5" onclick="selectProcess(5)">
+                    5. 현장배송
+                    <small>주신산업</small>
+                </button>
+                <button class="company-btn process-btn p6" data-process="6" onclick="selectProcess(6)">
+                    6. 현장설치
+                    <small>진흥기업</small>
+                </button>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab-btn active" onclick="showPanel('overview')">📊 전체 현황</button>
+            <button class="tab-btn" onclick="showPanel('input')">✏️ 일일 입력</button>
+            <button class="tab-btn" onclick="showPanel('gantt')">📅 공정표 (Gantt)</button>
+            <button class="tab-btn" onclick="showPanel('chart')">📈 진행률 차트</button>
+        </div>
+
+        <!-- Overview Panel -->
+        <div class="panel active" id="panel-overview">
+            <h3 style="margin-bottom:20px;color:#2c4a7c;">📊 전체 공정 현황</h3>
+            
+            <!-- Progress Summary -->
+            <div class="progress-summary">
+                <div class="progress-card">
+                    <h4>
+                        <span>1. 주기둥커팅</span>
+                        <span class="company-badge yuseok">유석철강</span>
+                    </h4>
+                    <div class="progress-bar-container">
+                        <div class="progress-label">
+                            <span>완료</span>
+                            <span id="progress-p1-text">0 / 50</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-bar-fill p1" id="progress-p1" style="width:0%">0%</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="progress-card">
+                    <h4>
+                        <span>2. 소부재가공</span>
+                        <span class="company-badge yuseok">유석철강</span>
+                    </h4>
+                    <div class="progress-bar-container">
+                        <div class="progress-label">
+                            <span>완료</span>
+                            <span id="progress-p2-text">0 / 50</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-bar-fill p2" id="progress-p2" style="width:0%">0%</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="progress-card">
+                    <h4>
+                        <span>3. 주기둥조립</span>
+                        <span class="company-badge jusin">주신산업</span>
+                    </h4>
+                    <div class="progress-bar-container">
+                        <div class="progress-label">
+                            <span>완료</span>
+                            <span id="progress-p3-text">0 / 50</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-bar-fill p3" id="progress-p3" style="width:0%">0%</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="progress-card">
+                    <h4>
+                        <span>4. 소부재조립</span>
+                        <span class="company-badge jusin">주신산업</span>
+                    </h4>
+                    <div class="progress-bar-container">
+                        <div class="progress-label">
+                            <span>완료</span>
+                            <span id="progress-p4-text">0 / 50</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-bar-fill p4" id="progress-p4" style="width:0%">0%</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="progress-card">
+                    <h4>
+                        <span>5. 현장배송</span>
+                        <span class="company-badge jusin">주신산업</span>
+                    </h4>
+                    <div class="progress-bar-container">
+                        <div class="progress-label">
+                            <span>완료</span>
+                            <span id="progress-p5-text">0 / 50</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-bar-fill p5" id="progress-p5" style="width:0%">0%</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="progress-card">
+                    <h4>
+                        <span>6. 현장설치</span>
+                        <span class="company-badge jinhung">진흥기업</span>
+                    </h4>
+                    <div class="progress-bar-container">
+                        <div class="progress-label">
+                            <span>완료</span>
+                            <span id="progress-p6-text">0 / 50</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-bar-fill p6" id="progress-p6" style="width:0%">0%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Column Status Grid -->
+            <h3 style="margin:20px 0 15px;color:#2c4a7c;">🔩 기둥별 현재 공정 상태</h3>
+            <div class="process-legend">
+                <div class="legend-item"><div class="legend-color" style="background:#f8f9fa;"></div><span>미착수</span></div>
+                <div class="legend-item"><div class="legend-color" style="background:#ffebee;"></div><span>1.주기둥커팅</span></div>
+                <div class="legend-item"><div class="legend-color" style="background:#fff3e0;"></div><span>2.소부재가공</span></div>
+                <div class="legend-item"><div class="legend-color" style="background:#e3f2fd;"></div><span>3.주기둥조립</span></div>
+                <div class="legend-item"><div class="legend-color" style="background:#e0f7fa;"></div><span>4.소부재조립</span></div>
+                <div class="legend-item"><div class="legend-color" style="background:#f3e5f5;"></div><span>5.현장배송</span></div>
+                <div class="legend-item"><div class="legend-color" style="background:#4caf50;"></div><span>6.설치완료</span></div>
+            </div>
+            <div class="column-grid" id="column-grid-overview">
+                <!-- Generated by JS -->
+            </div>
+        </div>
+
+        <!-- Input Panel -->
+        <div class="panel" id="panel-input">
+            <div class="input-section">
+                <h3>✏️ 일일 공정 입력 <span id="selected-company-name" style="color:#666;font-weight:400;font-size:14px;"></span></h3>
+                
+                <div class="date-selector">
+                    <label>📅 작업일자:</label>
+                    <input type="date" id="work-date" onchange="loadDayData()">
+                    <button class="action-btn primary" onclick="setToday()">오늘</button>
+                </div>
+
+                <div class="process-legend">
+                    <div class="legend-item"><div class="legend-color" style="background:#f8f9fa;"></div><span>미착수</span></div>
+                    <div class="legend-item"><div class="legend-color" style="background:#ffebee;"></div><span>1.주기둥커팅</span></div>
+                    <div class="legend-item"><div class="legend-color" style="background:#fff3e0;"></div><span>2.소부재가공</span></div>
+                    <div class="legend-item"><div class="legend-color" style="background:#e3f2fd;"></div><span>3.주기둥조립</span></div>
+                    <div class="legend-item"><div class="legend-color" style="background:#e0f7fa;"></div><span>4.소부재조립</span></div>
+                    <div class="legend-item"><div class="legend-color" style="background:#f3e5f5;"></div><span>5.현장배송</span></div>
+                    <div class="legend-item"><div class="legend-color" style="background:#4caf50;"></div><span>6.설치완료</span></div>
+                </div>
+
+                <div id="process-guide" style="margin-bottom:15px;padding:15px;background:#fff8e1;border-radius:8px;border:1px solid #ffc107;">
+                    <div style="margin-bottom:10px;">
+                        <strong style="font-size:14px;color:#795548;">💡 입력 안내</strong>
+                    </div>
+                    <div style="font-size:13px;color:#795548;">
+                        <div style="margin:3px 0;">① 위에서 <strong>입력할 공정 버튼</strong>을 먼저 선택하세요</div>
+                        <div style="margin:3px 0;">② 상세 입력 방법이 여기에 표시됩니다</div>
+                    </div>
+                </div>
+                <div id="guide-stats" style="margin-bottom:10px;padding:10px;background:#e8f5e9;border-radius:6px;font-size:12px;color:#2e7d32;display:none;"></div>
+
+                <div class="column-grid" id="column-grid-input">
+                    <!-- Generated by JS -->
+                </div>
+
+                <div class="action-buttons">
+                    <button class="action-btn primary" onclick="saveData()">💾 저장</button>
+                    <button class="action-btn secondary" onclick="exportData()">📥 내보내기</button>
+                    <label class="action-btn secondary" style="cursor:pointer;">
+                        📤 가져오기
+                        <input type="file" accept=".json" onchange="importData(event)" style="display:none;">
+                    </label>
+                </div>
+                <p style="margin-top:15px;padding:15px;background:#e3f2fd;border-radius:8px;font-size:13px;color:#1565c0;">
+                    💡 <strong>실시간 공유 설정:</strong> 3개 업체가 각자 장소에서 입력하려면 Firebase 설정이 필요합니다.<br>
+                    현재 모드: <span id="current-mode" style="font-weight:bold;">확인 중...</span>
+                </p>
+            </div>
+        </div>
+
+        <!-- Gantt Panel -->
+        <div class="panel" id="panel-gantt">
+            <h3 style="margin-bottom:20px;color:#2c4a7c;">📅 전체 공정표 (Gantt Chart)</h3>
+            
+            <div class="process-legend">
+                <div class="legend-item"><div class="legend-color" style="background:#e74c3c;"></div><span>1.주기둥커팅</span></div>
+                <div class="legend-item"><div class="legend-color" style="background:#ff9800;"></div><span>2.소부재가공</span></div>
+                <div class="legend-item"><div class="legend-color" style="background:#2196f3;"></div><span>3.주기둥조립</span></div>
+                <div class="legend-item"><div class="legend-color" style="background:#00bcd4;"></div><span>4.소부재조립</span></div>
+                <div class="legend-item"><div class="legend-color" style="background:#9c27b0;"></div><span>5.현장배송</span></div>
+                <div class="legend-item"><div class="legend-color" style="background:#4caf50;"></div><span>6.현장설치</span></div>
+            </div>
+
+            <div class="gantt-container">
+                <table class="gantt-table" id="gantt-table">
+                    <!-- Generated by JS -->
+                </table>
+            </div>
+        </div>
+
+        <!-- Chart Panel -->
+        <div class="panel" id="panel-chart">
+            <div class="chart-container">
+                <h3>📈 일별 누적 진행률</h3>
+                <canvas id="progressChart"></canvas>
+            </div>
+
+            <div class="chart-container">
+                <h3>📊 업체별 공정 현황</h3>
+                <canvas id="companyChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Column Detail Modal -->
+    <div class="modal" id="column-modal">
+        <div class="modal-content">
+            <h3>🔩 기둥 <span id="modal-column-num"></span> 공정 입력</h3>
+            <div class="form-group">
+                <label>현재 공정 상태:</label>
+                <select id="modal-process-select">
+                    <option value="0">0. 미착수</option>
+                    <option value="1">1. 주기둥커팅 완료</option>
+                    <option value="2">2. 기둥소부재가공 완료</option>
+                    <option value="3">3. 주기둥조립 완료</option>
+                    <option value="4">4. 현장배송 완료</option>
+                    <option value="5">5. 현장설치 완료</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>비고:</label>
+                <input type="text" id="modal-note" placeholder="특이사항 입력">
+            </div>
+            <div class="modal-buttons">
+                <button class="action-btn primary" onclick="saveColumnStatus()">저장</button>
+                <button class="action-btn secondary" onclick="closeModal()">취소</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Firebase Configuration
+        // ⚠️ 실제 사용 시 아래 설정을 Firebase Console에서 생성한 프로젝트 설정으로 교체하세요
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT.firebaseapp.com",
+            databaseURL: "https://YOUR_PROJECT-default-rtdb.firebaseio.com",
+            projectId: "YOUR_PROJECT",
+            storageBucket: "YOUR_PROJECT.appspot.com",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        // Firebase 초기화
+        let db = null;
+        let isFirebaseEnabled = false;
+        
+        try {
+            firebase.initializeApp(firebaseConfig);
+            db = firebase.database();
+            isFirebaseEnabled = firebaseConfig.apiKey !== "YOUR_API_KEY";
+        } catch (e) {
+            console.log('Firebase 초기화 실패, localStorage 모드로 전환:', e);
+        }
+
+        // Constants
+        const TOTAL_COLUMNS = 50;
+        const START_DATE = new Date('2025-12-26');
+        const END_DATE = new Date('2026-02-28');
+        
+        // 휴무일 정의 (설날 연휴)
+        const HOLIDAYS = {
+            '2026-02-16': '설날휴무',
+            '2026-02-17': '설날휴무',
+            '2026-02-18': '설날휴무'
+        };
+        
+        const PROCESSES = [
+            { id: 1, name: '주기둥커팅', company: 'yuseok' },
+            { id: 2, name: '기둥소부재가공', company: 'yuseok' },
+            { id: 3, name: '주기둥조립', company: 'jusin' },
+            { id: 4, name: '소부재조립', company: 'jusin' },
+            { id: 5, name: '현장배송', company: 'jusin' },
+            { id: 6, name: '현장설치', company: 'jinhung' }
+        ];
+
+        // State
+        let currentCompany = null;
+        let currentProcess = null; // 현재 선택된 공정 (1-5)
+        let selectedColumn = null;
+        let columnData = {}; // { columnId: { status: 0-5, date: '2025-12-26', notes: '' } }
+        let dailyData = {}; // { '2025-12-26': { 1: [columnIds completed p1], 2: [...], ... } }
+        let progressChart = null;
+        let companyChart = null;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            if (isFirebaseEnabled) {
+                // Firebase 실시간 리스너 설정
+                setupFirebaseListeners();
+                showConnectionStatus('🟢 실시간 연결됨 (Firebase)');
+            } else {
+                // localStorage 모드
+                loadFromLocalStorage();
+                showConnectionStatus('🟡 로컬 저장 모드 (Firebase 설정 필요)');
+            }
+            setToday();
+            renderColumnGrid('column-grid-overview');
+            renderColumnGrid('column-grid-input');
+            updateProgressBars();
+        });
+
+        // 연결 상태 표시
+        function showConnectionStatus(message) {
+            // 상태 알림
+            const statusDiv = document.createElement('div');
+            statusDiv.style.cssText = 'position:fixed;bottom:20px;right:20px;background:#333;color:white;padding:10px 20px;border-radius:8px;font-size:12px;z-index:9999;';
+            statusDiv.textContent = message;
+            document.body.appendChild(statusDiv);
+            setTimeout(() => statusDiv.remove(), 5000);
+            
+            // 모드 텍스트 업데이트
+            const modeEl = document.getElementById('current-mode');
+            if (modeEl) {
+                if (isFirebaseEnabled) {
+                    modeEl.textContent = '🟢 실시간 공유 모드 (Firebase 연결됨)';
+                    modeEl.style.color = '#2e7d32';
+                } else {
+                    modeEl.textContent = '🟡 로컬 저장 모드 (같은 브라우저에서만 공유)';
+                    modeEl.style.color = '#f57c00';
+                }
+            }
+        }
+
+        // Firebase 실시간 리스너
+        function setupFirebaseListeners() {
+            // columnData 실시간 리스너
+            db.ref('kcolumn/columnData').on('value', (snapshot) => {
+                columnData = snapshot.val() || {};
+                renderColumnGrid('column-grid-overview');
+                renderColumnGrid('column-grid-input');
+                updateProgressBars();
+            });
+
+            // dailyData 실시간 리스너
+            db.ref('kcolumn/dailyData').on('value', (snapshot) => {
+                dailyData = snapshot.val() || {};
+            });
+        }
+
+        // Process Selection (공정별 선택)
+        function selectProcess(processId) {
+            currentProcess = processId;
+            
+            // 해당 공정의 담당 업체 설정
+            const process = PROCESSES.find(p => p.id === processId);
+            currentCompany = process?.company;
+            
+            // 버튼 활성화 표시
+            document.querySelectorAll('.process-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelector(`.process-btn.p${processId}`).classList.add('active');
+            
+            const processNames = {
+                1: '1. 주기둥커팅 (유석철강)',
+                2: '2. 기둥소부재가공 (유석철강)',
+                3: '3. 주기둥조립 (주신산업)',
+                4: '4. 소부재조립 (주신산업)',
+                5: '5. 현장배송 (주신산업)',
+                6: '6. 현장설치 (진흥기업)'
+            };
+            document.getElementById('selected-company-name').textContent = '- ' + processNames[processId];
+            
+            // 공정별 입력 안내 메시지 표시
+            showProcessGuide(processId);
+            
+            renderColumnGrid('column-grid-input');
+        }
+        
+        // 공정별 입력 안내 메시지
+        function showProcessGuide(processId) {
+            const guideMessages = {
+                1: {
+                    title: '🔴 주기둥커팅 입력 안내',
+                    company: '유석철강',
+                    steps: [
+                        '① 작업일자를 확인/선택합니다',
+                        '② 금색 테두리로 강조된 기둥(미착수 상태)을 클릭합니다',
+                        '③ 커팅 완료된 기둥을 확인 후 저장합니다'
+                    ],
+                    note: '※ 미착수(0단계) 상태의 기둥만 커팅 완료 처리 가능'
+                },
+                2: {
+                    title: '🟠 기둥소부재가공 입력 안내',
+                    company: '유석철강',
+                    steps: [
+                        '① 작업일자를 확인/선택합니다',
+                        '② 금색 테두리로 강조된 기둥(커팅완료 상태)을 클릭합니다',
+                        '③ 소부재가공 완료된 기둥을 확인 후 저장합니다'
+                    ],
+                    note: '※ 주기둥커팅(1단계)이 완료된 기둥만 소부재가공 처리 가능'
+                },
+                3: {
+                    title: '🔵 주기둥조립 입력 안내',
+                    company: '주신산업',
+                    steps: [
+                        '① 작업일자를 확인/선택합니다',
+                        '② 금색 테두리로 강조된 기둥(소부재가공완료 상태)을 클릭합니다',
+                        '③ 주기둥조립 완료된 기둥을 확인 후 저장합니다'
+                    ],
+                    note: '※ 기둥소부재가공(2단계)이 완료된 기둥만 주기둥조립 처리 가능'
+                },
+                4: {
+                    title: '🔷 소부재조립 입력 안내',
+                    company: '주신산업',
+                    steps: [
+                        '① 작업일자를 확인/선택합니다',
+                        '② 금색 테두리로 강조된 기둥(주기둥조립완료 상태)을 클릭합니다',
+                        '③ 소부재조립 완료된 기둥을 확인 후 저장합니다'
+                    ],
+                    note: '※ 주기둥조립(3단계)이 완료된 기둥만 소부재조립 처리 가능'
+                },
+                5: {
+                    title: '🟣 현장배송 입력 안내',
+                    company: '주신산업',
+                    steps: [
+                        '① 작업일자를 확인/선택합니다',
+                        '② 금색 테두리로 강조된 기둥(소부재조립완료 상태)을 클릭합니다',
+                        '③ 현장배송 완료된 기둥을 확인 후 저장합니다'
+                    ],
+                    note: '※ 소부재조립(4단계)이 완료된 기둥만 배송 처리 가능'
+                },
+                6: {
+                    title: '🟢 현장설치 입력 안내',
+                    company: '진흥기업',
+                    steps: [
+                        '① 작업일자를 확인/선택합니다',
+                        '② 금색 테두리로 강조된 기둥(배송완료 상태)을 클릭합니다',
+                        '③ 설치 완료된 기둥을 확인 후 저장합니다'
+                    ],
+                    note: '※ 현장배송(5단계)이 완료된 기둥만 설치 처리 가능'
+                }
+            };
+            
+            const guide = guideMessages[processId];
+            const guideDiv = document.getElementById('process-guide');
+            
+            guideDiv.innerHTML = `
+                <div style="margin-bottom:10px;">
+                    <strong style="font-size:14px;color:#1565c0;">${guide.title}</strong>
+                    <span style="margin-left:10px;padding:3px 8px;background:#e3f2fd;border-radius:4px;font-size:11px;color:#1976d2;">담당: ${guide.company}</span>
+                </div>
+                <div style="margin-bottom:8px;font-size:12px;color:#555;">
+                    ${guide.steps.map(step => `<div style="margin:3px 0;">${step}</div>`).join('')}
+                </div>
+                <div style="font-size:11px;color:#e65100;background:#fff3e0;padding:6px 10px;border-radius:4px;">
+                    ${guide.note}
+                </div>
+            `;
+        }
+
+        // 기존 호환성을 위한 함수
+        function selectCompany(company) {
+            // 첫 번째 공정으로 자동 선택
+            if (company === 'yuseok') selectProcess(1);
+            else if (company === 'jusin') selectProcess(3);
+            else if (company === 'jinhung') selectProcess(5);
+        }
+
+        // Panel Navigation
+        function showPanel(panelId) {
+            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            
+            document.getElementById('panel-' + panelId).classList.add('active');
+            event.target.classList.add('active');
+            
+            if (panelId === 'gantt') {
+                renderGanttChart();
+            } else if (panelId === 'chart') {
+                renderCharts();
+            } else if (panelId === 'overview') {
+                renderColumnGrid('column-grid-overview');
+                updateProgressBars();
+            }
+        }
+
+        // Set Today's Date
+        function setToday() {
+            const today = new Date();
+            const dateStr = today.toISOString().split('T')[0];
+            document.getElementById('work-date').value = dateStr;
+        }
+
+        // Render Column Grid
+        function renderColumnGrid(containerId) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            
+            let availableCount = 0;
+            let completedCount = 0;
+            
+            // 휴무일 체크 (입력 패널용)
+            const workDate = document.getElementById('work-date')?.value;
+            const isHolidayToday = workDate && isHoliday(workDate);
+            
+            for (let i = 1; i <= TOTAL_COLUMNS; i++) {
+                const status = columnData[i]?.status || 0;
+                const statusNames = ['미착수', '커팅', '소부재', '조립', '소조립', '배송', '설치완료'];
+                
+                const div = document.createElement('div');
+                div.className = `column-item status-${status}`;
+                
+                // 입력 패널에서 휴무일이면 전체 비활성화
+                if (containerId === 'column-grid-input' && isHolidayToday) {
+                    div.style.opacity = '0.4';
+                    div.style.cursor = 'not-allowed';
+                    div.style.background = '#ffcdd2';
+                }
+                // 입력 패널에서 선택 가능한 기둥 강조 표시
+                else if (containerId === 'column-grid-input' && currentProcess) {
+                    const canProcess = (status === currentProcess - 1);
+                    if (canProcess) {
+                        div.style.boxShadow = '0 0 0 3px #ffd700, 0 0 10px rgba(255,215,0,0.5)';
+                        div.style.animation = 'pulse 1.5s infinite';
+                        availableCount++;
+                    } else if (status >= currentProcess) {
+                        div.style.opacity = '0.5';
+                        completedCount++;
+                    }
+                }
+                
+                div.innerHTML = `
+                    <span class="col-num">C${i.toString().padStart(2, '0')}</span>
+                    <span class="col-status">${statusNames[status]}</span>
+                `;
+                
+                if (containerId === 'column-grid-input') {
+                    div.onclick = () => openColumnModal(i);
+                }
+                
+                container.appendChild(div);
+            }
+            
+            // 가이드 통계 업데이트
+            if (containerId === 'column-grid-input') {
+                const statsDiv = document.getElementById('guide-stats');
+                if (isHolidayToday) {
+                    // 휴무일 메시지
+                    statsDiv.style.display = 'block';
+                    statsDiv.style.background = '#ffcdd2';
+                    statsDiv.style.color = '#c62828';
+                    statsDiv.innerHTML = `<strong>🚫 ${getHolidayName(workDate)}</strong> - 해당일은 작업을 입력할 수 없습니다.`;
+                } else if (currentProcess) {
+                    const processNames = ['', '주기둥커팅', '기둥소부재가공', '주기둥조립', '소부재조립', '현장배송', '현장설치'];
+                    statsDiv.style.display = 'block';
+                    statsDiv.style.background = '#e8f5e9';
+                    statsDiv.style.color = '#2e7d32';
+                    statsDiv.innerHTML = 
+                        `📊 <strong>${processNames[currentProcess]}</strong> - 입력 가능: <strong style="color:#f57c00;">${availableCount}개</strong> / 완료: <strong style="color:#4caf50;">${completedCount}개</strong> / 대기: <strong style="color:#757575;">${TOTAL_COLUMNS - availableCount - completedCount}개</strong>`;
+                } else {
+                    statsDiv.style.display = 'none';
+                }
+            }
+        }
+
+        // Open Column Modal
+        function openColumnModal(columnId) {
+            // 휴무일 체크
+            const workDate = document.getElementById('work-date').value;
+            if (isHoliday(workDate)) {
+                alert(`${getHolidayName(workDate)}\n\n해당일은 휴무로 작업 입력이 불가합니다.`);
+                return;
+            }
+            
+            if (!currentProcess) {
+                alert('먼저 입력할 공정을 선택해주세요.');
+                return;
+            }
+            
+            const currentStatus = columnData[columnId]?.status || 0;
+            
+            // 선택한 공정이 현재 기둥에 적용 가능한지 확인
+            // 해당 공정의 이전 공정이 완료되어야 함
+            if (currentProcess > 1 && currentStatus < currentProcess - 1) {
+                alert(`이전 공정(${currentProcess - 1}단계)이 완료되지 않았습니다.`);
+                return;
+            }
+            
+            // 이미 해당 공정 이상이 완료된 경우
+            if (currentStatus >= currentProcess) {
+                alert(`이 기둥은 이미 ${currentProcess}단계 이상 완료되었습니다.`);
+                return;
+            }
+            
+            selectedColumn = columnId;
+            document.getElementById('modal-column-num').textContent = 'C' + columnId.toString().padStart(2, '0');
+            
+            // 현재 선택된 공정만 표시
+            const processNames = ['미착수', '주기둥커팅', '기둥소부재가공', '주기둥조립', '소부재조립', '현장배송', '현장설치'];
+            document.getElementById('modal-process-select').innerHTML = `
+                <option value="${currentProcess}">${currentProcess}. ${processNames[currentProcess]} 완료</option>
+            `;
+            document.getElementById('modal-process-select').value = currentProcess;
+            document.getElementById('modal-note').value = '';
+            
+            document.getElementById('column-modal').classList.add('active');
+        }
+
+        // Close Modal
+        function closeModal() {
+            document.getElementById('column-modal').classList.remove('active');
+            selectedColumn = null;
+        }
+
+        // Save Column Status
+        function saveColumnStatus() {
+            const newStatus = currentProcess; // 현재 선택된 공정으로 설정
+            const note = document.getElementById('modal-note').value;
+            const workDate = document.getElementById('work-date').value;
+            
+            // Save data
+            if (!columnData[selectedColumn]) {
+                columnData[selectedColumn] = {};
+            }
+            columnData[selectedColumn].status = newStatus;
+            columnData[selectedColumn].note = note;
+            columnData[selectedColumn].lastUpdate = workDate;
+            columnData[selectedColumn].updatedBy = PROCESSES.find(p => p.id === newStatus)?.company;
+            
+            // Track daily progress
+            if (!dailyData[workDate]) {
+                dailyData[workDate] = {};
+            }
+            if (!dailyData[workDate][newStatus]) {
+                dailyData[workDate][newStatus] = [];
+            }
+            if (!dailyData[workDate][newStatus].includes(selectedColumn)) {
+                dailyData[workDate][newStatus].push(selectedColumn);
+            }
+            
+            closeModal();
+            renderColumnGrid('column-grid-input');
+            renderColumnGrid('column-grid-overview');
+            updateProgressBars();
+            saveToStorage();
+            
+            showConnectionStatus(`✅ C${selectedColumn.toString().padStart(2,'0')} - ${newStatus}단계 완료!`);
+        }
+
+        // Update Progress Bars
+        function updateProgressBars() {
+            for (let p = 1; p <= 6; p++) {
+                let count = 0;
+                for (let c = 1; c <= TOTAL_COLUMNS; c++) {
+                    if (columnData[c]?.status >= p) count++;
+                }
+                const percent = Math.round((count / TOTAL_COLUMNS) * 100);
+                
+                document.getElementById(`progress-p${p}`).style.width = percent + '%';
+                document.getElementById(`progress-p${p}`).textContent = percent + '%';
+                document.getElementById(`progress-p${p}-text`).textContent = `${count} / ${TOTAL_COLUMNS}`;
+            }
+        }
+
+        // Render Gantt Chart
+        // 휴무일 체크 헬퍼 함수
+        function isHoliday(dateStr) {
+            return HOLIDAYS.hasOwnProperty(dateStr);
+        }
+        
+        function getHolidayName(dateStr) {
+            return HOLIDAYS[dateStr] || '';
+        }
+
+        function renderGanttChart() {
+            const table = document.getElementById('gantt-table');
+            
+            // Generate date range
+            const dates = [];
+            let currentDate = new Date(START_DATE);
+            while (currentDate <= END_DATE) {
+                dates.push(new Date(currentDate));
+                currentDate.setDate(currentDate.getDate() + 1);
+            }
+            
+            // Build header
+            let headerHtml = '<thead><tr><th class="col-header">기둥번호</th>';
+            dates.forEach(date => {
+                const dayOfWeek = date.getDay();
+                const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+                const dateStrFull = date.toISOString().split('T')[0];
+                const isHolidayDate = isHoliday(dateStrFull);
+                const dateStr = `${date.getMonth()+1}/${date.getDate()}`;
+                
+                let headerClass = 'date-header';
+                if (isHolidayDate) {
+                    headerClass += ' holiday-header';
+                } else if (isWeekend) {
+                    headerClass += ' weekend';
+                }
+                
+                headerHtml += `<th class="${headerClass}" title="${isHolidayDate ? getHolidayName(dateStrFull) : ''}">${dateStr}</th>`;
+            });
+            headerHtml += '</tr></thead>';
+            
+            // Build body
+            let bodyHtml = '<tbody>';
+            for (let c = 1; c <= TOTAL_COLUMNS; c++) {
+                bodyHtml += `<tr><td class="col-name">C${c.toString().padStart(2, '0')}</td>`;
+                
+                dates.forEach(date => {
+                    const dateStr = date.toISOString().split('T')[0];
+                    const dayOfWeek = date.getDay();
+                    const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+                    const isHolidayDate = isHoliday(dateStr);
+                    
+                    // 휴무일인 경우
+                    if (isHolidayDate) {
+                        bodyHtml += `<td class="holiday" title="${getHolidayName(dateStr)}">`;
+                        if (c === 1) {
+                            // 첫 번째 행에만 휴무 라벨 표시
+                        }
+                        bodyHtml += '</td>';
+                    } else {
+                        // Find which process was completed on this date for this column
+                        let cellClass = '';
+                        for (let p = 1; p <= 6; p++) {
+                            if (dailyData[dateStr]?.[p]?.includes(c)) {
+                                cellClass = `gantt-cell p${p}`;
+                                break;
+                            }
+                        }
+                        
+                        bodyHtml += `<td class="${isWeekend ? 'weekend' : ''}">`;
+                        if (cellClass) {
+                            bodyHtml += `<div class="${cellClass}"></div>`;
+                        }
+                        bodyHtml += '</td>';
+                    }
+                });
+                
+                bodyHtml += '</tr>';
+            }
+            bodyHtml += '</tbody>';
+            
+            table.innerHTML = headerHtml + bodyHtml;
+        }
+
+        // Render Charts
+        function renderCharts() {
+            renderProgressChart();
+            renderCompanyChart();
+        }
+
+        function renderProgressChart() {
+            const ctx = document.getElementById('progressChart').getContext('2d');
+            
+            // Generate date labels and data
+            const dates = [];
+            const datasets = [];
+            const colors = ['#e74c3c', '#ff9800', '#2196f3', '#00bcd4', '#9c27b0', '#4caf50'];
+            const processNames = ['주기둥커팅', '소부재가공', '주기둥조립', '소부재조립', '현장배송', '현장설치'];
+            
+            let currentDate = new Date(START_DATE);
+            while (currentDate <= new Date()) {
+                dates.push(currentDate.toISOString().split('T')[0]);
+                currentDate.setDate(currentDate.getDate() + 1);
+            }
+            
+            // Calculate cumulative data for each process
+            for (let p = 1; p <= 6; p++) {
+                const data = [];
+                let cumulative = 0;
+                
+                dates.forEach(dateStr => {
+                    if (dailyData[dateStr]?.[p]) {
+                        cumulative += dailyData[dateStr][p].length;
+                    }
+                    data.push(cumulative);
+                });
+                
+                datasets.push({
+                    label: processNames[p-1],
+                    data: data,
+                    borderColor: colors[p-1],
+                    backgroundColor: colors[p-1] + '20',
+                    fill: true,
+                    tension: 0.3
+                });
+            }
+            
+            if (progressChart) progressChart.destroy();
+            
+            progressChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: dates.map(d => d.substring(5)),
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: TOTAL_COLUMNS,
+                            title: {
+                                display: true,
+                                text: '완료 기둥 수'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderCompanyChart() {
+            const ctx = document.getElementById('companyChart').getContext('2d');
+            
+            // Calculate company progress
+            const companyProgress = {
+                'yuseok': { p1: 0, p2: 0 },
+                'jusin': { p3: 0, p4: 0 },
+                'jinhung': { p5: 0 }
+            };
+            
+            for (let c = 1; c <= TOTAL_COLUMNS; c++) {
+                const status = columnData[c]?.status || 0;
+                if (status >= 1) companyProgress.yuseok.p1++;
+                if (status >= 2) companyProgress.yuseok.p2++;
+                if (status >= 3) companyProgress.jusin.p3++;
+                if (status >= 4) companyProgress.jusin.p4++;
+                if (status >= 5) companyProgress.jinhung.p5++;
+            }
+            
+            if (companyChart) companyChart.destroy();
+            
+            companyChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['유석철강\n(커팅)', '유석철강\n(소부재)', '주신산업\n(조립)', '주신산업\n(배송)', '진흥기업\n(설치)'],
+                    datasets: [{
+                        label: '완료 기둥 수',
+                        data: [
+                            companyProgress.yuseok.p1,
+                            companyProgress.yuseok.p2,
+                            companyProgress.jusin.p3,
+                            companyProgress.jusin.p4,
+                            companyProgress.jinhung.p5
+                        ],
+                        backgroundColor: ['#e74c3c', '#ff9800', '#2196f3', '#9c27b0', '#4caf50']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: TOTAL_COLUMNS,
+                            title: {
+                                display: true,
+                                text: '완료 기둥 수'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Save/Load Data
+        function saveData() {
+            saveToStorage();
+        }
+
+        function saveToStorage() {
+            if (isFirebaseEnabled) {
+                // Firebase에 저장
+                db.ref('kcolumn/columnData').set(columnData)
+                    .then(() => {
+                        return db.ref('kcolumn/dailyData').set(dailyData);
+                    })
+                    .then(() => {
+                        showConnectionStatus('✅ 저장 완료! (실시간 동기화)');
+                    })
+                    .catch((error) => {
+                        console.error('Firebase 저장 오류:', error);
+                        alert('저장 중 오류가 발생했습니다: ' + error.message);
+                    });
+            } else {
+                // localStorage에 저장
+                localStorage.setItem('steelColumnData', JSON.stringify(columnData));
+                localStorage.setItem('steelColumnDaily', JSON.stringify(dailyData));
+                showConnectionStatus('✅ 로컬에 저장됨');
+            }
+        }
+
+        function loadFromLocalStorage() {
+            const savedColumnData = localStorage.getItem('steelColumnData');
+            const savedDailyData = localStorage.getItem('steelColumnDaily');
+            
+            if (savedColumnData) {
+                columnData = JSON.parse(savedColumnData);
+            }
+            if (savedDailyData) {
+                dailyData = JSON.parse(savedDailyData);
+            }
+        }
+
+        function exportData() {
+            const exportObj = {
+                columnData: columnData,
+                dailyData: dailyData,
+                exportDate: new Date().toISOString()
+            };
+            
+            const dataStr = JSON.stringify(exportObj, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `kcolumn-data-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            
+            URL.revokeObjectURL(url);
+        }
+
+        // JSON 파일 가져오기
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    columnData = data.columnData || {};
+                    dailyData = data.dailyData || {};
+                    saveToStorage();
+                    renderColumnGrid('column-grid-overview');
+                    renderColumnGrid('column-grid-input');
+                    updateProgressBars();
+                    alert('데이터를 성공적으로 가져왔습니다.');
+                } catch (error) {
+                    alert('파일 형식이 올바르지 않습니다.');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function loadDayData() {
+            const workDate = document.getElementById('work-date').value;
+            
+            // 휴무일 체크
+            if (isHoliday(workDate)) {
+                const holidayName = getHolidayName(workDate);
+                showConnectionStatus(`🔴 ${workDate}: ${holidayName} - 작업 입력 불가`);
+            }
+            
+            renderColumnGrid('column-grid-input');
+        }
+
+        // Close modal on outside click
+        document.getElementById('column-modal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>
