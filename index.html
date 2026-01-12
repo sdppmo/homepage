@@ -23,6 +23,7 @@
           <div class="lang-row">
             <button class="lang-btn">English</button>
             <button class="lang-btn">Korean</button>
+            <button class="lang-btn">Indonesia</button>
           </div>
 
           <!-- Login Form -->
@@ -50,7 +51,7 @@
           <div class="nav-item">Design Software</div>
           <div class="nav-item active">K-COL Web Software</div>
           <div class="nav-item">Database & Download</div>
-          <div class="nav-item">New Methodology</div>
+          <div class="nav-item">New Patent</div>
           <div class="nav-item">Construction Schedule</div>
           <div class="nav-item">Networks</div>
           <div class="nav-item">About SDP</div>
@@ -60,7 +61,7 @@
         <div class="brochure-grid">
           <button class="brochure-btn">K-COL Brochure</button>
           <button class="brochure-btn">현대제철 H형강</button>
-          <button class="brochure-btn">Slimbox Brochure</button>
+          <button class="brochure-btn">SLim-Box Brochure</button>
           <button class="brochure-btn">POS H 형강</button>
           <button class="brochure-btn yellow">Sunex MTL</button>
           <button class="brochure-btn">KS Code</button>
@@ -74,30 +75,56 @@
 
         <!-- Content Layer - On top of background -->
         <div class="content-layer">
+          <!-- World Clocks -->
+          <div class="world-clocks">
+            <div class="clock-container">
+              <div class="clock" id="clock-indonesia">
+                <div class="clock-face">
+                  <div class="hand hour-hand" id="hour-indonesia"></div>
+                  <div class="hand minute-hand" id="minute-indonesia"></div>
+                  <div class="hand second-hand" id="second-indonesia"></div>
+                  <div class="clock-center"></div>
+                </div>
+              </div>
+              <div class="clock-label">Indonesia</div>
+            </div>
+            <div class="clock-container">
+              <div class="clock" id="clock-newyork">
+                <div class="clock-face">
+                  <div class="hand hour-hand" id="hour-newyork"></div>
+                  <div class="hand minute-hand" id="minute-newyork"></div>
+                  <div class="hand second-hand" id="second-newyork"></div>
+                  <div class="clock-center"></div>
+                </div>
+              </div>
+              <div class="clock-label">New York</div>
+            </div>
+          </div>
+
           <!-- Right Sidebar -->
           <aside class="right-sidebar">
             <!-- Exchange Table -->
             <div class="exchange-table">
               <div class="exchange-header">환율(won/$)</div>
               <div class="exchange-row">
-                <div class="exchange-cell">건설지수(10월)</div>
-                <div class="exchange-cell">건설지수(11월)</div>
+                <div class="exchange-cell">건설지수(12월)</div>
+                <div class="exchange-cell">건설지수(1월)</div>
               </div>
               <div class="exchange-row">
-                <div class="exchange-cell">철강가격 (10월)</div>
-                <div class="exchange-cell">철강가격 (11월)</div>
+                <div class="exchange-cell">철강가격 (12월)</div>
+                <div class="exchange-cell">철강가격 (1월)</div>
               </div>
               <div class="exchange-row">
-                <div class="exchange-cell">판재가격(10월)</div>
-                <div class="exchange-cell">판재가격(10월)</div>
+                <div class="exchange-cell">판재가격(12월)</div>
+                <div class="exchange-cell">판재가격(1월)</div>
               </div>
               <div class="exchange-row">
-                <div class="exchange-cell highlight">철근가격(11월)</div>
-                <div class="exchange-cell">철근가격(11월)</div>
+                <div class="exchange-cell">철근가격(12월)</div>
+                <div class="exchange-cell">철근가격(1월)</div>
               </div>
               <div class="exchange-row">
-                <div class="exchange-cell">레미콘가격(10월)</div>
-                <div class="exchange-cell">레미콘가격(11월)</div>
+                <div class="exchange-cell">레미콘가격(12월)</div>
+                <div class="exchange-cell">레미콘가격(1월)</div>
               </div>
             </div>
 
@@ -117,7 +144,10 @@
     <div class="bottom-row">
       <!-- Product Logos -->
       <div class="product-logos">
-        <img src="assets/images/product.png" alt="K-COL, SLIM-BOX, eSlim-Beam, O-COL">
+        <img src="assets/images/product-1.png" alt="K-COL">
+        <img src="assets/images/product-2.png" alt="SLiM-BOX">
+        <img src="assets/images/product-3.png" alt="ExSlim-Beam">
+        <img src="assets/images/product-4.png" alt="COL">
       </div>
 
       <!-- Footer -->
@@ -133,16 +163,67 @@
           <div class="main-text">Go to<br>SDP Database</div>
         </div>
         <div class="company-logos">
-          <div class="company-logo">DONG YANG<br>S·Tec</div>
-          <div class="company-logo posco">POSCO</div>
-          <div class="company-logo">Steel Ball</div>
-          <div class="company-logo">CLBS</div>
-          <div class="company-logo">HYUNDAI<br>STEEL</div>
+          <div class="company-logo dongyang"><img src="assets/images/network-1.png" alt="DONG YANG S·Tec"></div>
+          <div class="company-logo posco"><img src="assets/images/network-2.png" alt="POSCO"></div>
+          <div class="company-logo steelball"><img src="assets/images/network-3.png" alt="Steel Ball"></div>
+          <div class="company-logo p6sc"><img src="assets/images/network-6.png" alt="p6sc"></div>
+          <div class="company-logo clbs"><img src="assets/images/network-5.png" alt="CLBS"></div>
+          <div class="company-logo hyundai"><img src="assets/images/network-4.jfif" alt="HYUNDAI STEEL"></div>
         </div>
       </footer>
     </div>
   </div>
 
   <script src="js/main.js"></script>
+  <script>
+    // World Clock - Inline script for immediate execution
+    (function() {
+      function startClocks() {
+        var hourIndo = document.getElementById('hour-indonesia');
+        var minIndo = document.getElementById('minute-indonesia');
+        var secIndo = document.getElementById('second-indonesia');
+        var hourNY = document.getElementById('hour-newyork');
+        var minNY = document.getElementById('minute-newyork');
+        var secNY = document.getElementById('second-newyork');
+        
+        if (!hourIndo) {
+          console.error('Clock elements not found!');
+          return;
+        }
+        
+        function tick() {
+          var now = new Date();
+          var utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+          
+          // Indonesia (UTC+7)
+          var indo = new Date(utc + (7 * 3600000));
+          var indoH = ((indo.getHours() % 12) * 30) + (indo.getMinutes() * 0.5);
+          var indoM = (indo.getMinutes() * 6) + (indo.getSeconds() * 0.1);
+          var indoS = indo.getSeconds() * 6;
+          hourIndo.style.transform = 'rotate(' + indoH + 'deg)';
+          minIndo.style.transform = 'rotate(' + indoM + 'deg)';
+          secIndo.style.transform = 'rotate(' + indoS + 'deg)';
+          
+          // New York (UTC-5)
+          var ny = new Date(utc + (-5 * 3600000));
+          var nyH = ((ny.getHours() % 12) * 30) + (ny.getMinutes() * 0.5);
+          var nyM = (ny.getMinutes() * 6) + (ny.getSeconds() * 0.1);
+          var nyS = ny.getSeconds() * 6;
+          hourNY.style.transform = 'rotate(' + nyH + 'deg)';
+          minNY.style.transform = 'rotate(' + nyM + 'deg)';
+          secNY.style.transform = 'rotate(' + nyS + 'deg)';
+        }
+        
+        tick();
+        setInterval(tick, 1000);
+      }
+      
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', startClocks);
+      } else {
+        startClocks();
+      }
+    })();
+  </script>
 </body>
 </html>
