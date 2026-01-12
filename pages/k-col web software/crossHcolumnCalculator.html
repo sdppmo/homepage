@@ -1,0 +1,1434 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cross H Column Design Calculator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 5px;
+        }
+
+        .calculator-wrapper {
+            max-width: 1100px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        /* 헤더 */
+        .header {
+            background: linear-gradient(135deg, #1e3a5f, #2d5a87);
+            color: white;
+            padding: 15px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .header a {
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            font-size: 13px;
+            padding: 6px 12px;
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+
+        .header a:hover {
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 20px;
+            font-weight: 500;
+        }
+
+        .header-right {
+            display: flex;
+            gap: 8px;
+        }
+
+        .type-btn {
+            padding: 8px 20px;
+            border: 2px solid rgba(255,255,255,0.5);
+            background: transparent;
+            color: white;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .type-btn.active, .type-btn:hover {
+            background: white;
+            color: #1e3a5f;
+            border-color: white;
+        }
+
+        /* 메인 컨텐츠 */
+        .main-content {
+            display: grid;
+            grid-template-columns: 450px 1fr;
+            gap: 0;
+        }
+
+        /* 좌측: 단면도 + 치수 */
+        .left-section {
+            background: #f8fafc;
+            padding: 20px;
+            border-right: 1px solid #e2e8f0;
+        }
+
+        .section-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1e3a5f;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-title::before {
+            content: '';
+            width: 4px;
+            height: 16px;
+            background: #667eea;
+            border-radius: 2px;
+        }
+
+        .diagram-container {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            text-align: center;
+            position: relative;
+        }
+
+        .cross-section-diagram {
+            position: relative;
+            width: 180px;
+            height: 180px;
+            margin: 0 auto;
+            background: #fafafa;
+            border: 1px solid #ddd;
+        }
+
+        .h1-web, .h1-flange-top, .h1-flange-bottom {
+            position: absolute;
+            background: #a8c8e8;
+            border: 1px solid #5588bb;
+            box-sizing: border-box;
+        }
+
+        .h2-web, .h2-flange-left, .h2-flange-right {
+            position: absolute;
+            background: #c8e8a8;
+            border: 1px solid #66aa55;
+            box-sizing: border-box;
+        }
+
+        .diagram-label {
+            position: absolute;
+            font-size: 9px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .diagram-legend {
+            position: absolute;
+            left: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            font-size: 9px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .legend-box {
+            width: 12px;
+            height: 12px;
+            border: 1px solid #999;
+            flex-shrink: 0;
+        }
+
+        .legend-h1 {
+            background: #a8c8e8;
+        }
+
+        .legend-h2 {
+            background: #c8e8a8;
+        }
+
+        .copy-btn {
+            width: 100%;
+            padding: 10px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            margin-bottom: 15px;
+            transition: transform 0.2s;
+        }
+
+        .copy-btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .quick-calc-btn {
+            width: 100%;
+            padding: 14px;
+            margin-top: 15px;
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: all 0.2s;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+        }
+
+        .quick-calc-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.5);
+        }
+
+        .quick-calc-btn:active {
+            transform: translateY(0);
+        }
+
+        .dimensions-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .dim-box {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 12px;
+        }
+
+        .dim-box h4 {
+            font-size: 12px;
+            color: #667eea;
+            margin-bottom: 10px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .dim-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+            font-size: 11px;
+        }
+
+        .dim-row label {
+            color: #666;
+            font-weight: 500;
+        }
+
+        .dim-row input {
+            width: 45px;
+            padding: 4px 6px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            text-align: right;
+            font-size: 11px;
+        }
+
+        .dim-row input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .dim-row select {
+            width: 100px;
+            padding: 4px 6px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            font-size: 11px;
+            background: white;
+            cursor: pointer;
+        }
+
+        .dim-row select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .dim-row .unit {
+            font-size: 10px;
+            color: #999;
+            width: 20px;
+        }
+
+        /* 우측: 파라미터 그리드 */
+        .right-section {
+            padding: 20px;
+        }
+
+        .params-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .param-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 15px;
+        }
+
+        .param-card.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .param-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #1e3a5f;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #667eea;
+        }
+
+        .param-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .param-row label {
+            font-size: 12px;
+            color: #555;
+        }
+
+        .param-row .input-group {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .param-row input {
+            width: 80px;
+            padding: 6px 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            text-align: right;
+            font-size: 12px;
+        }
+
+        .param-row input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .param-row select {
+            padding: 6px 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 12px;
+            background: white;
+        }
+
+        .param-row .unit {
+            font-size: 11px;
+            color: #888;
+            min-width: 35px;
+        }
+
+        .param-grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .param-grid-3 .item {
+            text-align: center;
+        }
+
+        .param-grid-3 label {
+            display: block;
+            font-size: 11px;
+            color: #666;
+            margin-bottom: 4px;
+        }
+
+        .param-grid-3 input {
+            width: 100%;
+            padding: 6px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            text-align: center;
+            font-size: 12px;
+        }
+
+        .load-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+
+        .load-grid .param-row {
+            margin-bottom: 0;
+        }
+
+        .load-grid input {
+            width: 60px;
+        }
+
+        /* 하단 액션 */
+        .action-bar {
+            background: #f8fafc;
+            border-top: 1px solid #e2e8f0;
+            padding: 20px 25px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            flex: 1;
+            min-width: 200px;
+            padding: 14px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            text-align: center;
+            transition: all 0.2s;
+        }
+
+        .action-btn.primary {
+            background: #6b7280;
+            color: white;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .action-btn.primary:hover {
+            background: #4b5563;
+            transform: translateY(-1px);
+        }
+
+        .action-btn.secondary {
+            background: #9ca3af;
+            color: white;
+            border: none;
+        }
+
+        .action-btn.secondary:hover {
+            background: #6b7280;
+        }
+
+        .beam-type-btns {
+            display: flex;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .beam-type-btn {
+            flex: 1;
+            padding: 12px;
+            background: #1e3a5f;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .beam-type-btn:hover {
+            background: #2d5a87;
+        }
+
+        /* 해석 결과 박스 (우측 섹션 내부) */
+        .results-box {
+            background: linear-gradient(135deg, #f0f4ff, #e8f4f8);
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+
+        .results-box .param-title {
+            border-bottom-color: #667eea;
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .result-item {
+            background: white;
+            border-radius: 6px;
+            padding: 10px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .result-name {
+            font-size: 11px;
+            font-weight: 600;
+            color: #1e3a5f;
+            margin-bottom: 5px;
+        }
+
+        .result-check {
+            font-size: 10px;
+            color: #555;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .result-val {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .result-status {
+            padding: 2px 6px;
+            border-radius: 8px;
+            font-size: 9px;
+            font-weight: 500;
+            margin-left: auto;
+        }
+
+        .result-status.pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .result-status.ok {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .result-status.ng {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        /* NAME 입력 */
+        .name-input-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            align-items: center;
+        }
+
+        .name-input-row label {
+            font-size: 12px;
+            color: #666;
+            font-weight: 500;
+        }
+
+        .name-input-row input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator-wrapper">
+        <!-- 헤더 -->
+        <div class="header">
+            <div class="header-left">
+                <a href="../../index.html">← 홈으로</a>
+                <h1>Cross H Column Design Calculator</h1>
+            </div>
+            <div class="header-right">
+                <button class="type-btn active" data-type="kcol">Rolled H</button>
+                <button class="type-btn" data-type="posh">Pos-H / Built-UP H</button>
+            </div>
+        </div>
+
+        <!-- 메인 컨텐츠 -->
+        <div class="main-content">
+            <!-- 좌측: 단면도 + 치수 -->
+            <div class="left-section">
+                <div class="section-title">Section Dimensions</div>
+                
+                <div class="name-input-row">
+                    <label>NAME</label>
+                    <input type="text" value="K-COL" id="projectName">
+                </div>
+                
+                <div class="diagram-container">
+                    <div class="cross-section-diagram" id="crossSectionDiagram">
+                        <div class="h1-web" id="h1Web"></div>
+                        <div class="h1-flange-top" id="h1FlangeTop"></div>
+                        <div class="h1-flange-bottom" id="h1FlangeBottom"></div>
+                        <div class="h2-web" id="h2Web"></div>
+                        <div class="h2-flange-left" id="h2FlangeLeft"></div>
+                        <div class="h2-flange-right" id="h2FlangeRight"></div>
+                        <div class="diagram-label" id="labelH1" style="right:-20px;top:50%;transform:translateY(-50%);">H1</div>
+                        <div class="diagram-label" id="labelB1" style="bottom:-18px;left:50%;transform:translateX(-50%);">B1</div>
+                        <div class="diagram-label" id="labelH2" style="left:-20px;top:50%;transform:translateY(-50%);">H2</div>
+                        <div class="diagram-label" id="labelB2" style="top:-18px;left:50%;transform:translateX(-50%);">B2</div>
+                    </div>
+                    <div class="diagram-legend">
+                        <div class="legend-item">
+                            <div class="legend-box legend-h1"></div>
+                            <span>H1 (Major)</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-box legend-h2"></div>
+                            <span>H2 (Minor)</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <button class="copy-btn" onclick="copyMajorToMinor()">
+                    Major ↔ Minor 단면 동일 적용
+                </button>
+                
+                <div class="dimensions-container">
+                    <div class="dim-box">
+                        <h4>Major (H1)</h4>
+                        <div class="dim-row">
+                            <label>H1</label>
+                            <div id="H1Container">
+                                <select id="H1">
+                                    <option value="400">H400x200</option>
+                                    <option value="450" selected>H450x200</option>
+                                    <option value="500">H500x200</option>
+                                    <option value="506">H506x201</option>
+                                    <option value="600">H600x200</option>
+                                    <option value="606">H606x201</option>
+                                    <option value="582">H582x300</option>
+                                    <option value="588">H588x300</option>
+                                    <option value="692">H692x300</option>
+                                    <option value="700">H700x300</option>
+                                    <option value="800">H800x300</option>
+                                    <option value="900">H900x300</option>
+                                    <option value="912">H912x302</option>
+                                </select>
+                            </div>
+                            <span class="unit">mm</span>
+                        </div>
+                        <div class="dim-row">
+                            <label>B1</label>
+                            <input type="text" value="200" id="B1">
+                            <span class="unit">mm</span>
+                        </div>
+                        <div class="dim-row">
+                            <label>tw1</label>
+                            <input type="text" value="9" id="tw1">
+                            <span class="unit">mm</span>
+                        </div>
+                        <div class="dim-row">
+                            <label>tf1</label>
+                            <input type="text" value="14" id="tf1">
+                            <span class="unit">mm</span>
+                        </div>
+                        <div class="dim-row">
+                            <label>r1</label>
+                            <input type="text" value="18" id="r1">
+                            <span class="unit">mm</span>
+                        </div>
+                    </div>
+                    
+                    <div class="dim-box">
+                        <h4>Minor (H2)</h4>
+                        <div class="dim-row">
+                            <label>H2</label>
+                            <div id="H2Container">
+                                <select id="H2">
+                                    <option value="400">H400x200</option>
+                                    <option value="450" selected>H450x200</option>
+                                    <option value="500">H500x200</option>
+                                    <option value="506">H506x201</option>
+                                    <option value="600">H600x200</option>
+                                    <option value="606">H606x201</option>
+                                    <option value="582">H582x300</option>
+                                    <option value="588">H588x300</option>
+                                    <option value="692">H692x300</option>
+                                    <option value="700">H700x300</option>
+                                    <option value="800">H800x300</option>
+                                    <option value="900">H900x300</option>
+                                    <option value="912">H912x302</option>
+                                </select>
+                            </div>
+                            <span class="unit">mm</span>
+                        </div>
+                        <div class="dim-row">
+                            <label>B2</label>
+                            <input type="text" value="200" id="B2">
+                            <span class="unit">mm</span>
+                        </div>
+                        <div class="dim-row">
+                            <label>tw2</label>
+                            <input type="text" value="9" id="tw2">
+                            <span class="unit">mm</span>
+                        </div>
+                        <div class="dim-row">
+                            <label>tf2</label>
+                            <input type="text" value="14" id="tf2">
+                            <span class="unit">mm</span>
+                        </div>
+                        <div class="dim-row">
+                            <label>r2</label>
+                            <input type="text" value="18" id="r2">
+                            <span class="unit">mm</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 간편 계산 버튼 -->
+                <button class="quick-calc-btn" onclick="quickCalculate()">
+                    ⚡ 간편 계산
+                </button>
+            </div>
+
+            <!-- 우측: 파라미터 -->
+            <div class="right-section">
+                <div class="params-grid">
+                    <!-- Steel Material -->
+                    <div class="param-card">
+                        <div class="param-title">Steel Material</div>
+                        <div class="param-row">
+                            <label>Grade</label>
+                            <select id="steelGrade">
+                                <option>SS275</option>
+                                <option>SS355</option>
+                                <option selected>SM355</option>
+                                <option>SM490</option>
+                            </select>
+                        </div>
+                        <div class="param-row">
+                            <label>Fy</label>
+                            <div class="input-group">
+                                <input type="text" value="355" id="Fy">
+                                <span class="unit">MPa</span>
+                            </div>
+                        </div>
+                        <div class="param-row">
+                            <label>E</label>
+                            <div class="input-group">
+                                <input type="text" value="210,000" id="E">
+                                <span class="unit">MPa</span>
+                            </div>
+                        </div>
+                        <div class="param-row">
+                            <label>ν</label>
+                            <div class="input-group">
+                                <input type="text" value="0.3" id="nu">
+                                <span class="unit"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Unbraced Length -->
+                    <div class="param-card">
+                        <div class="param-title">Unbraced Length</div>
+                        <div class="param-row">
+                            <label>Lx</label>
+                            <div class="input-group">
+                                <input type="text" value="9.05" id="Lx">
+                                <span class="unit">m</span>
+                            </div>
+                        </div>
+                        <div class="param-row">
+                            <label>Ly</label>
+                            <div class="input-group">
+                                <input type="text" value="9.05" id="Ly">
+                                <span class="unit">m</span>
+                            </div>
+                        </div>
+                        <div class="param-row">
+                            <label>Lb</label>
+                            <div class="input-group">
+                                <input type="text" value="9.05" id="Lb">
+                                <span class="unit">m</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Effective Length Factor -->
+                    <div class="param-card">
+                        <div class="param-title">Effective Length Factor</div>
+                        <div class="param-grid-3">
+                            <div class="item">
+                                <label>Kx</label>
+                                <input type="text" value="0.8" id="Kx">
+                            </div>
+                            <div class="item">
+                                <label>Ky</label>
+                                <input type="text" value="0.8" id="Ky">
+                            </div>
+                            <div class="item">
+                                <label>Kz</label>
+                                <input type="text" value="0.8" id="Kz">
+                            </div>
+                        </div>
+                        <div class="param-row" style="margin-top: 12px; justify-content: space-between;">
+                            <label style="flex: 1; white-space: nowrap;">Cb (Lateral Buckling)</label>
+                            <div class="input-group" style="margin-left: auto;">
+                                <input type="text" value="1" id="Cb" style="width: 50px; text-align: center;">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Design Load -->
+                    <div class="param-card">
+                        <div class="param-title">Design Load</div>
+                        <div class="param-row">
+                            <label>Pu (Axial)</label>
+                            <div class="input-group">
+                                <input type="text" value="4,453" id="Pu">
+                                <span class="unit">kN</span>
+                            </div>
+                        </div>
+                        <div class="load-grid" style="margin-top: 8px;">
+                            <div class="param-row">
+                                <label>Mux</label>
+                                <div class="input-group">
+                                    <input type="text" value="0" id="Mux">
+                                    <span class="unit">kN·m</span>
+                                </div>
+                            </div>
+                            <div class="param-row">
+                                <label>Muy</label>
+                                <div class="input-group">
+                                    <input type="text" value="0" id="Muy">
+                                    <span class="unit">kN·m</span>
+                                </div>
+                            </div>
+                            <div class="param-row">
+                                <label>Vux</label>
+                                <div class="input-group">
+                                    <input type="text" value="0" id="Vux">
+                                    <span class="unit">kN</span>
+                                </div>
+                            </div>
+                            <div class="param-row">
+                                <label>Vuy</label>
+                                <div class="input-group">
+                                    <input type="text" value="0" id="Vuy">
+                                    <span class="unit">kN</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 해석 결과 (우측 섹션 내부) -->
+                <div class="results-box">
+                    <div class="param-title">📊 Analysis Results</div>
+                    <div class="results-grid">
+                        <div class="result-item">
+                            <div class="result-name">Compressive</div>
+                            <div class="result-check">
+                                <span>Pu/φPn = </span>
+                                <span class="result-val">-</span>
+                                <span class="result-status pending">대기</span>
+                            </div>
+                        </div>
+                        <div class="result-item">
+                            <div class="result-name">Bending X</div>
+                            <div class="result-check">
+                                <span>Mux/φMnx = </span>
+                                <span class="result-val">-</span>
+                                <span class="result-status pending">대기</span>
+                            </div>
+                        </div>
+                        <div class="result-item">
+                            <div class="result-name">Bending Y</div>
+                            <div class="result-check">
+                                <span>Muy/φMny = </span>
+                                <span class="result-val">-</span>
+                                <span class="result-status pending">대기</span>
+                            </div>
+                        </div>
+                        <div class="result-item">
+                            <div class="result-name">P-M-M</div>
+                            <div class="result-check">
+                                <span>Combined = </span>
+                                <span class="result-val">-</span>
+                                <span class="result-status pending">대기</span>
+                            </div>
+                        </div>
+                        <div class="result-item">
+                            <div class="result-name">Shear X</div>
+                            <div class="result-check">
+                                <span>Vux/φVnx = </span>
+                                <span class="result-val">-</span>
+                                <span class="result-status pending">대기</span>
+                            </div>
+                        </div>
+                        <div class="result-item">
+                            <div class="result-name">Shear Y</div>
+                            <div class="result-check">
+                                <span>Vuy/φVny = </span>
+                                <span class="result-val">-</span>
+                                <span class="result-status pending">대기</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 하단 액션 바 -->
+        <div class="action-bar">
+            <a href="Cross-H-Column-Calculation-Data1.html" class="action-btn primary" onclick="saveInputData()">
+                📄 전체 계산서 보기
+            </a>
+            <button class="action-btn secondary" onclick="window.print();">
+                📥 PDF 다운로드
+            </button>
+            <div class="beam-type-btns">
+                <button class="beam-type-btn">SINGLE H Column</button>
+                <button class="beam-type-btn">CROSS H Column</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function copyMajorToMinor() {
+            document.getElementById('H2').value = document.getElementById('H1').value;
+            document.getElementById('B2').value = document.getElementById('B1').value;
+            document.getElementById('tw2').value = document.getElementById('tw1').value;
+            document.getElementById('tf2').value = document.getElementById('tf1').value;
+            document.getElementById('r2').value = document.getElementById('r1').value;
+        }
+
+        // 전체 계산서 보기 클릭 시 입력 데이터 저장
+        function saveInputData() {
+            const inputData = {
+                // Section Dimensions
+                H1: parseFloat(document.getElementById('H1').value),
+                B1: parseFloat(document.getElementById('B1').value),
+                tw1: parseFloat(document.getElementById('tw1').value),
+                tf1: parseFloat(document.getElementById('tf1').value),
+                r1: parseFloat(document.getElementById('r1').value),
+                H2: parseFloat(document.getElementById('H2').value),
+                B2: parseFloat(document.getElementById('B2').value),
+                tw2: parseFloat(document.getElementById('tw2').value),
+                tf2: parseFloat(document.getElementById('tf2').value),
+                r2: parseFloat(document.getElementById('r2').value),
+                // Material
+                steelGrade: document.getElementById('steelGrade').value,
+                Fy: parseFloat(document.getElementById('Fy').value.replace(/,/g, '')),
+                E: parseFloat(document.getElementById('E').value.replace(/,/g, '')),
+                nu: parseFloat(document.getElementById('nu').value),
+                // Unbraced Length
+                Lx: parseFloat(document.getElementById('Lx').value),
+                Ly: parseFloat(document.getElementById('Ly').value),
+                Lb: parseFloat(document.getElementById('Lb').value),
+                // Effective Length Factor
+                Kx: parseFloat(document.getElementById('Kx').value),
+                Ky: parseFloat(document.getElementById('Ky').value),
+                Kz: parseFloat(document.getElementById('Kz').value),
+                // Cb
+                Cb: parseFloat(document.getElementById('Cb').value),
+                // Design Load
+                Pu: parseFloat(document.getElementById('Pu').value.replace(/,/g, '')),
+                Mux: parseFloat(document.getElementById('Mux').value),
+                Muy: parseFloat(document.getElementById('Muy').value),
+                Vux: parseFloat(document.getElementById('Vux').value),
+                Vuy: parseFloat(document.getElementById('Vuy').value),
+                // Name
+                name: document.getElementById('projectName') ? document.getElementById('projectName').value : 'K-COL'
+            };
+            localStorage.setItem('kcolInputData', JSON.stringify(inputData));
+        }
+
+        // H1/H2 필드 모드 전환 함수 (select ↔ input)
+        function switchToInputMode() {
+            const h1Container = document.getElementById('H1Container');
+            const h2Container = document.getElementById('H2Container');
+            const h1Value = document.getElementById('H1').value;
+            const h2Value = document.getElementById('H2').value;
+            
+            // H1을 input으로 변경
+            h1Container.innerHTML = '<input type="text" id="H1" value="' + h1Value + '" style="width: 100px;">';
+            document.getElementById('H1').addEventListener('change', function() {
+                updateCrossSection();
+            });
+            
+            // H2를 input으로 변경
+            h2Container.innerHTML = '<input type="text" id="H2" value="' + h2Value + '" style="width: 100px;">';
+            document.getElementById('H2').addEventListener('change', function() {
+                updateCrossSection();
+            });
+        }
+
+        function switchToSelectMode() {
+            const h1Container = document.getElementById('H1Container');
+            const h2Container = document.getElementById('H2Container');
+            
+            // H1을 select로 변경
+            h1Container.innerHTML = `
+                <select id="H1">
+                    <option value="400">H400x200</option>
+                    <option value="450" selected>H450x200</option>
+                    <option value="500">H500x200</option>
+                    <option value="506">H506x201</option>
+                    <option value="600">H600x200</option>
+                    <option value="606">H606x201</option>
+                    <option value="582">H582x300</option>
+                    <option value="588">H588x300</option>
+                    <option value="692">H692x300</option>
+                    <option value="700">H700x300</option>
+                    <option value="800">H800x300</option>
+                    <option value="900">H900x300</option>
+                    <option value="912">H912x302</option>
+                </select>`;
+            document.getElementById('H1').addEventListener('change', updateH1Dimensions);
+            
+            // H2를 select로 변경
+            h2Container.innerHTML = `
+                <select id="H2">
+                    <option value="400">H400x200</option>
+                    <option value="450" selected>H450x200</option>
+                    <option value="500">H500x200</option>
+                    <option value="506">H506x201</option>
+                    <option value="600">H600x200</option>
+                    <option value="606">H606x201</option>
+                    <option value="582">H582x300</option>
+                    <option value="588">H588x300</option>
+                    <option value="692">H692x300</option>
+                    <option value="700">H700x300</option>
+                    <option value="800">H800x300</option>
+                    <option value="900">H900x300</option>
+                    <option value="912">H912x302</option>
+                </select>`;
+            document.getElementById('H2').addEventListener('change', updateH2Dimensions);
+            
+            // KS 표준값으로 업데이트
+            updateH1Dimensions();
+            updateH2Dimensions();
+        }
+
+        // Type button toggle (Rolled H vs Pos-H / Built-UP H)
+        document.querySelectorAll('.type-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                
+                // Pos-H / Built-UP H 선택 시: 직접 입력 모드, r1/r2=0
+                if (this.dataset.type === 'posh') {
+                    switchToInputMode();
+                    document.getElementById('r1').value = 0;
+                    document.getElementById('r2').value = 0;
+                    updateCrossSection();
+                } 
+                // Rolled H 선택 시: 드롭다운 모드, KS 표준값
+                else if (this.dataset.type === 'kcol') {
+                    switchToSelectMode();
+                }
+            });
+        });
+
+        // Beam type button toggle
+        document.querySelectorAll('.beam-type-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.beam-type-btn').forEach(b => b.style.background = '#1e3a5f');
+                this.style.background = 'linear-gradient(135deg, #667eea, #764ba2)';
+            });
+        });
+
+        // ===== KS 표준 H형강 치수 데이터 (Roll H) - 사용 규격만 =====
+        const ksHBeamData = {
+            // H x B : [B, tw, tf, r]
+            400: { B: 200, tw: 8, tf: 13, r: 16 },     // H400x200
+            450: { B: 200, tw: 9, tf: 14, r: 18 },     // H450x200 (기본값)
+            500: { B: 200, tw: 10, tf: 16, r: 20 },    // H500x200
+            506: { B: 201, tw: 11, tf: 19, r: 20 },    // H506x201
+            600: { B: 200, tw: 11, tf: 17, r: 22 },    // H600x200
+            606: { B: 201, tw: 12, tf: 20, r: 22 },    // H606x201
+            582: { B: 300, tw: 12, tf: 17, r: 28 },    // H582x300
+            588: { B: 300, tw: 12, tf: 20, r: 28 },    // H588x300
+            692: { B: 300, tw: 13, tf: 20, r: 28 },    // H692x300
+            700: { B: 300, tw: 13, tf: 24, r: 28 },    // H700x300
+            800: { B: 300, tw: 14, tf: 26, r: 28 },    // H800x300
+            900: { B: 300, tw: 16, tf: 28, r: 28 },    // H900x300
+            912: { B: 302, tw: 18, tf: 34, r: 28 },    // H912x302
+        };
+
+        // 실시간 Cross-H 단면도 업데이트 함수
+        function updateCrossSection() {
+            const h1 = parseFloat(document.getElementById('H1').value) || 450;
+            const b1 = parseFloat(document.getElementById('B1').value) || 200;
+            const tw1 = parseFloat(document.getElementById('tw1').value) || 9;
+            const tf1 = parseFloat(document.getElementById('tf1').value) || 14;
+            const h2 = parseFloat(document.getElementById('H2').value) || 450;
+            const b2 = parseFloat(document.getElementById('B2').value) || 200;
+            const tw2 = parseFloat(document.getElementById('tw2').value) || 9;
+            const tf2 = parseFloat(document.getElementById('tf2').value) || 14;
+
+            // 다이어그램 크기
+            const diagramSize = 160;
+            const maxDim = Math.max(h1, b1, h2, b2);
+            const scale = (diagramSize * 0.8) / maxDim;
+
+            // 스케일된 치수 (최소 두께 유지)
+            const sH1 = h1 * scale;
+            const sB1 = b1 * scale;
+            const sTw1 = Math.max(tw1 * scale, 3);
+            const sTf1 = Math.max(tf1 * scale, 4);
+            const sH2 = h2 * scale;
+            const sB2 = b2 * scale;
+            const sTw2 = Math.max(tw2 * scale, 3);
+            const sTf2 = Math.max(tf2 * scale, 4);
+
+            // 중심점
+            const cx = 90, cy = 90;
+
+            // H1 (Major - 수직 방향)
+            const h1Web = document.getElementById('h1Web');
+            const h1FlangeTop = document.getElementById('h1FlangeTop');
+            const h1FlangeBottom = document.getElementById('h1FlangeBottom');
+
+            if (h1Web) {
+                h1Web.style.width = sTw1 + 'px';
+                h1Web.style.height = sH1 + 'px';
+                h1Web.style.left = (cx - sTw1/2) + 'px';
+                h1Web.style.top = (cy - sH1/2) + 'px';
+            }
+            if (h1FlangeTop) {
+                h1FlangeTop.style.width = sB1 + 'px';
+                h1FlangeTop.style.height = sTf1 + 'px';
+                h1FlangeTop.style.left = (cx - sB1/2) + 'px';
+                h1FlangeTop.style.top = (cy - sH1/2) + 'px';
+            }
+            if (h1FlangeBottom) {
+                h1FlangeBottom.style.width = sB1 + 'px';
+                h1FlangeBottom.style.height = sTf1 + 'px';
+                h1FlangeBottom.style.left = (cx - sB1/2) + 'px';
+                h1FlangeBottom.style.top = (cy + sH1/2 - sTf1) + 'px';
+            }
+
+            // H2 (Minor - 수평 방향, 90도 회전)
+            const h2Web = document.getElementById('h2Web');
+            const h2FlangeLeft = document.getElementById('h2FlangeLeft');
+            const h2FlangeRight = document.getElementById('h2FlangeRight');
+
+            if (h2Web) {
+                h2Web.style.width = sH2 + 'px';
+                h2Web.style.height = sTw2 + 'px';
+                h2Web.style.left = (cx - sH2/2) + 'px';
+                h2Web.style.top = (cy - sTw2/2) + 'px';
+            }
+            if (h2FlangeLeft) {
+                h2FlangeLeft.style.width = sTf2 + 'px';
+                h2FlangeLeft.style.height = sB2 + 'px';
+                h2FlangeLeft.style.left = (cx - sH2/2) + 'px';
+                h2FlangeLeft.style.top = (cy - sB2/2) + 'px';
+            }
+            if (h2FlangeRight) {
+                h2FlangeRight.style.width = sTf2 + 'px';
+                h2FlangeRight.style.height = sB2 + 'px';
+                h2FlangeRight.style.left = (cx + sH2/2 - sTf2) + 'px';
+                h2FlangeRight.style.top = (cy - sB2/2) + 'px';
+            }
+
+            // 라벨 업데이트
+            document.getElementById('labelH1').textContent = 'H1=' + h1;
+            document.getElementById('labelB1').textContent = 'B1=' + b1;
+            document.getElementById('labelH2').textContent = 'H2=' + h2;
+            document.getElementById('labelB2').textContent = 'B2=' + b2;
+        }
+
+        // 현재 선택된 타입 확인 (Rolled H or Pos-H)
+        function isPosModeActive() {
+            const activeBtn = document.querySelector('.type-btn.active');
+            return activeBtn && activeBtn.dataset.type === 'posh';
+        }
+
+        // H1 선택 시 자동으로 B1, tw1, tf1, r1 채우기
+        function updateH1Dimensions() {
+            const h1Value = parseInt(document.getElementById('H1').value);
+            if (ksHBeamData[h1Value]) {
+                const data = ksHBeamData[h1Value];
+                document.getElementById('B1').value = data.B;
+                document.getElementById('tw1').value = data.tw;
+                document.getElementById('tf1').value = data.tf;
+                // Pos-H 모드에서는 r1=0, K-COL 모드에서는 KS 표준값
+                document.getElementById('r1').value = isPosModeActive() ? 0 : data.r;
+            }
+            updateCrossSection();
+        }
+
+        // H2 선택 시 자동으로 B2, tw2, tf2, r2 채우기
+        function updateH2Dimensions() {
+            const h2Value = parseInt(document.getElementById('H2').value);
+            if (ksHBeamData[h2Value]) {
+                const data = ksHBeamData[h2Value];
+                document.getElementById('B2').value = data.B;
+                document.getElementById('tw2').value = data.tw;
+                document.getElementById('tf2').value = data.tf;
+                // Pos-H 모드에서는 r2=0, K-COL 모드에서는 KS 표준값
+                document.getElementById('r2').value = isPosModeActive() ? 0 : data.r;
+            }
+            updateCrossSection();
+        }
+
+        // 이벤트 리스너 등록
+        document.getElementById('H1').addEventListener('change', updateH1Dimensions);
+        document.getElementById('H2').addEventListener('change', updateH2Dimensions);
+
+        // B, tw, tf 수동 변경 시에도 다이어그램 업데이트
+        ['B1', 'tw1', 'tf1', 'B2', 'tw2', 'tf2'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.addEventListener('change', updateCrossSection);
+        });
+
+        // 페이지 로드 시 초기값 설정
+        updateH1Dimensions();
+        updateH2Dimensions();
+        updateCrossSection();
+
+        // 간편 계산 함수 - Based on 2H.py Python code
+        function quickCalculate() {
+            // ===== 입력값 가져오기 =====
+            const h1 = parseFloat(document.getElementById('H1').value) || 450;
+            const b1 = parseFloat(document.getElementById('B1').value) || 200;
+            const tw1 = parseFloat(document.getElementById('tw1').value) || 9;
+            const tf1 = parseFloat(document.getElementById('tf1').value) || 14;
+            const r1 = parseFloat(document.getElementById('r1').value) || 18;
+            
+            const h2 = parseFloat(document.getElementById('H2').value) || 450;
+            const b2 = parseFloat(document.getElementById('B2').value) || 200;
+            const tw2 = parseFloat(document.getElementById('tw2').value) || 9;
+            const tf2 = parseFloat(document.getElementById('tf2').value) || 14;
+            const r2 = parseFloat(document.getElementById('r2').value) || 18;
+            
+            const Fy = parseFloat(document.getElementById('Fy').value.replace(/,/g, '')) || 355;
+            const E = parseFloat(document.getElementById('E').value.replace(/,/g, '')) || 210000;
+            const nu = parseFloat(document.getElementById('nu').value) || 0.3;
+            
+            const Lx = parseFloat(document.getElementById('Lx').value) * 1000 || 9050; // m to mm
+            const Ly = parseFloat(document.getElementById('Ly').value) * 1000 || 9050;
+            const Kx = parseFloat(document.getElementById('Kx').value) || 0.8;
+            const Ky = parseFloat(document.getElementById('Ky').value) || 0.8;
+            const Kz = parseFloat(document.getElementById('Kz').value) || 0.8;
+            
+            const Pu = parseFloat(document.getElementById('Pu').value.replace(/,/g, '')) || 4453; // kN
+            const Mux = parseFloat(document.getElementById('Mux').value) || 0; // kN.m
+            const Muy = parseFloat(document.getElementById('Muy').value) || 0;
+            const Vux = parseFloat(document.getElementById('Vux').value) || 0; // kN
+            const Vuy = parseFloat(document.getElementById('Vuy').value) || 0;
+
+            // ===== HBeam Class calculations =====
+            const hw3 = h1 - 2 * tf1;
+            const hw6 = h2 - 2 * tf2;
+            const d1 = h1/2 - tf1/2;
+            const d4 = h2/2 - tf2/2;
+
+            // Total section area - Cross H section
+            const ag1 = b1 * tf1;
+            const ag2 = b1 * tf1;
+            const ag3 = hw3 * tw1;
+            const ag4 = b2 * tf2;
+            const ag5 = b2 * tf2;
+            const ag6 = hw6 * tw2;
+            const ag7 = 4 * (r1*r1 - Math.PI * r1*r1 / 4);
+            const ag8 = 4 * (r2*r2 - Math.PI * r2*r2 / 4);
+            const ag9 = tw1 * tw2;
+            const area = ag1 + ag2 + ag3 + ag4 + ag5 + ag6 + ag7 + ag8 - ag9;
+
+            // Second inertia moment X-axis
+            const Ix1 = 1/12 * b1 * Math.pow(tf1, 3) + ag1 * Math.pow(d1, 2);
+            const Ix2 = 1/12 * b1 * Math.pow(tf1, 3) + ag1 * Math.pow(d1, 2);
+            const Ix3 = 1/12 * tw1 * Math.pow(hw3, 3);
+            const Ix4 = 1/12 * tf2 * Math.pow(b2, 3);
+            const Ix5 = 1/12 * tf2 * Math.pow(b2, 3);
+            const Ix6 = 1/12 * hw6 * Math.pow(tw2, 3);
+            const Ix = Ix1 + Ix2 + Ix3 + Ix4 + Ix5 + Ix6;
+
+            // Second inertia moment Y-axis
+            const Iy4 = 1/12 * b2 * Math.pow(tf2, 3) + ag4 * Math.pow(d4, 2);
+            const Iy5 = 1/12 * b2 * Math.pow(tf2, 3) + ag4 * Math.pow(d4, 2);
+            const Iy6 = 1/12 * tw2 * Math.pow(hw6, 3);
+            const Iy1 = 1/12 * tf1 * Math.pow(b1, 3);
+            const Iy2 = 1/12 * tf1 * Math.pow(b1, 3);
+            const Iy3 = 1/12 * hw3 * Math.pow(tw2, 3);
+            const Iy = Iy1 + Iy2 + Iy3 + Iy4 + Iy5 + Iy6;
+
+            // Radius of gyration
+            const ix = Math.sqrt(Ix / area);
+            const iy = Math.sqrt(Iy / area);
+
+            // Elastic section modulus
+            const sx = Ix / (h1 / 2);
+            const sy = Iy / (h2 / 2);
+
+            // Plastic section modulus Zx
+            const Zx1 = (b1 * tf1) * d1;
+            const Zx2 = (b1 * tf1) * d1;
+            const Zx3 = (tw1 * hw3/2) * hw3/4;
+            const Zx4 = (tw1 * hw3/2) * hw3/4;
+            const Zx5 = (b2*b2 * tf2 / 2);
+            const Zx6 = (tw2 * hw6 / 8) * 2;
+            const zx = Zx1 + Zx2 + Zx3 + Zx4 + Zx5 + Zx6;
+
+            // Plastic section modulus Zy
+            const Zy1 = (b2 * tf2) * d4;
+            const Zy2 = (b2 * tf2) * d4;
+            const Zy3 = (tw2 * hw6/2) * hw6/4;
+            const Zy4 = (tw2 * hw6/2) * hw6/4;
+            const Zy5 = (b1*b1 * tf1 / 2);
+            const Zy6 = (tw1 * hw3 / 8) * 2;
+            const zy = Zy1 + Zy2 + Zy3 + Zy4 + Zy5 + Zy6;
+
+            // Torsional constant J
+            const J1 = (2*b1 * Math.pow(tf1, 3) + h1*Math.pow(tw1, 3)) / 3;
+            const J2 = (2*b2 * Math.pow(tf2, 3) + h2*Math.pow(tw2, 3)) / 3;
+            const J = J1 + J2;
+
+            // Warping constant Cw
+            const cw = Iy * Math.pow(h1 - tf1, 2) / 4;
+
+            // ===== Column Class calculations =====
+            // Slenderness ratio
+            const lambdaX = Kx * Lx / ix;
+            const lambdaY = Ky * Ly / iy;
+            const lambda = Math.max(lambdaX, lambdaY);
+
+            // Flexural Buckling Stress Fe1
+            const Fe1 = Math.pow(Math.PI, 2) * E / Math.pow(lambda, 2);
+
+            // Torsional Buckling Stress Fe2
+            const G = E / (2 * (1 + nu));
+            const Fe2 = (Math.pow(Math.PI, 2) * E * cw / Math.pow(Kz * Lx, 2) + G * J) / (Ix + Iy);
+
+            // Critical stress Fcr
+            const Fe = Math.min(Fe1, Fe2);
+            const Fcr = Math.pow(0.658, Fy / Fe) * Fy;
+
+            // Compressive Strength phi_Pn
+            const phi_c = 0.9;
+            const phi_Pn = phi_c * area * Fcr / 1000; // kN
+
+            // Flexural Strength - Mpx, Mpy
+            const Mpx = Math.min(Fy * zx, 1.6 * Fy * sx) / 1000000; // kN.m
+            const Mpy = Math.min(Fy * zy, 1.6 * Fy * sy) / 1000000; // kN.m
+            const phi_b = 0.9;
+            const phi_Mnx = phi_b * Mpx;
+            const phi_Mny = phi_b * Mpy;
+
+            // Shear Strength
+            const As1 = hw3 * tw1 + 2 * tf1 * b1;
+            const As2 = hw6 * tw2 + 2 * tf2 * b2;
+            const Cvw = 1.0;
+            const phi_vw = 1.0;
+            const Vny = 0.6 * Fy * As1 * Cvw / 1000; // kN
+            const Vnx = 0.6 * Fy * As2 * Cvw / 1000; // kN
+            const phi_Vny = phi_vw * Vny;
+            const phi_Vnx = phi_vw * Vnx;
+
+            // ===== 비율 계산 =====
+            const ratio_comp = Pu / phi_Pn;
+            const ratio_bendX = phi_Mnx > 0 ? Mux / phi_Mnx : 0;
+            const ratio_bendY = phi_Mny > 0 ? Muy / phi_Mny : 0;
+            const ratio_shearX = phi_Vnx > 0 ? Vux / phi_Vnx : 0;
+            const ratio_shearY = phi_Vny > 0 ? Vuy / phi_Vny : 0;
+
+            // P-M-M 조합
+            let ratio_pmm;
+            if (ratio_comp >= 0.2) {
+                ratio_pmm = ratio_comp + (8/9) * (ratio_bendX + ratio_bendY);
+            } else {
+                ratio_pmm = ratio_comp / 2 + (ratio_bendX + ratio_bendY);
+            }
+
+            // ===== 결과 업데이트 =====
+            const results = document.querySelectorAll('.result-item');
+            updateResult(results[0], ratio_comp, phi_Pn);
+            updateResult(results[1], ratio_bendX, phi_Mnx);
+            updateResult(results[2], ratio_bendY, phi_Mny);
+            updateResult(results[3], ratio_pmm);
+            updateResult(results[4], ratio_shearX, phi_Vnx);
+            updateResult(results[5], ratio_shearY, phi_Vny);
+
+            // 콘솔에 상세 결과 출력
+            console.log('===== Cross H Column Calculation Results =====');
+            console.log(`Area: ${area.toFixed(2)} mm²`);
+            console.log(`Ix: ${Ix.toFixed(2)} mm⁴, Iy: ${Iy.toFixed(2)} mm⁴`);
+            console.log(`ix: ${ix.toFixed(2)} mm, iy: ${iy.toFixed(2)} mm`);
+            console.log(`λ (slenderness): ${lambda.toFixed(2)}`);
+            console.log(`Fe1: ${Fe1.toFixed(2)} MPa, Fe2: ${Fe2.toFixed(2)} MPa`);
+            console.log(`Fcr: ${Fcr.toFixed(2)} MPa`);
+            console.log(`φPn: ${phi_Pn.toFixed(2)} kN`);
+            console.log(`φMnx: ${phi_Mnx.toFixed(2)} kN.m, φMny: ${phi_Mny.toFixed(2)} kN.m`);
+            console.log(`φVnx: ${phi_Vnx.toFixed(2)} kN, φVny: ${phi_Vny.toFixed(2)} kN`);
+        }
+
+        function updateResult(element, ratio, capacity) {
+            const valSpan = element.querySelector('.result-val');
+            const statusSpan = element.querySelector('.result-status');
+            
+            if (isNaN(ratio) || !isFinite(ratio)) {
+                valSpan.textContent = '-';
+                statusSpan.textContent = 'N/A';
+                statusSpan.className = 'result-status pending';
+                return;
+            }
+            
+            valSpan.textContent = ratio.toFixed(3);
+            
+            if (ratio <= 1.0) {
+                statusSpan.textContent = 'O.K';
+                statusSpan.className = 'result-status ok';
+            } else {
+                statusSpan.textContent = 'N.G';
+                statusSpan.className = 'result-status ng';
+            }
+        }
+    </script>
+</body>
+</html>

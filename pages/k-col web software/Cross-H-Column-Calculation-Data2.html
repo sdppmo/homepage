@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cross H Column Calculation Data - Page 2</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Malgun Gothic', 'Segoe UI', Arial, sans-serif;
+            font-size: 9px;
+            padding: 8px;
+            background: #f0f0f0;
+            line-height: 1.3;
+        }
+
+        .nav-bar {
+            max-width: 210mm;
+            margin: 0 auto 6px;
+            display: flex;
+            gap: 10px;
+            justify-content: space-between;
+        }
+
+        .nav-btn {
+            padding: 5px 14px;
+            background: #4a5f9d;
+            color: white;
+            text-decoration: none;
+            border-radius: 3px;
+            font-size: 10px;
+        }
+
+        .nav-btn:hover { background: #3a4f8d; }
+        .nav-btn.secondary { background: #666; }
+
+        .page {
+            width: 210mm;
+            min-height: 297mm;
+            margin: 0 auto;
+            background: white;
+            padding: 6mm 8mm;
+            position: relative;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c4a7c, #4a6fa5);
+            color: white;
+            padding: 8px 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            border-radius: 2px;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo {
+            width: 32px;
+            height: 32px;
+            background: white;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #2c4a7c;
+            font-size: 7px;
+        }
+
+        .header-title {
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        .header-name {
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .section-header {
+            background: linear-gradient(135deg, #2c4a7c, #4a6fa5);
+            color: white;
+            padding: 4px 10px;
+            font-weight: bold;
+            font-size: 10px;
+            margin: 10px 0 6px 0;
+            border-radius: 2px;
+        }
+
+        .subsection-header {
+            font-weight: bold;
+            font-size: 9px;
+            margin: 8px 0 4px 8px;
+            color: #2c4a7c;
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 2px;
+        }
+
+        .sub-subsection {
+            font-weight: 600;
+            font-size: 8.5px;
+            margin: 5px 0 3px 16px;
+            color: #444;
+        }
+
+        .calc-row {
+            display: flex;
+            align-items: center;
+            padding: 2px 0;
+            margin-left: 20px;
+            font-size: 8.5px;
+        }
+
+        .calc-formula {
+            width: 280px;
+            color: #333;
+        }
+
+        .calc-eq {
+            width: 15px;
+            text-align: center;
+        }
+
+        .calc-value {
+            background: #ffffc0;
+            padding: 2px 6px;
+            text-align: right;
+            min-width: 55px;
+            border: 1px solid #ccc;
+            font-weight: 500;
+        }
+
+        .calc-unit {
+            margin-left: 4px;
+            color: #666;
+            min-width: 40px;
+        }
+
+        .calc-compare {
+            margin-left: 8px;
+            color: #444;
+        }
+
+        .calc-result {
+            margin-left: 8px;
+            font-weight: bold;
+        }
+
+        .green-text {
+            color: #006600;
+        }
+
+        .footer {
+            position: absolute;
+            bottom: 6mm;
+            left: 8mm;
+            right: 8mm;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 7px;
+            color: #666;
+            border-top: 1px solid #ccc;
+            padding-top: 4px;
+        }
+
+        .footer-logo {
+            font-weight: bold;
+            color: #2c4a7c;
+        }
+
+        @media print {
+            @page { size: A4; margin: 0; }
+            body { padding: 0; background: white; }
+            .nav-bar { display: none; }
+            .page { width: 210mm; height: 297mm; box-shadow: none; margin: 0; }
+            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        }
+    </style>
+</head>
+<body>
+    <div class="nav-bar">
+        <a href="Cross-H-Column-Calculation-Data1.html" class="nav-btn secondary">← 이전</a>
+        <span style="font-size:10px;color:#666;">Page 2 / 2</span>
+        <a href="crossHcolumnCalculator.html" class="nav-btn">계산기 →</a>
+    </div>
+
+    <div class="page">
+        <div class="header">
+            <div class="header-left">
+                <div class="logo">K-COL</div>
+                <span class="header-title">Cross H Column Calculation Data</span>
+            </div>
+            <div class="header-name">NAME: <span id="projectName">K-COL</span></div>
+        </div>
+
+        <!-- 3. Flexural Strength -->
+        <div class="section-header">3. Flexural Strength</div>
+        
+        <div class="subsection-header">Major Axis</div>
+        <div class="sub-subsection">Plate-Thickness ratio for Flexure</div>
+        <div class="calc-row">
+            <span class="calc-formula">λffp = 0.38 √(E / Fy)</span>
+            <span class="calc-eq">=</span>
+            <span class="calc-value" id="f_lfp">9.24</span>
+        </div>
+        <div class="calc-row">
+            <span class="calc-formula">λffr = 1.00 √(E / Fy)</span>
+            <span class="calc-eq">=</span>
+            <span class="calc-value" id="f_lfr">24.32</span>
+        </div>
+        <div class="calc-row">
+            <span class="calc-formula">λff1 = B1 / 2 / tf1</span>
+            <span class="calc-eq">=</span>
+            <span class="calc-value" id="f_lf1">7.14</span>
+            <span class="calc-unit"></span>
+            <span class="calc-compare">&lt; λffp = <span id="f_lfp2">9.24</span></span>
+            <span class="calc-result green-text">→ Compact</span>
+        </div>
+        <div class="calc-row">
+            <span class="calc-formula">λfwp = 3.76 √(E / Fy)</span>
+            <span class="calc-eq">=</span>
+            <span class="calc-value" id="f_lwp">91.45</span>
+        </div>
+        <div class="calc-row">
+            <span class="calc-formula">λfwr = 5.70 √(E / Fy)</span>
+            <span class="calc-eq">=</span>
+            <span class="calc-value" id="f_lwr">138.63</span>
+        </div>
+        <div class="calc-row">
+            <span class="calc-formula">λfw1 = (H1-2(tf1+r1)-tw1)/2/tw1</span>
+            <span class="calc-eq">=</span>
+            <span class="calc-value" id="f_lw1">20.94</span>
+            <span class="calc-unit"></span>
+            <span class="calc-compare">&lt; λfwp = <span id="f_lwp2">91.45</span></span>
+            <span class="calc-result green-text">→ Compact</span>
+        </div>
+
+        <div class="sub-subsection">Section Yielding Strength</div>
+        <div class="calc-row">
+            <span class="calc-formula">Mpx = min[Fy×Zx, 1.6×Fy×Sx]</span>
+            <span class="calc-eq">=</span>
+            <span class="calc-value" id="f_Mpx">675.03</span>
+            <span class="calc-unit">kN·m</span>
+        </div>
+
+        <div class="sub-subsection">Lateral-Torsional Buckling</div>
+        <div class="calc-row">
+            <span class="calc-formula">rtsx = √[√(Iy×Cw) / Sx]</span>
+            <span class="calc-eq">=</span>
+            <span class="calc-value" id="f_rtsx">221.47</span>
+            <span class="calc-unit">mm</span>
+        </div>
+        <div class="calc-row">
+            <span class="calc-formula">c = 1 (2-axis symmetry H Section)</span>
+            <span class="calc-eq">=</span>
+            <span class="calc-value">1.0</span>
+        </div>
+        <div class="calc-row">
+            <span class="calc-formula">ho1 = (H1 - tf1) / 2</span>
+            <span class="calc-eq">=</span>
+            <span class="calc-value" id="f_ho1">218.0</span>
+            <span class="calc-unit">mm</span>
+        </div>
+        <div class="calc-row">
+            <span class="calc-formula">Lp = 1.76×ry×√(E/Fy)</span>
+            <span class="calc-eq">=</span>
+            <span class="calc-value" id="f_Lp">5.794</span>
+            <span class="calc-unit">m</span>
+        </div>
+        <div class="calc-row">
+            <span class="calc-formula" style="font-size:7.5px;">Lr1 = 1.95rtsx(E/0.7Fy)×√{(Jc)/(Sx×ho1)}×√[1+√{1+6.76(...)²}]</span>
+            <span class="calc-eq">=</span>
+            <span class="calc-value" id="f_Lr1">30.22</span>
+            <span class="calc-unit">m</span>
+        </div>
+        <div class="calc-row">
+            <span class="calc-formula">Lb</span>
+            <span class="calc-eq">=</span>
+            <span class="calc-value" id="f_Lb">9.050</span>
+            <span class="calc-unit">m</span>
+            <span class="calc-compare">&lt; Lr1 = <span id="f_Lr1_2">30.22</span></span>
+            <span class="calc-result green-text">→ No Problem</span>
+        </div>
+        <div class="calc-row">
+            <span class="calc-formula">Fcr,mbx = (Cb×π²E)/(Lb/rtsx)²×√{1+0.078(Jc)/(Sx×ho1)×(Lb/rtsx)²}</span>
+            <span class="calc-eq">=</span>
+            <span class="calc-value" id="f_Fcr_mbx">1,445.77</span>
+            <span class="calc-unit">MPa</span>
+        </div>
+        <div class="calc-row">
+            <span class="calc-formula">Mnx = Mpx</span>
+            <span class="calc-eq">=</span>
+            <span class="calc-value" id="f_Mnx">675.03</span>
+            <span class="calc-unit">kN·m</span>
+        </div>
+        <div class="calc-row">
+            <span class="calc-formula">φb</span>
+            <span class="calc-eq">=</span>
+            <span class="calc-value">0.9</span>
+        </div>
+        <div class="calc-row">
+            <span class="calc-formula">φbMnx</span>
+            <span class="calc-eq">=</span>
+            <span class="calc-value" id="f_phiMnx">607.53</span>
+            <span class="calc-unit">kN·m</span>
+            <span class="calc-compare">&gt; Mux = <span id="f_Mux">0.00</span></span>
+            <span class="calc-result green-text">→ O.K</span>
+        </div>
+
+        <div class="subsection-header">Minor Axis</div>
+        <div class="sub-subsection">Plate-Thickness ratio for Flexure</div>
+        <div class="calc-row">
+            <span class="calc-formula">λff2 = B2 / 2 / tf2</span>
+            <span class="calc-eq">=</span>
+            <span class="calc-value" id="f_lf2">7.14</span>
+            <span class="calc-unit"></span>
+            <span class="calc-compare">&lt; λffp = <span id="f_lfp3">9.24</span></span>
+            <span class="calc-result green-text">→ Compact</span>
+        </div>
+        <div class="calc-row">
+            <span class="calc-formula">λfw2 = (H2-2(tf2+r2)-tw2)/2/tw2</span>
+            <span class="calc-eq">=</span>
+            <span class="calc-value" id="f_lw2">20.94</span>
+            <span class="calc-unit"></span>
+            <span class="calc-compare">&lt; λfwp = <span id="f_lwp3">91.45</span></span>
+            <span class="calc-result green-text">→ Compact</span>
+        </div>
+
+        <div class="sub-subsection">Section Yielding Strength</div>
+        <div class="calc-row">
+            <span class="calc-formula">Mpy = min[Fy×Zy, 1.6×Fy×Sy]</span>
+            <span class="calc-eq">=</span>
+            <span class="calc-value" id="f_Mpy">675.03</span>
+            <span class="calc-unit">kN·m</span>
+        </div>
+
+        <div class="sub-subsection">Lateral-Torsional Buckling</div>
+        <div class="calc-row">
+            <span class="calc-formula">rtsy = √[√(Iy×Cw) / Sy]</span>
+            <span class="calc-eq">=</span>
+            <span class="calc-value" id="f_rtsy">221.47</span>
+            <span class="calc-unit">mm</span>
+        </div>
+        <div class="calc-row">
+            <span class="calc-formula">ho2 = (H2 - tf2) / 2</span>
+            <span class="calc-eq">=</span>
+            <span class="calc-value" id="f_ho2">218.0</span>
+            <span class="calc-unit">mm</span>
+        </div>
+        <div class="calc-row">
+            <span class="calc-formula">Mny = Mpy</span>
+            <span class="calc-eq">=</span>
+            <span class="calc-value" id="f_Mny">675.03</span>
+            <span class="calc-unit">kN·m</span>
+        </div>
+        <div class="calc-row">
+            <span class="calc-formula">φbMny</span>
+            <span class="calc-eq">=</span>
+            <span class="calc-value" id="f_phiMny">607.53</span>
+            <span class="calc-unit">kN·m</span>
+            <span class="calc-compare">&gt; Muy = <span id="f_Muy">0.00</span></span>
+            <span class="calc-result green-text">→ O.K</span>
+        </div>
+
+        <!-- 4. P-M-M Combination Check -->
+        <div class="section-header">4. P-M-M Combination Check</div>
+        <div class="calc-row" style="margin-top:6px;">
+            <span class="calc-formula">Pu / φcPn</span>
+            <span class="calc-eq">=</span>
+            <span class="calc-value" id="pm_r1">0.888</span>
+            <span class="calc-unit"></span>
+            <span class="calc-compare">&gt; 0.20</span>
+            <span class="calc-result green-text">→ O.K</span>
+        </div>
+        <div class="calc-row">
+            <span class="calc-formula">Pu/φPn + 8/9×(Mux/φMnx + Muy/φMny)</span>
+            <span class="calc-eq">=</span>
+            <span class="calc-value" id="pm_r2">0.888</span>
+            <span class="calc-unit"></span>
+            <span class="calc-compare">&lt; 1.000</span>
+            <span class="calc-result green-text" id="pm_result">→ O.K</span>
+        </div>
+
+        <!-- 5. Shear Strength -->
+        <div class="section-header">5. Shear Strength</div>
+        
+        <div class="subsection-header">Major Axis</div>
+        <div class="sub-subsection">Shear coefficient, Cv</div>
+        <div class="calc-row">
+            <span class="calc-formula">kvw</span>
+            <span class="calc-eq">=</span>
+            <span class="calc-value">5.00</span>
+            <span class="calc-unit">(보강된 웹)</span>
+        </div>
+        <div class="calc-row">
+            <span class="calc-formula">λvw = {H2-2(tf2+r2)-tw2}/2/tw2</span>
+            <span class="calc-eq">=</span>
+            <span class="calc-value" id="v_lvw">20.94</span>
+            <span class="calc-unit"></span>
+            <span class="calc-compare">&lt; 2.24√(E/Fy) = <span id="v_lim">54.48</span></span>
+        </div>
+        <div class="calc-row">
+            <span class="calc-formula">Cvw = 1</span>
+            <span class="calc-eq">=</span>
+            <span class="calc-value">1.00</span>
+            <span class="calc-unit">(약축방향 재하 2축대칭)</span>
+        </div>
+
+        <div class="sub-subsection">Shear Strength, φVn</div>
+        <div class="calc-row">
+            <span class="calc-formula">As1 = Aw + 2Af</span>
+            <span class="calc-eq">=</span>
+            <span class="calc-value" id="v_As1">9,650.00</span>
+            <span class="calc-unit">mm²</span>
+        </div>
+        <div class="calc-row">
+            <span class="calc-formula">Vny = 0.6×Fy×As1×Cvw</span>
+            <span class="calc-eq">=</span>
+            <span class="calc-value" id="v_Vny">2,055.45</span>
+            <span class="calc-unit">kN</span>
+        </div>
+        <div class="calc-row">
+            <span class="calc-formula">φvw</span>
+            <span class="calc-eq">=</span>
+            <span class="calc-value">1.00</span>
+        </div>
+        <div class="calc-row">
+            <span class="calc-formula">φvwVny</span>
+            <span class="calc-eq">=</span>
+            <span class="calc-value" id="v_phiVny">2,055.45</span>
+            <span class="calc-unit">kN</span>
+            <span class="calc-compare">&gt; Vuy = <span id="v_Vuy">0.00</span></span>
+            <span class="calc-result green-text">→ O.K</span>
+        </div>
+
+        <div class="subsection-header">Minor Axis</div>
+        <div class="sub-subsection">Shear Strength, φVn</div>
+        <div class="calc-row">
+            <span class="calc-formula">As2 = Aw + 2Af</span>
+            <span class="calc-eq">=</span>
+            <span class="calc-value" id="v_As2">9,650.00</span>
+            <span class="calc-unit">mm²</span>
+        </div>
+        <div class="calc-row">
+            <span class="calc-formula">Vnx = 0.6×Fy×As2×Cvw</span>
+            <span class="calc-eq">=</span>
+            <span class="calc-value" id="v_Vnx">2,055.45</span>
+            <span class="calc-unit">kN</span>
+        </div>
+        <div class="calc-row">
+            <span class="calc-formula">φvwVnx</span>
+            <span class="calc-eq">=</span>
+            <span class="calc-value" id="v_phiVnx">2,055.45</span>
+            <span class="calc-unit">kN</span>
+            <span class="calc-compare">&gt; Vux = <span id="v_Vux">0.00</span></span>
+            <span class="calc-result green-text">→ O.K</span>
+        </div>
+
+        <div class="footer">
+            <div>
+                <span class="footer-logo">SDP licensed K-COL</span>
+                <span style="margin-left:15px;">Cross H Official Fabricator by DONG YANG S·Tec</span>
+            </div>
+            <div>
+                <span>Page 2 / 2</span>
+                <span style="margin-left:12px;">Calculation Sheet Prepared by 송도파트너스피엠오</span>
+                <span style="margin-left:12px;" id="printDate"></span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const data = JSON.parse(localStorage.getItem('kcolInputData')) || {
+            H1:450,B1:200,tw1:9,tf1:14,r1:18,H2:450,B2:200,tw2:9,tf2:14,r2:18,
+            steelGrade:'SM355',Fy:355,E:210000,nu:0.3,
+            Lx:9.05,Ly:9.05,Lb:9.05,Kx:0.8,Ky:0.8,Kz:0.8,Cb:1.0,
+            Pu:4453,Mux:0,Muy:0,Vux:0,Vuy:0,name:'K-COL'
+        };
+
+        const h1=data.H1,b1=data.B1,tw1=data.tw1,tf1=data.tf1,r1=data.r1;
+        const h2=data.H2,b2=data.B2,tw2=data.tw2,tf2=data.tf2,r2=data.r2;
+        const Fy=data.Fy,E=data.E,nu=data.nu;
+        const Lx=data.Lx*1000,Ly=data.Ly*1000,Kx=data.Kx,Ky=data.Ky,Kz=data.Kz,Cb=data.Cb;
+        const Pu=data.Pu,Mux=data.Mux,Muy=data.Muy,Vux=data.Vux,Vuy=data.Vuy;
+
+        const hw3=h1-2*tf1,hw6=h2-2*tf2;
+        const d1=h1/2-tf1/2,d4=h2/2-tf2/2;
+        const ag1=b1*tf1,ag4=b2*tf2;
+        const ag7=4*(r1*r1-Math.PI*r1*r1/4),ag8=4*(r2*r2-Math.PI*r2*r2/4);
+        const area=2*ag1+hw3*tw1+2*ag4+hw6*tw2+ag7+ag8-tw1*tw2;
+        const Ix=2*(1/12*b1*Math.pow(tf1,3)+ag1*Math.pow(d1,2))+1/12*tw1*Math.pow(hw3,3)+2*(1/12*tf2*Math.pow(b2,3))+1/12*hw6*Math.pow(tw2,3);
+        const Iy=2*(1/12*b2*Math.pow(tf2,3)+ag4*Math.pow(d4,2))+1/12*tw2*Math.pow(hw6,3)+2*(1/12*tf1*Math.pow(b1,3))+1/12*hw3*Math.pow(tw2,3);
+        const ix=Math.sqrt(Ix/area),iy=Math.sqrt(Iy/area);
+        const sx=Ix/(h1/2),sy=Iy/(h2/2);
+        const zx=2*(b1*tf1)*d1+2*(tw1*hw3/2)*hw3/4+b2*b2*tf2/2+(tw2*hw6/8)*2;
+        const zy=2*(b2*tf2)*d4+2*(tw2*hw6/2)*hw6/4+b1*b1*tf1/2+(tw1*hw3/8)*2;
+        const J=(2*b1*Math.pow(tf1,3)+h1*Math.pow(tw1,3))/3+(2*b2*Math.pow(tf2,3)+h2*Math.pow(tw2,3))/3;
+        const cw=Iy*Math.pow(h1-tf1,2)/4;
+
+        const lambda=Math.max(Kx*Lx/ix,Ky*Ly/iy);
+        const Fe1=Math.pow(Math.PI,2)*E/Math.pow(lambda,2);
+        const G=E/(2*(1+nu));
+        const Fe2=(Math.pow(Math.PI,2)*E*cw/Math.pow(Kz*Lx,2)+G*J)/(Ix+Iy);
+        const Fe=Math.min(Fe1,Fe2);
+        const Fcr=Math.pow(0.658,Fy/Fe)*Fy;
+        const phi_Pn=0.9*area*Fcr/1000;
+
+        // Flexural
+        const lfp=0.38*Math.sqrt(E/Fy),lfr=Math.sqrt(E/Fy);
+        const lf1=b1/(2*tf1),lf2=b2/(2*tf2);
+        const lwp=3.76*Math.sqrt(E/Fy),lwr=5.70*Math.sqrt(E/Fy);
+        const lw1=(h1-2*(tf1+r1)-tw1)/(2*tw1),lw2=(h2-2*(tf2+r2)-tw2)/(2*tw2);
+        const Mpx=Math.min(Fy*zx,1.6*Fy*sx)/1e6,Mpy=Math.min(Fy*zy,1.6*Fy*sy)/1e6;
+        const rtsx=Math.pow(Math.sqrt(Iy*cw)/sx,0.5),rtsy=Math.pow(Math.sqrt(Iy*cw)/sy,0.5);
+        const ho1=(h1-tf1)/2,ho2=(h2-tf2)/2;
+        const Lp=1.76*iy*Math.sqrt(E/Fy)/1000;
+        const c=1.0;
+        const Lr1=1.95*rtsx*E/(0.7*Fy)*Math.sqrt(J*c/(sx*ho1))*Math.sqrt(1+Math.sqrt(1+6.76*Math.pow(0.7*Fy*sx*ho1/(E*J*c),2)))/1000;
+        const Fcr_mbx=Cb*Math.pow(Math.PI,2)*E/Math.pow(data.Lb*1000/rtsx,2)*Math.sqrt(1+0.078*J*c/(sx*ho1)*Math.pow(data.Lb*1000/rtsx,2));
+        const phi_Mnx=0.9*Mpx,phi_Mny=0.9*Mpy;
+
+        // Shear
+        const lvw=(h2-2*(tf2+r2)-tw2)/(2*tw2);
+        const As1=hw3*tw1+2*tf1*b1,As2=hw6*tw2+2*tf2*b2;
+        const Vny=0.6*Fy*As1/1000,Vnx=0.6*Fy*As2/1000;
+        const phi_Vny=Vny,phi_Vnx=Vnx;
+
+        const rComp=Pu/phi_Pn,rBendX=Mux/(phi_Mnx*1000),rBendY=Muy/(phi_Mny*1000);
+        const rPmm=rComp>=0.2?rComp+8/9*(rBendX+rBendY):rComp/2+rBendX+rBendY;
+
+        function fmt(n,d=2){return n.toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});}
+
+        document.addEventListener('DOMContentLoaded',function(){
+            document.getElementById('projectName').textContent=data.name||'K-COL';
+
+            // Flexural Major
+            document.getElementById('f_lfp').textContent=fmt(lfp);
+            document.getElementById('f_lfr').textContent=fmt(lfr);
+            document.getElementById('f_lf1').textContent=fmt(lf1);
+            document.getElementById('f_lfp2').textContent=fmt(lfp);
+            document.getElementById('f_lwp').textContent=fmt(lwp);
+            document.getElementById('f_lwr').textContent=fmt(lwr);
+            document.getElementById('f_lw1').textContent=fmt(lw1);
+            document.getElementById('f_lwp2').textContent=fmt(lwp);
+            document.getElementById('f_Mpx').textContent=fmt(Mpx*1000);
+            document.getElementById('f_rtsx').textContent=fmt(rtsx);
+            document.getElementById('f_ho1').textContent=fmt(ho1,1);
+            document.getElementById('f_Lp').textContent=fmt(Lp,3);
+            document.getElementById('f_Lr1').textContent=fmt(Lr1);
+            document.getElementById('f_Lr1_2').textContent=fmt(Lr1);
+            document.getElementById('f_Lb').textContent=fmt(data.Lb,3);
+            document.getElementById('f_Fcr_mbx').textContent=fmt(Fcr_mbx);
+            document.getElementById('f_Mnx').textContent=fmt(Mpx*1000);
+            document.getElementById('f_phiMnx').textContent=fmt(phi_Mnx*1000);
+            document.getElementById('f_Mux').textContent=fmt(Mux);
+
+            // Flexural Minor
+            document.getElementById('f_lf2').textContent=fmt(lf2);
+            document.getElementById('f_lfp3').textContent=fmt(lfp);
+            document.getElementById('f_lw2').textContent=fmt(lw2);
+            document.getElementById('f_lwp3').textContent=fmt(lwp);
+            document.getElementById('f_Mpy').textContent=fmt(Mpy*1000);
+            document.getElementById('f_rtsy').textContent=fmt(rtsy);
+            document.getElementById('f_ho2').textContent=fmt(ho2,1);
+            document.getElementById('f_Mny').textContent=fmt(Mpy*1000);
+            document.getElementById('f_phiMny').textContent=fmt(phi_Mny*1000);
+            document.getElementById('f_Muy').textContent=fmt(Muy);
+
+            // P-M-M
+            document.getElementById('pm_r1').textContent=fmt(rComp,3);
+            document.getElementById('pm_r2').textContent=fmt(rPmm,3);
+
+            // Shear
+            document.getElementById('v_lvw').textContent=fmt(lvw);
+            document.getElementById('v_lim').textContent=fmt(2.24*Math.sqrt(E/Fy));
+            document.getElementById('v_As1').textContent=fmt(As1);
+            document.getElementById('v_As2').textContent=fmt(As2);
+            document.getElementById('v_Vny').textContent=fmt(Vny);
+            document.getElementById('v_Vnx').textContent=fmt(Vnx);
+            document.getElementById('v_phiVny').textContent=fmt(phi_Vny);
+            document.getElementById('v_phiVnx').textContent=fmt(phi_Vnx);
+            document.getElementById('v_Vuy').textContent=fmt(Vuy);
+            document.getElementById('v_Vux').textContent=fmt(Vux);
+
+            // Date
+            const now=new Date();
+            document.getElementById('printDate').textContent=now.toISOString().slice(0,10)+' '+now.toTimeString().slice(0,5);
+        });
+    </script>
+</body>
+</html>

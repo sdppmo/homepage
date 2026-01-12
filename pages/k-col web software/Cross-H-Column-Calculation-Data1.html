@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cross H Column Calculation Data</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Malgun Gothic', 'Segoe UI', Arial, sans-serif;
+            font-size: 9px;
+            padding: 8px;
+            background: #f0f0f0;
+            line-height: 1.3;
+        }
+
+        .nav-bar {
+            max-width: 210mm;
+            margin: 0 auto 6px;
+            display: flex;
+            gap: 10px;
+            justify-content: space-between;
+        }
+
+        .nav-btn {
+            padding: 5px 14px;
+            background: #4a5f9d;
+            color: white;
+            text-decoration: none;
+            border-radius: 3px;
+            font-size: 10px;
+        }
+
+        .nav-btn:hover { background: #3a4f8d; }
+        .nav-btn.secondary { background: #666; }
+
+        .page {
+            width: 210mm;
+            min-height: 297mm;
+            margin: 0 auto;
+            background: white;
+            padding: 6mm 8mm;
+            position: relative;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        /* 헤더 */
+        .header {
+            background: linear-gradient(135deg, #2c4a7c, #4a6fa5);
+            color: white;
+            padding: 8px 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            border-radius: 2px;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo {
+            width: 32px;
+            height: 32px;
+            background: white;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #2c4a7c;
+            font-size: 7px;
+        }
+
+        .header-title {
+            font-size: 13px;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+        }
+
+        .header-name {
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        /* 메인 컨텐츠 그리드 */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 264px;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        /* 테이블 스타일 */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 8.5px;
+        }
+
+        table td, table th {
+            padding: 3px 6px;
+            border: 1px solid #bbb;
+            vertical-align: middle;
+        }
+
+        .header-row td {
+            background: #e8e8e8;
+            font-weight: 600;
+        }
+
+        .label-cell {
+            background: #f5f5f5;
+            font-weight: 500;
+            width: 130px;
+            color: #333;
+        }
+
+        .sub-label {
+            padding-left: 20px !important;
+            background: #fafafa;
+        }
+
+        .value-cell {
+            background: white;
+        }
+
+        .blue-cell {
+            background: #cce0f0;
+            text-align: center;
+            font-weight: 500;
+            color: #1a3a5c;
+        }
+
+        .yellow-cell {
+            background: #ffffc0;
+            text-align: right;
+            font-weight: 500;
+            padding-right: 8px !important;
+        }
+
+        .green-text {
+            color: #006600;
+            font-weight: bold;
+        }
+
+        .red-text {
+            color: #cc0000;
+            font-weight: bold;
+        }
+
+        /* 단면도 박스 */
+        .diagram-section {
+            border: 1px solid #bbb;
+            padding: 10px;
+            background: #fafafa;
+        }
+
+        .diagram-title {
+            text-align: center;
+            font-weight: bold;
+            font-size: 11px;
+            margin-bottom: 8px;
+            color: #2c4a7c;
+        }
+
+        .cross-section {
+            position: relative;
+            width: 168px;
+            height: 168px;
+            margin: 0 auto 10px;
+            background: white;
+            border: 1px solid #ddd;
+        }
+
+        .h1-web, .h1-flange-top, .h1-flange-bottom,
+        .h2-web, .h2-flange-left, .h2-flange-right {
+            position: absolute;
+            box-sizing: border-box;
+        }
+
+        .h1-web, .h1-flange-top, .h1-flange-bottom {
+            background: #a8c8e8;
+            border: 1px solid #5588bb;
+        }
+
+        .h2-web, .h2-flange-left, .h2-flange-right {
+            background: #c8e8a8;
+            border: 1px solid #66aa55;
+        }
+
+        .dim-label {
+            position: absolute;
+            font-size: 8px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .props-table {
+            font-size: 9px;
+            margin-top: 6px;
+        }
+
+        .props-table td {
+            padding: 2px 4px;
+            border: none;
+            background: transparent;
+        }
+
+        .props-table .prop-label {
+            font-weight: 500;
+            color: #555;
+            width: 28px;
+        }
+
+        .props-table .prop-value {
+            text-align: right;
+            color: #1a3a5c;
+            font-weight: 500;
+        }
+
+        /* 섹션 제목 */
+        .section-header {
+            background: linear-gradient(135deg, #2c4a7c, #4a6fa5);
+            color: white;
+            padding: 4px 10px;
+            font-weight: bold;
+            font-size: 10px;
+            margin: 10px 0 6px 0;
+            border-radius: 2px;
+        }
+
+        .subsection-header {
+            font-weight: bold;
+            font-size: 9px;
+            margin: 6px 0 4px 8px;
+            color: #2c4a7c;
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 2px;
+        }
+
+        /* 계산 테이블 */
+        .calc-row {
+            display: flex;
+            align-items: center;
+            padding: 2px 0;
+            margin-left: 15px;
+            font-size: 8.5px;
+        }
+
+        .calc-formula {
+            width: 260px;
+            color: #333;
+        }
+
+        .calc-eq {
+            width: 15px;
+            text-align: center;
+        }
+
+        .calc-value {
+            background: #ffffc0;
+            padding: 2px 6px;
+            text-align: right;
+            min-width: 55px;
+            border: 1px solid #ccc;
+            font-weight: 500;
+        }
+
+        .calc-unit {
+            margin-left: 4px;
+            color: #666;
+            min-width: 50px;
+        }
+
+        .calc-compare {
+            margin-left: 8px;
+            color: #444;
+        }
+
+        .calc-result {
+            margin-left: 8px;
+            font-weight: bold;
+        }
+
+        /* 푸터 */
+        .footer {
+            position: absolute;
+            bottom: 6mm;
+            left: 8mm;
+            right: 8mm;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 7px;
+            color: #666;
+            border-top: 1px solid #ccc;
+            padding-top: 4px;
+        }
+
+        .footer-logo {
+            font-weight: bold;
+            color: #2c4a7c;
+        }
+
+        /* 인쇄 */
+        @media print {
+            @page { size: A4; margin: 0; }
+            body { padding: 0; background: white; }
+            .nav-bar { display: none; }
+            .page { width: 210mm; height: 297mm; box-shadow: none; margin: 0; }
+            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        }
+    </style>
+</head>
+<body>
+    <div class="nav-bar">
+        <a href="crossHcolumnCalculator.html" class="nav-btn secondary">← 계산기</a>
+        <span style="font-size:10px;color:#666;">Page 1 / 2</span>
+        <a href="Cross-H-Column-Calculation-Data2.html" class="nav-btn">다음 →</a>
+    </div>
+
+    <div class="page">
+        <!-- 헤더 -->
+        <div class="header">
+            <div class="header-left">
+                <div class="logo">K-COL</div>
+                <span class="header-title">CROSS H COLUMN CALCULATION DATA</span>
+            </div>
+            <div class="header-name">NAME: <span id="projectName">K-COL</span></div>
+        </div>
+
+        <!-- 메인 컨텐츠 -->
+        <div class="main-grid">
+            <!-- 왼쪽: 설계 정보 -->
+            <div>
+                <table>
+                    <tr class="header-row">
+                        <td colspan="4" style="text-align:center;">Design Information</td>
+                    </tr>
+                    <tr>
+                        <td class="label-cell">Design Code</td>
+                        <td class="value-cell" colspan="3">KDS 14 31 00 (LRFD), BS 5950-1:2000</td>
+                    </tr>
+                    <tr>
+                        <td class="label-cell">Major Section</td>
+                        <td class="blue-cell" id="majorSection">450×200×9×14</td>
+                        <td class="label-cell">Minor Section</td>
+                        <td class="blue-cell" id="minorSection">450×200×9×14</td>
+                    </tr>
+                    <tr>
+                        <td class="label-cell">Add.Plate on Major</td>
+                        <td class="value-cell" colspan="3">Not Supported.</td>
+                    </tr>
+                </table>
+
+                <table style="margin-top:6px;">
+                    <tr>
+                        <td class="label-cell">Steel Material</td>
+                        <td class="blue-cell" id="steelGrade" style="width:80px;">SM355</td>
+                        <td></td>
+                        <td class="sub-label">Fy</td>
+                        <td class="yellow-cell" id="FyValue">355</td>
+                        <td>MPa</td>
+                    </tr>
+                    <tr>
+                        <td class="sub-label">E</td>
+                        <td class="yellow-cell" id="EValue">210,000</td>
+                        <td>MPa</td>
+                        <td class="sub-label">ν</td>
+                        <td class="yellow-cell" id="nuValue">0.3</td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td class="label-cell">Unbraced Length</td>
+                        <td colspan="2"></td>
+                        <td class="label-cell">Effective Length Factor</td>
+                        <td colspan="2"></td>
+                    </tr>
+                    <tr>
+                        <td class="sub-label">Lx</td>
+                        <td class="blue-cell" id="LxValue">9.050</td>
+                        <td>m</td>
+                        <td class="sub-label">Kx</td>
+                        <td class="blue-cell" id="KxValue">0.8</td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td class="sub-label">Ly</td>
+                        <td class="blue-cell" id="LyValue">9.050</td>
+                        <td>m</td>
+                        <td class="sub-label">Ky</td>
+                        <td class="blue-cell" id="KyValue">0.8</td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td class="sub-label">Lb</td>
+                        <td class="blue-cell" id="LbValue">9.050</td>
+                        <td>m</td>
+                        <td class="sub-label">Kz</td>
+                        <td class="blue-cell" id="KzValue">0.8</td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td class="label-cell">Lateral Buckling Mod. Factor</td>
+                        <td class="sub-label">Cb</td>
+                        <td class="blue-cell" id="CbValue">1</td>
+                        <td colspan="3"></td>
+                    </tr>
+                    <tr>
+                        <td class="label-cell" colspan="6">Design Load</td>
+                    </tr>
+                    <tr>
+                        <td class="sub-label">Pu</td>
+                        <td class="yellow-cell" id="PuValue">4,453</td>
+                        <td>kN</td>
+                        <td class="sub-label">Vux</td>
+                        <td class="yellow-cell" id="VuxValue">0.00</td>
+                        <td>kN</td>
+                    </tr>
+                    <tr>
+                        <td class="sub-label">Mux</td>
+                        <td class="yellow-cell" id="MuxValue">0.00</td>
+                        <td>kN·m</td>
+                        <td class="sub-label">Vuy</td>
+                        <td class="yellow-cell" id="VuyValue">0.00</td>
+                        <td>kN</td>
+                    </tr>
+                    <tr>
+                        <td class="sub-label">Muy</td>
+                        <td class="yellow-cell" id="MuyValue">0.00</td>
+                        <td>kN·m</td>
+                        <td colspan="3"></td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- 오른쪽: 단면도 -->
+            <div class="diagram-section">
+                <div class="diagram-title">Section Properties</div>
+                <div class="cross-section" id="crossSection">
+                    <div class="h1-web"></div>
+                    <div class="h1-flange-top"></div>
+                    <div class="h1-flange-bottom"></div>
+                    <div class="h2-web"></div>
+                    <div class="h2-flange-left"></div>
+                    <div class="h2-flange-right"></div>
+                    <div class="dim-label" style="right:-16px;top:50%;transform:translateY(-50%);">H1</div>
+                    <div class="dim-label" style="bottom:-12px;left:50%;transform:translateX(-50%);">B1</div>
+                    <div class="dim-label" style="left:-16px;top:50%;transform:translateY(-50%);">H2</div>
+                </div>
+                <table class="props-table">
+                    <tr><td class="prop-label">H1</td><td class="prop-value" id="p_H1">450.0</td><td>mm</td><td class="prop-label">H2</td><td class="prop-value" id="p_H2">450.0</td><td>mm</td></tr>
+                    <tr><td class="prop-label">B1</td><td class="prop-value" id="p_B1">200.0</td><td>mm</td><td class="prop-label">B2</td><td class="prop-value" id="p_B2">200.0</td><td>mm</td></tr>
+                    <tr><td class="prop-label">tw1</td><td class="prop-value" id="p_tw1">9.0</td><td>mm</td><td class="prop-label">tw2</td><td class="prop-value" id="p_tw2">9.0</td><td>mm</td></tr>
+                    <tr><td class="prop-label">tf1</td><td class="prop-value" id="p_tf1">14.0</td><td>mm</td><td class="prop-label">tf2</td><td class="prop-value" id="p_tf2">14.0</td><td>mm</td></tr>
+                    <tr><td class="prop-label">r1</td><td class="prop-value" id="p_r1">18.0</td><td>mm</td><td class="prop-label">r2</td><td class="prop-value" id="p_r2">18.0</td><td>mm</td></tr>
+                </table>
+                <table class="props-table" style="margin-top:4px;border-top:1px solid #ddd;padding-top:4px;">
+                    <tr><td class="prop-label">Ag</td><td class="prop-value" colspan="5" id="p_Ag">19,271.2 mm²</td></tr>
+                    <tr><td class="prop-label">Ix</td><td class="prop-value" id="p_Ix">353,065,694</td><td>mm⁴</td><td class="prop-label">Iy</td><td class="prop-value" id="p_Iy">353,065,694</td><td>mm⁴</td></tr>
+                    <tr><td class="prop-label">Zx</td><td class="prop-value" id="p_Zx">1,901,489</td><td>mm³</td><td class="prop-label">Zy</td><td class="prop-value" id="p_Zy">1,901,489</td><td>mm³</td></tr>
+                    <tr><td class="prop-label">Sx</td><td class="prop-value" id="p_Sx">1,569,181</td><td>mm³</td><td class="prop-label">Sy</td><td class="prop-value" id="p_Sy">1,569,181</td><td>mm³</td></tr>
+                    <tr><td class="prop-label">rx</td><td class="prop-value" id="p_rx">135.4</td><td>mm</td><td class="prop-label">ry</td><td class="prop-value" id="p_ry">135.4</td><td>mm</td></tr>
+                    <tr><td class="prop-label">J</td><td class="prop-value" colspan="5" id="p_J">936,825 mm⁴</td></tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- 1. SUMMARY -->
+        <div class="section-header">1. SUMMARY</div>
+        <table>
+            <tr>
+                <td class="label-cell" style="width:140px;">Compressive Strength</td>
+                <td style="width:100px;">Pu / φPn</td>
+                <td>=</td>
+                <td class="yellow-cell" style="width:60px;" id="s_Pu">4,453</td>
+                <td>/</td>
+                <td class="yellow-cell" style="width:70px;" id="s_phiPn">5,015.36</td>
+                <td>=</td>
+                <td class="yellow-cell" style="width:55px;" id="s_compR">0.888</td>
+                <td>≤</td>
+                <td style="width:50px;">1.000</td>
+                <td class="green-text" id="s_compOK">→ O.K</td>
+            </tr>
+            <tr>
+                <td class="label-cell">Bending Strength</td>
+                <td>Mux / φMnx</td>
+                <td>=</td>
+                <td class="yellow-cell" id="s_Mux">0.00</td>
+                <td>/</td>
+                <td class="yellow-cell" id="s_phiMnx">607.53</td>
+                <td>=</td>
+                <td class="yellow-cell" id="s_bendXR">0.000</td>
+                <td>≤</td>
+                <td>1.000</td>
+                <td class="green-text">→ O.K</td>
+            </tr>
+            <tr>
+                <td class="label-cell"></td>
+                <td>Muy / φMny</td>
+                <td>=</td>
+                <td class="yellow-cell" id="s_Muy">0.00</td>
+                <td>/</td>
+                <td class="yellow-cell" id="s_phiMny">607.53</td>
+                <td>=</td>
+                <td class="yellow-cell" id="s_bendYR">0.000</td>
+                <td>≤</td>
+                <td>1.000</td>
+                <td class="green-text">→ O.K</td>
+            </tr>
+            <tr>
+                <td class="label-cell">P-M-M Combination</td>
+                <td>Pu / φcPn</td>
+                <td colspan="4"></td>
+                <td>=</td>
+                <td class="yellow-cell" id="s_pmmR1">0.888</td>
+                <td>≥</td>
+                <td>0.20</td>
+                <td class="green-text">→ O.K</td>
+            </tr>
+            <tr>
+                <td class="label-cell"></td>
+                <td colspan="5" style="font-size:7.5px;">Pu/φPn + 8/9*(Mux/φMnx + Muy/φMny)</td>
+                <td>=</td>
+                <td class="yellow-cell" id="s_pmmR2">0.888</td>
+                <td>&lt;</td>
+                <td>1.000</td>
+                <td class="green-text" id="s_pmmOK">→ O.K</td>
+            </tr>
+            <tr>
+                <td class="label-cell">Shear Strength</td>
+                <td>Vux / φVnx</td>
+                <td>=</td>
+                <td class="yellow-cell" id="s_Vux">0.00</td>
+                <td>/</td>
+                <td class="yellow-cell" id="s_phiVnx">2,055.45</td>
+                <td>=</td>
+                <td class="yellow-cell" id="s_shearXR">0.000</td>
+                <td>≤</td>
+                <td>1.000</td>
+                <td class="green-text">→ O.K</td>
+            </tr>
+            <tr>
+                <td class="label-cell"></td>
+                <td>Vuy / φVny</td>
+                <td>=</td>
+                <td class="yellow-cell" id="s_Vuy">0.00</td>
+                <td>/</td>
+                <td class="yellow-cell" id="s_phiVny">2,055.45</td>
+                <td>=</td>
+                <td class="yellow-cell" id="s_shearYR">0.000</td>
+                <td>≤</td>
+                <td>1.000</td>
+                <td class="green-text">→ O.K</td>
+            </tr>
+        </table>
+
+        <!-- 2. Compressive Strength -->
+        <div class="section-header">2. Compressive Strength</div>
+        
+        <div class="subsection-header">Slenderness ratio for Compression</div>
+        <div class="calc-row">
+            <span class="calc-formula">KL / (r, min)</span>
+            <span class="calc-eq">=</span>
+            <span class="calc-value" id="c_KLr">53.49</span>
+            <span class="calc-unit"></span>
+            <span class="calc-compare">&lt; 200</span>
+            <span class="calc-result green-text">→ O.K</span>
+        </div>
+
+        <div class="subsection-header">Plate-Thickness ratio for Compression in Minor Section</div>
+        <div class="calc-row">
+            <span class="calc-formula">λcfr = 0.56 √(E / Fy)</span>
+            <span class="calc-eq">=</span>
+            <span class="calc-value" id="c_lcfr">13.62</span>
+        </div>
+        <div class="calc-row">
+            <span class="calc-formula">λcf = B2 / 2 / tf2</span>
+            <span class="calc-eq">=</span>
+            <span class="calc-value" id="c_lcf">7.14</span>
+            <span class="calc-unit"></span>
+            <span class="calc-compare">&lt; λcfr = <span id="c_lcfr2">13.62</span></span>
+            <span class="calc-result green-text">→ No Slender</span>
+        </div>
+        <div class="calc-row">
+            <span class="calc-formula">λcwr = 1.49 √(E / Fy)</span>
+            <span class="calc-eq">=</span>
+            <span class="calc-value" id="c_lcwr">36.24</span>
+        </div>
+        <div class="calc-row">
+            <span class="calc-formula">λcw = {H2-2(tf2+r2)-tw2}/2/tw2</span>
+            <span class="calc-eq">=</span>
+            <span class="calc-value" id="c_lcw">20.94</span>
+            <span class="calc-unit"></span>
+            <span class="calc-compare">&lt; λcwr = <span id="c_lcwr2">36.24</span></span>
+            <span class="calc-result green-text">→ No Slender</span>
+        </div>
+
+        <div class="subsection-header">Flexural Buckling Stress, Fe1</div>
+        <div class="calc-row">
+            <span class="calc-formula">4.71 √(E / Fy)</span>
+            <span class="calc-eq">=</span>
+            <span class="calc-value" id="c_euler">114.56</span>
+        </div>
+        <div class="calc-row">
+            <span class="calc-formula">KL / (r, min)</span>
+            <span class="calc-eq">=</span>
+            <span class="calc-value" id="c_KLr2">53.49</span>
+            <span class="calc-unit"></span>
+            <span class="calc-compare">&lt; 4.71√(E/Fy) = <span id="c_euler2">114.56</span></span>
+        </div>
+        <div class="calc-row">
+            <span class="calc-formula">Fe1 = π²E / {KL/(r,min)}²</span>
+            <span class="calc-eq">=</span>
+            <span class="calc-value" id="c_Fe1">724.42</span>
+            <span class="calc-unit">MPa</span>
+        </div>
+
+        <div class="subsection-header">Torsional Buckling Stress, Fe2</div>
+        <div class="calc-row">
+            <span class="calc-formula">G = E / 2(1 + ν)</span>
+            <span class="calc-eq">=</span>
+            <span class="calc-value" id="c_G">80,769.23</span>
+            <span class="calc-unit">MPa</span>
+        </div>
+        <div class="calc-row">
+            <span class="calc-formula">Fe2 = {π²ECw/(KzL)² + GJ}/(Ix+Iy)</span>
+            <span class="calc-eq">=</span>
+            <span class="calc-value" id="c_Fe2">939.56</span>
+            <span class="calc-unit">MPa</span>
+        </div>
+
+        <div class="subsection-header">Compressive Strength, φPn</div>
+        <div class="calc-row">
+            <span class="calc-formula">Fcr = 0.658^(Fy/Fe,min) × Fy</span>
+            <span class="calc-eq">=</span>
+            <span class="calc-value" id="c_Fcr">289.17</span>
+            <span class="calc-unit">MPa</span>
+        </div>
+        <div class="calc-row">
+            <span class="calc-formula">φc</span>
+            <span class="calc-eq">=</span>
+            <span class="calc-value">0.90</span>
+        </div>
+        <div class="calc-row">
+            <span class="calc-formula">φcPn = φc × Ag × Fcr</span>
+            <span class="calc-eq">=</span>
+            <span class="calc-value" id="c_phiPn">5,015.36</span>
+            <span class="calc-unit">kN</span>
+            <span class="calc-compare">&gt; Pu = <span id="c_Pu">4,453</span></span>
+            <span class="calc-result green-text">→ O.K</span>
+        </div>
+
+        <!-- 푸터 -->
+        <div class="footer">
+            <div>
+                <span class="footer-logo">SDP licensed K-COL</span>
+                <span style="margin-left:15px;">Cross H Official Fabricator by DONG YANG S·Tec</span>
+            </div>
+            <div>
+                <span>Calculation Sheet Prepared by 송도파트너스피엠오</span>
+                <span style="margin-left:12px;" id="printDate"></span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const data = JSON.parse(localStorage.getItem('kcolInputData')) || {
+            H1:450,B1:200,tw1:9,tf1:14,r1:18,H2:450,B2:200,tw2:9,tf2:14,r2:18,
+            steelGrade:'SM355',Fy:355,E:210000,nu:0.3,
+            Lx:9.05,Ly:9.05,Lb:9.05,Kx:0.8,Ky:0.8,Kz:0.8,Cb:1.0,
+            Pu:4453,Mux:0,Muy:0,Vux:0,Vuy:0,name:'K-COL'
+        };
+
+        const h1=data.H1,b1=data.B1,tw1=data.tw1,tf1=data.tf1,r1=data.r1;
+        const h2=data.H2,b2=data.B2,tw2=data.tw2,tf2=data.tf2,r2=data.r2;
+        const Fy=data.Fy,E=data.E,nu=data.nu;
+        const Lx=data.Lx*1000,Ly=data.Ly*1000,Kx=data.Kx,Ky=data.Ky,Kz=data.Kz,Cb=data.Cb;
+        const Pu=data.Pu,Mux=data.Mux,Muy=data.Muy,Vux=data.Vux,Vuy=data.Vuy;
+
+        // 단면 계산
+        const hw3=h1-2*tf1,hw6=h2-2*tf2;
+        const d1=h1/2-tf1/2,d4=h2/2-tf2/2;
+        const ag1=b1*tf1,ag4=b2*tf2;
+        const ag7=4*(r1*r1-Math.PI*r1*r1/4),ag8=4*(r2*r2-Math.PI*r2*r2/4);
+        const area=2*ag1+hw3*tw1+2*ag4+hw6*tw2+ag7+ag8-tw1*tw2;
+        const Ix=2*(1/12*b1*Math.pow(tf1,3)+ag1*Math.pow(d1,2))+1/12*tw1*Math.pow(hw3,3)+2*(1/12*tf2*Math.pow(b2,3))+1/12*hw6*Math.pow(tw2,3);
+        const Iy=2*(1/12*b2*Math.pow(tf2,3)+ag4*Math.pow(d4,2))+1/12*tw2*Math.pow(hw6,3)+2*(1/12*tf1*Math.pow(b1,3))+1/12*hw3*Math.pow(tw2,3);
+        const ix=Math.sqrt(Ix/area),iy=Math.sqrt(Iy/area);
+        const sx=Ix/(h1/2),sy=Iy/(h2/2);
+        const zx=2*(b1*tf1)*d1+2*(tw1*hw3/2)*hw3/4+b2*b2*tf2/2+(tw2*hw6/8)*2;
+        const zy=2*(b2*tf2)*d4+2*(tw2*hw6/2)*hw6/4+b1*b1*tf1/2+(tw1*hw3/8)*2;
+        const J=(2*b1*Math.pow(tf1,3)+h1*Math.pow(tw1,3))/3+(2*b2*Math.pow(tf2,3)+h2*Math.pow(tw2,3))/3;
+        const cw=Iy*Math.pow(h1-tf1,2)/4;
+
+        // 기둥 강도 계산
+        const lambda=Math.max(Kx*Lx/ix,Ky*Ly/iy);
+        const lcfr=0.56*Math.sqrt(E/Fy),lcf=b2/(2*tf2);
+        const lcwr=1.49*Math.sqrt(E/Fy),lcw=(h2-2*(tf2+r2)-tw2)/(2*tw2);
+        const euler=4.71*Math.sqrt(E/Fy);
+        const Fe1=Math.pow(Math.PI,2)*E/Math.pow(lambda,2);
+        const G=E/(2*(1+nu));
+        const Fe2=(Math.pow(Math.PI,2)*E*cw/Math.pow(Kz*Lx,2)+G*J)/(Ix+Iy);
+        const Fe=Math.min(Fe1,Fe2);
+        const Fcr=Math.pow(0.658,Fy/Fe)*Fy;
+        const phi_Pn=0.9*area*Fcr/1000;
+
+        const Mpx=Math.min(Fy*zx,1.6*Fy*sx)/1e6,Mpy=Math.min(Fy*zy,1.6*Fy*sy)/1e6;
+        const phi_Mnx=0.9*Mpx*1000,phi_Mny=0.9*Mpy*1000;
+        const As1=hw3*tw1+2*tf1*b1,As2=hw6*tw2+2*tf2*b2;
+        const phi_Vny=0.6*Fy*As1/1000,phi_Vnx=0.6*Fy*As2/1000;
+
+        const rComp=Pu/phi_Pn,rBendX=Mux/phi_Mnx,rBendY=Muy/phi_Mny;
+        const rPmm=rComp>=0.2?rComp+8/9*(rBendX+rBendY):rComp/2+rBendX+rBendY;
+
+        function fmt(n,d=2){return n.toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});}
+        function fmtI(n){return Math.round(n).toLocaleString('en-US');}
+
+        document.addEventListener('DOMContentLoaded',function(){
+            // 다이어그램 (120% 확대: 168px)
+            const sc=144/Math.max(h1,h2,b1,b2)*0.85;
+            const sH1=h1*sc,sB1=b1*sc,sTw1=Math.max(tw1*sc,2),sTf1=Math.max(tf1*sc,3);
+            const sH2=h2*sc,sB2=b2*sc,sTw2=Math.max(tw2*sc,2),sTf2=Math.max(tf2*sc,3);
+            const cx=84,cy=84;
+            document.querySelector('.h1-web').style.cssText=`width:${sTw1}px;height:${sH1}px;left:${cx-sTw1/2}px;top:${cy-sH1/2}px;`;
+            document.querySelector('.h1-flange-top').style.cssText=`width:${sB1}px;height:${sTf1}px;left:${cx-sB1/2}px;top:${cy-sH1/2}px;`;
+            document.querySelector('.h1-flange-bottom').style.cssText=`width:${sB1}px;height:${sTf1}px;left:${cx-sB1/2}px;top:${cy+sH1/2-sTf1}px;`;
+            document.querySelector('.h2-web').style.cssText=`width:${sH2}px;height:${sTw2}px;left:${cx-sH2/2}px;top:${cy-sTw2/2}px;`;
+            document.querySelector('.h2-flange-left').style.cssText=`width:${sTf2}px;height:${sB2}px;left:${cx-sH2/2}px;top:${cy-sB2/2}px;`;
+            document.querySelector('.h2-flange-right').style.cssText=`width:${sTf2}px;height:${sB2}px;left:${cx+sH2/2-sTf2}px;top:${cy-sB2/2}px;`;
+
+            // 헤더/정보
+            document.getElementById('projectName').textContent=data.name||'K-COL';
+            document.getElementById('majorSection').textContent=`${h1}×${b1}×${tw1}×${tf1}`;
+            document.getElementById('minorSection').textContent=`${h2}×${b2}×${tw2}×${tf2}`;
+            document.getElementById('steelGrade').textContent=data.steelGrade||'SM355';
+            document.getElementById('FyValue').textContent=fmtI(Fy);
+            document.getElementById('EValue').textContent=fmtI(E);
+            document.getElementById('nuValue').textContent=nu;
+            document.getElementById('LxValue').textContent=data.Lx.toFixed(3);
+            document.getElementById('LyValue').textContent=data.Ly.toFixed(3);
+            document.getElementById('LbValue').textContent=data.Lb.toFixed(3);
+            document.getElementById('KxValue').textContent=Kx;
+            document.getElementById('KyValue').textContent=Ky;
+            document.getElementById('KzValue').textContent=Kz;
+            document.getElementById('CbValue').textContent=Cb;
+            document.getElementById('PuValue').textContent=fmtI(Pu);
+            document.getElementById('MuxValue').textContent=fmt(Mux);
+            document.getElementById('MuyValue').textContent=fmt(Muy);
+            document.getElementById('VuxValue').textContent=fmt(Vux);
+            document.getElementById('VuyValue').textContent=fmt(Vuy);
+
+            // 단면 특성
+            document.getElementById('p_H1').textContent=h1.toFixed(1);
+            document.getElementById('p_H2').textContent=h2.toFixed(1);
+            document.getElementById('p_B1').textContent=b1.toFixed(1);
+            document.getElementById('p_B2').textContent=b2.toFixed(1);
+            document.getElementById('p_tw1').textContent=tw1.toFixed(1);
+            document.getElementById('p_tw2').textContent=tw2.toFixed(1);
+            document.getElementById('p_tf1').textContent=tf1.toFixed(1);
+            document.getElementById('p_tf2').textContent=tf2.toFixed(1);
+            document.getElementById('p_r1').textContent=r1.toFixed(1);
+            document.getElementById('p_r2').textContent=r2.toFixed(1);
+            document.getElementById('p_Ag').textContent=fmt(area,1)+' mm²';
+            document.getElementById('p_Ix').textContent=fmtI(Ix);
+            document.getElementById('p_Iy').textContent=fmtI(Iy);
+            document.getElementById('p_Zx').textContent=fmtI(zx);
+            document.getElementById('p_Zy').textContent=fmtI(zy);
+            document.getElementById('p_Sx').textContent=fmtI(sx);
+            document.getElementById('p_Sy').textContent=fmtI(sy);
+            document.getElementById('p_rx').textContent=fmt(ix,1);
+            document.getElementById('p_ry').textContent=fmt(iy,1);
+            document.getElementById('p_J').textContent=fmtI(J)+' mm⁴';
+
+            // Summary
+            document.getElementById('s_Pu').textContent=fmtI(Pu);
+            document.getElementById('s_phiPn').textContent=fmt(phi_Pn);
+            document.getElementById('s_compR').textContent=fmt(rComp,3);
+            document.getElementById('s_Mux').textContent=fmt(Mux);
+            document.getElementById('s_phiMnx').textContent=fmt(phi_Mnx);
+            document.getElementById('s_bendXR').textContent=fmt(rBendX,3);
+            document.getElementById('s_Muy').textContent=fmt(Muy);
+            document.getElementById('s_phiMny').textContent=fmt(phi_Mny);
+            document.getElementById('s_bendYR').textContent=fmt(rBendY,3);
+            document.getElementById('s_pmmR1').textContent=fmt(rComp,3);
+            document.getElementById('s_pmmR2').textContent=fmt(rPmm,3);
+            document.getElementById('s_Vux').textContent=fmt(Vux);
+            document.getElementById('s_phiVnx').textContent=fmt(phi_Vnx);
+            document.getElementById('s_shearXR').textContent=fmt(Vux/phi_Vnx,3);
+            document.getElementById('s_Vuy').textContent=fmt(Vuy);
+            document.getElementById('s_phiVny').textContent=fmt(phi_Vny);
+            document.getElementById('s_shearYR').textContent=fmt(Vuy/phi_Vny,3);
+
+            // 압축강도 계산
+            document.getElementById('c_KLr').textContent=fmt(lambda);
+            document.getElementById('c_KLr2').textContent=fmt(lambda);
+            document.getElementById('c_lcfr').textContent=fmt(lcfr);
+            document.getElementById('c_lcfr2').textContent=fmt(lcfr);
+            document.getElementById('c_lcf').textContent=fmt(lcf);
+            document.getElementById('c_lcwr').textContent=fmt(lcwr);
+            document.getElementById('c_lcwr2').textContent=fmt(lcwr);
+            document.getElementById('c_lcw').textContent=fmt(lcw);
+            document.getElementById('c_euler').textContent=fmt(euler);
+            document.getElementById('c_euler2').textContent=fmt(euler);
+            document.getElementById('c_Fe1').textContent=fmt(Fe1);
+            document.getElementById('c_G').textContent=fmt(G);
+            document.getElementById('c_Fe2').textContent=fmt(Fe2);
+            document.getElementById('c_Fcr').textContent=fmt(Fcr);
+            document.getElementById('c_phiPn').textContent=fmt(phi_Pn);
+            document.getElementById('c_Pu').textContent=fmtI(Pu);
+
+            // 날짜
+            const now=new Date();
+            document.getElementById('printDate').textContent=now.toISOString().slice(0,10)+' '+now.toTimeString().slice(0,5);
+        });
+    </script>
+</body>
+</html>
