@@ -951,20 +951,22 @@
             localStorage.setItem('kcolInputData', JSON.stringify(inputData));
         }
 
-        // PDF 다운로드 - 계산서 2페이지만 출력
+        // PDF 다운로드 - 계산서 2페이지 출력
         function printCalculationSheet() {
             // 먼저 입력 데이터 저장
             saveInputData();
             
-            // 계산서 페이지를 새 창에서 열고 인쇄
-            const printWindow = window.open('Cross-H-Column-Calculation-Data1.html', '_blank');
+            // 계산서 통합 인쇄 페이지를 새 창에서 열고 인쇄
+            const printWindow = window.open('Cross-H-Column-Print.html', '_blank');
             
             // 페이지 로드 완료 후 인쇄 대화상자 표시
-            printWindow.onload = function() {
-                setTimeout(function() {
-                    printWindow.print();
-                }, 500);
-            };
+            if (printWindow) {
+                printWindow.onload = function() {
+                    setTimeout(function() {
+                        printWindow.print();
+                    }, 800);
+                };
+            }
         }
 
         // H1/H2 필드 모드 전환 함수 (select ↔ input)
