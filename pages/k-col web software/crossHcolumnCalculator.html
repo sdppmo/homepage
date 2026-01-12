@@ -128,66 +128,42 @@
             position: relative;
         }
 
-        .cross-section-diagram {
-            position: relative;
-            width: 180px;
-            height: 180px;
+        .section-image {
+            max-width: 100%;
+            height: auto;
+            max-height: 200px;
+            display: block;
             margin: 0 auto;
-            background: #fafafa;
-            border: 1px solid #ddd;
-        }
-
-        .h1-web, .h1-flange-top, .h1-flange-bottom {
-            position: absolute;
-            background: #a8c8e8;
-            border: 1px solid #5588bb;
-            box-sizing: border-box;
-        }
-
-        .h2-web, .h2-flange-left, .h2-flange-right {
-            position: absolute;
-            background: #c8e8a8;
-            border: 1px solid #66aa55;
-            box-sizing: border-box;
-        }
-
-        .diagram-label {
-            position: absolute;
-            font-size: 9px;
-            font-weight: bold;
-            color: #333;
         }
 
         .diagram-legend {
-            position: absolute;
-            left: 8px;
-            top: 50%;
-            transform: translateY(-50%);
             display: flex;
-            flex-direction: column;
-            gap: 8px;
-            font-size: 9px;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 10px;
+            font-size: 11px;
         }
 
         .legend-item {
             display: flex;
             align-items: center;
-            gap: 4px;
+            gap: 6px;
         }
 
         .legend-box {
             width: 12px;
             height: 12px;
-            border: 1px solid #999;
+            border: 1px solid #666;
+            border-radius: 2px;
             flex-shrink: 0;
         }
 
-        .legend-h1 {
-            background: #a8c8e8;
+        .legend-major {
+            background: #22c55e;
         }
 
-        .legend-h2 {
-            background: #c8e8a8;
+        .legend-minor {
+            background: #3b82f6;
         }
 
         .copy-btn {
@@ -606,26 +582,15 @@
                 </div>
                 
                 <div class="diagram-container">
-                    <div class="cross-section-diagram" id="crossSectionDiagram">
-                        <div class="h1-web" id="h1Web"></div>
-                        <div class="h1-flange-top" id="h1FlangeTop"></div>
-                        <div class="h1-flange-bottom" id="h1FlangeBottom"></div>
-                        <div class="h2-web" id="h2Web"></div>
-                        <div class="h2-flange-left" id="h2FlangeLeft"></div>
-                        <div class="h2-flange-right" id="h2FlangeRight"></div>
-                        <div class="diagram-label" id="labelH1" style="right:-20px;top:50%;transform:translateY(-50%);">H1</div>
-                        <div class="diagram-label" id="labelB1" style="bottom:-18px;left:50%;transform:translateX(-50%);">B1</div>
-                        <div class="diagram-label" id="labelH2" style="left:-20px;top:50%;transform:translateY(-50%);">H2</div>
-                        <div class="diagram-label" id="labelB2" style="top:-18px;left:50%;transform:translateX(-50%);">B2</div>
-                    </div>
+                    <img src="../../assets/images/2H-section.png" alt="Cross H Column 단면도" class="section-image">
                     <div class="diagram-legend">
                         <div class="legend-item">
-                            <div class="legend-box legend-h1"></div>
-                            <span>H1 (Major)</span>
+                            <div class="legend-box legend-major"></div>
+                            <span>Major (H1)</span>
                         </div>
                         <div class="legend-item">
-                            <div class="legend-box legend-h2"></div>
-                            <span>H2 (Minor)</span>
+                            <div class="legend-box legend-minor"></div>
+                            <span>Minor (H2)</span>
                         </div>
                     </div>
                 </div>
@@ -926,7 +891,7 @@
             <a href="Cross-H-Column-Calculation-Data1.html" class="action-btn primary" onclick="saveInputData()">
                 📄 전체 계산서 보기
             </a>
-            <button class="action-btn secondary" onclick="window.print();">
+            <button class="action-btn secondary" onclick="printCalculationSheet();">
                 📥 PDF 다운로드
             </button>
             <div class="beam-type-btns">
@@ -984,6 +949,22 @@
                 name: document.getElementById('projectName') ? document.getElementById('projectName').value : 'K-COL'
             };
             localStorage.setItem('kcolInputData', JSON.stringify(inputData));
+        }
+
+        // PDF 다운로드 - 계산서 2페이지만 출력
+        function printCalculationSheet() {
+            // 먼저 입력 데이터 저장
+            saveInputData();
+            
+            // 계산서 페이지를 새 창에서 열고 인쇄
+            const printWindow = window.open('Cross-H-Column-Calculation-Data1.html', '_blank');
+            
+            // 페이지 로드 완료 후 인쇄 대화상자 표시
+            printWindow.onload = function() {
+                setTimeout(function() {
+                    printWindow.print();
+                }, 500);
+            };
         }
 
         // H1/H2 필드 모드 전환 함수 (select ↔ input)
@@ -1099,88 +1080,9 @@
             912: { B: 302, tw: 18, tf: 34, r: 28 },    // H912x302
         };
 
-        // 실시간 Cross-H 단면도 업데이트 함수
+        // 정적 이미지 사용으로 다이어그램 업데이트 함수 비활성화
         function updateCrossSection() {
-            const h1 = parseFloat(document.getElementById('H1').value) || 450;
-            const b1 = parseFloat(document.getElementById('B1').value) || 200;
-            const tw1 = parseFloat(document.getElementById('tw1').value) || 9;
-            const tf1 = parseFloat(document.getElementById('tf1').value) || 14;
-            const h2 = parseFloat(document.getElementById('H2').value) || 450;
-            const b2 = parseFloat(document.getElementById('B2').value) || 200;
-            const tw2 = parseFloat(document.getElementById('tw2').value) || 9;
-            const tf2 = parseFloat(document.getElementById('tf2').value) || 14;
-
-            // 다이어그램 크기
-            const diagramSize = 160;
-            const maxDim = Math.max(h1, b1, h2, b2);
-            const scale = (diagramSize * 0.8) / maxDim;
-
-            // 스케일된 치수 (최소 두께 유지)
-            const sH1 = h1 * scale;
-            const sB1 = b1 * scale;
-            const sTw1 = Math.max(tw1 * scale, 3);
-            const sTf1 = Math.max(tf1 * scale, 4);
-            const sH2 = h2 * scale;
-            const sB2 = b2 * scale;
-            const sTw2 = Math.max(tw2 * scale, 3);
-            const sTf2 = Math.max(tf2 * scale, 4);
-
-            // 중심점
-            const cx = 90, cy = 90;
-
-            // H1 (Major - 수직 방향)
-            const h1Web = document.getElementById('h1Web');
-            const h1FlangeTop = document.getElementById('h1FlangeTop');
-            const h1FlangeBottom = document.getElementById('h1FlangeBottom');
-
-            if (h1Web) {
-                h1Web.style.width = sTw1 + 'px';
-                h1Web.style.height = sH1 + 'px';
-                h1Web.style.left = (cx - sTw1/2) + 'px';
-                h1Web.style.top = (cy - sH1/2) + 'px';
-            }
-            if (h1FlangeTop) {
-                h1FlangeTop.style.width = sB1 + 'px';
-                h1FlangeTop.style.height = sTf1 + 'px';
-                h1FlangeTop.style.left = (cx - sB1/2) + 'px';
-                h1FlangeTop.style.top = (cy - sH1/2) + 'px';
-            }
-            if (h1FlangeBottom) {
-                h1FlangeBottom.style.width = sB1 + 'px';
-                h1FlangeBottom.style.height = sTf1 + 'px';
-                h1FlangeBottom.style.left = (cx - sB1/2) + 'px';
-                h1FlangeBottom.style.top = (cy + sH1/2 - sTf1) + 'px';
-            }
-
-            // H2 (Minor - 수평 방향, 90도 회전)
-            const h2Web = document.getElementById('h2Web');
-            const h2FlangeLeft = document.getElementById('h2FlangeLeft');
-            const h2FlangeRight = document.getElementById('h2FlangeRight');
-
-            if (h2Web) {
-                h2Web.style.width = sH2 + 'px';
-                h2Web.style.height = sTw2 + 'px';
-                h2Web.style.left = (cx - sH2/2) + 'px';
-                h2Web.style.top = (cy - sTw2/2) + 'px';
-            }
-            if (h2FlangeLeft) {
-                h2FlangeLeft.style.width = sTf2 + 'px';
-                h2FlangeLeft.style.height = sB2 + 'px';
-                h2FlangeLeft.style.left = (cx - sH2/2) + 'px';
-                h2FlangeLeft.style.top = (cy - sB2/2) + 'px';
-            }
-            if (h2FlangeRight) {
-                h2FlangeRight.style.width = sTf2 + 'px';
-                h2FlangeRight.style.height = sB2 + 'px';
-                h2FlangeRight.style.left = (cx + sH2/2 - sTf2) + 'px';
-                h2FlangeRight.style.top = (cy - sB2/2) + 'px';
-            }
-
-            // 라벨 업데이트
-            document.getElementById('labelH1').textContent = 'H1=' + h1;
-            document.getElementById('labelB1').textContent = 'B1=' + b1;
-            document.getElementById('labelH2').textContent = 'H2=' + h2;
-            document.getElementById('labelB2').textContent = 'B2=' + b2;
+            // 정적 이미지 (2H-section.png) 사용
         }
 
         // 현재 선택된 타입 확인 (Rolled H or Pos-H)
