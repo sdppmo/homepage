@@ -2,8 +2,8 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cross H Column Design Calculator</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>SRC(Cross H) Design Calculator</title>
     <style>
         * {
             margin: 0;
@@ -14,7 +14,7 @@
         body {
             font-family: 'Segoe UI', Arial, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
+            min-height: 100dvh;
             padding: 5px;
         }
 
@@ -89,14 +89,14 @@
         /* 메인 컨텐츠 */
         .main-content {
             display: grid;
-            grid-template-columns: 450px 1fr;
+            grid-template-columns: 500px 1fr;
             gap: 0;
         }
 
         /* 좌측: 단면도 + 치수 */
         .left-section {
             background: #f8fafc;
-            padding: 20px;
+            padding: 20px 20px 0 20px;
             border-right: 1px solid #e2e8f0;
         }
 
@@ -186,7 +186,7 @@
 
         .quick-calc-btn {
             width: 100%;
-            padding: 14px;
+            padding: 8px 14px;
             margin-top: 15px;
             background: linear-gradient(135deg, #10b981, #059669);
             color: white;
@@ -195,7 +195,6 @@
             font-size: 14px;
             font-weight: 600;
             cursor: pointer;
-            margin-top: 15px;
             transition: all 0.2s;
             box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
         }
@@ -294,7 +293,7 @@
             background: #f8fafc;
             border: 1px solid #e2e8f0;
             border-radius: 8px;
-            padding: 15px;
+            padding: 8px;
         }
 
         .param-card.full-width {
@@ -302,11 +301,11 @@
         }
 
         .param-title {
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 600;
             color: #1e3a5f;
-            margin-bottom: 12px;
-            padding-bottom: 8px;
+            margin-bottom: 6px;
+            padding-bottom: 4px;
             border-bottom: 2px solid #667eea;
         }
 
@@ -314,7 +313,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 8px;
+            margin-bottom: 4px;
         }
 
         .param-row label {
@@ -330,11 +329,11 @@
 
         .param-row input {
             width: 80px;
-            padding: 6px 10px;
+            padding: 4px 6px;
             border: 1px solid #ddd;
             border-radius: 4px;
             text-align: right;
-            font-size: 12px;
+            font-size: 11px;
         }
 
         .param-row input:focus {
@@ -344,10 +343,10 @@
         }
 
         .param-row select {
-            padding: 6px 10px;
+            padding: 4px 6px;
             border: 1px solid #ddd;
             border-radius: 4px;
-            font-size: 12px;
+            font-size: 11px;
             background: white;
         }
 
@@ -376,11 +375,11 @@
 
         .param-grid-3 input {
             width: 100%;
-            padding: 6px;
+            padding: 4px;
             border: 1px solid #ddd;
             border-radius: 4px;
             text-align: center;
-            font-size: 12px;
+            font-size: 11px;
         }
 
         .load-grid {
@@ -401,15 +400,18 @@
         .action-bar {
             background: #f8fafc;
             border-top: 1px solid #e2e8f0;
-            padding: 20px 25px;
-            display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
+            padding: 10px 0 0 0;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            gap: 8px;
+            margin-top: 10px;
+            margin-bottom: 0;
+            width: 100%;
         }
 
         .action-btn {
-            flex: 1;
-            min-width: 200px;
+            width: 100%;
             padding: 14px 24px;
             border: none;
             border-radius: 8px;
@@ -419,6 +421,7 @@
             text-decoration: none;
             text-align: center;
             transition: all 0.2s;
+            box-sizing: border-box;
         }
 
         .action-btn.primary {
@@ -443,13 +446,11 @@
         }
 
         .beam-type-btns {
-            display: flex;
-            gap: 10px;
-            width: 100%;
+            display: contents;
         }
 
         .beam-type-btn {
-            flex: 1;
+            width: 100%;
             padding: 12px;
             background: #1e3a5f;
             color: white;
@@ -458,6 +459,7 @@
             font-size: 13px;
             cursor: pointer;
             transition: background 0.2s;
+            box-sizing: border-box;
         }
 
         .beam-type-btn:hover {
@@ -533,6 +535,128 @@
             color: #991b1b;
         }
 
+        /* Multi Column Calculation Sheet */
+        .multi-column-sheet {
+            background: #ffffff;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 12px;
+            flex-shrink: 0;
+        }
+
+        .multi-column-table-container {
+            overflow-x: auto;
+            overflow-y: visible;
+            margin-top: 8px;
+            width: 100%;
+        }
+
+        .multi-column-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11px;
+            min-width: 500px;
+            table-layout: fixed;
+        }
+
+        .multi-column-table thead {
+            background: #f8fafc;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .multi-column-table th {
+            padding: 8px 6px;
+            text-align: center;
+            font-weight: 600;
+            color: #1e3a5f;
+            border: 1px solid #e2e8f0;
+            background: #f8fafc;
+            font-size: 11px;
+            width: 18%;
+        }
+        
+        .multi-column-table th:first-child {
+            width: 10%;
+        }
+
+        .multi-column-table td {
+            padding: 6px;
+            text-align: center;
+            border: 1px solid #e2e8f0;
+            width: 18%;
+        }
+        
+        .multi-column-table td:first-child {
+            width: 10%;
+        }
+
+        .multi-column-table tbody tr:hover {
+            background: #f8fafc;
+        }
+
+        .multi-column-table input {
+            width: 100%;
+            padding: 4px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            text-align: center;
+            font-size: 11px;
+        }
+
+        .multi-column-table input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
+        }
+
+        .multi-column-table .column-number {
+            font-weight: 600;
+            color: #1e3a5f;
+            background: #f8fafc;
+        }
+
+        .multi-column-table .result-cell {
+            font-weight: 500;
+            color: #555;
+        }
+
+        /* Multi Column Execution Bar */
+        .multi-column-execution-bar {
+            display: flex;
+            justify-content: center;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .multi-column-execution-btn {
+            width: 100%;
+            max-width: 400px;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .multi-column-execution-btn:hover {
+            background: linear-gradient(135deg, #5568d3, #6b3fa0);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+        }
+
+        .multi-column-execution-btn:active {
+            transform: translateY(0);
+        }
+
         /* NAME 입력 */
         .name-input-row {
             display: flex;
@@ -562,14 +686,14 @@
         <div class="header">
             <div class="header-left">
                 <a href="../../index.html">← 홈으로</a>
-                <h1>Cross H Column Design Calculator</h1>
+                <h1>SRC(Cross H) Design Calculator</h1>
             </div>
             <div class="header-right">
                 <button class="type-btn active" data-type="kcol">Rolled H</button>
                 <button class="type-btn" data-type="posh">Pos-H / Built-UP H</button>
             </div>
         </div>
-
+            
         <!-- 메인 컨텐츠 -->
         <div class="main-content">
             <!-- 좌측: 단면도 + 치수 -->
@@ -687,16 +811,30 @@
                             <label>r2</label>
                             <input type="text" value="18" id="r2">
                             <span class="unit">mm</span>
-                        </div>
                     </div>
                 </div>
-                
+            </div>
+            
                 <!-- 간편 계산 버튼 -->
                 <button class="quick-calc-btn" onclick="quickCalculate()">
-                    ⚡ 간편 계산
+                    ⚡ 간편계산(1-Column)
                 </button>
-            </div>
-
+                
+                <!-- 하단 액션 바 -->
+                <div class="action-bar">
+                    <a href="Cross-H-Column-Calculation-Data1.html" class="action-btn primary" onclick="saveInputData(); return true;">
+                        📄 계산서(1-Column)
+                    </a>
+                    <button class="action-btn secondary" onclick="printCalculationSheet();">
+                        📥 PDF(1-Column)
+                    </button>
+                    <div class="beam-type-btns">
+                        <button class="beam-type-btn">SRC(Single H)</button>
+                        <button class="beam-type-btn">SRC(Cross H)</button>
+                    </div>
+                        </div>
+                    </div>
+                    
             <!-- 우측: 파라미터 -->
             <div class="right-section">
                 <div class="params-grid">
@@ -716,14 +854,14 @@
                             <label>Fy</label>
                             <div class="input-group">
                                 <input type="text" value="355" id="Fy">
-                                <span class="unit">MPa</span>
-                            </div>
+                            <span class="unit">MPa</span>
                         </div>
+                    </div>
                         <div class="param-row">
                             <label>E</label>
                             <div class="input-group">
                                 <input type="text" value="210,000" id="E">
-                                <span class="unit">MPa</span>
+                            <span class="unit">MPa</span>
                             </div>
                         </div>
                         <div class="param-row">
@@ -734,7 +872,32 @@
                             </div>
                         </div>
                     </div>
-
+                    
+                    <!-- Effective Length Factor -->
+                    <div class="param-card">
+                        <div class="param-title">Effective Length Factor</div>
+                        <div class="param-grid-3">
+                            <div class="item">
+                                <label>Kx</label>
+                                <input type="text" value="0.8" id="Kx">
+                        </div>
+                            <div class="item">
+                                <label>Ky</label>
+                                <input type="text" value="0.8" id="Ky">
+                            </div>
+                            <div class="item">
+                                <label>Kz</label>
+                                <input type="text" value="0.8" id="Kz">
+                            </div>
+                        </div>
+                        <div class="param-row" style="margin-top: 12px; justify-content: space-between;">
+                            <label style="flex: 1; white-space: nowrap;">Cb (Lateral Buckling)</label>
+                            <div class="input-group" style="margin-left: auto;">
+                                <input type="text" value="1" id="Cb" style="width: 50px; text-align: center;">
+                    </div>
+                </div>
+            </div>
+            
                     <!-- Unbraced Length -->
                     <div class="param-card">
                         <div class="param-title">Unbraced Length</div>
@@ -757,35 +920,10 @@
                             <div class="input-group">
                                 <input type="text" value="9.05" id="Lb">
                                 <span class="unit">m</span>
-                            </div>
-                        </div>
                     </div>
-
-                    <!-- Effective Length Factor -->
-                    <div class="param-card">
-                        <div class="param-title">Effective Length Factor</div>
-                        <div class="param-grid-3">
-                            <div class="item">
-                                <label>Kx</label>
-                                <input type="text" value="0.8" id="Kx">
-                            </div>
-                            <div class="item">
-                                <label>Ky</label>
-                                <input type="text" value="0.8" id="Ky">
-                            </div>
-                            <div class="item">
-                                <label>Kz</label>
-                                <input type="text" value="0.8" id="Kz">
-                            </div>
-                        </div>
-                        <div class="param-row" style="margin-top: 12px; justify-content: space-between;">
-                            <label style="flex: 1; white-space: nowrap;">Cb (Lateral Buckling)</label>
-                            <div class="input-group" style="margin-left: auto;">
-                                <input type="text" value="1" id="Cb" style="width: 50px; text-align: center;">
-                            </div>
-                        </div>
-                    </div>
-
+                </div>
+            </div>
+            
                     <!-- Design Load -->
                     <div class="param-card">
                         <div class="param-title">Design Load</div>
@@ -794,7 +932,7 @@
                             <div class="input-group">
                                 <input type="text" value="4,453" id="Pu">
                                 <span class="unit">kN</span>
-                            </div>
+                        </div>
                         </div>
                         <div class="load-grid" style="margin-top: 8px;">
                             <div class="param-row">
@@ -802,36 +940,36 @@
                                 <div class="input-group">
                                     <input type="text" value="0" id="Mux">
                                     <span class="unit">kN·m</span>
-                                </div>
-                            </div>
+                        </div>
+                    </div>
                             <div class="param-row">
                                 <label>Muy</label>
                                 <div class="input-group">
                                     <input type="text" value="0" id="Muy">
                                     <span class="unit">kN·m</span>
-                                </div>
-                            </div>
+                </div>
+            </div>
                             <div class="param-row">
                                 <label>Vux</label>
                                 <div class="input-group">
                                     <input type="text" value="0" id="Vux">
                                     <span class="unit">kN</span>
-                                </div>
-                            </div>
+                        </div>
+                    </div>
                             <div class="param-row">
                                 <label>Vuy</label>
                                 <div class="input-group">
                                     <input type="text" value="0" id="Vuy">
-                                    <span class="unit">kN</span>
+                                <span class="unit">kN</span>
                                 </div>
+                            </div>
                             </div>
                         </div>
                     </div>
-                </div>
-
+                    
                 <!-- 해석 결과 (우측 섹션 내부) -->
                 <div class="results-box">
-                    <div class="param-title">📊 Analysis Results</div>
+                    <div class="param-title">📊 1-Column Calculation Results</div>
                     <div class="results-grid">
                         <div class="result-item">
                             <div class="result-name">Compressive</div>
@@ -871,32 +1009,45 @@
                                 <span>Vux/φVnx = </span>
                                 <span class="result-val">-</span>
                                 <span class="result-status pending">대기</span>
-                            </div>
-                        </div>
+                    </div>
+                </div>
                         <div class="result-item">
                             <div class="result-name">Shear Y</div>
                             <div class="result-check">
                                 <span>Vuy/φVny = </span>
                                 <span class="result-val">-</span>
                                 <span class="result-status pending">대기</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
-
-        <!-- 하단 액션 바 -->
-        <div class="action-bar">
-            <a href="Cross-H-Column-Calculation-Data1.html" class="action-btn primary" onclick="saveInputData()">
-                📄 전체 계산서 보기
-            </a>
-            <button class="action-btn secondary" onclick="printCalculationSheet();">
-                📥 PDF 다운로드
-            </button>
-            <div class="beam-type-btns">
-                <button class="beam-type-btn">SINGLE H Column</button>
-                <button class="beam-type-btn">CROSS H Column</button>
+                    </div>
+        </div>
+        
+                <!-- Multi Column Calculation Sheet -->
+                <div class="multi-column-sheet">
+                    <div class="param-title">📋 Multi Column Calculation Sheet</div>
+                    <div class="multi-column-table-container">
+                        <table class="multi-column-table">
+                            <thead>
+                                <tr>
+                                    <th>Col. no</th>
+                                    <th>Pu</th>
+                                    <th>Mux</th>
+                                    <th>Muy</th>
+                                    <th>Compressive</th>
+                                    <th>P-M-M</th>
+                                </tr>
+                            </thead>
+                            <tbody id="multiColumnTableBody">
+                                <!-- JavaScript로 동적 생성 (6개 기둥) -->
+                            </tbody>
+                        </table>
+        </div>
+                    <div class="multi-column-execution-bar">
+                        <button class="multi-column-execution-btn" onclick="executeMultiColumnCalculation()">
+                            ⚡ Multi Column Execution
+                        </button>
+    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -1332,6 +1483,209 @@
                 statusSpan.textContent = 'N.G';
                 statusSpan.className = 'result-status ng';
             }
+        }
+        // Multi Column Calculation Sheet 초기화 (6개 기둥)
+        function initializeMultiColumnTable() {
+            const tbody = document.getElementById('multiColumnTableBody');
+            if (!tbody) return;
+            
+            tbody.innerHTML = ''; // 기존 내용 제거
+            
+            for (let i = 1; i <= 6; i++) {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="column-number">${i}</td>
+                    <td><input type="text" class="multi-input" data-col="pu" data-row="${i}" value="4000" placeholder="0"></td>
+                    <td><input type="text" class="multi-input" data-col="mux" data-row="${i}" placeholder="0"></td>
+                    <td><input type="text" class="multi-input" data-col="muy" data-row="${i}" placeholder="0"></td>
+                    <td class="result-cell" data-result="compressive" data-row="${i}">-</td>
+                    <td class="result-cell" data-result="pmm" data-row="${i}">-</td>
+                `;
+                tbody.appendChild(row);
+            }
+        }
+        
+        // 단일 기둥 계산 함수 (Pu, Mux, Muy를 파라미터로 받음)
+        function calculateSingleColumn(Pu, Mux, Muy) {
+            // ===== 입력값 가져오기 =====
+            const h1 = parseFloat(document.getElementById('H1').value) || 450;
+            const b1 = parseFloat(document.getElementById('B1').value) || 200;
+            const tw1 = parseFloat(document.getElementById('tw1').value) || 9;
+            const tf1 = parseFloat(document.getElementById('tf1').value) || 14;
+            const r1 = parseFloat(document.getElementById('r1').value) || 18;
+            
+            const h2 = parseFloat(document.getElementById('H2').value) || 450;
+            const b2 = parseFloat(document.getElementById('B2').value) || 200;
+            const tw2 = parseFloat(document.getElementById('tw2').value) || 9;
+            const tf2 = parseFloat(document.getElementById('tf2').value) || 14;
+            const r2 = parseFloat(document.getElementById('r2').value) || 18;
+            
+            const Fy = parseFloat(document.getElementById('Fy').value.replace(/,/g, '')) || 355;
+            const E = parseFloat(document.getElementById('E').value.replace(/,/g, '')) || 210000;
+            const nu = parseFloat(document.getElementById('nu').value) || 0.3;
+            
+            const Lx = parseFloat(document.getElementById('Lx').value) * 1000 || 9050; // m to mm
+            const Ly = parseFloat(document.getElementById('Ly').value) * 1000 || 9050;
+            const Kx = parseFloat(document.getElementById('Kx').value) || 0.8;
+            const Ky = parseFloat(document.getElementById('Ky').value) || 0.8;
+            const Kz = parseFloat(document.getElementById('Kz').value) || 0.8;
+
+            // ===== HBeam Class calculations =====
+            const hw3 = h1 - 2 * tf1;
+            const hw6 = h2 - 2 * tf2;
+            const d1 = h1/2 - tf1/2;
+            const d4 = h2/2 - tf2/2;
+
+            // Total section area - Cross H section
+            const ag1 = b1 * tf1;
+            const ag2 = b1 * tf1;
+            const ag3 = hw3 * tw1;
+            const ag4 = b2 * tf2;
+            const ag5 = b2 * tf2;
+            const ag6 = hw6 * tw2;
+            const ag7 = 4 * (r1*r1 - Math.PI * r1*r1 / 4);
+            const ag8 = 4 * (r2*r2 - Math.PI * r2*r2 / 4);
+            const ag9 = tw1 * tw2;
+            const area = ag1 + ag2 + ag3 + ag4 + ag5 + ag6 + ag7 + ag8 - ag9;
+
+            // Second inertia moment X-axis
+            const Ix1 = 1/12 * b1 * Math.pow(tf1, 3) + ag1 * Math.pow(d1, 2);
+            const Ix2 = 1/12 * b1 * Math.pow(tf1, 3) + ag1 * Math.pow(d1, 2);
+            const Ix3 = 1/12 * tw1 * Math.pow(hw3, 3);
+            const Ix4 = 1/12 * tf2 * Math.pow(b2, 3);
+            const Ix5 = 1/12 * tf2 * Math.pow(b2, 3);
+            const Ix6 = 1/12 * hw6 * Math.pow(tw2, 3);
+            const Ix = Ix1 + Ix2 + Ix3 + Ix4 + Ix5 + Ix6;
+
+            // Second inertia moment Y-axis
+            const Iy4 = 1/12 * b2 * Math.pow(tf2, 3) + ag4 * Math.pow(d4, 2);
+            const Iy5 = 1/12 * b2 * Math.pow(tf2, 3) + ag4 * Math.pow(d4, 2);
+            const Iy6 = 1/12 * tw2 * Math.pow(hw6, 3);
+            const Iy1 = 1/12 * tf1 * Math.pow(b1, 3);
+            const Iy2 = 1/12 * tf1 * Math.pow(b1, 3);
+            const Iy3 = 1/12 * hw3 * Math.pow(tw2, 3);
+            const Iy = Iy1 + Iy2 + Iy3 + Iy4 + Iy5 + Iy6;
+
+            // Radius of gyration
+            const ix = Math.sqrt(Ix / area);
+            const iy = Math.sqrt(Iy / area);
+
+            // Elastic section modulus
+            const sx = Ix / (h1 / 2);
+            const sy = Iy / (h2 / 2);
+
+            // Plastic section modulus Zx
+            const Zx1 = (b1 * tf1) * d1;
+            const Zx2 = (b1 * tf1) * d1;
+            const Zx3 = (tw1 * hw3/2) * hw3/4;
+            const Zx4 = (tw1 * hw3/2) * hw3/4;
+            const Zx5 = (b2*b2 * tf2 / 2);
+            const Zx6 = (tw2 * hw6 / 8) * 2;
+            const zx = Zx1 + Zx2 + Zx3 + Zx4 + Zx5 + Zx6;
+
+            // Plastic section modulus Zy
+            const Zy1 = (b2 * tf2) * d4;
+            const Zy2 = (b2 * tf2) * d4;
+            const Zy3 = (tw2 * hw6/2) * hw6/4;
+            const Zy4 = (tw2 * hw6/2) * hw6/4;
+            const Zy5 = (b1*b1 * tf1 / 2);
+            const Zy6 = (tw1 * hw3 / 8) * 2;
+            const zy = Zy1 + Zy2 + Zy3 + Zy4 + Zy5 + Zy6;
+
+            // Torsional constant J
+            const J1 = (2*b1 * Math.pow(tf1, 3) + h1*Math.pow(tw1, 3)) / 3;
+            const J2 = (2*b2 * Math.pow(tf2, 3) + h2*Math.pow(tw2, 3)) / 3;
+            const J = J1 + J2;
+
+            // Warping constant Cw
+            const cw = Iy * Math.pow(h1 - tf1, 2) / 4;
+
+            // ===== Column Class calculations =====
+            // Slenderness ratio
+            const lambdaX = Kx * Lx / ix;
+            const lambdaY = Ky * Ly / iy;
+            const lambda = Math.max(lambdaX, lambdaY);
+
+            // Flexural Buckling Stress Fe1
+            const Fe1 = Math.pow(Math.PI, 2) * E / Math.pow(lambda, 2);
+
+            // Torsional Buckling Stress Fe2
+            const G = E / (2 * (1 + nu));
+            const Fe2 = (Math.pow(Math.PI, 2) * E * cw / Math.pow(Kz * Lx, 2) + G * J) / (Ix + Iy);
+
+            // Critical stress Fcr
+            const Fe = Math.min(Fe1, Fe2);
+            const Fcr = Math.pow(0.658, Fy / Fe) * Fy;
+
+            // Compressive Strength phi_Pn
+            const phi_c = 0.9;
+            const phi_Pn = phi_c * area * Fcr / 1000; // kN
+
+            // Flexural Strength - Mpx, Mpy
+            const Mpx = Math.min(Fy * zx, 1.6 * Fy * sx) / 1000000; // kN.m
+            const Mpy = Math.min(Fy * zy, 1.6 * Fy * sy) / 1000000; // kN.m
+            const phi_b = 0.9;
+            const phi_Mnx = phi_b * Mpx;
+            const phi_Mny = phi_b * Mpy;
+
+            // ===== 비율 계산 =====
+            const ratio_comp = Pu / phi_Pn;
+            const ratio_bendX = phi_Mnx > 0 ? Mux / phi_Mnx : 0;
+            const ratio_bendY = phi_Mny > 0 ? Muy / phi_Mny : 0;
+
+            // P-M-M 조합
+            let ratio_pmm;
+            if (ratio_comp >= 0.2) {
+                ratio_pmm = ratio_comp + (8/9) * (ratio_bendX + ratio_bendY);
+            } else {
+                ratio_pmm = ratio_comp / 2 + (ratio_bendX + ratio_bendY);
+            }
+
+            return {
+                compressive: ratio_comp,
+                pmm: ratio_pmm
+            };
+        }
+
+        // Multi Column Execution 함수
+        function executeMultiColumnCalculation() {
+            const rows = document.querySelectorAll('#multiColumnTableBody tr');
+            
+            rows.forEach((row, index) => {
+                const rowNum = index + 1;
+                
+                // 각 행에서 Pu, Mux, Muy 값 읽기
+                const puInput = row.querySelector('input[data-col="pu"]');
+                const muxInput = row.querySelector('input[data-col="mux"]');
+                const muyInput = row.querySelector('input[data-col="muy"]');
+                
+                const Pu = parseFloat(puInput.value) || 0;
+                const Mux = parseFloat(muxInput.value) || 0;
+                const Muy = parseFloat(muyInput.value) || 0;
+                
+                // 계산 수행
+                const results = calculateSingleColumn(Pu, Mux, Muy);
+                
+                // 결과 출력
+                const compressiveCell = row.querySelector('[data-result="compressive"]');
+                const pmmCell = row.querySelector('[data-result="pmm"]');
+                
+                if (compressiveCell) {
+                    compressiveCell.textContent = results.compressive.toFixed(3);
+                }
+                if (pmmCell) {
+                    pmmCell.textContent = results.pmm.toFixed(3);
+                }
+            });
+            
+            console.log('Multi Column Execution 완료');
+        }
+        
+        // 페이지 로드 시 테이블 초기화
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializeMultiColumnTable);
+        } else {
+            initializeMultiColumnTable();
         }
     </script>
 </body>
