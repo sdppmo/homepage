@@ -7,6 +7,8 @@
 #
 # Usage:
 #   ./deploy.sh                    # Full build + security checks + deploy
+#   ./deploy.sh --local            # Build + run local test server (NO AWS deploy)
+#   ./deploy.sh --stop             # Stop local test server
 #   ./deploy.sh --build-only       # Only build Docker image
 #   ./deploy.sh --deploy-only      # Only deploy existing image
 #   ./deploy.sh --quick            # Skip security scans (faster)
@@ -69,6 +71,10 @@ log_error() {
 BUILD_ONLY=false
 DEPLOY_ONLY=false
 QUICK_MODE=false
+LOCAL_MODE=false
+STOP_LOCAL=false
+LOCAL_PORT=8080
+LOCAL_CONTAINER="sdppmo-local-test"
 
 for arg in "$@"; do
     case $arg in
@@ -81,10 +87,18 @@ for arg in "$@"; do
         --quick)
             QUICK_MODE=true
             ;;
+        --local)
+            LOCAL_MODE=true
+            ;;
+        --stop)
+            STOP_LOCAL=true
+            ;;
         --help|-h)
             echo "Usage: $0 [OPTIONS]"
             echo ""
             echo "Options:"
+            echo "  --local        Build + run local test server at http://localhost:$LOCAL_PORT (NO AWS deploy)"
+            echo "  --stop         Stop local test server"
             echo "  --build-only   Only build Docker image, don't deploy"
             echo "  --deploy-only  Only deploy existing image to Lightsail"
             echo "  --quick        Skip security scans for faster deployment"
@@ -98,6 +112,20 @@ for arg in "$@"; do
             ;;
     esac
 done
+
+# ============================================================
+# Handle --stop (stop local server)
+# ============================================================
+if [ "$STOP_LOCAL" = true ]; then
+    log_step "Stopping local test server..."
+    if docker ps -q -f name="$LOCAL_CONTAINER" | grep -q .; then
+        docker stop "$LOCAL_CONTAINER" && log_success "Container stopped"
+        docker rm "$LOCAL_CONTAINER" && log_success "Container removed"
+    else
+        log_warn "No local container running"
+    fi
+    exit 0
+fi
 
 # ============================================================
 # Banner
@@ -132,46 +160,51 @@ if ! docker info &> /dev/null; then
 fi
 log_success "Docker is running"
 
-# Check AWS CLI
-if ! command -v aws &> /dev/null; then
-    log_error "AWS CLI is not installed"
-    echo "Install: https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html"
-    exit 1
-fi
-log_success "AWS CLI installed"
+# AWS checks (skip for local-only mode)
+if [ "$LOCAL_MODE" = false ]; then
+    # Check AWS CLI
+    if ! command -v aws &> /dev/null; then
+        log_error "AWS CLI is not installed"
+        echo "Install: https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html"
+        exit 1
+    fi
+    log_success "AWS CLI installed"
 
-# Check AWS credentials
-if ! aws sts get-caller-identity &> /dev/null; then
-    log_error "AWS credentials not configured"
-    echo "Run: aws configure"
-    exit 1
-fi
-AWS_USER=$(aws sts get-caller-identity --query "Arn" --output text 2>/dev/null | awk -F'/' '{print $NF}')
-log_success "AWS credentials configured (user: $AWS_USER)"
+    # Check AWS credentials
+    if ! aws sts get-caller-identity &> /dev/null; then
+        log_error "AWS credentials not configured"
+        echo "Run: aws configure"
+        exit 1
+    fi
+    AWS_USER=$(aws sts get-caller-identity --query "Arn" --output text 2>/dev/null | awk -F'/' '{print $NF}')
+    log_success "AWS credentials configured (user: $AWS_USER)"
 
-# Check Lightsail permissions and service
-if ! aws lightsail get-container-services --service-name "$SERVICE_NAME" --region "$AWS_REGION" &> /dev/null; then
-    log_error "Cannot access Lightsail service '$SERVICE_NAME'"
-    echo ""
-    echo -e "${YELLOW}Possible causes:${NC}"
-    echo "  1. Service doesn't exist - create it in AWS Lightsail Console"
-    echo "  2. Missing IAM permissions - add this policy to your user:"
-    echo ""
-    echo -e "${BLUE}  {${NC}"
-    echo -e "${BLUE}    \"Version\": \"2012-10-17\",${NC}"
-    echo -e "${BLUE}    \"Statement\": [{${NC}"
-    echo -e "${BLUE}      \"Effect\": \"Allow\",${NC}"
-    echo -e "${BLUE}      \"Action\": \"lightsail:*\",${NC}"
-    echo -e "${BLUE}      \"Resource\": \"*\"${NC}"
-    echo -e "${BLUE}    }]${NC}"
-    echo -e "${BLUE}  }${NC}"
-    echo ""
-    echo "  Or attach the managed policy: AmazonLightsailFullAccess"
-    echo ""
-    echo "  AWS Console: https://console.aws.amazon.com/iam/home#/users/${AWS_USER}"
-    exit 1
+    # Check Lightsail permissions and service
+    if ! aws lightsail get-container-services --service-name "$SERVICE_NAME" --region "$AWS_REGION" &> /dev/null; then
+        log_error "Cannot access Lightsail service '$SERVICE_NAME'"
+        echo ""
+        echo -e "${YELLOW}Possible causes:${NC}"
+        echo "  1. Service doesn't exist - create it in AWS Lightsail Console"
+        echo "  2. Missing IAM permissions - add this policy to your user:"
+        echo ""
+        echo -e "${BLUE}  {${NC}"
+        echo -e "${BLUE}    \"Version\": \"2012-10-17\",${NC}"
+        echo -e "${BLUE}    \"Statement\": [{${NC}"
+        echo -e "${BLUE}      \"Effect\": \"Allow\",${NC}"
+        echo -e "${BLUE}      \"Action\": \"lightsail:*\",${NC}"
+        echo -e "${BLUE}      \"Resource\": \"*\"${NC}"
+        echo -e "${BLUE}    }]${NC}"
+        echo -e "${BLUE}  }${NC}"
+        echo ""
+        echo "  Or attach the managed policy: AmazonLightsailFullAccess"
+        echo ""
+        echo "  AWS Console: https://console.aws.amazon.com/iam/home#/users/${AWS_USER}"
+        exit 1
+    fi
+    log_success "Lightsail service '$SERVICE_NAME' accessible"
+else
+    log_success "Local mode - skipping AWS checks"
 fi
-log_success "Lightsail service '$SERVICE_NAME' accessible"
 
 # ============================================================
 # Security Pre-checks
@@ -286,6 +319,34 @@ if [ "$BUILD_ONLY" = true ]; then
     echo ""
     log_success "Build complete!"
     echo "Run './deploy.sh --deploy-only' to deploy"
+    exit 0
+fi
+
+# ============================================================
+# Local Mode - Run local test server (skip AWS deployment)
+# ============================================================
+if [ "$LOCAL_MODE" = true ]; then
+    log_step "Starting Local Test Server"
+    
+    # Stop any existing local container
+    if docker ps -q -f name="$LOCAL_CONTAINER" | grep -q .; then
+        log_warn "Stopping existing local container..."
+        docker stop "$LOCAL_CONTAINER" > /dev/null 2>&1
+        docker rm "$LOCAL_CONTAINER" > /dev/null 2>&1
+    fi
+    
+    # Run new container
+    docker run -d --name "$LOCAL_CONTAINER" -p ${LOCAL_PORT}:80 ${IMAGE_NAME}:${IMAGE_TAG} > /dev/null 2>&1
+    
+    echo ""
+    echo -e "${GREEN}╔════════════════════════════════════════════╗${NC}"
+    echo -e "${GREEN}║  ✓ Local Server Running                    ║${NC}"
+    echo -e "${GREEN}╚════════════════════════════════════════════╝${NC}"
+    echo ""
+    echo -e "  URL:  ${GREEN}http://localhost:${LOCAL_PORT}${NC}"
+    echo ""
+    echo "  To stop:  ./deploy.sh --stop"
+    echo ""
     exit 0
 fi
 
