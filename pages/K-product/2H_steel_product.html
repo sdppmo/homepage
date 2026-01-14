@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>K-COLUMN 공정관리 시스템</title>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -29,6 +30,7 @@
             background: linear-gradient(135deg, #2c4a7c, #4a6fa5);
             color: white;
             padding: 20px 30px;
+            padding-left: 140px;
             border-radius: 12px;
             margin-bottom: 20px;
             display: flex;
@@ -45,6 +47,33 @@
         .header-info {
             text-align: right;
             font-size: 14px;
+        }
+
+        .home-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 10;
+        }
+
+        .home-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
         }
 
         /* Company Selector */
@@ -601,13 +630,17 @@
 <body>
     <div class="container">
         <!-- Header -->
-        <div class="header">
+        <div class="header" style="position: relative;">
+            <a href="../../index.html" class="home-btn">
+                <span>🏠</span>
+                <span>홈으로</span>
+            </a>
             <div>
-                <h1>🏗️ K-COLUMN 공정관리 시스템</h1>
+                <h1>🏗️ K-COLUMN 공정관리 시스템 <span id="project-badge" style="margin-left:10px;font-size:12px;font-weight:800;background:rgba(255,255,255,0.18);padding:6px 10px;border-radius:999px;">PROJECT</span></h1>
                 <p style="margin-top:5px;opacity:0.9;">K-COLUMN 50EA 제작 및 설치 공정</p>
             </div>
             <div class="header-info">
-                <div>공사기간: 2025.12.26 ~ 2026.02.28</div>
+                <div>공사기간: 2025.12.26 ~ 2026.03.15</div>
                 <div style="margin-top:5px;">총 기둥수: <strong>50개</strong></div>
             </div>
         </div>
@@ -645,10 +678,12 @@
 
         <!-- Tabs -->
         <div class="tabs">
-            <button class="tab-btn active" onclick="showPanel('overview')">📊 전체 현황</button>
-            <button class="tab-btn" onclick="showPanel('input')">✏️ 일일 입력</button>
-            <button class="tab-btn" onclick="showPanel('gantt')">📅 공정표 (Gantt)</button>
-            <button class="tab-btn" onclick="showPanel('chart')">📈 진행률 차트</button>
+            <button class="tab-btn active" onclick="showPanel('overview', this)">📊 전체 현황</button>
+            <button class="tab-btn" onclick="showPanel('transport', this)">🚚 운송차수계획</button>
+            <button class="tab-btn" onclick="showPanel('input', this)">✏️ 일일 입력</button>
+            <button class="tab-btn" onclick="showPanel('gantt', this)">📅 공정표 (Gantt)</button>
+            <button class="tab-btn" onclick="showPanel('chart', this)">📈 진행률 차트</button>
+            <button class="tab-btn" onclick="showPanel('transportVolume', this)">📦 운송물량산정</button>
         </div>
 
         <!-- Overview Panel -->
@@ -821,6 +856,85 @@
             </div>
         </div>
 
+        <!-- Transport Panel -->
+        <div class="panel" id="panel-transport">
+            <h3 style="margin-bottom:20px;color:#2c4a7c;">🚚 현장운송차수계획입력</h3>
+            
+            <!-- 입력 안내창 -->
+            <div id="transport-guide" style="margin-bottom:20px;padding:15px;background:#fff8e1;border-radius:8px;border:1px solid #ffc107;">
+                <div style="margin-bottom:10px;">
+                    <strong style="font-size:14px;color:#795548;">🔴 현장운송차수계획입력 : 유석철강</strong>
+                </div>
+                <div style="font-size:13px;color:#795548;">
+                    <div style="margin:3px 0;">① 해당차수를 입력합니다.</div>
+                    <div style="margin:3px 0;">② 선택한 기둥을 클릭합니다. 색상이 녹색으로 변경됩니다.</div>
+                    <div style="margin:3px 0;">③ 해당차수 기둥을 선택후 아래 저장합니다.</div>
+                    <div style="margin:3px 0;">④ 수정이 발생되면 해당차수에서 재지정하여 저장합니다.</div>
+                </div>
+            </div>
+            
+            <!-- 차수 관리 섹션 -->
+            <div style="margin-bottom:20px;padding:15px;background:#fff;border-radius:8px;border:1px solid #e0e0e0;">
+                <div style="display:flex;align-items:center;gap:15px;margin-bottom:15px;flex-wrap:wrap;">
+                    <label style="font-weight:600;color:#2c4a7c;">차수 관리:</label>
+                    <input type="number" id="transport-trip-input" min="1" value="1" style="width:80px;padding:8px;border:1px solid #ddd;border-radius:4px;">
+                    <button class="action-btn primary" onclick="addTransportTrip()">➕ 차수 추가</button>
+                    <button class="action-btn secondary" onclick="removeTransportTrip()">➖ 차수 삭제</button>
+                </div>
+                <div style="display:flex;align-items:center;gap:15px;margin-bottom:15px;flex-wrap:wrap;padding-top:15px;border-top:1px solid #e0e0e0;">
+                    <label style="font-weight:600;color:#2c4a7c;">차수 번호 수정:</label>
+                    <input type="number" id="transport-trip-edit-input" min="1" value="1" style="width:80px;padding:8px;border:1px solid #ddd;border-radius:4px;">
+                    <button class="action-btn" onclick="editTransportTrip()" style="background:#ff9800;color:white;">✏️ 차수 번호 변경</button>
+                    <span style="font-size:12px;color:#666;">현재 선택된 차수의 번호를 변경합니다</span>
+                </div>
+                <div id="transport-trips-list" style="display:flex;flex-wrap:wrap;gap:10px;">
+                    <!-- 차수 버튼들이 여기에 동적으로 생성됩니다 -->
+                </div>
+            </div>
+
+            <!-- 현재 선택된 차수 정보 -->
+            <div id="current-trip-info" style="margin-bottom:20px;padding:15px;background:#e3f2fd;border-radius:8px;border-left:4px solid #2196f3;">
+                <div style="font-weight:600;color:#1565c0;margin-bottom:10px;">
+                    현재 선택: <span id="current-trip-number">-</span>차수
+                </div>
+                <div style="display:flex;align-items:center;gap:15px;flex-wrap:wrap;">
+                    <div style="font-size:14px;color:#1976d2;">
+                        선택된 기둥: <span id="selected-columns-count">0</span>개
+                        <span style="margin-left:12px;">총 물량: <span id="selected-columns-weight" style="font-weight:bold;color:#2c4a7c;">0톤</span></span>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <label style="font-size:14px;color:#1976d2;font-weight:500;">운송날짜:</label>
+                        <input type="date" id="transport-trip-date" style="padding:6px 10px;border:1px solid #90caf9;border-radius:4px;font-size:14px;" onchange="updateTransportTripDate()">
+                    </div>
+                </div>
+            </div>
+
+            <!-- 기둥 선택 그리드 -->
+            <div style="margin-bottom:20px;">
+                <div style="margin-bottom:10px;font-weight:600;color:#333;">기둥 선택 (50개):</div>
+                <div class="column-grid" id="column-grid-transport">
+                    <!-- Generated by JS -->
+                </div>
+            </div>
+
+            <!-- 중복 체크 결과 표시 -->
+            <div id="duplicate-check-result" style="display:none;margin-bottom:20px;padding:15px;background:#ffebee;border-radius:8px;border-left:4px solid #f44336;">
+                <div style="font-weight:600;color:#c62828;margin-bottom:10px;">
+                    ⚠️ 중복 기둥 발견
+                </div>
+                <div id="duplicate-info" style="font-size:13px;color:#d32f2f;">
+                    <!-- 중복 정보가 여기에 표시됩니다 -->
+                </div>
+            </div>
+
+            <!-- 저장 버튼 -->
+            <div style="text-align:right;">
+                <button class="action-btn" onclick="checkDuplicateColumns()" style="background:#ff9800;color:white;margin-right:10px;">🔍 중복 기둥 체크</button>
+                <button class="action-btn primary" onclick="saveTransportPlan()">💾 운송차수계획 저장</button>
+                <button class="action-btn secondary" onclick="clearTransportSelection()">🔄 선택 초기화</button>
+            </div>
+        </div>
+
         <!-- Gantt Panel -->
         <div class="panel" id="panel-gantt">
             <h3 style="margin-bottom:20px;color:#2c4a7c;">📅 전체 공정표 (Gantt Chart)</h3>
@@ -851,6 +965,41 @@
             <div class="chart-container">
                 <h3>📊 업체별 공정 현황</h3>
                 <canvas id="companyChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Transport Volume Panel -->
+        <div class="panel" id="panel-transportVolume">
+            <h3 style="margin-bottom:16px;color:#2c4a7c;">📦 운송물량산정</h3>
+            <div style="margin-bottom:16px;padding:12px;border:1px solid #e0e0e0;border-radius:8px;background:#f9fafb;">
+                <div style="margin-bottom:8px;font-weight:600;color:#2c4a7c;">입력 안내 (엑셀 업로드)</div>
+                <div style="color:#555;font-size:13px;line-height:1.5;">
+                    1) 엑셀 첫 행에 아래 순서로 헤더를 넣어주세요: <strong>기둥번호, 사이즈, 길이(mm), 소부재예상물량</strong><br>
+                    2) 최대 50개 기둥까지 표시됩니다. 추가 데이터는 무시됩니다.<br>
+                    3) 업로드 후 표에서 내용을 즉시 확인할 수 있습니다.
+                </div>
+            </div>
+
+            <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px;">
+                <input type="file" accept=".xlsx,.xls,.csv" id="transport-volume-file" onchange="handleTransportVolumeFile(event)" style="padding:8px;border:1px solid #ccc;border-radius:6px;">
+                <button class="action-btn primary" onclick="downloadTransportVolumeTemplate()">📄 템플릿 다운로드</button>
+                <span id="transport-volume-status" style="color:#555;font-size:13px;">파일을 업로드해주세요.</span>
+            </div>
+
+            <div style="overflow-x:auto;">
+                <table class="gantt-table" style="min-width:600px;">
+                    <thead>
+                        <tr>
+                            <th style="width:80px;">기둥번호</th>
+                            <th>사이즈</th>
+                            <th>길이(mm)</th>
+                            <th>소부재 예상물량</th>
+                        </tr>
+                    </thead>
+                    <tbody id="transport-volume-tbody">
+                        <tr><td colspan="4" style="text-align:center;color:#888;padding:16px;">엑셀을 업로드하면 여기에서 50개 기둥 데이터가 표시됩니다.</td></tr>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
@@ -909,7 +1058,35 @@
         // Constants
         const TOTAL_COLUMNS = 50;
         const START_DATE = new Date('2025-12-26');
-        const END_DATE = new Date('2026-02-28');
+        const END_DATE = new Date('2026-03-15');
+
+        // Project scoping (6 projects)
+        const urlParams = new URLSearchParams(window.location.search);
+        const PROJECT_ID = (urlParams.get('project') || localStorage.getItem('kcol:lastProject') || 'P1').toString();
+        localStorage.setItem('kcol:lastProject', PROJECT_ID);
+
+        // 프로젝트 이름 매핑
+        const PROJECT_NAMES = {
+            'P1': '진흥기업',
+            'P2': '00프로젝트',
+            'P3': '00프로젝트',
+            'P4': '00프로젝트',
+            'P5': '00프로젝트',
+            'P6': '00프로젝트'
+        };
+
+        function getProjectName() {
+            return PROJECT_NAMES[PROJECT_ID] || `프로젝트 ${PROJECT_ID}`;
+        }
+
+        function kcolKey(suffix) {
+            return `kcol:${PROJECT_ID}:${suffix}`;
+        }
+
+        function kcolRef(pathSuffix) {
+            // Firebase path: kcolumn/{projectId}/{suffix}
+            return `kcolumn/${PROJECT_ID}/${pathSuffix}`;
+        }
         
         // 휴무일 정의 (설날 연휴)
         const HOLIDAYS = {
@@ -933,24 +1110,48 @@
         let selectedColumn = null;
         let columnData = {}; // { columnId: { status: 0-5, date: '2025-12-26', notes: '' } }
         let dailyData = {}; // { '2025-12-26': { 1: [columnIds completed p1], 2: [...], ... } }
+        let transportPlan = {}; // { tripNumber: { columns: [columnIds], date: 'YYYY-MM-DD' } } - 예: { 1: { columns: [1,2,3], date: '2025-01-15' }, 2: { columns: [10,11,12], date: '2025-01-20' } }
+        let currentTransportTrip = 1; // 현재 선택된 차수
+        let duplicateColumns = {}; // { columnId: [tripNumbers] } - 중복된 기둥 정보
         let progressChart = null;
         let companyChart = null;
+        let transportVolumeData = []; // 운송 물량 산정용 데이터 (엑셀 업로드)
 
         // Initialize
-        document.addEventListener('DOMContentLoaded', function() {
-            if (isFirebaseEnabled) {
-                // Firebase 실시간 리스너 설정
-                setupFirebaseListeners();
-                showConnectionStatus('🟢 실시간 연결됨 (Firebase)');
-            } else {
-                // localStorage 모드
-                loadFromLocalStorage();
-                showConnectionStatus('🟡 로컬 저장 모드 (Firebase 설정 필요)');
+        // Status display function
+        function showStatus(message, isError) {
+            const statusDiv = document.createElement('div');
+            statusDiv.id = 'init-status';
+            statusDiv.style.cssText = 'position:fixed;top:50px;left:50%;transform:translateX(-50%);background:' + (isError ? '#f44336' : '#4caf50') + ';color:white;padding:15px 30px;border-radius:8px;font-size:16px;z-index:10001;box-shadow:0 4px 15px rgba(0,0,0,0.3);font-weight:bold;';
+            statusDiv.textContent = message;
+            document.body.appendChild(statusDiv);
+            if (!isError) {
+                setTimeout(() => statusDiv.remove(), 3000);
             }
-            setToday();
-            renderColumnGrid('column-grid-overview');
-            renderColumnGrid('column-grid-input');
-            updateProgressBars();
+            console.log(message);
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            try {
+                const badge = document.getElementById('project-badge');
+                if (badge) badge.textContent = getProjectName();
+
+                if (isFirebaseEnabled) {
+                    setupFirebaseListeners();
+                    showConnectionStatus('🟢 실시간 연결됨 (Firebase)');
+                } else {
+                    loadFromLocalStorage();
+                    showConnectionStatus('🟡 로컬 저장 모드 (Firebase 설정 필요)');
+                }
+                setToday();
+                loadTransportPlan();
+                renderColumnGrid('column-grid-overview');
+                renderColumnGrid('column-grid-input');
+                updateProgressBars();
+            } catch (error) {
+                console.error('Initialization error:', error);
+                alert('시스템 초기화 오류: ' + error.message);
+            }
         });
 
         // 연결 상태 표시
@@ -978,7 +1179,7 @@
         // Firebase 실시간 리스너
         function setupFirebaseListeners() {
             // columnData 실시간 리스너
-            db.ref('kcolumn/columnData').on('value', (snapshot) => {
+            db.ref(kcolRef('columnData')).on('value', (snapshot) => {
                 columnData = snapshot.val() || {};
                 renderColumnGrid('column-grid-overview');
                 renderColumnGrid('column-grid-input');
@@ -986,8 +1187,21 @@
             });
 
             // dailyData 실시간 리스너
-            db.ref('kcolumn/dailyData').on('value', (snapshot) => {
+            db.ref(kcolRef('dailyData')).on('value', (snapshot) => {
                 dailyData = snapshot.val() || {};
+            });
+
+            // transportPlan 실시간 리스너
+            db.ref(kcolRef('transportPlan')).on('value', (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    transportPlan = data;
+                    if (document.getElementById('panel-transport')?.classList.contains('active')) {
+                        renderTransportTrips();
+                        renderTransportColumnGrid();
+                        updateTransportTripInfo();
+                    }
+                }
             });
         }
 
@@ -1110,20 +1324,35 @@
         }
 
         // Panel Navigation
-        function showPanel(panelId) {
+        function showPanel(panelId, btnElement) {
             document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             
-            document.getElementById('panel-' + panelId).classList.add('active');
-            event.target.classList.add('active');
+            const panel = document.getElementById('panel-' + panelId);
+            if (panel) {
+                panel.classList.add('active');
+            }
+            
+            if (btnElement) {
+                btnElement.classList.add('active');
+            } else if (event && event.target) {
+                event.target.classList.add('active');
+            }
             
             if (panelId === 'gantt') {
+                loadTransportPlan(); // 운송계획 로드
                 renderGanttChart();
             } else if (panelId === 'chart') {
                 renderCharts();
             } else if (panelId === 'overview') {
                 renderColumnGrid('column-grid-overview');
                 updateProgressBars();
+            } else if (panelId === 'transport') {
+                loadTransportPlan();
+                renderTransportColumnGrid();
+                renderTransportTrips();
+            } else if (panelId === 'transportVolume') {
+                renderTransportVolumeTable();
             }
         }
 
@@ -1318,6 +1547,11 @@
         function renderGanttChart() {
             const table = document.getElementById('gantt-table');
             
+            // 운송계획이 로드되지 않았다면 로드
+            if (!transportPlan || Object.keys(transportPlan).length === 0) {
+                loadTransportPlan();
+            }
+            
             // Generate date range
             const dates = [];
             let currentDate = new Date(START_DATE);
@@ -1367,10 +1601,37 @@
                     } else {
                         // Find which process was completed on this date for this column
                         let cellClass = '';
+                        
+                        // 먼저 dailyData에서 확인
                         for (let p = 1; p <= 6; p++) {
                             if (dailyData[dateStr]?.[p]?.includes(c)) {
                                 cellClass = `gantt-cell p${p}`;
                                 break;
+                            }
+                        }
+                        
+                        // 운송차수일정이 있는 경우 현장배송(p5)으로 마크
+                        // dailyData에 기록이 없을 때만 운송계획 확인
+                        if (!cellClass) {
+                            // transportPlan에서 해당 기둥의 운송날짜 확인
+                            if (transportPlan && typeof transportPlan === 'object' && Object.keys(transportPlan).length > 0) {
+                                for (let tripNum in transportPlan) {
+                                    const tripData = transportPlan[tripNum];
+                                    if (tripData && typeof tripData === 'object') {
+                                        const columns = tripData.columns;
+                                        const date = tripData.date;
+                                        
+                                        // 기둥이 해당 차수에 포함되어 있고, 날짜가 일치하는지 확인
+                                        if (columns && Array.isArray(columns) && date && date.trim() !== '' && date === dateStr) {
+                                            // columns 배열에 숫자로 변환한 값이 있는지 확인
+                                            const columnIndex = columns.findIndex(col => Number(col) === Number(c));
+                                            if (columnIndex !== -1) {
+                                                cellClass = 'gantt-cell p5'; // 현장배송
+                                                break;
+                                            }
+                                        }
+                                    }
+                                }
                             }
                         }
                         
@@ -1527,9 +1788,9 @@
         function saveToStorage() {
             if (isFirebaseEnabled) {
                 // Firebase에 저장
-                db.ref('kcolumn/columnData').set(columnData)
+                db.ref(kcolRef('columnData')).set(columnData)
                     .then(() => {
-                        return db.ref('kcolumn/dailyData').set(dailyData);
+                        return db.ref(kcolRef('dailyData')).set(dailyData);
                     })
                     .then(() => {
                         showConnectionStatus('✅ 저장 완료! (실시간 동기화)');
@@ -1540,21 +1801,27 @@
                     });
             } else {
                 // localStorage에 저장
-                localStorage.setItem('steelColumnData', JSON.stringify(columnData));
-                localStorage.setItem('steelColumnDaily', JSON.stringify(dailyData));
+                localStorage.setItem(kcolKey('steelColumnData'), JSON.stringify(columnData));
+                localStorage.setItem(kcolKey('steelColumnDaily'), JSON.stringify(dailyData));
                 showConnectionStatus('✅ 로컬에 저장됨');
             }
         }
 
         function loadFromLocalStorage() {
-            const savedColumnData = localStorage.getItem('steelColumnData');
-            const savedDailyData = localStorage.getItem('steelColumnDaily');
+            const savedColumnData = localStorage.getItem(kcolKey('steelColumnData'));
+            const savedDailyData = localStorage.getItem(kcolKey('steelColumnDaily'));
+            const savedTransportPlan = localStorage.getItem(kcolKey('transportPlan'));
             
             if (savedColumnData) {
                 columnData = JSON.parse(savedColumnData);
             }
             if (savedDailyData) {
                 dailyData = JSON.parse(savedDailyData);
+            }
+            if (savedTransportPlan) {
+                transportPlan = JSON.parse(savedTransportPlan);
+            } else {
+                transportPlan = {};
             }
         }
 
@@ -1610,6 +1877,640 @@
             }
             
             renderColumnGrid('column-grid-input');
+        }
+
+        // ========== 운송차수계획 관련 함수 ==========
+        
+        // 운송계획 로드
+        function loadTransportPlan() {
+            const saved = localStorage.getItem(kcolKey('transportPlan')) || localStorage.getItem('transportPlan');
+            if (saved) {
+                const data = JSON.parse(saved);
+                // 기존 형식 마이그레이션 (배열 형식 -> 객체 형식)
+                transportPlan = {};
+                for (let tripNum in data) {
+                    if (Array.isArray(data[tripNum])) {
+                        // 기존 형식: { 1: [1,2,3] }
+                        transportPlan[tripNum] = {
+                            columns: data[tripNum],
+                            date: ''
+                        };
+                    } else {
+                        // 새 형식: { 1: { columns: [1,2,3], date: '2025-01-15' } }
+                        transportPlan[tripNum] = data[tripNum];
+                    }
+                }
+            } else {
+                transportPlan = {};
+            }
+        }
+
+        // 차수 버튼 렌더링
+        function renderTransportTrips() {
+            const container = document.getElementById('transport-trips-list');
+            container.innerHTML = '';
+            
+            const trips = Object.keys(transportPlan).map(Number).sort((a, b) => a - b);
+            if (trips.length === 0) {
+                trips.push(1);
+                transportPlan[1] = { columns: [], date: '' };
+            }
+            
+            trips.forEach(tripNum => {
+                const btn = document.createElement('button');
+                btn.className = 'action-btn' + (currentTransportTrip === tripNum ? ' primary' : ' secondary');
+                const tripData = transportPlan[tripNum] || { columns: [], date: '' };
+                const columnCount = tripData.columns?.length || 0;
+                
+                // 차수별 총 물량 계산
+                let totalWeight = 0;
+                if (tripData.columns && tripData.columns.length > 0) {
+                    tripData.columns.forEach(columnId => {
+                        totalWeight += calculateColumnWeight(columnId);
+                    });
+                }
+                const weightStr = totalWeight > 0 ? `${totalWeight.toFixed(2)}톤` : '0톤';
+                
+                const dateStr = tripData.date ? tripData.date : '';
+                btn.textContent = `${tripNum}차수 (${columnCount}개, ${weightStr}, ${dateStr})`;
+                btn.type = 'button'; // 폼 제출 방지
+                btn.style.cursor = 'pointer';
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    selectTransportTrip(tripNum);
+                });
+                container.appendChild(btn);
+            });
+            
+            if (currentTransportTrip && !transportPlan[currentTransportTrip]) {
+                transportPlan[currentTransportTrip] = { columns: [], date: '' };
+            }
+            
+            updateTransportTripInfo();
+        }
+
+        // 차수 추가
+        function addTransportTrip() {
+            const input = document.getElementById('transport-trip-input');
+            const tripNum = parseInt(input.value) || 1;
+            
+            if (!transportPlan[tripNum]) {
+                transportPlan[tripNum] = { columns: [], date: '' };
+                selectTransportTrip(tripNum);
+                renderTransportTrips();
+                saveTransportPlan();
+            } else {
+                alert(`${tripNum}차수는 이미 존재합니다.`);
+            }
+        }
+
+        // 차수 삭제
+        function removeTransportTrip() {
+            const trips = Object.keys(transportPlan).map(Number).sort((a, b) => a - b);
+            if (trips.length <= 1) {
+                alert('최소 1개의 차수는 유지해야 합니다.');
+                return;
+            }
+            
+            if (confirm(`${currentTransportTrip}차수를 삭제하시겠습니까?`)) {
+                delete transportPlan[currentTransportTrip];
+                
+                // 다른 차수 선택
+                const remaining = Object.keys(transportPlan).map(Number).sort((a, b) => a - b);
+                currentTransportTrip = remaining[0];
+                
+                renderTransportTrips();
+                renderTransportColumnGrid();
+                saveTransportPlan();
+            }
+        }
+
+        // 차수 선택
+        function selectTransportTrip(tripNum) {
+            try {
+                currentTransportTrip = parseInt(tripNum) || 1;
+                if (!transportPlan[currentTransportTrip]) {
+                    transportPlan[currentTransportTrip] = { columns: [], date: '' };
+                }
+                // 차수 수정 입력 필드 업데이트
+                const editInput = document.getElementById('transport-trip-edit-input');
+                if (editInput) {
+                    editInput.value = currentTransportTrip;
+                }
+                renderTransportTrips();
+                renderTransportColumnGrid();
+                updateTransportTripInfo();
+                saveTransportPlan(); // 상태 저장
+            } catch (error) {
+                console.error('Error in selectTransportTrip:', error);
+                alert('차수 선택 중 오류가 발생했습니다: ' + error.message);
+            }
+        }
+
+        // 차수 번호 수정
+        function editTransportTrip() {
+            const editInput = document.getElementById('transport-trip-edit-input');
+            const newTripNum = parseInt(editInput.value) || 1;
+            const oldTripNum = currentTransportTrip;
+            
+            if (newTripNum === oldTripNum) {
+                alert('동일한 차수 번호입니다.');
+                return;
+            }
+            
+            if (newTripNum < 1) {
+                alert('차수 번호는 1 이상이어야 합니다.');
+                return;
+            }
+            
+            // 새 차수 번호가 이미 존재하는지 확인
+            if (transportPlan[newTripNum]) {
+                if (!confirm(`${newTripNum}차수가 이미 존재합니다. 기존 데이터를 덮어쓰시겠습니까?`)) {
+                    return;
+                }
+            }
+            
+            // 기존 차수 데이터 가져오기
+            const oldTripData = transportPlan[oldTripNum] || { columns: [], date: '' };
+            
+            // 새 차수 번호로 데이터 이동
+            transportPlan[newTripNum] = {
+                columns: [...(oldTripData.columns || [])],
+                date: oldTripData.date || ''
+            };
+            
+            // 기존 차수 삭제
+            delete transportPlan[oldTripNum];
+            
+            // 새 차수 선택
+            currentTransportTrip = newTripNum;
+            
+            // UI 업데이트
+            renderTransportTrips();
+            renderTransportColumnGrid();
+            updateTransportTripInfo();
+            saveTransportPlan();
+            
+            alert(`✅ ${oldTripNum}차수가 ${newTripNum}차수로 변경되었습니다.`);
+        }
+
+        // 차수 정보 업데이트
+        function updateTransportTripInfo() {
+            document.getElementById('current-trip-number').textContent = currentTransportTrip;
+            const tripData = transportPlan[currentTransportTrip] || { columns: [], date: '' };
+            const count = tripData.columns?.length || 0;
+            document.getElementById('selected-columns-count').textContent = count;
+            
+            // 총 물량 계산
+            let totalWeight = 0;
+            if (tripData.columns && tripData.columns.length > 0) {
+                tripData.columns.forEach(columnId => {
+                    totalWeight += calculateColumnWeight(columnId);
+                });
+            }
+            const weightEl = document.getElementById('selected-columns-weight');
+            if (weightEl) {
+                weightEl.textContent = totalWeight > 0 ? `${totalWeight.toFixed(2)}톤` : '0톤';
+            }
+            
+            // 날짜 입력 필드 업데이트
+            const dateInput = document.getElementById('transport-trip-date');
+            if (dateInput) {
+                dateInput.value = tripData.date || '';
+            }
+        }
+
+        // 차수 운송날짜 업데이트
+        function updateTransportTripDate() {
+            const dateInput = document.getElementById('transport-trip-date');
+            const date = dateInput.value;
+            
+            if (!transportPlan[currentTransportTrip]) {
+                transportPlan[currentTransportTrip] = { columns: [], date: '' };
+            }
+            
+            transportPlan[currentTransportTrip].date = date;
+            renderTransportTrips(); // 버튼에 날짜 표시 업데이트
+            renderTransportColumnGrid(); // 기둥 cell에 날짜 표시 업데이트
+            saveTransportPlan();
+        }
+
+        // 기둥 물량 계산 함수 (톤)
+        function calculateColumnWeight(columnId) {
+            if (!transportVolumeData || transportVolumeData.length === 0) {
+                return 0;
+            }
+            
+            // 운송물량산정 데이터에서 해당 기둥 찾기
+            const colData = transportVolumeData.find(item => {
+                const itemNo = parseInt(item.no) || 0;
+                return itemNo === columnId;
+            });
+            
+            if (!colData) {
+                return 0;
+            }
+            
+            // 소부재 예상물량이 있으면 우선 사용 (kg 단위 가정)
+            if (colData.sub && !isNaN(parseFloat(colData.sub))) {
+                const subWeight = parseFloat(colData.sub);
+                return subWeight / 1000; // kg을 톤으로 변환
+            }
+            
+            // 소부재 예상물량이 없으면 사이즈와 길이로 근사치 계산
+            const length = parseFloat(colData.length) || 0; // mm
+            if (length === 0) {
+                return 0;
+            }
+            
+            // H형강 단위 중량 근사치 (kg/m) - 사이즈별 기본값
+            const sizeStr = String(colData.size || '').toUpperCase();
+            let unitWeight = 0; // kg/m
+            
+            // 사이즈에서 H값 추출 (예: H400x200 -> 400)
+            const hMatch = sizeStr.match(/H(\d+)/);
+            if (hMatch) {
+                const hValue = parseInt(hMatch[1]);
+                // H형강 단위 중량 근사치 (kg/m) - 규격별 대략값
+                if (hValue <= 400) unitWeight = 66;      // H400x200x8x13
+                else if (hValue <= 450) unitWeight = 76; // H450x200x9x14
+                else if (hValue <= 500) unitWeight = 89; // H500x200x10x16
+                else if (hValue <= 600) unitWeight = 106; // H600x200x11x17
+                else if (hValue <= 700) unitWeight = 125; // H700x300
+                else unitWeight = 150; // 그 외
+            }
+            
+            if (unitWeight === 0) {
+                return 0;
+            }
+            
+            // 무게 계산: 단위 중량(kg/m) × 길이(m) = 무게(kg)
+            const lengthM = length / 1000; // mm를 m로 변환
+            const weightKg = unitWeight * lengthM;
+            
+            // 톤으로 변환 (kg / 1000)
+            return weightKg / 1000;
+        }
+
+        // 운송용 기둥 그리드 렌더링
+        function renderTransportColumnGrid() {
+            const container = document.getElementById('column-grid-transport');
+            container.innerHTML = '';
+            
+            const tripData = transportPlan[currentTransportTrip] || { columns: [], date: '' };
+            const selectedColumns = tripData.columns || [];
+            
+            for (let i = 1; i <= TOTAL_COLUMNS; i++) {
+                const div = document.createElement('div');
+                div.className = 'column-item';
+                
+                const isSelected = selectedColumns.includes(i);
+                const isDuplicate = duplicateColumns[i] && duplicateColumns[i].length > 1;
+                
+                // 기둥 번호와 운송일자 표시
+                const columnLabel = document.createElement('div');
+                columnLabel.textContent = 'C' + i.toString().padStart(2, '0');
+                columnLabel.style.fontWeight = 'bold';
+                columnLabel.style.fontSize = '14px';
+                div.appendChild(columnLabel);
+                
+                // 선택된 기둥인 경우 운송일자와 물량 표시
+                if (isSelected) {
+                    // 운송일자 표시
+                    if (tripData.date) {
+                        const dateLabel = document.createElement('div');
+                        const dateObj = new Date(tripData.date);
+                        const formattedDate = `${dateObj.getMonth() + 1}/${dateObj.getDate()}`;
+                        dateLabel.textContent = formattedDate;
+                        dateLabel.style.fontSize = '11px';
+                        dateLabel.style.marginTop = '4px';
+                        dateLabel.style.opacity = '0.9';
+                        div.appendChild(dateLabel);
+                    }
+                    
+                    // 물량(톤) 표시
+                    const weight = calculateColumnWeight(i);
+                    const weightLabel = document.createElement('div');
+                    weightLabel.textContent = weight > 0 ? `${weight.toFixed(2)}톤` : '0톤';
+                    weightLabel.style.fontSize = '11px';
+                    weightLabel.style.marginTop = '2px';
+                    weightLabel.style.opacity = '0.85';
+                    weightLabel.style.fontWeight = '600';
+                    div.appendChild(weightLabel);
+                }
+                
+                if (isDuplicate) {
+                    // 중복된 기둥: 빨간색 테두리와 배경
+                    div.style.background = '#ffcdd2';
+                    div.style.color = '#c62828';
+                    div.style.boxShadow = '0 0 0 3px #f44336, 0 0 15px rgba(244,67,54,0.6)';
+                    div.style.fontWeight = 'bold';
+                    div.style.border = '2px solid #d32f2f';
+                    div.style.display = 'flex';
+                    div.style.flexDirection = 'column';
+                    div.style.alignItems = 'center';
+                    div.style.justifyContent = 'center';
+                    div.title = `중복: ${duplicateColumns[i].map(t => t + '차수').join(', ')}에 포함됨`;
+                } else if (isSelected) {
+                    div.style.background = '#4caf50';
+                    div.style.color = 'white';
+                    div.style.boxShadow = '0 0 0 3px #66bb6a, 0 0 10px rgba(76,175,80,0.5)';
+                    div.style.fontWeight = 'bold';
+                    div.style.border = 'none';
+                    div.style.display = 'flex';
+                    div.style.flexDirection = 'column';
+                    div.style.alignItems = 'center';
+                    div.style.justifyContent = 'center';
+                } else {
+                    div.style.background = '#f5f5f5';
+                    div.style.color = '#666';
+                    div.style.boxShadow = 'none';
+                    div.style.border = 'none';
+                    div.style.display = 'flex';
+                    div.style.alignItems = 'center';
+                    div.style.justifyContent = 'center';
+                }
+                
+                div.style.cursor = 'pointer';
+                div.style.transition = 'all 0.2s';
+                
+                div.onmouseenter = function() {
+                    if (!isSelected) {
+                        this.style.background = '#e8f5e9';
+                        this.style.transform = 'scale(1.05)';
+                    }
+                };
+                
+                div.onmouseleave = function() {
+                    if (!isSelected) {
+                        this.style.background = '#f5f5f5';
+                        this.style.transform = 'scale(1)';
+                    }
+                };
+                
+                div.onclick = () => toggleColumnForTransport(i);
+                
+                container.appendChild(div);
+            }
+        }
+
+        // 기둥 선택/해제
+        function toggleColumnForTransport(columnId) {
+            if (!transportPlan[currentTransportTrip]) {
+                transportPlan[currentTransportTrip] = { columns: [], date: '' };
+            }
+            
+            const tripData = transportPlan[currentTransportTrip];
+            if (!tripData.columns) {
+                tripData.columns = [];
+            }
+            if (!tripData.date) {
+                tripData.date = '';
+            }
+            
+            const index = tripData.columns.indexOf(columnId);
+            
+            if (index > -1) {
+                // 이미 선택된 경우 - 다른 차수에 있는지 확인
+                let inOtherTrip = false;
+                for (let trip in transportPlan) {
+                    const otherTripData = transportPlan[trip];
+                    if (parseInt(trip) !== currentTransportTrip && otherTripData?.columns?.includes(columnId)) {
+                        inOtherTrip = true;
+                        break;
+                    }
+                }
+                
+                if (!inOtherTrip || confirm('다른 차수에도 포함된 기둥입니다. 이 차수에서만 제거하시겠습니까?')) {
+                    tripData.columns.splice(index, 1);
+                }
+            } else {
+                // 선택되지 않은 경우 - 다른 차수에 있는지 확인
+                let inOtherTrip = false;
+                let otherTripNum = null;
+                for (let trip in transportPlan) {
+                    const otherTripData = transportPlan[trip];
+                    if (parseInt(trip) !== currentTransportTrip && otherTripData?.columns?.includes(columnId)) {
+                        inOtherTrip = true;
+                        otherTripNum = trip;
+                        break;
+                    }
+                }
+                
+                if (inOtherTrip) {
+                    if (confirm(`${otherTripNum}차수에 이미 포함된 기둥입니다. 이 차수에도 추가하시겠습니까?`)) {
+                        tripData.columns.push(columnId);
+                    }
+                } else {
+                    tripData.columns.push(columnId);
+                }
+            }
+            
+            tripData.columns.sort((a, b) => a - b);
+            // 중복 체크 결과 초기화 (선택 변경 시)
+            duplicateColumns = {};
+            document.getElementById('duplicate-check-result').style.display = 'none';
+            renderTransportColumnGrid();
+            renderTransportTrips();
+            updateTransportTripInfo();
+        }
+
+        // 운송물량산정: 템플릿 다운로드
+        function downloadTransportVolumeTemplate() {
+            const headers = ['기둥번호', '사이즈', '길이(mm)', '소부재예상물량'];
+            const sample = [
+                ['1', 'H-400x200x8x13', '12000', '예: 3개'],
+                ['2', 'H-350x175x7x11', '11500', '예: 2개']
+            ];
+            const csv = [headers.join(','), ...sample.map(r => r.join(','))].join('\n');
+            const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'transport_volume_template.csv';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
+
+        // 운송물량산정: 표 렌더링
+        function renderTransportVolumeTable(data = transportVolumeData) {
+            const tbody = document.getElementById('transport-volume-tbody');
+            if (!tbody) return;
+            
+            if (!data || data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#888;padding:16px;">엑셀을 업로드하면 여기에서 50개 기둥 데이터가 표시됩니다.</td></tr>';
+                return;
+            }
+            
+            const rows = data.slice(0, 50).map(item => {
+                const colNo = item.no ?? item.column ?? item.id ?? '';
+                return `
+                    <tr>
+                        <td style="text-align:center;">${colNo || ''}</td>
+                        <td>${item.size || ''}</td>
+                        <td style="text-align:right;">${item.length || ''}</td>
+                        <td>${item.sub || ''}</td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = rows.join('');
+        }
+
+        // 운송물량산정: 엑셀 업로드 처리
+        function handleTransportVolumeFile(event) {
+            const file = event.target.files[0];
+            const statusEl = document.getElementById('transport-volume-status');
+            
+            if (!file) {
+                if (statusEl) statusEl.textContent = '파일을 업로드해주세요.';
+                return;
+            }
+            if (typeof XLSX === 'undefined') {
+                alert('엑셀 라이브러리를 불러오지 못했습니다. 인터넷 연결을 확인해주세요.');
+                return;
+            }
+            
+            if (statusEl) statusEl.textContent = '파일을 읽는 중...';
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const firstSheet = workbook.SheetNames[0];
+                    const sheet = workbook.Sheets[firstSheet];
+                    const rows = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+                    
+                    transportVolumeData = rows.slice(0, 50).map((row, idx) => {
+                        const norm = {};
+                        Object.keys(row).forEach(k => {
+                            norm[k.trim().toLowerCase()] = row[k];
+                        });
+                        
+                        const colNo = row['기둥번호'] || row['기둥'] || row['번호'] || row['Column'] || row['No'] || norm['기둥번호'] || norm['기둥'] || norm['번호'] || norm['column'] || norm['no'];
+                        const size = row['사이즈'] || row['규격'] || row['size'] || norm['사이즈'] || norm['규격'] || norm['size'];
+                        const lengthVal = row['길이(mm)'] || row['길이'] || row['length'] || row['len'] || norm['길이(mm)'] || norm['길이'] || norm['length'] || norm['len'];
+                        const sub = row['소부재예상물량'] || row['소부재'] || row['예상물량'] || row['sub'] || norm['소부재예상물량'] || norm['소부재'] || norm['예상물량'] || norm['sub'];
+                        
+                        return {
+                            no: colNo || (idx + 1),
+                            size: size || '',
+                            length: lengthVal || '',
+                            sub: sub || ''
+                        };
+                    });
+                    
+                    renderTransportVolumeTable();
+                    if (statusEl) statusEl.textContent = `업로드 완료: ${transportVolumeData.length}개 (최대 50개 표시)`;
+                } catch (err) {
+                    console.error('운송물량 엑셀 처리 오류:', err);
+                    alert('파일을 읽는 중 오류가 발생했습니다. 템플릿 형식을 확인해주세요.');
+                    if (statusEl) statusEl.textContent = '⚠️ 파일을 읽는 중 오류가 발생했습니다.';
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        // 중복 기둥 체크 함수
+        function checkDuplicateColumns() {
+            duplicateColumns = {}; // 초기화
+            
+            // 모든 차수에서 기둥 사용 횟수 계산
+            const columnUsage = {}; // { columnId: [tripNumbers] }
+            
+            for (let tripNum in transportPlan) {
+                const tripData = transportPlan[tripNum] || { columns: [], date: '' };
+                const columns = tripData.columns || [];
+                columns.forEach(columnId => {
+                    if (!columnUsage[columnId]) {
+                        columnUsage[columnId] = [];
+                    }
+                    columnUsage[columnId].push(parseInt(tripNum));
+                });
+            }
+            
+            // 중복된 기둥 찾기 (2개 이상 차수에 포함된 기둥)
+            for (let columnId in columnUsage) {
+                if (columnUsage[columnId].length > 1) {
+                    duplicateColumns[columnId] = columnUsage[columnId];
+                }
+            }
+            
+            // 결과 표시
+            const resultDiv = document.getElementById('duplicate-check-result');
+            const infoDiv = document.getElementById('duplicate-info');
+            
+            if (Object.keys(duplicateColumns).length === 0) {
+                // 중복 없음
+                resultDiv.style.display = 'none';
+                alert('✅ 중복된 기둥이 없습니다.');
+            } else {
+                // 중복 있음
+                resultDiv.style.display = 'block';
+                resultDiv.style.background = '#ffebee';
+                resultDiv.style.borderLeft = '4px solid #f44336';
+                
+                let infoHtml = '<div style="margin-bottom:8px;"><strong>다음 기둥이 여러 차수에 중복 포함되어 있습니다:</strong></div>';
+                infoHtml += '<ul style="margin:0;padding-left:20px;">';
+                
+                const duplicateList = Object.keys(duplicateColumns).map(Number).sort((a, b) => a - b);
+                duplicateList.forEach(columnId => {
+                    const trips = duplicateColumns[columnId].sort((a, b) => a - b);
+                    infoHtml += `<li style="margin:5px 0;">C${columnId.toString().padStart(2, '0')}: ${trips.map(t => t + '차수').join(', ')}에 포함</li>`;
+                });
+                
+                infoHtml += '</ul>';
+                infoDiv.innerHTML = infoHtml;
+                
+                alert(`⚠️ ${duplicateList.length}개의 기둥이 중복되었습니다. 화면에서 빨간색으로 표시됩니다.`);
+            }
+            
+            // 그리드 다시 렌더링하여 중복 표시
+            renderTransportColumnGrid();
+        }
+
+        // 운송계획 저장
+        function saveTransportPlan() {
+            localStorage.setItem(kcolKey('transportPlan'), JSON.stringify(transportPlan));
+            
+            // Firebase에 저장 (활성화된 경우)
+            if (isFirebaseEnabled && db) {
+                db.ref(kcolRef('transportPlan')).set(transportPlan)
+                    .then(() => {
+                        alert('✅ 운송차수계획이 저장되었습니다.');
+                        // Gantt 차트가 활성화되어 있으면 업데이트
+                        if (document.getElementById('panel-gantt')?.classList.contains('active')) {
+                            renderGanttChart();
+                        }
+                    })
+                    .catch((error) => {
+                        console.error('Firebase 저장 오류:', error);
+                        alert('⚠️ 저장 중 오류가 발생했습니다.');
+                    });
+            } else {
+                alert('✅ 운송차수계획이 로컬에 저장되었습니다.');
+                // Gantt 차트가 활성화되어 있으면 업데이트
+                if (document.getElementById('panel-gantt')?.classList.contains('active')) {
+                    renderGanttChart();
+                }
+            }
+        }
+
+        // 선택 초기화
+        function clearTransportSelection() {
+            if (confirm(`현재 선택된 ${currentTransportTrip}차수의 모든 기둥 선택을 초기화하시겠습니까?`)) {
+                if (!transportPlan[currentTransportTrip]) {
+                    transportPlan[currentTransportTrip] = { columns: [], date: '' };
+                }
+                transportPlan[currentTransportTrip].columns = [];
+                renderTransportColumnGrid();
+                renderTransportTrips();
+                updateTransportTripInfo();
+                saveTransportPlan();
+            }
         }
 
         // Close modal on outside click
