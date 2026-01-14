@@ -189,15 +189,10 @@
 
   <script src="js/main.js"></script>
   <script>
-    // 임시 로그인 시스템
+    // 로그인 시스템 (데모 모드 - 실제 인증 없음)
     (function() {
-      // 임시 계정 설정 (필요시 수정)
-        const TEMP_ACCOUNTS = {
-          '123456789': '@hakdong',
-          'admin': 'admin123',
-          'sdp': 'sdp2026',
-          'guest': 'guest'
-        };
+      // 데모용: 모든 로그인 허용 (실제 서비스에서는 백엔드 인증 필요)
+      const DEMO_MODE = true;
       
       const loginForm = document.getElementById('loginForm');
       const loginStatus = document.getElementById('login-status');
@@ -252,10 +247,12 @@
         const userId = document.getElementById('userId').value.trim();
         const password = document.getElementById('password').value;
         
-        // 계정 확인
-        if (TEMP_ACCOUNTS[userId] && TEMP_ACCOUNTS[userId] === password) {
+        // 데모 모드: ID/PW 입력시 모두 로그인 허용
+        if (DEMO_MODE && userId && password) {
           sessionStorage.setItem('loggedInUser', userId);
           showLoggedIn(userId);
+        } else if (!userId || !password) {
+          showLoginFailed();
         } else {
           showLoginFailed();
         }
