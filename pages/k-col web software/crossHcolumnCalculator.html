@@ -816,7 +816,7 @@
             </div>
             
                 <!-- 단면적 As 표현 -->
-                <div id="section-area-display" style="margin-bottom: 8px; font-size: 14px; color: #4a5568; text-align: center;">단면적 :  mm²</div>
+                <div id="section-area-display" style="margin-bottom: 8px; font-size: 14px; color: #4a5568; text-align: center;">단면적 :  mm²  |  단중 :  kg/m</div>
                 
                 <!-- 간편 계산 버튼 -->
                 <button class="quick-calc-btn" onclick="quickCalculate()">
@@ -1313,10 +1313,13 @@
             const ag9 = tw1 * tw2;
             const area = ag1 + ag2 + ag3 + ag4 + ag5 + ag6 + ag7 + ag8 - ag9;
 
-            // 단면적 표시 업데이트
+            // 단중 계산 (kg/m) = 단면적(mm²) × 7.85 / 1000
+            const unitWeight = area * 7.85 / 1000;
+            
+            // 단면적 및 단중 표시 업데이트 (같은 row에 배치)
             const areaDisplay = document.getElementById('section-area-display');
             if (areaDisplay) {
-                areaDisplay.textContent = `단면적 : ${area.toFixed(2)} mm²`;
+                areaDisplay.innerHTML = `단면적 : ${area.toFixed(2)} mm²  |  단중 : ${unitWeight.toFixed(2)} kg/m`;
             }
         }
 
