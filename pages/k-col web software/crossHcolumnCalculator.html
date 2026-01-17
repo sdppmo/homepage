@@ -731,8 +731,8 @@
                             <div id="H1Container">
                                 <select id="H1">
                                     <option value="400">H400x200</option>
-                                    <option value="450" selected>H450x200</option>
-                                    <option value="500">H500x200</option>
+                                    <option value="450">H450x200</option>
+                                    <option value="500" selected>H500x200</option>
                                     <option value="506">H506x201</option>
                                     <option value="600">H600x200</option>
                                     <option value="606">H606x201</option>
@@ -754,12 +754,12 @@
                         </div>
                         <div class="dim-row">
                             <label>tw1</label>
-                            <input type="text" value="9" id="tw1">
+                            <input type="text" value="8" id="tw1">
                             <span class="unit">mm</span>
                         </div>
                         <div class="dim-row">
                             <label>tf1</label>
-                            <input type="text" value="14" id="tf1">
+                            <input type="text" value="13" id="tf1">
                             <span class="unit">mm</span>
                         </div>
                         <div class="dim-row">
@@ -815,6 +815,9 @@
                 </div>
             </div>
             
+                <!-- 단면적 As 표현 -->
+                <div id="section-area-display" style="margin-bottom: 8px; font-size: 14px; color: #4a5568; text-align: center;">단면적 :  mm²</div>
+                
                 <!-- 간편 계산 버튼 -->
                 <button class="quick-calc-btn" onclick="quickCalculate()">
                     ⚡ 간편계산(1-Column)
@@ -829,7 +832,7 @@
                         📥 PDF(1-Column)
                     </button>
                     <div class="beam-type-btns">
-                        <button class="beam-type-btn">SRC(Single H)</button>
+                        <button class="beam-type-btn" id="auto-find-section-btn" onclick="window.location.href='auto-find-section.html'">Auto Find Section<br>(Included Bill of Quantity)</button>
                         <button class="beam-type-btn">SRC(Cross H)</button>
                     </div>
                         </div>
@@ -847,7 +850,7 @@
                                 <option>SS275</option>
                                 <option>SS355</option>
                                 <option selected>SM355</option>
-                                <option>SM490</option>
+                                <option>SM420</option>
                             </select>
                         </div>
                         <div class="param-row">
@@ -904,21 +907,21 @@
                         <div class="param-row">
                             <label>Lx</label>
                             <div class="input-group">
-                                <input type="text" value="9.05" id="Lx">
+                                <input type="text" value="4.5" id="Lx">
                                 <span class="unit">m</span>
                             </div>
                         </div>
                         <div class="param-row">
                             <label>Ly</label>
                             <div class="input-group">
-                                <input type="text" value="9.05" id="Ly">
+                                <input type="text" value="4.5" id="Ly">
                                 <span class="unit">m</span>
                             </div>
                         </div>
                         <div class="param-row">
                             <label>Lb</label>
                             <div class="input-group">
-                                <input type="text" value="9.05" id="Lb">
+                                <input type="text" value="4.5" id="Lb">
                                 <span class="unit">m</span>
                     </div>
                 </div>
@@ -930,7 +933,7 @@
                         <div class="param-row">
                             <label>Pu (Axial)</label>
                             <div class="input-group">
-                                <input type="text" value="4,453" id="Pu">
+                                <input type="text" value="7,561" id="Pu">
                                 <span class="unit">kN</span>
                         </div>
                         </div>
@@ -1148,8 +1151,8 @@
             h1Container.innerHTML = `
                 <select id="H1">
                     <option value="400">H400x200</option>
-                    <option value="450" selected>H450x200</option>
-                    <option value="500">H500x200</option>
+                    <option value="450">H450x200</option>
+                    <option value="500" selected>H500x200</option>
                     <option value="506">H506x201</option>
                     <option value="600">H600x200</option>
                     <option value="606">H606x201</option>
@@ -1282,18 +1285,81 @@
             if (el) el.addEventListener('change', updateCrossSection);
         });
 
+        // Cross H 단면적 계산 및 표시 함수
+        function calculateAndDisplaySectionArea() {
+            const h1 = parseFloat(document.getElementById('H1').value) || 500;
+            const b1 = parseFloat(document.getElementById('B1').value) || 200;
+            const tw1 = parseFloat(document.getElementById('tw1').value) || 8;
+            const tf1 = parseFloat(document.getElementById('tf1').value) || 13;
+            const r1 = parseFloat(document.getElementById('r1').value) || 18;
+            
+            const h2 = parseFloat(document.getElementById('H2').value) || 450;
+            const b2 = parseFloat(document.getElementById('B2').value) || 200;
+            const tw2 = parseFloat(document.getElementById('tw2').value) || 9;
+            const tf2 = parseFloat(document.getElementById('tf2').value) || 14;
+            const r2 = parseFloat(document.getElementById('r2').value) || 18;
+
+            // Cross H 단면적 계산
+            const hw3 = h1 - 2 * tf1;
+            const hw6 = h2 - 2 * tf2;
+            const ag1 = b1 * tf1;
+            const ag2 = b1 * tf1;
+            const ag3 = hw3 * tw1;
+            const ag4 = b2 * tf2;
+            const ag5 = b2 * tf2;
+            const ag6 = hw6 * tw2;
+            const ag7 = 4 * (r1*r1 - Math.PI * r1*r1 / 4);
+            const ag8 = 4 * (r2*r2 - Math.PI * r2*r2 / 4);
+            const ag9 = tw1 * tw2;
+            const area = ag1 + ag2 + ag3 + ag4 + ag5 + ag6 + ag7 + ag8 - ag9;
+
+            // 단면적 표시 업데이트
+            const areaDisplay = document.getElementById('section-area-display');
+            if (areaDisplay) {
+                areaDisplay.textContent = `단면적 : ${area.toFixed(2)} mm²`;
+            }
+        }
+
+        // 입력 필드 변경 시 단면적 자동 계산
+        ['H1', 'B1', 'tw1', 'tf1', 'r1', 'H2', 'B2', 'tw2', 'tf2', 'r2'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                el.addEventListener('input', calculateAndDisplaySectionArea);
+                el.addEventListener('change', calculateAndDisplaySectionArea);
+            }
+        });
+
+        // steelGrade 변경 시 Fy 자동 업데이트
+        document.getElementById('steelGrade').addEventListener('change', function() {
+            const grade = this.value;
+            let fyValue = 355; // 기본값
+            
+            if (grade === 'SS275') {
+                fyValue = 275;
+            } else if (grade === 'SS355') {
+                fyValue = 355;
+            } else if (grade === 'SM355') {
+                fyValue = 355;
+            } else if (grade === 'SM420') {
+                fyValue = 420;
+            }
+            
+            document.getElementById('Fy').value = fyValue;
+        });
+
         // 페이지 로드 시 초기값 설정
         updateH1Dimensions();
         updateH2Dimensions();
         updateCrossSection();
+        calculateAndDisplaySectionArea(); // 초기 단면적 계산
 
         // 간편 계산 함수 - Based on 2H.py Python code
         function quickCalculate() {
             // ===== 입력값 가져오기 =====
-            const h1 = parseFloat(document.getElementById('H1').value) || 450;
+            const h1 = parseFloat(document.getElementById('H1').value) || 500;
             const b1 = parseFloat(document.getElementById('B1').value) || 200;
-            const tw1 = parseFloat(document.getElementById('tw1').value) || 9;
-            const tf1 = parseFloat(document.getElementById('tf1').value) || 14;
+            const tw1 = parseFloat(document.getElementById('tw1').value) || 8;
+            const tf1 = parseFloat(document.getElementById('tf1').value) || 13;
             const r1 = parseFloat(document.getElementById('r1').value) || 18;
             
             const h2 = parseFloat(document.getElementById('H2').value) || 450;
@@ -1306,13 +1372,13 @@
             const E = parseFloat(document.getElementById('E').value.replace(/,/g, '')) || 210000;
             const nu = parseFloat(document.getElementById('nu').value) || 0.3;
             
-            const Lx = parseFloat(document.getElementById('Lx').value) * 1000 || 9050; // m to mm
-            const Ly = parseFloat(document.getElementById('Ly').value) * 1000 || 9050;
+            const Lx = parseFloat(document.getElementById('Lx').value) * 1000 || 4500; // m to mm
+            const Ly = parseFloat(document.getElementById('Ly').value) * 1000 || 4500;
             const Kx = parseFloat(document.getElementById('Kx').value) || 0.8;
             const Ky = parseFloat(document.getElementById('Ky').value) || 0.8;
             const Kz = parseFloat(document.getElementById('Kz').value) || 0.8;
             
-            const Pu = parseFloat(document.getElementById('Pu').value.replace(/,/g, '')) || 4453; // kN
+            const Pu = parseFloat(document.getElementById('Pu').value.replace(/,/g, '')) || 7561; // kN
             const Mux = parseFloat(document.getElementById('Mux').value) || 0; // kN.m
             const Muy = parseFloat(document.getElementById('Muy').value) || 0;
             const Vux = parseFloat(document.getElementById('Vux').value) || 0; // kN
@@ -1442,13 +1508,22 @@
             }
 
             // ===== 결과 업데이트 =====
+            // 단면적 표시 (실시간 계산 함수 호출)
+            calculateAndDisplaySectionArea();
+            
             const results = document.querySelectorAll('.result-item');
-            updateResult(results[0], ratio_comp, phi_Pn);
-            updateResult(results[1], ratio_bendX, phi_Mnx);
-            updateResult(results[2], ratio_bendY, phi_Mny);
-            updateResult(results[3], ratio_pmm);
-            updateResult(results[4], ratio_shearX, phi_Vnx);
-            updateResult(results[5], ratio_shearY, phi_Vny);
+            // Compressive: ratio > 1.0이면 N.G (계산서와 일치)
+            updateResult(results[0], ratio_comp, phi_Pn, 'compressive');
+            // Bending X: ratio <= 1.0이면 O.K (계산서와 일치)
+            updateResult(results[1], ratio_bendX, phi_Mnx, 'bending');
+            // Bending Y: ratio <= 1.0이면 O.K (계산서와 일치)
+            updateResult(results[2], ratio_bendY, phi_Mny, 'bending');
+            // P-M-M: ratio > 1.0이면 N.G (계산서와 일치)
+            updateResult(results[3], ratio_pmm, null, 'pmm');
+            // Shear X: ratio <= 1.0이면 O.K (계산서와 일치)
+            updateResult(results[4], ratio_shearX, phi_Vnx, 'shear');
+            // Shear Y: ratio <= 1.0이면 O.K (계산서와 일치)
+            updateResult(results[5], ratio_shearY, phi_Vny, 'shear');
 
             // 콘솔에 상세 결과 출력
             console.log('===== Cross H Column Calculation Results =====');
@@ -1463,7 +1538,7 @@
             console.log(`φVnx: ${phi_Vnx.toFixed(2)} kN, φVny: ${phi_Vny.toFixed(2)} kN`);
         }
 
-        function updateResult(element, ratio, capacity) {
+        function updateResult(element, ratio, capacity, type) {
             const valSpan = element.querySelector('.result-val');
             const statusSpan = element.querySelector('.result-status');
             
@@ -1476,6 +1551,9 @@
             
             valSpan.textContent = ratio.toFixed(3);
             
+            // 계산서와 일치하는 로직 적용
+            // 모든 항목이 ratio <= 1.0이면 O.K (계산서 로직과 동일)
+            // Compressive, P-M-M, Bending, Shear 모두 동일한 기준 사용
             if (ratio <= 1.0) {
                 statusSpan.textContent = 'O.K';
                 statusSpan.className = 'result-status ok';
@@ -1508,10 +1586,10 @@
         // 단일 기둥 계산 함수 (Pu, Mux, Muy를 파라미터로 받음)
         function calculateSingleColumn(Pu, Mux, Muy) {
             // ===== 입력값 가져오기 =====
-            const h1 = parseFloat(document.getElementById('H1').value) || 450;
+            const h1 = parseFloat(document.getElementById('H1').value) || 500;
             const b1 = parseFloat(document.getElementById('B1').value) || 200;
-            const tw1 = parseFloat(document.getElementById('tw1').value) || 9;
-            const tf1 = parseFloat(document.getElementById('tf1').value) || 14;
+            const tw1 = parseFloat(document.getElementById('tw1').value) || 8;
+            const tf1 = parseFloat(document.getElementById('tf1').value) || 13;
             const r1 = parseFloat(document.getElementById('r1').value) || 18;
             
             const h2 = parseFloat(document.getElementById('H2').value) || 450;
@@ -1524,8 +1602,8 @@
             const E = parseFloat(document.getElementById('E').value.replace(/,/g, '')) || 210000;
             const nu = parseFloat(document.getElementById('nu').value) || 0.3;
             
-            const Lx = parseFloat(document.getElementById('Lx').value) * 1000 || 9050; // m to mm
-            const Ly = parseFloat(document.getElementById('Ly').value) * 1000 || 9050;
+            const Lx = parseFloat(document.getElementById('Lx').value) * 1000 || 4500; // m to mm
+            const Ly = parseFloat(document.getElementById('Ly').value) * 1000 || 4500;
             const Kx = parseFloat(document.getElementById('Kx').value) || 0.8;
             const Ky = parseFloat(document.getElementById('Ky').value) || 0.8;
             const Kz = parseFloat(document.getElementById('Kz').value) || 0.8;

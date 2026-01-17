@@ -491,8 +491,8 @@
                 <td class="yellow-cell" style="width:70px;" id="s_phiPn">5,015.36</td>
                 <td>=</td>
                 <td class="yellow-cell" style="width:55px;" id="s_compR">0.888</td>
-                <td>≤</td>
-                <td style="width:50px;">1.000</td>
+                <td>&gt;</td>
+                <td style="width:50px;">1.00</td>
                 <td class="green-text" id="s_compOK">→ O.K</td>
             </tr>
             <tr>
@@ -528,8 +528,9 @@
                 <td class="yellow-cell" id="s_pmmR1">0.888</td>
                 <td>+</td>
                 <td class="yellow-cell" id="s_pmmR2">0.888</td>
-                <td>≤</td>
-                <td class="green-text">→ O.K</td>
+                <td>&gt;</td>
+                <td>1.000</td>
+                <td class="green-text" id="s_pmmOK">→ O.K</td>
             </tr>
             <tr>
                 <td class="label-cell">Shear Strength</td>
@@ -687,8 +688,8 @@
             <span class="calc-eq">=</span>
             <span class="calc-value" id="f_lf1">7.14</span>
             <span class="calc-unit"></span>
-            <span class="calc-compare">&lt; λffp = <span id="f_lfp2">9.24</span></span>
-            <span class="calc-result green-text">→ Compact</span>
+            <span class="calc-compare" id="f_lf1Compare">&lt; λffp = <span id="f_lfp2">9.24</span></span>
+            <span class="calc-result green-text" id="f_lf1Result">→ Compact</span>
         </div>
         <div class="calc-row">
             <span class="calc-formula">λfwp = 3.76 √(E / Fy)</span>
@@ -705,8 +706,8 @@
             <span class="calc-eq">=</span>
             <span class="calc-value" id="f_lw1">20.94</span>
             <span class="calc-unit"></span>
-            <span class="calc-compare">&lt; λfwp = <span id="f_lwp2">91.45</span></span>
-            <span class="calc-result green-text">→ Compact</span>
+            <span class="calc-compare" id="f_lw1Compare">&lt; λfwp = <span id="f_lwp2">91.45</span></span>
+            <span class="calc-result green-text" id="f_lw1Result">→ Compact</span>
         </div>
 
         <div class="sub-subsection">Section Yielding Strength</div>
@@ -753,8 +754,8 @@
             <span class="calc-eq">=</span>
             <span class="calc-value" id="f_phiMnx">607.53</span>
             <span class="calc-unit">kN·m</span>
-            <span class="calc-compare">&gt; Mux = <span id="f_Mux">0.00</span></span>
-            <span class="calc-result green-text">→ O.K</span>
+            <span class="calc-compare" id="f_compMnx">&gt; Mux = <span id="f_Mux">0.00</span></span>
+            <span class="calc-result green-text" id="f_resultMnx">→ O.K</span>
         </div>
 
         <div class="subsection-header">Minor Axis</div>
@@ -772,8 +773,8 @@
             <span class="calc-eq">=</span>
             <span class="calc-value" id="f_lw2">20.94</span>
             <span class="calc-unit"></span>
-            <span class="calc-compare">&lt; λfwp = <span id="f_lwp3">91.45</span></span>
-            <span class="calc-result green-text">→ Compact</span>
+            <span class="calc-compare" id="f_lw2Compare">&lt; λfwp = <span id="f_lwp3">91.45</span></span>
+            <span class="calc-result green-text" id="f_lw2Result">→ Compact</span>
         </div>
 
         <div class="sub-subsection">Section Yielding Strength</div>
@@ -788,8 +789,8 @@
             <span class="calc-eq">=</span>
             <span class="calc-value" id="f_phiMny">607.53</span>
             <span class="calc-unit">kN·m</span>
-            <span class="calc-compare">&gt; Muy = <span id="f_Muy">0.00</span></span>
-            <span class="calc-result green-text">→ O.K</span>
+            <span class="calc-compare" id="f_compMny">&gt; Muy = <span id="f_Muy">0.00</span></span>
+            <span class="calc-result green-text" id="f_resultMny">→ O.K</span>
         </div>
 
         <!-- 4. P-M-M Combination Check -->
@@ -807,7 +808,7 @@
             <span class="calc-value" id="pm_r2">0.888</span>
             <span class="calc-unit"></span>
             <span class="calc-compare">&lt; 1.000</span>
-            <span class="calc-result green-text">→ O.K</span>
+            <span class="calc-result green-text" id="pm_result">→ O.K</span>
         </div>
 
         <!-- 5. Shear Strength -->
@@ -1001,6 +1002,17 @@
             document.getElementById('s_Pu').textContent=fmtI(Pu);
             document.getElementById('s_phiPn').textContent=fmt(phi_Pn);
             document.getElementById('s_compR').textContent=fmt(rComp,3);
+            
+            // Compressive 체크: rComp > 1.0이면 NG
+            const compOK = document.getElementById('s_compOK');
+            if (rComp > 1.0) {
+                compOK.textContent = '→ N.G';
+                compOK.className = 'red-text';
+            } else {
+                compOK.textContent = '→ O.K';
+                compOK.className = 'green-text';
+            }
+            
             document.getElementById('s_Mux').textContent=fmt(Mux);
             document.getElementById('s_phiMnx').textContent=fmt(phi_Mnx);
             document.getElementById('s_bendXR').textContent=fmt(rBendX,3);
@@ -1009,6 +1021,17 @@
             document.getElementById('s_bendYR').textContent=fmt(rBendY,3);
             document.getElementById('s_pmmR1').textContent=fmt(rComp,3);
             document.getElementById('s_pmmR2').textContent=fmt(rPmm,3);
+            
+            // Summary P-M-M 체크: rPmm > 1.0이면 NG, 아니면 OK
+            const sPmmOK = document.getElementById('s_pmmOK');
+            if (rPmm > 1.0) {
+                sPmmOK.textContent = '→ N.G';
+                sPmmOK.className = 'red-text';
+            } else {
+                sPmmOK.textContent = '→ O.K';
+                sPmmOK.className = 'green-text';
+            }
+            
             document.getElementById('s_Vux').textContent=fmt(Vux);
             document.getElementById('s_phiVnx').textContent=fmt(phi_Vnx);
             document.getElementById('s_shearXR').textContent=fmt(Vux/phi_Vnx,3);
@@ -1038,10 +1061,46 @@
             document.getElementById('f_lfr').textContent=fmt(lfr);
             document.getElementById('f_lf1').textContent=fmt(lf1);
             document.getElementById('f_lfp2').textContent=fmt(lfp);
+            
+            // Plate-Thickness ratio for Flexure 체크: λff1에 따라 Compact/Non Compact/Slender
+            const fLf1Compare = document.getElementById('f_lf1Compare');
+            const fLf1Result = document.getElementById('f_lf1Result');
+            if (lf1 <= lfp) {
+                fLf1Compare.innerHTML = '&lt; λffp = <span id="f_lfp2">' + fmt(lfp) + '</span>';
+                fLf1Result.textContent = '→ Compact';
+                fLf1Result.className = 'calc-result green-text';
+            } else if (lf1 <= lfr) {
+                fLf1Compare.innerHTML = '&gt; λffp = <span id="f_lfp2">' + fmt(lfp) + '</span>';
+                fLf1Result.textContent = '→ Noncompact';
+                fLf1Result.className = 'calc-result red-text';
+            } else {
+                fLf1Compare.innerHTML = '&gt; λffr = <span id="f_lfp2">' + fmt(lfr) + '</span>';
+                fLf1Result.textContent = '→ Slender';
+                fLf1Result.className = 'calc-result red-text';
+            }
+            
             document.getElementById('f_lwp').textContent=fmt(lwp);
             document.getElementById('f_lwr').textContent=fmt(lwr);
             document.getElementById('f_lw1').textContent=fmt(lw1);
             document.getElementById('f_lwp2').textContent=fmt(lwp);
+            
+            // Web plate ratio for Flexure 체크: λfw1에 따라 Compact/Non Compact/Slender
+            const fLw1Compare = document.getElementById('f_lw1Compare');
+            const fLw1Result = document.getElementById('f_lw1Result');
+            if (lw1 <= lwp) {
+                fLw1Compare.innerHTML = '&lt; λfwp = <span id="f_lwp2">' + fmt(lwp) + '</span>';
+                fLw1Result.textContent = '→ Compact';
+                fLw1Result.className = 'calc-result green-text';
+            } else if (lw1 <= lwr) {
+                fLw1Compare.innerHTML = '&gt; λfwp = <span id="f_lwp2">' + fmt(lwp) + '</span>';
+                fLw1Result.textContent = '→ Noncompact';
+                fLw1Result.className = 'calc-result red-text';
+            } else {
+                fLw1Compare.innerHTML = '&gt; λfwr = <span id="f_lwp2">' + fmt(lwr) + '</span>';
+                fLw1Result.textContent = '→ Slender';
+                fLw1Result.className = 'calc-result red-text';
+            }
+            
             document.getElementById('f_Mpx').textContent=fmt(Mpx*1000);
             document.getElementById('f_rtsx').textContent=fmt(rtsx);
             document.getElementById('f_ho1').textContent=fmt(ho1,1);
@@ -1050,17 +1109,89 @@
             document.getElementById('f_Mnx').textContent=fmt(Mpx*1000);
             document.getElementById('f_phiMnx').textContent=fmt(phi_Mnx);
             document.getElementById('f_Mux').textContent=fmt(Mux);
+            
+            // Flexural Major Axis 체크: φbMnx > Mux이면 OK, 아니면 NG
+            const fCompMnx = document.getElementById('f_compMnx');
+            const fResultMnx = document.getElementById('f_resultMnx');
+            if (phi_Mnx > Mux) {
+                fCompMnx.innerHTML = '&gt; Mux = <span id="f_Mux">' + fmt(Mux) + '</span>';
+                fResultMnx.textContent = '→ O.K';
+                fResultMnx.className = 'calc-result green-text';
+            } else {
+                fCompMnx.innerHTML = '&lt; Mux = <span id="f_Mux">' + fmt(Mux) + '</span>';
+                fResultMnx.textContent = '→ N.G';
+                fResultMnx.className = 'calc-result red-text';
+            }
+            
             document.getElementById('f_lf2').textContent=fmt(lf2);
             document.getElementById('f_lfp3').textContent=fmt(lfp);
+            
+            // Plate-Thickness ratio for Flexure 체크: λff2에 따라 Compact/Non Compact/Slender
+            const fLf2Compare = document.getElementById('f_lf2Compare');
+            const fLf2Result = document.getElementById('f_lf2Result');
+            if (lf2 <= lfp) {
+                fLf2Compare.innerHTML = '&lt; λffp = <span id="f_lfp3">' + fmt(lfp) + '</span>';
+                fLf2Result.textContent = '→ Compact';
+                fLf2Result.className = 'calc-result green-text';
+            } else if (lf2 <= lfr) {
+                fLf2Compare.innerHTML = '&gt; λffp = <span id="f_lfp3">' + fmt(lfp) + '</span>';
+                fLf2Result.textContent = '→ Noncompact';
+                fLf2Result.className = 'calc-result red-text';
+            } else {
+                fLf2Compare.innerHTML = '&gt; λffr = <span id="f_lfp3">' + fmt(lfr) + '</span>';
+                fLf2Result.textContent = '→ Slender';
+                fLf2Result.className = 'calc-result red-text';
+            }
+            
             document.getElementById('f_lw2').textContent=fmt(lw2);
             document.getElementById('f_lwp3').textContent=fmt(lwp);
+            
+            // Web plate ratio for Flexure 체크: λfw2에 따라 Compact/Non Compact/Slender
+            const fLw2Compare = document.getElementById('f_lw2Compare');
+            const fLw2Result = document.getElementById('f_lw2Result');
+            if (lw2 <= lwp) {
+                fLw2Compare.innerHTML = '&lt; λfwp = <span id="f_lwp3">' + fmt(lwp) + '</span>';
+                fLw2Result.textContent = '→ Compact';
+                fLw2Result.className = 'calc-result green-text';
+            } else if (lw2 <= lwr) {
+                fLw2Compare.innerHTML = '&gt; λfwp = <span id="f_lwp3">' + fmt(lwp) + '</span>';
+                fLw2Result.textContent = '→ Noncompact';
+                fLw2Result.className = 'calc-result red-text';
+            } else {
+                fLw2Compare.innerHTML = '&gt; λfwr = <span id="f_lwp3">' + fmt(lwr) + '</span>';
+                fLw2Result.textContent = '→ Slender';
+                fLw2Result.className = 'calc-result red-text';
+            }
             document.getElementById('f_Mpy').textContent=fmt(Mpy*1000);
             document.getElementById('f_phiMny').textContent=fmt(phi_Mny);
             document.getElementById('f_Muy').textContent=fmt(Muy);
+            
+            // Flexural Minor Axis 체크: φbMny > Muy이면 OK, 아니면 NG
+            const fCompMny = document.getElementById('f_compMny');
+            const fResultMny = document.getElementById('f_resultMny');
+            if (phi_Mny > Muy) {
+                fCompMny.innerHTML = '&gt; Muy = <span id="f_Muy">' + fmt(Muy) + '</span>';
+                fResultMny.textContent = '→ O.K';
+                fResultMny.className = 'calc-result green-text';
+            } else {
+                fCompMny.innerHTML = '&lt; Muy = <span id="f_Muy">' + fmt(Muy) + '</span>';
+                fResultMny.textContent = '→ N.G';
+                fResultMny.className = 'calc-result red-text';
+            }
 
             // P-M-M
             document.getElementById('pm_r1').textContent=fmt(rComp,3);
             document.getElementById('pm_r2').textContent=fmt(rPmm,3);
+            
+            // P-M-M 체크: rPmm < 1.0이면 OK, 아니면 NG
+            const pmResult = document.getElementById('pm_result');
+            if (rPmm < 1.0) {
+                pmResult.textContent = '→ O.K';
+                pmResult.className = 'calc-result green-text';
+            } else {
+                pmResult.textContent = '→ N.G';
+                pmResult.className = 'calc-result red-text';
+            }
 
             // Shear
             document.getElementById('v_lvw').textContent=fmt(lvw);

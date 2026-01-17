@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auto Find Section : Cross H 기둥 자동구조계산 및 철골 BOQ 산출</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1e3a5f, #2d5a87);
+            color: white;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .header a {
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            font-size: 14px;
+            padding: 8px 16px;
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+
+        .header a:hover {
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
+
+        .main-content {
+            padding: 30px;
+        }
+
+        .section {
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1e3a5f;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+        }
+
+        .input-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .input-group label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        .input-group input,
+        .input-group select {
+            padding: 8px 12px;
+            border: 1px solid #cbd5e0;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .input-group input:focus,
+        .input-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        /* 하중 입력 테이블 스타일 */
+        .load-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        .load-table th,
+        .load-table td {
+            padding: 10px;
+            text-align: center;
+            border: 1px solid #e2e8f0;
+        }
+
+        .load-table th {
+            background: #1e3a5f;
+            color: white;
+            font-weight: 600;
+            font-size: 12px;
+        }
+
+        .load-table td input {
+            width: 100%;
+            padding: 6px;
+            border: 1px solid #cbd5e0;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+
+        .load-table tbody tr:nth-child(even) {
+            background: #f8fafc;
+        }
+
+        .load-table tbody tr:hover {
+            background: #e8f4f8;
+        }
+
+        /* 결과 테이블 스타일 */
+        .result-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            font-size: 11px;
+        }
+
+        .result-table th,
+        .result-table td {
+            padding: 8px 6px;
+            text-align: center;
+            border: 1px solid #e2e8f0;
+        }
+
+        .result-table th {
+            background: #1e3a5f;
+            color: white;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            white-space: nowrap;
+        }
+
+        .result-table tbody tr:nth-child(even) {
+            background: #f8fafc;
+        }
+
+        .result-table tbody tr:hover {
+            background: #e8f4f8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Auto Find Section : Cross H 기둥 자동구조계산 및 철골 BOQ 산출</h1>
+            <a href="crossHcolumnCalculator.html">← 계산기로 돌아가기</a>
+        </div>
+
+        <div class="main-content">
+            <!-- 공통 설정 -->
+            <div class="section">
+                <div class="section-title">공통 설정</div>
+                <div class="input-row">
+                    <div class="input-group">
+                        <label>기둥 개수</label>
+                        <input type="number" id="columnCount" value="9" min="1" max="20" onchange="updateColumnTable()" oninput="updateColumnTable()">
+                    </div>
+                    <div class="input-group">
+                        <label>Kx</label>
+                        <input type="number" id="Kx" value="0.8" step="0.1" min="0.1">
+                    </div>
+                    <div class="input-group">
+                        <label>Ky</label>
+                        <input type="number" id="Ky" value="0.8" step="0.1" min="0.1">
+                    </div>
+                    <div class="input-group">
+                        <label>Kz</label>
+                        <input type="number" id="Kz" value="0.8" step="0.1" min="0.1">
+                    </div>
+                    <div class="input-group">
+                        <label>Lx (m)</label>
+                        <input type="number" id="Lx" value="4.5" step="0.1" min="0.1">
+                    </div>
+                    <div class="input-group">
+                        <label>Ly (m)</label>
+                        <input type="number" id="Ly" value="4.5" step="0.1" min="0.1">
+                    </div>
+                    <div class="input-group">
+                        <label>강종</label>
+                        <select id="steelGrade">
+                            <option value="275">SS275</option>
+                            <option value="355">SM355</option>
+                            <option value="420" selected>SM420</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="input-row" style="margin-top: 15px;">
+                    <div class="input-group">
+                        <label>B1, B2 선택 (mm)</label>
+                        <select id="BSelect" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                            <option value="250">250</option>
+                            <option value="300" selected>300</option>
+                        </select>
+                    </div>
+                </div>
+                <div style="margin-top: 15px; padding: 10px; background: #e8f4f8; border-radius: 4px; font-size: 12px;">
+                    <strong>고정 치수:</strong> H1=500, H2=500 | B1, B2는 위에서 선택 | tw1=tw2 (8~16mm), tf1=tf2 (10~20mm)
+                </div>
+            </div>
+
+            <!-- 하중 입력 -->
+            <div class="section">
+                <div class="section-title">하중 입력</div>
+                <table class="load-table">
+                    <thead>
+                        <tr>
+                            <th>No.</th>
+                            <th>기둥 이름</th>
+                            <th>Pu (kN)</th>
+                            <th>Mux (kN·m)</th>
+                            <th>Muy (kN·m)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="loadTableBody">
+                        <!-- JavaScript로 동적 생성 -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 계산 및 결과 -->
+            <div class="section">
+                <div class="section-title">계산 및 결과</div>
+                <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                    <button class="btn btn-primary" onclick="calculateAll()" style="flex: 1;">
+                        Auto Find Section Result for Cross H
+                    </button>
+                    <button class="btn btn-secondary" onclick="printCalculationSheet()" style="flex: 1;">
+                        📄 계산서 출력
+                    </button>
+                </div>
+                <div style="overflow-x: auto;">
+                    <table class="result-table" id="resultTable">
+                        <thead>
+                            <tr>
+                                <th rowspan="2">No.</th>
+                                <th rowspan="2">기둥명</th>
+                                <th rowspan="2">Pu (kN)</th>
+                                <th rowspan="2">P-M-M</th>
+                                <th rowspan="2">강종</th>
+                                <th colspan="6">규격 (Cross H)</th>
+                                <th rowspan="2">단면적<br>(mm²)</th>
+                                <th rowspan="2">단중<br>(kg/m)</th>
+                            </tr>
+                            <tr>
+                                <th>K</th>
+                                <th>L</th>
+                                <th>H</th>
+                                <th>B</th>
+                                <th>tw</th>
+                                <th>tf</th>
+                            </tr>
+                        </thead>
+                        <tbody id="resultTableBody">
+                            <!-- 결과가 여기에 표시됩니다 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 고정 치수 (H는 500 고정, B는 선택 가능)
+        const H1 = 500, H2 = 500;
+        let B1 = 300, B2 = 300; // 기본값 300, 사용자가 선택 가능
+        
+        // B 선택값 업데이트 함수
+        function updateBValues() {
+            const bSelect = document.getElementById('BSelect');
+            if (bSelect) {
+                B1 = parseInt(bSelect.value);
+                B2 = parseInt(bSelect.value);
+            }
+        }
+        
+        const twRange = [8, 9, 10, 11, 12, 13, 14, 15, 16]; // tw: 8-16mm
+        const tfRange = [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]; // tf: 10-20mm
+        const steelDensity = 7850; // kg/m³
+
+        // 하중 데이터 배열
+        let columnData = [];
+        // 계산 결과 배열 (전역)
+        let currentResults = [];
+
+        // 페이지 로드 시 하중 입력 테이블 생성
+        document.addEventListener('DOMContentLoaded', function() {
+            updateColumnTable();
+        });
+
+        // 기둥 개수에 따라 테이블 업데이트
+        function updateColumnTable() {
+            const count = parseInt(document.getElementById('columnCount').value) || 9;
+            const tbody = document.getElementById('loadTableBody');
+            
+            if (!tbody) {
+                console.error('loadTableBody 요소를 찾을 수 없습니다.');
+                alert('하중 입력 테이블을 찾을 수 없습니다. 페이지를 새로고침해주세요.');
+                return;
+            }
+            
+            tbody.innerHTML = '';
+            
+            // 기존 데이터 보존
+            const existingData = {};
+            columnData.forEach(col => {
+                existingData[col.no] = col;
+            });
+            
+            columnData = [];
+            
+            for (let i = 1; i <= count; i++) {
+                const existing = existingData[i];
+                columnData.push({
+                    no: i,
+                    name: existing?.name || `KC${i}`,
+                    pu: existing?.pu || 0,
+                    mux: existing?.mux || 0,
+                    muy: existing?.muy || 0
+                });
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td style="font-weight: 600; color: #667eea; text-align: center;">${i}</td>
+                    <td><input type="text" id="col${i}_name" value="${existing?.name || `KC${i}`}" placeholder="기둥 이름" onchange="updateColumnData(${i}, 'name', this.value)"></td>
+                    <td><input type="number" id="col${i}_Pu" value="${existing?.pu || 0}" step="0.1" placeholder="Pu" onchange="updateColumnData(${i}, 'pu', this.value)"></td>
+                    <td><input type="number" id="col${i}_Mux" value="${existing?.mux || 0}" step="0.1" placeholder="Mux" onchange="updateColumnData(${i}, 'mux', this.value)"></td>
+                    <td><input type="number" id="col${i}_Muy" value="${existing?.muy || 0}" step="0.1" placeholder="Muy" onchange="updateColumnData(${i}, 'muy', this.value)"></td>
+                `;
+                tbody.appendChild(row);
+            }
+        }
+
+        // 기둥 데이터 업데이트
+        function updateColumnData(no, field, value) {
+            const col = columnData.find(c => c.no === no);
+            if (col) {
+                if (field === 'name') {
+                    col.name = value;
+                } else if (field === 'pu') {
+                    col.pu = parseFloat(value) || 0;
+                } else if (field === 'mux') {
+                    col.mux = parseFloat(value) || 0;
+                } else if (field === 'muy') {
+                    col.muy = parseFloat(value) || 0;
+                }
+            }
+        }
+
+        // Cross H 단면 계산 함수 (Main Calculator의 quickCalculate와 완전히 동일 - 직접 복사)
+        function calculateSection(tw, tf, Fy, E, nu, Kx, Ky, Kz, Lx, Ly, Pu, Mux, Muy) {
+            // ===== 입력값 가져오기 (Main Calculator quickCalculate와 동일) =====
+            const h1 = H1;
+            const b1 = B1;
+            const tw1 = tw;
+            const tf1 = tf;
+            const r1 = 0; // Built-up 부재
+            
+            const h2 = H2;
+            const b2 = B2;
+            const tw2 = tw;
+            const tf2 = tf;
+            const r2 = 0; // Built-up 부재
+
+            // ===== HBeam Class calculations (Main Calculator와 완전히 동일) =====
+            const hw3 = h1 - 2 * tf1;
+            const hw6 = h2 - 2 * tf2;
+            const d1 = h1/2 - tf1/2;
+            const d4 = h2/2 - tf2/2;
+
+            // Total section area - Cross H section
+            const ag1 = b1 * tf1;
+            const ag2 = b1 * tf1;
+            const ag3 = hw3 * tw1;
+            const ag4 = b2 * tf2;
+            const ag5 = b2 * tf2;
+            const ag6 = hw6 * tw2;
+            const ag7 = 4 * (r1*r1 - Math.PI * r1*r1 / 4);
+            const ag8 = 4 * (r2*r2 - Math.PI * r2*r2 / 4);
+            const ag9 = tw1 * tw2;
+            const area = ag1 + ag2 + ag3 + ag4 + ag5 + ag6 + ag7 + ag8 - ag9;
+
+            // Second inertia moment X-axis
+            const Ix1 = 1/12 * b1 * Math.pow(tf1, 3) + ag1 * Math.pow(d1, 2);
+            const Ix2 = 1/12 * b1 * Math.pow(tf1, 3) + ag1 * Math.pow(d1, 2);
+            const Ix3 = 1/12 * tw1 * Math.pow(hw3, 3);
+            const Ix4 = 1/12 * tf2 * Math.pow(b2, 3);
+            const Ix5 = 1/12 * tf2 * Math.pow(b2, 3);
+            const Ix6 = 1/12 * hw6 * Math.pow(tw2, 3);
+            const Ix = Ix1 + Ix2 + Ix3 + Ix4 + Ix5 + Ix6;
+
+            // Second inertia moment Y-axis
+            const Iy4 = 1/12 * b2 * Math.pow(tf2, 3) + ag4 * Math.pow(d4, 2);
+            const Iy5 = 1/12 * b2 * Math.pow(tf2, 3) + ag4 * Math.pow(d4, 2);
+            const Iy6 = 1/12 * tw2 * Math.pow(hw6, 3);
+            const Iy1 = 1/12 * tf1 * Math.pow(b1, 3);
+            const Iy2 = 1/12 * tf1 * Math.pow(b1, 3);
+            const Iy3 = 1/12 * hw3 * Math.pow(tw2, 3);
+            const Iy = Iy1 + Iy2 + Iy3 + Iy4 + Iy5 + Iy6;
+
+            // Radius of gyration
+            const ix = Math.sqrt(Ix / area);
+            const iy = Math.sqrt(Iy / area);
+
+            // Elastic section modulus
+            const sx = Ix / (h1 / 2);
+            const sy = Iy / (h2 / 2);
+
+            // Plastic section modulus Zx
+            const Zx1 = (b1 * tf1) * d1;
+            const Zx2 = (b1 * tf1) * d1;
+            const Zx3 = (tw1 * hw3/2) * hw3/4;
+            const Zx4 = (tw1 * hw3/2) * hw3/4;
+            const Zx5 = (b2*b2 * tf2 / 2);
+            const Zx6 = (tw2 * hw6 / 8) * 2;
+            const zx = Zx1 + Zx2 + Zx3 + Zx4 + Zx5 + Zx6;
+
+            // Plastic section modulus Zy
+            const Zy1 = (b2 * tf2) * d4;
+            const Zy2 = (b2 * tf2) * d4;
+            const Zy3 = (tw2 * hw6/2) * hw6/4;
+            const Zy4 = (tw2 * hw6/2) * hw6/4;
+            const Zy5 = (b1*b1 * tf1 / 2);
+            const Zy6 = (tw1 * hw3 / 8) * 2;
+            const zy = Zy1 + Zy2 + Zy3 + Zy4 + Zy5 + Zy6;
+
+            // Torsional constant J
+            const J1 = (2*b1 * Math.pow(tf1, 3) + h1*Math.pow(tw1, 3)) / 3;
+            const J2 = (2*b2 * Math.pow(tf2, 3) + h2*Math.pow(tw2, 3)) / 3;
+            const J = J1 + J2;
+
+            // Warping constant Cw
+            const cw = Iy * Math.pow(h1 - tf1, 2) / 4;
+
+            // ===== Column Class calculations =====
+            // Plate thickness ratio for compression (Minor Section)
+            const lcfr = 0.56 * Math.sqrt(E / Fy); // λcfr = 0.56 √(E / Fy)
+            const lcf = b2 / (2 * tf2); // λcf = B2 / 2 / tf2
+            const isSlenderFlange = lcf > lcfr; // λcf > λcfr이면 Slender
+            
+            // Slenderness ratio
+            const lambdaX = Kx * Lx / ix;
+            const lambdaY = Ky * Ly / iy;
+            const lambda = Math.max(lambdaX, lambdaY);
+
+            // Flexural Buckling Stress Fe1
+            const Fe1 = Math.pow(Math.PI, 2) * E / Math.pow(lambda, 2);
+
+            // Torsional Buckling Stress Fe2
+            const G = E / (2 * (1 + nu));
+            const Fe2 = (Math.pow(Math.PI, 2) * E * cw / Math.pow(Kz * Lx, 2) + G * J) / (Ix + Iy);
+
+            // Critical stress Fcr
+            const Fe = Math.min(Fe1, Fe2);
+            const Fcr = Math.pow(0.658, Fy / Fe) * Fy;
+
+            // Compressive Strength phi_Pn
+            const phi_c = 0.9;
+            const phi_Pn = phi_c * area * Fcr / 1000; // kN
+
+            // Flexural Strength - Mpx, Mpy
+            const Mpx = Math.min(Fy * zx, 1.6 * Fy * sx) / 1000000; // kN.m
+            const Mpy = Math.min(Fy * zy, 1.6 * Fy * sy) / 1000000; // kN.m
+            const phi_b = 0.9;
+            const phi_Mnx = phi_b * Mpx;
+            const phi_Mny = phi_b * Mpy;
+
+            // ===== 비율 계산 =====
+            const ratio_comp = Pu / phi_Pn;
+            const ratio_bendX = phi_Mnx > 0 ? Mux / phi_Mnx : 0;
+            const ratio_bendY = phi_Mny > 0 ? Muy / phi_Mny : 0;
+
+            // P-M-M 조합
+            let ratio_pmm;
+            if (ratio_comp >= 0.2) {
+                ratio_pmm = ratio_comp + (8/9) * (ratio_bendX + ratio_bendY);
+            } else {
+                ratio_pmm = ratio_comp / 2 + (ratio_bendX + ratio_bendY);
+            }
+
+            // 디버깅: Main Calculator와 비교 (tw=9, tf=10, Pu=7561일 때)
+            if (tw === 9 && tf === 10 && Math.abs(Pu - 7561) < 1) {
+                console.log('=== Auto Find Section 계산 결과 (tw=9, tf=10, Pu=7561) ===');
+                console.log(`area: ${area.toFixed(2)}`);
+                console.log(`Ix: ${Ix.toFixed(2)}, Iy: ${Iy.toFixed(2)}`);
+                console.log(`ix: ${ix.toFixed(2)}, iy: ${iy.toFixed(2)}`);
+                console.log(`lambda: ${lambda.toFixed(4)}`);
+                console.log(`Fe1: ${Fe1.toFixed(2)}, Fe2: ${Fe2.toFixed(2)}, Fe: ${Fe.toFixed(2)}`);
+                console.log(`Fcr: ${Fcr.toFixed(2)}`);
+                console.log(`phi_Pn: ${phi_Pn.toFixed(2)}`);
+                console.log(`Mpx: ${Mpx.toFixed(4)}, Mpy: ${Mpy.toFixed(4)}`);
+                console.log(`phi_Mnx: ${phi_Mnx.toFixed(4)}, phi_Mny: ${phi_Mny.toFixed(4)}`);
+                console.log(`ratio_comp: ${ratio_comp.toFixed(6)}`);
+                console.log(`ratio_bendX: ${ratio_bendX.toFixed(6)}, ratio_bendY: ${ratio_bendY.toFixed(6)}`);
+                console.log(`P-M-M: ${ratio_pmm.toFixed(6)}`);
+                console.log(`Lx: ${Lx}, Ly: ${Ly}, Kx: ${Kx}, Ky: ${Ky}, Kz: ${Kz}`);
+                console.log(`Fy: ${Fy}, E: ${E}, nu: ${nu}`);
+            }
+
+            // φPn < Pu인 경우 NG 체크
+            const isCompressiveNG = phi_Pn < Pu; // φPn < Pu이면 NG
+            
+            return { phi_Pn, area, ratio_pmm, tw, tf, lcf, lcfr, isSlenderFlange, isCompressiveNG };
+        }
+
+        // Auto Find Section: 최적 tw, tf 조합 찾기
+        function findOptimalSection(Pu, Mux, Muy, Fy, E, nu, Kx, Ky, Kz, Lx, Ly) {
+            let bestTw = null;
+            let bestTf = null;
+            let bestArea = Infinity;
+            let bestPMM = 0;
+            let bestDiff = Infinity; // 1.0과의 차이
+            let bestIsSlenderFlange = false;
+
+            // 모든 tw, tf 조합 시도
+            for (const tw of twRange) {
+                for (const tf of tfRange) {
+                    if (tf < tw) continue; // tf >= tw 조건
+
+                    const result = calculateSection(tw, tf, Fy, E, nu, Kx, Ky, Kz, Lx, Ly, Pu, Mux, Muy);
+                    
+                        // λcf > λcfr인 경우 제외 (Slender flange)
+                        if (result.isSlenderFlange) continue;
+                        
+                        // P-M-M ≤ 1.0을 만족하는 최소 단면적 단면 찾기 (ratio는 1.0까지 허용)
+                        if (result.ratio_pmm > 0 && result.ratio_pmm <= 1.0) {
+                        if (result.area < bestArea) {
+                            bestArea = result.area;
+                            bestTw = tw;
+                            bestTf = tf;
+                            bestPMM = result.ratio_pmm;
+                            bestDiff = Math.abs(1.0 - result.ratio_pmm);
+                            bestIsSlenderFlange = result.isSlenderFlange;
+                        }
+                    }
+                }
+            }
+
+            // P-M-M ≤ 1.0을 만족하는 단면이 없으면, P-M-M가 가장 작은 단면 반환
+            // ratio는 1.0까지 허용하므로, 1.0을 초과하는 경우는 최소 ratio를 선택 (단, λcf ≤ λcfr이고 φPn ≥ Pu인 경우만)
+            if (bestTw === null) {
+                let minPMM = Infinity;
+                for (const tw of twRange) {
+                    for (const tf of tfRange) {
+                        if (tf < tw) continue;
+                        const result = calculateSection(tw, tf, Fy, E, nu, Kx, Ky, Kz, Lx, Ly, Pu, Mux, Muy);
+                        
+                        // λcf > λcfr인 경우 제외
+                        if (result.isSlenderFlange) continue;
+                        
+                    // φPn < Pu인 경우 제외 (NG)
+                    if (result.isCompressiveNG) continue;
+                        
+                        if (result.ratio_pmm < minPMM) {
+                            minPMM = result.ratio_pmm;
+                            bestArea = result.area;
+                            bestTw = tw;
+                            bestTf = tf;
+                            bestPMM = result.ratio_pmm;
+                            bestIsSlenderFlange = result.isSlenderFlange;
+                        }
+                    }
+                }
+            }
+
+            return { tw: bestTw, tf: bestTf, area: bestArea, ratioPMM: bestPMM, isSlenderFlange: bestIsSlenderFlange };
+        }
+
+        // 단중 계산 (kg/m)
+        function calculateUnitWeight(area) {
+            return (area / 1000000) * steelDensity;
+        }
+
+        // 모든 계산 수행
+        function calculateAll() {
+            const Fy = parseFloat(document.getElementById('steelGrade').value) || 420;
+            const E = 210000;
+            const nu = 0.3;
+            const Kx = parseFloat(document.getElementById('Kx').value) || 0.8;
+            const Ky = parseFloat(document.getElementById('Ky').value) || 0.8;
+            const Kz = parseFloat(document.getElementById('Kz').value) || 0.8;
+            const Lx = parseFloat(document.getElementById('Lx').value) * 1000 || 4500; // m to mm
+            const Ly = parseFloat(document.getElementById('Ly').value) * 1000 || 4500;
+
+            currentResults = [];
+            const tbody = document.getElementById('resultTableBody');
+            tbody.innerHTML = '';
+
+            // columnData 배열의 모든 기둥에 대해 계산
+            columnData.forEach(col => {
+                if (col.pu > 0) {
+                    try {
+                        const optimal = findOptimalSection(col.pu, col.mux, col.muy, Fy, E, nu, Kx, Ky, Kz, Lx, Ly);
+                        
+                        if (optimal && optimal.tw && optimal.tf) {
+                            const unitWeight = calculateUnitWeight(optimal.area);
+                            
+                            // λcf > λcfr 체크
+                            const lcfr = 0.56 * Math.sqrt(E / Fy);
+                            const lcf = B2 / (2 * optimal.tf);
+                            const isSlenderFlange = lcf > lcfr;
+                            
+                            // φPn < Pu 체크 (NG)
+                            const calcResult = calculateSection(optimal.tw, optimal.tf, Fy, E, nu, Kx, Ky, Kz, Lx, Ly, col.pu, col.mux, col.muy);
+                            const isCompressiveNG = calcResult.phi_Pn < col.pu;
+
+                            currentResults.push({
+                                no: col.no,
+                                name: col.name || `KC${col.no}`,
+                                pu: col.pu,
+                                mux: col.mux,
+                                muy: col.muy,
+                                pmm: optimal.ratioPMM || 0,
+                                steelGrade: `SM${Fy}`,
+                                kx: Kx,
+                                lx: parseFloat(document.getElementById('Lx').value) || 4.5,
+                                h: H1,
+                                b: B1,
+                                tw: optimal.tw,
+                                tf: optimal.tf,
+                                area: optimal.area,
+                                unitWeight: unitWeight,
+                                Fy: Fy,
+                                E: E,
+                                nu: nu,
+                                Ky: Ky,
+                                Kz: Kz,
+                                Ly: Ly,
+                                isSlenderFlange: isSlenderFlange,
+                                lcf: lcf,
+                                lcfr: lcfr,
+                                isCompressiveNG: isCompressiveNG,
+                                phi_Pn: calcResult.phi_Pn
+                            });
+                            
+                            console.log(`기둥 ${col.name || col.no}: Pu=${col.pu}, Mux=${col.mux}, Muy=${col.muy}, tw=${optimal.tw}, tf=${optimal.tf}, P-M-M=${optimal.ratioPMM?.toFixed(3)}, Area=${optimal.area?.toFixed(2)}, λcf=${lcf.toFixed(2)}, λcfr=${lcfr.toFixed(2)}`);
+                        } else {
+                            // 최적 단면을 찾지 못한 경우: 모든 조합이 λcf > λcfr인지 확인
+                            const lcfr = 0.56 * Math.sqrt(E / Fy);
+                            let allSlender = true;
+                            for (const tw of twRange) {
+                                for (const tf of tfRange) {
+                                    if (tf < tw) continue;
+                                    const lcf = B2 / (2 * tf);
+                                    if (lcf <= lcfr) {
+                                        allSlender = false;
+                                        break;
+                                    }
+                                }
+                                if (!allSlender) break;
+                            }
+                            
+                            if (allSlender) {
+                                console.error(`기둥 ${col.name || col.no}: 모든 tw, tf 조합에서 λcf > λcfr입니다. Slender check needed`);
+                                // 경고 메시지를 결과 테이블에 표시
+                                currentResults.push({
+                                    no: col.no,
+                                    name: col.name || `KC${col.no}`,
+                                    pu: col.pu,
+                                    mux: col.mux,
+                                    muy: col.muy,
+                                    pmm: 0,
+                                    steelGrade: `SM${Fy}`,
+                                    kx: Kx,
+                                    lx: parseFloat(document.getElementById('Lx').value) || 4.5,
+                                    h: H1,
+                                    b: B1,
+                                    tw: null,
+                                    tf: null,
+                                    area: 0,
+                                    unitWeight: 0,
+                                    Fy: Fy,
+                                    E: E,
+                                    nu: nu,
+                                    Ky: Ky,
+                                    Kz: Kz,
+                                    Ly: Ly,
+                                    isSlenderFlange: true,
+                                    warning: 'Slender check needed'
+                                });
+                            } else {
+                                console.error(`기둥 ${col.name || col.no}: 최적 단면을 찾을 수 없습니다.`);
+                            }
+                        }
+                    } catch (error) {
+                        console.error(`기둥 ${col.name || col.no} 계산 오류:`, error);
+                    }
+                }
+            });
+
+            // 결과 테이블에 표시
+            if (currentResults.length > 0) {
+                renderResults();
+                console.log(`계산 완료: ${currentResults.length}개 기둥 계산됨`);
+            } else {
+                tbody.innerHTML = '<tr><td colspan="13" style="text-align: center; padding: 30px; color: #999;">Pu 값을 입력한 하중이 없습니다.</td></tr>';
+                console.warn('계산 결과가 없습니다. Pu 값을 입력해주세요.');
+            }
+        }
+
+        // 결과 테이블 렌더링
+        function renderResults() {
+            const tbody = document.getElementById('resultTableBody');
+            tbody.innerHTML = '';
+            
+            currentResults.forEach(result => {
+                const row = document.createElement('tr');
+                row.setAttribute('data-no', result.no);
+                
+                // 경고 메시지가 있는 경우
+                if (result.warning) {
+                    row.innerHTML = `
+                        <td colspan="13" style="text-align: center; padding: 20px; color: #e53e3e; font-weight: 600; background: #fed7d7; border-radius: 4px;">
+                            ${result.name}: ${result.warning} (λcf = ${result.lcf?.toFixed(2) || 'N/A'} > λcfr = ${result.lcfr?.toFixed(2) || 'N/A'})
+                        </td>
+                    `;
+                    row.style.backgroundColor = '#fed7d7';
+                } else {
+                    // λcf > λcfr 경고 표시
+                    const slenderWarning = result.isSlenderFlange ? 
+                        `<div style="color: #e53e3e; font-size: 11px; margin-top: 4px; font-weight: 600;">⚠ Slender check needed</div>` : '';
+                    
+                    // φPn < Pu 경고 표시 (NG)
+                    const compressiveWarning = result.isCompressiveNG ? 
+                        `<div style="color: #e53e3e; font-size: 11px; margin-top: 4px; font-weight: 600;">⚠ Compressive NG (φPn < Pu)</div>` : '';
+                    
+                    const warningText = slenderWarning + compressiveWarning;
+                    
+                    row.innerHTML = `
+                        <td style="text-align: center; font-weight: 600;">${result.no}</td>
+                        <td style="font-weight: 600; color: #667eea;">${result.name}${warningText}</td>
+                        <td style="text-align: right;">${result.pu.toFixed(1)}</td>
+                        <td class="pmm-cell" style="text-align: right; ${result.pmm > 1.0 ? 'color: #e53e3e; font-weight: 600;' : 'color: #38a169;'}">${result.pmm > 0 ? result.pmm.toFixed(3) : '-'}</td>
+                        <td style="text-align: center;">${result.steelGrade}</td>
+                        <td style="text-align: center;">${result.kx.toFixed(1)}</td>
+                        <td style="text-align: right;">${result.lx.toFixed(1)}</td>
+                        <td style="text-align: center;">${result.h}</td>
+                        <td style="text-align: center;">${result.b}</td>
+                        <td style="text-align: center;">
+                            <input type="number" id="tw_${result.no}" value="${result.tw || ''}" min="8" max="16" step="1" 
+                                   style="width: 60px; text-align: center; font-weight: 600; color: #667eea; border: 1px solid #cbd5e0; border-radius: 4px; padding: 4px;"
+                                   onchange="recalculateRow(${result.no})">
+                        </td>
+                        <td style="text-align: center;">
+                            <input type="number" id="tf_${result.no}" value="${result.tf || ''}" min="10" max="20" step="1"
+                                   style="width: 60px; text-align: center; font-weight: 600; color: #667eea; border: 1px solid #cbd5e0; border-radius: 4px; padding: 4px;"
+                                   onchange="recalculateRow(${result.no})">
+                        </td>
+                        <td class="area-cell" style="text-align: right;">${result.area ? result.area.toFixed(2) : '-'}</td>
+                        <td class="weight-cell" style="text-align: right;">${result.unitWeight ? result.unitWeight.toFixed(4) : '-'}</td>
+                    `;
+                }
+                tbody.appendChild(row);
+            });
+        }
+
+        // 특정 행 재계산 (tw, tf 변경 시)
+        function recalculateRow(no) {
+            const result = currentResults.find(r => r.no === no);
+            if (!result) return;
+
+            const tw = parseFloat(document.getElementById(`tw_${no}`).value);
+            const tf = parseFloat(document.getElementById(`tf_${no}`).value);
+
+            if (!tw || !tf || tf < tw) {
+                alert(`기둥 ${result.name}: tf는 tw보다 크거나 같아야 합니다.`);
+                // 원래 값으로 복원
+                document.getElementById(`tw_${no}`).value = result.tw;
+                document.getElementById(`tf_${no}`).value = result.tf;
+                return;
+            }
+
+            try {
+                const calcResult = calculateSection(tw, tf, result.Fy, result.E, result.nu, result.kx, result.Ky, result.Kz, result.lx * 1000, result.Ly, result.pu, result.mux, result.muy);
+                const unitWeight = calculateUnitWeight(calcResult.area);
+                
+                // λcf > λcfr 체크
+                const lcfr = 0.56 * Math.sqrt(result.E / result.Fy);
+                const lcf = B2 / (2 * tf);
+                const isSlenderFlange = lcf > lcfr;
+                
+                // φPn < Pu 체크 (NG)
+                const isCompressiveNG = calcResult.phi_Pn < result.pu;
+
+                // 결과 업데이트
+                result.tw = tw;
+                result.tf = tf;
+                result.pmm = calcResult.ratio_pmm || 0;
+                result.area = calcResult.area;
+                result.unitWeight = unitWeight;
+                result.isSlenderFlange = isSlenderFlange;
+                result.lcf = lcf;
+                result.lcfr = lcfr;
+                result.isCompressiveNG = isCompressiveNG;
+                result.phi_Pn = calcResult.phi_Pn;
+
+                // 테이블 셀 업데이트
+                const row = document.querySelector(`tr[data-no="${no}"]`);
+                if (row) {
+                    // 기둥명 셀에 경고 메시지 추가/제거
+                    const nameCell = row.querySelector('td:nth-child(2)');
+                    if (nameCell) {
+                        const baseName = result.name.split('⚠')[0].trim();
+                        let warningHTML = '';
+                        if (isSlenderFlange) {
+                            warningHTML += `<div style="color: #e53e3e; font-size: 11px; margin-top: 4px; font-weight: 600;">⚠ Slender check needed</div>`;
+                        }
+                        if (isCompressiveNG) {
+                            warningHTML += `<div style="color: #e53e3e; font-size: 11px; margin-top: 4px; font-weight: 600;">⚠ Compressive NG (φPn < Pu)</div>`;
+                        }
+                        nameCell.innerHTML = baseName + warningHTML;
+                    }
+                    
+                    const pmmCell = row.querySelector('.pmm-cell');
+                    const areaCell = row.querySelector('.area-cell');
+                    const weightCell = row.querySelector('.weight-cell');
+
+                    if (pmmCell) {
+                        pmmCell.textContent = result.pmm > 0 ? result.pmm.toFixed(3) : '-';
+                        pmmCell.style.color = result.pmm > 1.0 ? '#e53e3e' : '#38a169';
+                        pmmCell.style.fontWeight = result.pmm > 1.0 ? '600' : 'normal';
+                    }
+                    if (areaCell) {
+                        areaCell.textContent = result.area ? result.area.toFixed(2) : '-';
+                    }
+                    if (weightCell) {
+                        weightCell.textContent = result.unitWeight ? result.unitWeight.toFixed(4) : '-';
+                    }
+                }
+
+                console.log(`기둥 ${result.name}: tw=${tw}, tf=${tf}로 재계산 - P-M-M=${result.pmm.toFixed(3)}, Area=${result.area.toFixed(2)}`);
+            } catch (error) {
+                console.error(`기둥 ${result.name} 재계산 오류:`, error);
+                alert(`재계산 중 오류가 발생했습니다: ${error.message}`);
+            }
+        }
+
+        // 계산서 출력 함수
+        function printCalculationSheet() {
+            if (currentResults.length === 0) {
+                alert('먼저 계산을 실행해주세요.');
+                return;
+            }
+
+            // 첫 번째 기둥의 데이터를 사용하여 계산서 생성
+            const firstResult = currentResults[0];
+            const col = columnData.find(c => c.no === firstResult.no);
+            
+            if (!col) {
+                alert('기둥 데이터를 찾을 수 없습니다.');
+                return;
+            }
+
+            // 입력 데이터 저장 (Main Calculator 형식과 호환)
+            const inputData = {
+                // Section Dimensions
+                H1: H1,
+                B1: B1,
+                tw1: firstResult.tw,
+                tf1: firstResult.tf,
+                r1: 0, // Built-up 부재
+                H2: H2,
+                B2: B2,
+                tw2: firstResult.tw,
+                tf2: firstResult.tf,
+                r2: 0, // Built-up 부재
+                // Material
+                steelGrade: `SM${parseFloat(document.getElementById('steelGrade').value) || 420}`,
+                Fy: parseFloat(document.getElementById('steelGrade').value) || 420,
+                E: 210000,
+                nu: 0.3,
+                // Length & Buckling
+                Lx: parseFloat(document.getElementById('Lx').value) || 4.5,
+                Ly: parseFloat(document.getElementById('Ly').value) || 4.5,
+                Lb: parseFloat(document.getElementById('Lx').value) || 4.5,
+                Kx: parseFloat(document.getElementById('Kx').value) || 0.8,
+                Ky: parseFloat(document.getElementById('Ky').value) || 0.8,
+                Kz: parseFloat(document.getElementById('Kz').value) || 0.8,
+                Cb: 1.0,
+                // Design Load
+                Pu: col.pu,
+                Mux: col.mux,
+                Muy: col.muy,
+                Vux: 0,
+                Vuy: 0,
+                // Name
+                name: col.name || 'Auto Find Section'
+            };
+
+            // localStorage에 저장
+            localStorage.setItem('kcolInputData', JSON.stringify(inputData));
+
+            // 계산서 페이지를 새 창에서 열기
+            const calcWindow = window.open('Cross-H-Column-Calculation-Data1.html', '_blank');
+            
+            if (calcWindow) {
+                console.log('계산서 출력: 첫 번째 기둥 데이터 사용');
+                console.log('기둥명:', col.name);
+                console.log('Pu:', col.pu, 'Mux:', col.mux, 'Muy:', col.muy);
+                console.log('tw:', firstResult.tw, 'tf:', firstResult.tf);
+            }
+        }
+    </script>
+</body>
+</html>
