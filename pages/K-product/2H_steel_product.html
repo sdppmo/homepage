@@ -620,6 +620,22 @@
         .modal-content .form-group {
             margin-bottom: 15px;
         }
+        
+        /* 날짜 입력 필드 강제 표시 */
+        #modal-date-group {
+            display: block !important;
+            visibility: visible !important;
+        }
+        
+        #modal-work-date {
+            display: block !important;
+            visibility: visible !important;
+            width: 100% !important;
+            padding: 10px !important;
+            border: 2px solid #ddd !important;
+            border-radius: 8px !important;
+            font-size: 14px !important;
+        }
 
         .modal-content label {
             display: block;
@@ -640,6 +656,93 @@
             display: flex;
             gap: 10px;
             margin-top: 20px;
+        }
+
+        /* Process Selection Modal */
+        .process-selection-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .process-selection-modal.active {
+            display: flex;
+        }
+
+        .process-selection-content {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            max-width: 450px;
+            width: 90%;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+
+        .process-selection-content h3 {
+            margin-bottom: 15px;
+            color: #e74c3c;
+            font-size: 18px;
+        }
+
+        .process-selection-content p {
+            margin-bottom: 20px;
+            color: #555;
+            line-height: 1.6;
+        }
+
+        .process-selection-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+        }
+
+        .process-select-btn {
+            flex: 1;
+            padding: 15px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: white;
+        }
+
+        .process-select-btn.p1 {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+        }
+
+        .process-select-btn.p1:hover {
+            background: linear-gradient(135deg, #c0392b, #a93226);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(231, 76, 60, 0.4);
+        }
+
+        .process-select-btn.p2 {
+            background: linear-gradient(135deg, #ff9800, #f57c00);
+        }
+
+        .process-select-btn.p2:hover {
+            background: linear-gradient(135deg, #f57c00, #e65100);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 152, 0, 0.4);
+        }
+
+        .process-select-btn.cancel {
+            background: #6c757d;
+            color: white;
+        }
+
+        .process-select-btn.cancel:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
         }
 
         /* Responsive */
@@ -682,10 +785,10 @@
 
         <!-- Company Selector -->
         <div class="company-selector">
-                <div style="display:flex;align-items:center;gap:15px;margin-bottom:10px;">
+                <div style="display:flex;align-items:center;gap:15px;margin-bottom:15px;">
                     <button class="tab-btn active" onclick="showPanel('input', this)" style="margin:0;">✏️ 일일 입력</button>
+                    <p style="margin:0;color:#666;font-size:13px;">아래 데이터(1~6) 입력을 위해 "일일입력"을 먼저 클릭하고 해당공정으로 들어가시기 바랍니다.</p>
                 </div>
-                <p style="margin:0 0 15px 0;color:#666;font-size:13px;">해당 공정을 선택후 입력바랍니다.</p>
             <div class="company-buttons" style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px;">
                 <button class="company-btn process-btn p1" data-process="1" onclick="selectProcess(1)">
                     1. 주기둥커팅
@@ -867,7 +970,7 @@
                     <label>📅 작업일자:</label>
                     <input type="date" id="work-date" onchange="loadDayData()">
                     <div id="weekday-buttons" style="display:flex;gap:8px;flex-wrap:wrap;">
-                        <!-- 요일 버튼들이 동적으로 생성됩니다 -->
+                        <!-- 요일 버튼들이 동적으로 생성됩니다 (지난주 7개 + 이번 주 7개 = 총 14개) -->
                     </div>
                 </div>
 
@@ -881,15 +984,6 @@
                     <div class="legend-item"><div class="legend-color" style="background:#4caf50;"></div><span>6.설치완료</span></div>
                 </div>
 
-                <div id="process-guide" style="margin-bottom:15px;padding:15px;background:#fff8e1;border-radius:8px;border:1px solid #ffc107;">
-                    <div style="margin-bottom:10px;">
-                        <strong style="font-size:14px;color:#795548;">💡 입력 안내</strong>
-                    </div>
-                    <div style="font-size:13px;color:#795548;">
-                        <div style="margin:3px 0;">① 위에서 <strong>입력할 공정 버튼</strong>을 먼저 선택하세요</div>
-                        <div style="margin:3px 0;">② 상세 입력 방법이 여기에 표시됩니다</div>
-                    </div>
-                </div>
                 <div id="guide-stats" style="margin-bottom:10px;padding:10px;background:#e8f5e9;border-radius:6px;font-size:12px;color:#2e7d32;display:none;"></div>
 
                 <div class="column-grid" id="column-grid-input">
@@ -996,8 +1090,16 @@
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
                 <h3 style="margin:0;color:#2c4a7c;">📅 전체 공정표 (Gantt Chart)</h3>
                 <button class="action-btn" onclick="enableDeleteMode()" id="delete-mode-btn" style="background:#f44336;color:white;padding:8px 16px;border:none;border-radius:6px;cursor:pointer;font-weight:600;">
-                    🗑️ 중복데이터 삭제
+                    🗑️ 데이터 삭제
                 </button>
+            </div>
+            
+            <div style="margin-bottom:15px;padding:10px 12px;background:#fff3e0;border-left:4px solid #ff9800;border-radius:4px;font-size:13px;color:#e65100;">
+                <strong>⚠️ 주의사항:</strong>
+                <ul style="margin:8px 0 0 0;padding-left:20px;line-height:1.8;">
+                    <li>1. 주기둥커팅 + 2. 소부재가공이 동일한 날짜를 1개공정만 선택후 삭제가능</li>
+                    <li>2. 데이터 삭제완료하면 데이터삭제중을 클릭하여 종료함.</li>
+                </ul>
             </div>
             
             <div class="process-legend">
@@ -1115,6 +1217,10 @@
     <div class="modal" id="column-modal">
         <div class="modal-content">
             <h3>🔩 기둥 <span id="modal-column-num"></span> 공정 입력</h3>
+            <div class="form-group" id="modal-date-group" style="display:block !important;visibility:visible !important;margin-bottom:15px;">
+                <label style="display:block;margin-bottom:5px;font-weight:600;color:#555;">작업일자:</label>
+                <input type="date" id="modal-work-date" style="width:100% !important;padding:10px !important;border:2px solid #ddd !important;border-radius:8px !important;font-size:14px !important;display:block !important;visibility:visible !important;">
+            </div>
             <div class="form-group">
                 <label>현재 공정 상태:</label>
                 <select id="modal-process-select">
@@ -1217,6 +1323,7 @@
         let selectedColumn = null;
         let editMode = false; // 수정 모드 활성화 여부
         let deleteMode = false; // 삭제 모드 활성화 여부
+        let pendingDeleteInfo = null; // 모달에서 선택할 삭제 정보 저장
         let coordinateSetupMode = false; // 좌표 설정 모드
         let currentColumnForSetup = null; // 좌표 설정 중인 기둥 번호
         let columnCoordinates = {}; // { columnId: { left: %, top: % } } - 평면도 좌표
@@ -1230,6 +1337,7 @@
         let progressChart = null;
         let companyChart = null;
         let transportVolumeData = []; // 운송 물량 산정용 데이터 (엑셀 업로드)
+        let selectedColumns = []; // 주기둥커팅에서 선택된 기둥들 (다중 선택)
 
         // Initialize
         // Status display function
@@ -1266,6 +1374,18 @@
                 // 초기 로드 시 공정표도 렌더링하여 현장배송 데이터 표시
                 if (document.getElementById('panel-gantt')) {
                     renderGanttChart();
+                }
+                
+                // URL 파라미터로 공정 선택 (예: ?process=1)
+                const processParam = urlParams.get('process');
+                if (processParam) {
+                    const processId = parseInt(processParam);
+                    if (processId >= 1 && processId <= 6) {
+                        // 약간의 지연 후 공정 선택 (DOM이 완전히 로드된 후)
+                        setTimeout(() => {
+                            selectProcess(processId);
+                        }, 100);
+                    }
                 }
             } catch (error) {
                 console.error('Initialization error:', error);
@@ -1336,6 +1456,9 @@
         function selectProcess(processId) {
             currentProcess = processId;
             
+            // 공정 변경 시 선택된 기둥 초기화
+            selectedColumns = [];
+            
             // 해당 공정의 담당 업체 설정
             const process = PROCESSES.find(p => p.id === processId);
             currentCompany = process?.company;
@@ -1357,7 +1480,305 @@
             // 공정별 입력 안내 메시지 표시
             showProcessGuide(processId);
             
+            // 일일 입력 패널 자동으로 열기
+            const inputPanel = document.getElementById('panel-input');
+            if (inputPanel) {
+                // 다른 패널 비활성화
+                document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+                // 일일 입력 패널 활성화
+                inputPanel.classList.add('active');
+                
+                // 다른 탭 버튼 비활성화 (일일 입력 버튼 제외)
+                document.querySelectorAll('.tabs .tab-btn').forEach(btn => btn.classList.remove('active'));
+            }
+            
             renderColumnGrid('column-grid-input');
+        }
+        
+        // 모든 공정에서 기둥 선택/해제 토글
+        function toggleColumnSelection(columnId) {
+            // 휴무일 체크
+            const workDate = document.getElementById('work-date')?.value;
+            if (workDate && isHoliday(workDate)) {
+                alert(`${getHolidayName(workDate)}\n\n해당일은 휴무로 작업 입력이 불가합니다.`);
+                return;
+            }
+            
+            if (!currentProcess) {
+                alert('먼저 입력할 공정을 선택해주세요.');
+                return;
+            }
+            
+            // 각 공정별로 선택 가능한 상태 확인
+            const colData = columnData[columnId] || {};
+            let status = colData.status || 0;
+            
+            // 일일입력창의 공정 1-4에서 운송차수계획의 현장배송(계획)이 표시되지 않도록
+            // 실제 완료된 공정 상태만 반영
+            if (currentProcess >= 1 && currentProcess <= 4) {
+                let actualStatus = 0;
+                const workDate = document.getElementById('work-date')?.value;
+                
+                // 모든 날짜에서 실제 완료된 공정 확인
+                for (let date in dailyData) {
+                    for (let p = 1; p <= 4; p++) {
+                        const dayData = dailyData[date]?.[p];
+                        if (dayData && (dayData.includes(columnId) || dayData.includes(parseInt(columnId.replace('C', ''))) || dayData.includes(columnId.replace('C', '')))) {
+                            actualStatus = Math.max(actualStatus, p);
+                        }
+                    }
+                }
+                status = actualStatus;
+            }
+            
+            // 소부재가공(process 2)은 독립적으로 선택 가능 (주기둥커팅 완료 여부와 무관)
+            if (currentProcess === 2) {
+                // 소부재가공은 항상 선택 가능 (검증 없음)
+            }
+            // 주기둥조립(process 3)은 주기둥커팅(process 1) 완료 상태만 확인 (소부재가공 완료 여부와 무관)
+            else if (currentProcess === 3) {
+                // 주기둥커팅(process 1) 완료 상태 확인
+                let hasCutting = false;
+                const workDate = document.getElementById('work-date')?.value;
+                
+                // 모든 날짜에서 주기둥커팅(process 1) 완료 확인
+                for (let date in dailyData) {
+                    if (dailyData[date] && dailyData[date][1]) {
+                        const colNum = parseInt(columnId.replace('C', ''));
+                        if (dailyData[date][1].includes(columnId) || 
+                            dailyData[date][1].includes(colNum) || 
+                            dailyData[date][1].includes(String(colNum))) {
+                            hasCutting = true;
+                            break;
+                        }
+                    }
+                }
+                
+                // columnData에서도 확인
+                if (!hasCutting) {
+                    const colData = columnData[columnId] || {};
+                    if (colData.status >= 1) {
+                        hasCutting = true;
+                    }
+                }
+                
+                if (!hasCutting) {
+                    alert('주기둥조립을 입력하려면 주기둥커팅(1단계)이 완료된 기둥이어야 합니다.');
+                    return;
+                }
+            }
+            // 소부재조립(process 4)은 주기둥커팅(process 1), 소부재가공(process 2), 주기둥조립(process 3)이 모두 완료된 기둥만 가능
+            else if (currentProcess === 4) {
+                let hasCutting = false; // 주기둥커팅 완료 여부
+                let hasSubProcessing = false; // 소부재가공 완료 여부
+                let hasMainAssembly = false; // 주기둥조립 완료 여부
+                const colNum = parseInt(columnId.replace('C', ''));
+                
+                // 모든 날짜에서 주기둥커팅(process 1) 완료 확인
+                for (let date in dailyData) {
+                    if (dailyData[date] && dailyData[date][1]) {
+                        if (dailyData[date][1].includes(columnId) || 
+                            dailyData[date][1].includes(colNum) || 
+                            dailyData[date][1].includes(String(colNum))) {
+                            hasCutting = true;
+                            break;
+                        }
+                    }
+                }
+                
+                // 모든 날짜에서 소부재가공(process 2) 완료 확인
+                for (let date in dailyData) {
+                    if (dailyData[date] && dailyData[date][2]) {
+                        if (dailyData[date][2].includes(columnId) || 
+                            dailyData[date][2].includes(colNum) || 
+                            dailyData[date][2].includes(String(colNum))) {
+                            hasSubProcessing = true;
+                            break;
+                        }
+                    }
+                }
+                
+                // 모든 날짜에서 주기둥조립(process 3) 완료 확인
+                for (let date in dailyData) {
+                    if (dailyData[date] && dailyData[date][3]) {
+                        if (dailyData[date][3].includes(columnId) || 
+                            dailyData[date][3].includes(colNum) || 
+                            dailyData[date][3].includes(String(colNum))) {
+                            hasMainAssembly = true;
+                            break;
+                        }
+                    }
+                }
+                
+                // columnData에서도 확인
+                const colData = columnData[columnId] || {};
+                if (!hasCutting && colData.status >= 1) {
+                    hasCutting = true;
+                }
+                if (!hasSubProcessing && colData.status >= 2) {
+                    hasSubProcessing = true;
+                }
+                if (!hasMainAssembly && colData.status >= 3) {
+                    hasMainAssembly = true;
+                }
+                
+                // 완료되지 않은 공정 확인
+                if (!hasCutting || !hasSubProcessing || !hasMainAssembly) {
+                    const missing = [];
+                    if (!hasCutting) missing.push('주기둥커팅(1단계)');
+                    if (!hasSubProcessing) missing.push('소부재가공(2단계)');
+                    if (!hasMainAssembly) missing.push('주기둥조립(3단계)');
+                    alert(`해당 공정이 완료되지 않았습니다.\n\n소부재조립을 입력하려면 ${missing.join(', ')}이 완료된 기둥이어야 합니다.`);
+                    return;
+                }
+            }
+            // 현장설치(process 6)는 현장배송(process 5)에서 확인된 기둥만 가능
+            else if (currentProcess === 6) {
+                let hasConfirmedDelivery = false;
+                const workDate = document.getElementById('work-date')?.value;
+                
+                if (workDate && dailyData[workDate] && dailyData[workDate][5]) {
+                    const colNum = parseInt(columnId.replace('C', ''));
+                    if (dailyData[workDate][5].includes(columnId) || 
+                        dailyData[workDate][5].includes(colNum) || 
+                        dailyData[workDate][5].includes(String(colNum))) {
+                        hasConfirmedDelivery = true;
+                    }
+                }
+                
+                if (!hasConfirmedDelivery) {
+                    for (let date in dailyData) {
+                        if (dailyData[date] && dailyData[date][5]) {
+                            const colNum = parseInt(columnId.replace('C', ''));
+                            if (dailyData[date][5].includes(columnId) || 
+                                dailyData[date][5].includes(colNum) || 
+                                dailyData[date][5].includes(String(colNum))) {
+                                hasConfirmedDelivery = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+                
+                if (!hasConfirmedDelivery) {
+                    alert('현장설치를 입력하려면 현장배송(5단계)에서 확인된 기둥이어야 합니다.');
+                    return;
+                }
+            }
+            // 나머지 공정(1, 3, 4, 5)은 이전 공정 완료 상태 확인
+            else {
+                const requiredStatus = currentProcess - 1;
+                if (status !== requiredStatus) {
+                    const processNames = ['미착수', '주기둥커팅', '소부재가공', '주기둥조립', '소부재조립', '현장배송', '현장설치'];
+                    alert(`${processNames[requiredStatus]} 완료 상태의 기둥만 선택할 수 있습니다.`);
+                    return;
+                }
+            }
+            
+            // 선택/해제 토글
+            const index = selectedColumns.indexOf(columnId);
+            if (index > -1) {
+                // 이미 선택된 경우 - 해제
+                selectedColumns.splice(index, 1);
+            } else {
+                // 선택되지 않은 경우 - 추가
+                selectedColumns.push(columnId);
+            }
+            
+            // UI 업데이트
+            renderColumnGrid('column-grid-input');
+            
+            // 선택된 기둥 수 표시
+            updateSelectedColumnsInfo();
+        }
+        
+        // 선택된 기둥 정보 업데이트
+        function updateSelectedColumnsInfo() {
+            const statsDiv = document.getElementById('guide-stats');
+            if (currentProcess && currentProcess >= 1 && currentProcess <= 6 && selectedColumns.length > 0) {
+                const selectedText = selectedColumns.sort((a, b) => {
+                    const numA = parseInt(a.replace('C', ''));
+                    const numB = parseInt(b.replace('C', ''));
+                    return numA - numB;
+                }).join(', ');
+                statsDiv.style.display = 'block';
+                statsDiv.style.background = '#e3f2fd';
+                statsDiv.style.color = '#1565c0';
+                statsDiv.innerHTML = 
+                    `📋 <strong>선택된 기둥 (${selectedColumns.length}개):</strong> ${selectedText}`;
+            }
+        }
+        
+        // 선택된 모든 기둥을 한 번에 저장
+        function saveSelectedColumns() {
+            if (selectedColumns.length === 0) {
+                alert('저장할 기둥을 선택해주세요.');
+                return;
+            }
+            
+            // 날짜 확인
+            let workDate = document.getElementById('work-date')?.value;
+            if (!workDate) {
+                const today = new Date();
+                workDate = today.toISOString().split('T')[0];
+                const workDateInput = document.getElementById('work-date');
+                if (workDateInput) {
+                    workDateInput.value = workDate;
+                }
+            }
+            
+            // 휴무일 체크
+            if (isHoliday(workDate)) {
+                alert(`${getHolidayName(workDate)}\n\n해당일은 휴무로 작업 입력이 불가합니다.`);
+                return;
+            }
+            
+            if (!currentProcess) {
+                alert('공정을 선택해주세요.');
+                return;
+            }
+            
+            // 선택된 모든 기둥 저장
+            const savedCount = selectedColumns.length;
+            const process = PROCESSES.find(p => p.id === currentProcess);
+            const companyName = process?.company || 'yuseok';
+            
+            selectedColumns.forEach(columnId => {
+                // columnData 업데이트
+                if (!columnData[columnId]) {
+                    columnData[columnId] = {};
+                }
+                columnData[columnId].status = currentProcess;
+                columnData[columnId].lastUpdate = workDate;
+                columnData[columnId].updatedBy = companyName;
+                
+                // dailyData 업데이트
+                if (!dailyData[workDate]) {
+                    dailyData[workDate] = {};
+                }
+                if (!dailyData[workDate][currentProcess]) {
+                    dailyData[workDate][currentProcess] = [];
+                }
+                // 기존 항목 제거 후 새로 추가 (중복 방지)
+                dailyData[workDate][currentProcess] = dailyData[workDate][currentProcess].filter(col => col !== columnId);
+                dailyData[workDate][currentProcess].push(columnId);
+            });
+            
+            // 저장
+            try {
+                saveToStorage();
+                showStatus(`✅ ${savedCount}개 기둥이 저장되었습니다.`, false);
+            } catch (error) {
+                console.error('저장 오류:', error);
+                alert('저장 중 오류가 발생했습니다: ' + error.message);
+                return;
+            }
+            
+            // 선택 초기화 및 UI 업데이트
+            selectedColumns = [];
+            renderColumnGrid('column-grid-input');
+            renderColumnGrid('column-grid-overview');
+            updateProgressBars();
         }
         
         // 공정별 입력 안내 메시지
@@ -1368,10 +1789,12 @@
                     company: '유석철강(충주공장)',
                     steps: [
                         '① 작업일자를 확인/선택합니다',
-                        '② 금색 테두리로 강조된 기둥(미착수 상태)을 클릭합니다',
-                        '③ 저장합니다'
+                        '② 금색 테두리로 강조된 기둥(미착수 상태)을 클릭하여 선택합니다 (다중 선택 가능)',
+                        '③ 선택된 기둥들이 파란색으로 표시됩니다',
+                        '④ 저장 버튼을 클릭하여 선택한 모든 기둥을 한 번에 저장합니다'
                     ],
-                    note: '※ 미착수(0단계) 상태의 기둥만 커팅 완료 처리 가능'
+                    note: '※ 미착수(0단계) 상태의 기둥만 커팅 완료 처리 가능',
+                    deleteNote: '🗑️ 주기둥커팅 삭제: 작업일자 삭제는 공정표(Gantt)에서 데이터 삭제가능합니다.'
                 },
                 2: {
                     title: '🟠 기둥소부재가공 입력 안내',
@@ -1404,23 +1827,24 @@
                     note: '※ 주기둥조립(3단계)이 완료된 기둥만 소부재조립 처리 가능'
                 },
                 5: {
-                    title: '🟣 현장배송 안내',
+                    title: '🟣 현장배송 입력 안내',
                     company: '유석철강(음성공장)',
                     steps: [
-                        '현장배송은 운송차수계획에서 받은 데이터입니다. (옅은 마젠타색상)',
-                        '운송차수계획에서 설정된 배송 일정이 자동으로 반영됩니다.',
-                        '※ 실제 운송이 아닌 배송 계획입니다.',
-                        '현장배송된 기둥은 색상이 짙은 마젠타로 변경됩니다.'
+                        '① 작업일자를 확인/선택합니다',
+                        '② 금색 테두리로 강조된 기둥(소조립완료 상태)을 클릭하여 선택합니다 (다중 선택 가능)',
+                        '③ 선택된 기둥들이 파란색으로 표시됩니다',
+                        '④ 저장 버튼을 클릭하여 선택한 모든 기둥을 한 번에 저장합니다'
                     ],
-                    note: ''
+                    note: '※ 소부재조립(4단계)이 완료된 기둥만 현장배송 처리 가능'
                 },
                 6: {
                     title: '🟢 현장설치 입력 안내',
                     company: '진흥기업',
                     steps: [
                         '① 작업일자를 확인/선택합니다',
-                        '② 금색 테두리로 강조된 기둥(배송완료 상태)을 클릭합니다',
-                        '③ 저장합니다'
+                        '② 금색 테두리로 강조된 기둥(배송완료 상태)을 클릭하여 선택합니다 (다중 선택 가능)',
+                        '③ 선택된 기둥들이 파란색으로 표시됩니다',
+                        '④ 저장 버튼을 클릭하여 선택한 모든 기둥을 한 번에 저장합니다'
                     ],
                     note: '※ 현장배송(5단계)에서 확인된 기둥만 설치 처리 가능\n운송차수계획에서 "💾 운송차수계획 저장" 버튼을 클릭하여 확인한 기둥만 현장설치가 가능합니다.'
                 }
@@ -1437,9 +1861,12 @@
                 <div style="margin-bottom:8px;font-size:12px;color:#555;">
                     ${guide.steps.map(step => `<div style="margin:3px 0;">${step}</div>`).join('')}
                 </div>
-                <div style="font-size:11px;color:#e65100;background:#fff3e0;padding:6px 10px;border-radius:4px;">
+                <div style="font-size:11px;color:#e65100;background:#fff3e0;padding:6px 10px;border-radius:4px;margin-bottom:8px;">
                     ${guide.note}
                 </div>
+                ${guide.deleteNote ? `<div style="font-size:11px;color:#d32f2f;background:#ffebee;padding:6px 10px;border-radius:4px;border-left:3px solid #f44336;">
+                    ${guide.deleteNote}
+                </div>` : ''}
             `;
         }
 
@@ -1523,26 +1950,82 @@
             const todayDay = today.getDay(); // 0=일요일, 1=월요일, ..., 6=토요일
             
             // 이번 주 월요일 계산 (월요일이 주의 시작)
-            const monday = new Date(today);
+            const thisWeekMonday = new Date(today);
             const daysToMonday = todayDay === 0 ? -6 : 1 - todayDay; // 일요일이면 -6, 아니면 1-todayDay
-            monday.setDate(today.getDate() + daysToMonday);
+            thisWeekMonday.setDate(today.getDate() + daysToMonday);
+            
+            // 지난주 월요일 계산 (이번 주 월요일에서 7일 빼기)
+            const lastWeekMonday = new Date(thisWeekMonday);
+            lastWeekMonday.setDate(thisWeekMonday.getDate() - 7);
             
             const weekdays = ['일', '월', '화', '수', '목', '금', '토'];
             
-            // 월요일부터 일요일까지 버튼 생성
+            // 지난주 버튼 생성 (위에 표시)
             for (let i = 0; i < 7; i++) {
-                const date = new Date(monday);
-                date.setDate(monday.getDate() + i);
+                const date = new Date(lastWeekMonday);
+                date.setDate(lastWeekMonday.getDate() + i);
                 const dateStr = date.toISOString().split('T')[0];
                 const weekday = weekdays[date.getDay()];
+                const dayOfWeek = date.getDay(); // 0=일요일, 6=토요일
+                const isSunday = dayOfWeek === 0;
+                
+                // 날짜 포맷팅 (MM/DD)
+                const month = date.getMonth() + 1;
+                const day = date.getDate();
+                const dateDisplay = `${month}/${day}`;
                 
                 // 오늘 날짜인지 확인
                 const isToday = dateStr === todayStr;
-                const buttonText = isToday ? '오늘' : weekday;
+                const buttonText = isToday ? `오늘 ${dateDisplay}` : `${weekday} ${dateDisplay}`;
                 
                 const button = document.createElement('button');
                 button.className = isToday ? 'action-btn primary' : 'action-btn';
-                button.style.cssText = isToday ? '' : 'background:#9e9e9e;color:white;';
+                // 일요일은 빨간색, 오늘은 기본 색상, 그 외는 짙은 푸른색
+                let colorStyle = '';
+                if (isToday) {
+                    colorStyle = '';
+                } else if (isSunday) {
+                    colorStyle = 'background:#9e9e9e;color:#d32f2f;opacity:0.7;';
+                } else {
+                    colorStyle = 'background:#9e9e9e;color:#0d47a1;opacity:0.7;';
+                }
+                button.style.cssText = colorStyle + 'white-space:nowrap;min-width:80px;';
+                button.textContent = buttonText;
+                button.onclick = () => setDateByString(dateStr);
+                
+                weekdayButtonsContainer.appendChild(button);
+            }
+            
+            // 이번 주 버튼 생성 (아래에 표시)
+            for (let i = 0; i < 7; i++) {
+                const date = new Date(thisWeekMonday);
+                date.setDate(thisWeekMonday.getDate() + i);
+                const dateStr = date.toISOString().split('T')[0];
+                const weekday = weekdays[date.getDay()];
+                const dayOfWeek = date.getDay(); // 0=일요일, 6=토요일
+                const isSunday = dayOfWeek === 0;
+                
+                // 날짜 포맷팅 (MM/DD)
+                const month = date.getMonth() + 1;
+                const day = date.getDate();
+                const dateDisplay = `${month}/${day}`;
+                
+                // 오늘 날짜인지 확인
+                const isToday = dateStr === todayStr;
+                const buttonText = isToday ? `오늘 ${dateDisplay}` : `${weekday} ${dateDisplay}`;
+                
+                const button = document.createElement('button');
+                button.className = isToday ? 'action-btn primary' : 'action-btn';
+                // 일요일은 빨간색, 오늘은 기본 색상, 그 외는 짙은 푸른색
+                let colorStyle = '';
+                if (isToday) {
+                    colorStyle = '';
+                } else if (isSunday) {
+                    colorStyle = 'background:#9e9e9e;color:#d32f2f;';
+                } else {
+                    colorStyle = 'background:#9e9e9e;color:#0d47a1;';
+                }
+                button.style.cssText = colorStyle + 'white-space:nowrap;min-width:80px;';
                 button.textContent = buttonText;
                 button.onclick = () => setDateByString(dateStr);
                 
@@ -1651,10 +2134,107 @@
                 }
                 // 입력 패널에서 선택 가능한 기둥 강조 표시
                 else if (containerId === 'column-grid-input' && currentProcess && !editMode) {
-                    const canProcess = (status === currentProcess - 1);
+                    // 소부재가공(process 2)은 독립적으로 선택 가능 (모든 기둥 선택 가능)
+                    // 주기둥조립(process 3)은 주기둥커팅(process 1) 완료 상태만 확인
+                    let canProcess = false;
+                    if (currentProcess === 2) {
+                        // 소부재가공은 모든 기둥 선택 가능
+                        canProcess = true;
+                    } else if (currentProcess === 3) {
+                        // 주기둥조립은 주기둥커팅(process 1) 완료 상태 확인
+                        let hasCutting = false;
+                        // 모든 날짜에서 주기둥커팅(process 1) 완료 확인
+                        for (let date in dailyData) {
+                            if (dailyData[date] && dailyData[date][1]) {
+                                if (dailyData[date][1].includes(colId) || 
+                                    dailyData[date][1].includes(i) || 
+                                    dailyData[date][1].includes(String(i))) {
+                                    hasCutting = true;
+                                    break;
+                                }
+                            }
+                        }
+                        // columnData에서도 확인
+                        if (!hasCutting) {
+                            const colData = columnData[colId] || {};
+                            if (colData.status >= 1) {
+                                hasCutting = true;
+                            }
+                        }
+                        canProcess = hasCutting;
+                    } else if (currentProcess === 4) {
+                        // 소부재조립은 주기둥커팅(process 1), 소부재가공(process 2), 주기둥조립(process 3)이 모두 완료된 상태 확인
+                        let hasCutting = false; // 주기둥커팅 완료 여부
+                        let hasSubProcessing = false; // 소부재가공 완료 여부
+                        let hasMainAssembly = false; // 주기둥조립 완료 여부
+                        
+                        // 모든 날짜에서 주기둥커팅(process 1) 완료 확인
+                        for (let date in dailyData) {
+                            if (dailyData[date] && dailyData[date][1]) {
+                                if (dailyData[date][1].includes(colId) || 
+                                    dailyData[date][1].includes(i) || 
+                                    dailyData[date][1].includes(String(i))) {
+                                    hasCutting = true;
+                                    break;
+                                }
+                            }
+                        }
+                        
+                        // 모든 날짜에서 소부재가공(process 2) 완료 확인
+                        for (let date in dailyData) {
+                            if (dailyData[date] && dailyData[date][2]) {
+                                if (dailyData[date][2].includes(colId) || 
+                                    dailyData[date][2].includes(i) || 
+                                    dailyData[date][2].includes(String(i))) {
+                                    hasSubProcessing = true;
+                                    break;
+                                }
+                            }
+                        }
+                        
+                        // 모든 날짜에서 주기둥조립(process 3) 완료 확인
+                        for (let date in dailyData) {
+                            if (dailyData[date] && dailyData[date][3]) {
+                                if (dailyData[date][3].includes(colId) || 
+                                    dailyData[date][3].includes(i) || 
+                                    dailyData[date][3].includes(String(i))) {
+                                    hasMainAssembly = true;
+                                    break;
+                                }
+                            }
+                        }
+                        
+                        // columnData에서도 확인
+                        const colData = columnData[colId] || {};
+                        if (!hasCutting && colData.status >= 1) {
+                            hasCutting = true;
+                        }
+                        if (!hasSubProcessing && colData.status >= 2) {
+                            hasSubProcessing = true;
+                        }
+                        if (!hasMainAssembly && colData.status >= 3) {
+                            hasMainAssembly = true;
+                        }
+                        
+                        canProcess = (hasCutting && hasSubProcessing && hasMainAssembly);
+                    } else {
+                        // 나머지 공정은 이전 공정 완료 상태 확인
+                        canProcess = (status === currentProcess - 1);
+                    }
+                    
+                    // 모든 공정에서 선택된 기둥 표시
+                    const isSelected = selectedColumns.includes(colId);
                     if (canProcess) {
-                        div.style.boxShadow = '0 0 0 3px #ffd700, 0 0 10px rgba(255,215,0,0.5)';
-                        div.style.animation = 'pulse 1.5s infinite';
+                        if (isSelected) {
+                            // 선택된 기둥은 파란색 테두리
+                            div.style.boxShadow = '0 0 0 3px #2196f3, 0 0 10px rgba(33,150,243,0.6)';
+                            div.style.background = '#e3f2fd';
+                            div.style.animation = 'none';
+                        } else {
+                            // 선택 가능한 기둥은 금색 테두리
+                            div.style.boxShadow = '0 0 0 3px #ffd700, 0 0 10px rgba(255,215,0,0.5)';
+                            div.style.animation = 'pulse 1.5s infinite';
+                        }
                         availableCount++;
                     } else if (status >= currentProcess) {
                         div.style.opacity = '0.5';
@@ -1792,7 +2372,12 @@
                             div.style.cursor = 'not-allowed';
                         }
                     } else {
-                        div.onclick = () => openColumnModal(colId);
+                        // 모든 공정(1-6)에서 다중 선택 모드 (현장배송 제외)
+                        if (currentProcess && currentProcess >= 1 && currentProcess <= 6 && !editMode) {
+                            div.onclick = () => toggleColumnSelection(colId);
+                        } else {
+                            div.onclick = () => openColumnModal(colId);
+                        }
                     }
                 }
                 
@@ -1808,6 +2393,9 @@
                     statsDiv.style.background = '#ffcdd2';
                     statsDiv.style.color = '#c62828';
                     statsDiv.innerHTML = `<strong>🚫 ${getHolidayName(workDate)}</strong> - 해당일은 작업을 입력할 수 없습니다.`;
+                } else if (currentProcess && currentProcess >= 1 && currentProcess <= 6 && selectedColumns.length > 0) {
+                    // 모든 공정에서 선택된 기둥이 있을 때
+                    updateSelectedColumnsInfo();
                 } else if (currentProcess) {
                     const processNames = ['', '주기둥커팅', '기둥소부재가공', '주기둥조립', '소부재조립', '현장배송', '현장설치'];
                     statsDiv.style.display = 'block';
@@ -1855,12 +2443,12 @@
             }
             if (deleteMode) {
                 btn.style.background = '#d32f2f';
-                btn.textContent = '✅ 중복데이터 삭제중';
-                alert('중복데이터 삭제 모드가 활성화되었습니다. 공정표에서 중복된 데이터가 있는 날짜를 클릭하여 삭제할 수 있습니다.');
+                btn.textContent = '✅ 데이터 삭제중';
+                alert('데이터 삭제 모드가 활성화되었습니다. 공정표에서 삭제할 데이터가 있는 날짜를 클릭하여 삭제할 수 있습니다.');
             } else {
                 btn.style.background = '#f44336';
-                btn.textContent = '🗑️ 중복데이터 삭제';
-                alert('중복데이터 삭제 모드가 비활성화되었습니다.');
+                btn.textContent = '🗑️ 데이터 삭제';
+                alert('데이터 삭제 모드가 비활성화되었습니다.');
             }
             // Gantt 차트 다시 렌더링하여 클릭 이벤트 추가/제거
             if (document.getElementById('panel-gantt')?.classList.contains('active')) {
@@ -1868,6 +2456,100 @@
             }
         }
         
+        // 모달 제어 함수들
+        function showProcessSelectionModal(colId, dateStr) {
+            const modal = document.getElementById('process-selection-modal');
+            const message = document.getElementById('process-selection-message');
+            message.textContent = `${colId}의 ${dateStr}에 주기둥커팅(1)과 소부재가공(2)이 모두 있습니다.\n\n삭제할 공정을 선택하세요:`;
+            modal.classList.add('active');
+        }
+
+        function hideProcessSelectionModal() {
+            const modal = document.getElementById('process-selection-modal');
+            modal.classList.remove('active');
+            pendingDeleteInfo = null;
+        }
+
+        function selectProcessForDelete(processNum) {
+            if (!pendingDeleteInfo) {
+                hideProcessSelectionModal();
+                return;
+            }
+
+            const { columnNum, dateStr, processNames } = pendingDeleteInfo;
+            const colId = columnNum + 'C';
+
+            if (!confirm(`⚠️ 데이터 삭제 확인\n\n${colId}의 ${dateStr}에서 ${processNum}.${processNames[processNum]}만 삭제하시겠습니까?\n\n(다른 공정은 유지됩니다)\n\n⚠️ 일일입력에서도 강제 삭제됩니다.`)) {
+                hideProcessSelectionModal();
+                return;
+            }
+
+            hideProcessSelectionModal();
+            executeProcessDelete(columnNum, dateStr, processNum);
+        }
+
+        function cancelProcessSelection() {
+            hideProcessSelectionModal();
+        }
+
+        // 실제 삭제 실행 함수
+        function executeProcessDelete(columnNum, dateStr, processToDelete) {
+            const colId = columnNum + 'C';
+            const processNames = ['', '주기둥커팅', '소부재가공', '주기둥조립', '소부재조립', '현장배송', '현장설치'];
+            
+            // 해당 공정 삭제
+            if (dailyData[dateStr] && dailyData[dateStr][processToDelete]) {
+                dailyData[dateStr][processToDelete] = dailyData[dateStr][processToDelete].filter(col => {
+                    if (typeof col === 'number' && col === columnNum) return false;
+                    if (typeof col === 'string') {
+                        if (col === colId) return false;
+                        if (col === String(columnNum)) return false;
+                        const colNum = parseInt(col.replace('C', ''));
+                        if (!isNaN(colNum) && colNum === columnNum) return false;
+                    }
+                    return true;
+                });
+                
+                if (dailyData[dateStr][processToDelete].length === 0) {
+                    delete dailyData[dateStr][processToDelete];
+                }
+            }
+            
+            // columnData 업데이트
+            if (columnData[colId] && columnData[colId].lastUpdate === dateStr) {
+                let lastUpdate = '';
+                for (let date in dailyData) {
+                    for (let p = 1; p <= 6; p++) {
+                        const dayData = dailyData[date][p];
+                        if (dayData) {
+                            const hasColumn = dayData.some(col => {
+                                if (typeof col === 'number' && col === columnNum) return true;
+                                if (typeof col === 'string') {
+                                    if (col === colId) return true;
+                                    if (col === String(columnNum)) return true;
+                                    const colNum = parseInt(col.replace('C', ''));
+                                    if (!isNaN(colNum) && colNum === columnNum) return true;
+                                }
+                                return false;
+                            });
+                            if (hasColumn && date > lastUpdate) {
+                                lastUpdate = date;
+                            }
+                        }
+                    }
+                }
+                columnData[colId].lastUpdate = lastUpdate;
+                columnData[colId].status = getColumnStatus(colId);
+            }
+            
+            saveToStorage();
+            renderGanttChart();
+            renderColumnGrid('column-grid-input');
+            updateProgressBars();
+            loadDayData(dateStr);
+            checkDuplicateForDate(dateStr);
+        }
+
         // Gantt 차트 셀 삭제 핸들러
         function handleGanttCellDelete(columnNum, dateStr) {
             if (!deleteMode) {
@@ -1881,7 +2563,7 @@
             const completedProcesses = [];
             for (let p = 1; p <= 6; p++) {
                 const dayData = dailyData[dateStr]?.[p];
-                if (dayData && (dayData.includes(columnNum) || dayData.includes(colId))) {
+                if (dayData && (dayData.includes(columnNum) || dayData.includes(colId) || dayData.includes(String(columnNum)))) {
                     completedProcesses.push(p);
                 }
             }
@@ -1891,25 +2573,164 @@
                 return;
             }
             
-            // 중복된 데이터만 삭제 가능 (같은 날짜에 여러 공정이 있는 경우)
-            if (completedProcesses.length === 1) {
-                alert('중복된 데이터가 아니므로 삭제가 안됩니다.');
-                return;
-            }
-            
             const processNames = ['', '주기둥커팅', '소부재가공', '주기둥조립', '소부재조립', '현장배송', '현장설치'];
-            const processList = completedProcesses.map(p => `${p}.${processNames[p]}`).join(', ');
             
-            // 중복된 공정 중 가장 높은 공정 번호를 남기고 나머지 삭제
-            const maxProcess = Math.max(...completedProcesses);
-            const processesToDelete = completedProcesses.filter(p => p !== maxProcess);
-            
-            if (confirm(`⚠️ 중복된 데이터 삭제\n\n${colId}의 ${dateStr}에 중복 입력된 공정을 삭제하시겠습니까?\n\n유지할 공정: ${maxProcess}.${processNames[maxProcess]}\n삭제할 공정: ${processesToDelete.map(p => `${p}.${processNames[p]}`).join(', ')}\n\n⚠️ 일일입력에서도 강제 삭제됩니다.`)) {
-                // 중복된 공정 중 가장 높은 공정을 제외한 나머지 공정만 삭제
-                for (let p of processesToDelete) {
-                    if (dailyData[dateStr] && dailyData[dateStr][p]) {
+            // 중복된 데이터인 경우
+            if (completedProcesses.length > 1) {
+                // 주기둥커팅(1)과 소부재가공(2)이 모두 있는 경우 특별 처리
+                const hasP1 = completedProcesses.includes(1);
+                const hasP2 = completedProcesses.includes(2);
+                
+                // 디버깅: completedProcesses 확인
+                console.log('삭제 요청 - completedProcesses:', completedProcesses, 'hasP1:', hasP1, 'hasP2:', hasP2);
+                
+                if (hasP1 && hasP2) {
+                    // 주기둥커팅(1)과 소부재가공(2)이 모두 있는 경우 모달 표시
+                    pendingDeleteInfo = { columnNum, dateStr, processNames };
+                    showProcessSelectionModal(colId, dateStr);
+                    return;
+                } else {
+                    // 다른 중복 공정인 경우 기존 로직 사용 (가장 높은 공정을 남기고 나머지 삭제)
+                    const processList = completedProcesses.map(p => `${p}.${processNames[p]}`).join(', ');
+                    const maxProcess = Math.max(...completedProcesses);
+                    const processesToDelete = completedProcesses.filter(p => p !== maxProcess);
+                    
+                    if (confirm(`⚠️ 중복된 데이터 삭제\n\n${colId}의 ${dateStr}에 중복 입력된 공정을 삭제하시겠습니까?\n\n유지할 공정: ${maxProcess}.${processNames[maxProcess]}\n삭제할 공정: ${processesToDelete.map(p => `${p}.${processNames[p]}`).join(', ')}\n\n⚠️ 일일입력에서도 강제 삭제됩니다.`)) {
+                        // 기존 로직: 여러 공정 삭제
+                        for (let p of processesToDelete) {
+                            if (dailyData[dateStr] && dailyData[dateStr][p]) {
+                                // 모든 형식의 기둥 번호 제거 (숫자, "1C" 형식, 문자열 등)
+                                dailyData[dateStr][p] = dailyData[dateStr][p].filter(col => {
+                                    // 숫자 형식 비교
+                                    if (typeof col === 'number' && col === columnNum) return false;
+                                    // 문자열 형식 비교
+                                    if (typeof col === 'string') {
+                                        if (col === colId) return false;
+                                        if (col === String(columnNum)) return false;
+                                        // "1C" 형식에서 숫자만 추출하여 비교
+                                        const colNum = parseInt(col.replace('C', ''));
+                                        if (!isNaN(colNum) && colNum === columnNum) return false;
+                                    }
+                                    return true;
+                                });
+                                // 빈 배열이면 삭제
+                                if (dailyData[dateStr][p].length === 0) {
+                                    delete dailyData[dateStr][p];
+                                }
+                            }
+                        }
+                        
+                        // 화면 업데이트 및 저장 (기존 로직)
+                        // columnData의 lastUpdate도 확인하여 업데이트
+                        if (columnData[colId] && columnData[colId].lastUpdate === dateStr) {
+                            // 다른 날짜의 마지막 업데이트 찾기
+                            let lastUpdate = '';
+                            for (let date in dailyData) {
+                                for (let p = 1; p <= 6; p++) {
+                                    const dayData = dailyData[date][p];
+                                    if (dayData) {
+                                        // 모든 형식의 기둥 번호 확인
+                                        const hasColumn = dayData.some(col => {
+                                            if (typeof col === 'number' && col === columnNum) return true;
+                                            if (typeof col === 'string') {
+                                                if (col === colId) return true;
+                                                if (col === String(columnNum)) return true;
+                                                const colNum = parseInt(col.replace('C', ''));
+                                                if (!isNaN(colNum) && colNum === columnNum) return true;
+                                            }
+                                            return false;
+                                        });
+                                        if (hasColumn) {
+                                            if (!lastUpdate || date > lastUpdate) {
+                                                lastUpdate = date;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            columnData[colId].lastUpdate = lastUpdate;
+                            // 상태도 업데이트 (마지막 완료된 공정 기준)
+                            if (lastUpdate) {
+                                let maxStatus = 0;
+                                for (let p = 1; p <= 6; p++) {
+                                    const dayData = dailyData[lastUpdate]?.[p];
+                                    if (dayData) {
+                                        const hasColumn = dayData.some(col => {
+                                            if (typeof col === 'number' && col === columnNum) return true;
+                                            if (typeof col === 'string') {
+                                                if (col === colId) return true;
+                                                if (col === String(columnNum)) return true;
+                                                const colNum = parseInt(col.replace('C', ''));
+                                                if (!isNaN(colNum) && colNum === columnNum) return true;
+                                            }
+                                            return false;
+                                        });
+                                        if (hasColumn) {
+                                            maxStatus = Math.max(maxStatus, p);
+                                        }
+                                    }
+                                }
+                                columnData[colId].status = maxStatus;
+                            } else {
+                                columnData[colId].status = 0;
+                            }
+                        }
+                        
+                        // 저장 (강제 삭제 반영) - 반드시 저장
+                        saveToStorage();
+                        
+                        // 화면 업데이트
+                        renderGanttChart();
+                        renderColumnGrid('column-grid-overview');
+                        updateProgressBars();
+                        
+                        // 일일입력 패널 강제 업데이트 (반드시 삭제 반영)
+                        renderColumnGrid('column-grid-input');
+                        
+                        // 2단계: 일일입력 패널이 해당 날짜를 보고 있으면 loadDayData 호출
+                        const workDateInput = document.getElementById('work-date');
+                        if (workDateInput && workDateInput.value === dateStr) {
+                            // loadDayData 함수 호출하여 일일입력 데이터 다시 로드 (반드시 삭제 반영)
+                            loadDayData();
+                            // 중복 체크도 업데이트
+                            if (typeof checkDuplicateForDate === 'function') {
+                                checkDuplicateForDate(dateStr);
+                            }
+                        }
+                        
+                        // 3단계: 약간의 지연 후 다시 한 번 확인하여 확실히 반영
+                        setTimeout(() => {
+                            // 다시 저장하여 확실히 반영
+                            saveToStorage();
+                            // 일일입력 그리드 다시 렌더링
+                            renderColumnGrid('column-grid-input');
+                            // 일일입력 패널이 해당 날짜를 보고 있으면 다시 로드
+                            if (workDateInput && workDateInput.value === dateStr) {
+                                loadDayData();
+                                if (typeof checkDuplicateForDate === 'function') {
+                                    checkDuplicateForDate(dateStr);
+                                }
+                            }
+                        }, 200);
+                        
+                        // 4단계: 추가 확인 (더 긴 지연 후)
+                        setTimeout(() => {
+                            renderColumnGrid('column-grid-input');
+                        }, 500);
+                        
+                        alert(`✅ ${colId}의 ${dateStr} 공정이 삭제되었습니다.\n\n일일입력에서도 반드시 삭제되었습니다.`);
+                        return;
+                    } else {
+                        return;
+                    }
+                }
+                
+                // 주기둥커팅(1) 또는 소부재가공(2) 중 선택한 것만 삭제
+                if (processToDelete !== null) {
+                    // 선택한 공정만 삭제
+                    if (dailyData[dateStr] && dailyData[dateStr][processToDelete]) {
                         // 모든 형식의 기둥 번호 제거 (숫자, "1C" 형식, 문자열 등)
-                        dailyData[dateStr][p] = dailyData[dateStr][p].filter(col => {
+                        dailyData[dateStr][processToDelete] = dailyData[dateStr][processToDelete].filter(col => {
                             // 숫자 형식 비교
                             if (typeof col === 'number' && col === columnNum) return false;
                             // 문자열 형식 비교
@@ -1923,13 +2744,12 @@
                             return true;
                         });
                         // 빈 배열이면 삭제
-                        if (dailyData[dateStr][p].length === 0) {
-                            delete dailyData[dateStr][p];
+                        if (dailyData[dateStr][processToDelete].length === 0) {
+                            delete dailyData[dateStr][processToDelete];
                         }
                     }
-                }
-                
-                // columnData의 lastUpdate도 확인하여 업데이트
+                    
+                    // columnData의 lastUpdate도 확인하여 업데이트
                 if (columnData[colId] && columnData[colId].lastUpdate === dateStr) {
                     // 다른 날짜의 마지막 업데이트 찾기
                     let lastUpdate = '';
@@ -1993,12 +2813,10 @@
                 updateProgressBars();
                 
                 // 일일입력 패널 강제 업데이트 (반드시 삭제 반영)
-                const workDateInput = document.getElementById('work-date');
-                
-                // 1단계: 즉시 일일입력 그리드 업데이트
                 renderColumnGrid('column-grid-input');
                 
                 // 2단계: 일일입력 패널이 해당 날짜를 보고 있으면 loadDayData 호출
+                const workDateInput = document.getElementById('work-date');
                 if (workDateInput && workDateInput.value === dateStr) {
                     // loadDayData 함수 호출하여 일일입력 데이터 다시 로드 (반드시 삭제 반영)
                     loadDayData();
@@ -2029,6 +2847,87 @@
                 }, 500);
                 
                 alert(`✅ ${colId}의 ${dateStr} 공정이 삭제되었습니다.\n\n일일입력에서도 반드시 삭제되었습니다.`);
+                }
+            } else {
+                // 단일 공정인 경우 강제 삭제
+                const processNum = completedProcesses[0];
+                const processName = processNames[processNum];
+                
+                if (confirm(`⚠️ 데이터 삭제\n\n${colId}의 ${dateStr}에 완료된 ${processNum}.${processName} 공정을 삭제하시겠습니까?\n\n⚠️ 일일입력에서도 강제 삭제됩니다.`)) {
+                    // 해당 공정 삭제
+                    if (dailyData[dateStr] && dailyData[dateStr][processNum]) {
+                        dailyData[dateStr][processNum] = dailyData[dateStr][processNum].filter(col => {
+                            if (typeof col === 'number' && col === columnNum) return false;
+                            if (typeof col === 'string') {
+                                if (col === colId) return false;
+                                if (col === String(columnNum)) return false;
+                                const colNum = parseInt(col.replace('C', ''));
+                                if (!isNaN(colNum) && colNum === columnNum) return false;
+                            }
+                            return true;
+                        });
+                        
+                        if (dailyData[dateStr][processNum].length === 0) {
+                            delete dailyData[dateStr][processNum];
+                        }
+                        
+                        if (dailyData[dateStr] && Object.keys(dailyData[dateStr]).length === 0) {
+                            delete dailyData[dateStr];
+                        }
+                    }
+                    
+                    // columnData 상태 업데이트
+                    const remainingProcesses = [];
+                    for (let date in dailyData) {
+                        if (date !== dateStr) {
+                            for (let p = 1; p <= 6; p++) {
+                                const dayData = dailyData[date]?.[p];
+                                if (dayData && (dayData.includes(columnNum) || dayData.includes(colId) || dayData.includes(String(columnNum)))) {
+                                    remainingProcesses.push(p);
+                                }
+                            }
+                        }
+                    }
+                    
+                    if (columnData[colId]) {
+                        if (remainingProcesses.length > 0) {
+                            columnData[colId].status = Math.max(...remainingProcesses);
+                            // 마지막 업데이트 날짜 찾기
+                            let lastUpdate = '';
+                            for (let date in dailyData) {
+                                for (let p = 1; p <= 6; p++) {
+                                    const dayData = dailyData[date]?.[p];
+                                    if (dayData && (dayData.includes(columnNum) || dayData.includes(colId) || dayData.includes(String(columnNum)))) {
+                                        if (!lastUpdate || date > lastUpdate) {
+                                            lastUpdate = date;
+                                        }
+                                    }
+                                }
+                            }
+                            columnData[colId].lastUpdate = lastUpdate;
+                        } else {
+                            columnData[colId].status = 0;
+                            columnData[colId].lastUpdate = '';
+                        }
+                    }
+                    
+                    // 저장 및 화면 업데이트
+                    saveToStorage();
+                    renderGanttChart();
+                    renderColumnGrid('column-grid-overview');
+                    renderColumnGrid('column-grid-input');
+                    updateProgressBars();
+                    
+                    const workDateInput = document.getElementById('work-date');
+                    if (workDateInput && workDateInput.value === dateStr) {
+                        loadDayData();
+                        if (typeof checkDuplicateForDate === 'function') {
+                            checkDuplicateForDate(dateStr);
+                        }
+                    }
+                    
+                    alert(`✅ ${colId}의 ${dateStr} ${processName} 공정이 삭제되었습니다.\n\n일일입력에서도 반드시 삭제되었습니다.`);
+                }
             }
         }
 
@@ -2132,6 +3031,30 @@
             const existingNote = columnData[columnId]?.note || '';
             document.getElementById('modal-note').value = existingNote;
             
+            // 날짜 필드에 기존 날짜 표시 (없으면 현재 작업일자)
+            const existingDate = columnData[columnId]?.lastUpdate || workDate || '';
+            const modalDateInput = document.getElementById('modal-work-date');
+            const modalDateGroup = document.getElementById('modal-date-group');
+            
+            // 날짜 필드 강제 표시
+            if (modalDateGroup) {
+                modalDateGroup.style.display = 'block';
+                modalDateGroup.style.visibility = 'visible';
+                modalDateGroup.style.marginBottom = '15px';
+            }
+            
+            if (modalDateInput) {
+                modalDateInput.value = existingDate || workDate || '';
+                // 명시적으로 표시
+                modalDateInput.style.display = 'block';
+                modalDateInput.style.visibility = 'visible';
+                modalDateInput.style.width = '100%';
+                modalDateInput.style.padding = '10px';
+                modalDateInput.style.border = '2px solid #ddd';
+                modalDateInput.style.borderRadius = '8px';
+                modalDateInput.style.fontSize = '14px';
+            }
+            
             document.getElementById('column-modal').classList.add('active');
         }
 
@@ -2148,14 +3071,14 @@
                 return;
             }
             
-            // 날짜를 먼저 가져옴 (검증 로직에서 사용)
-            let workDate = document.getElementById('work-date')?.value;
+            // 모달에서 날짜 가져오기 (날짜 수정 가능)
+            let workDate = document.getElementById('modal-work-date')?.value;
             if (!workDate) {
-                const today = new Date();
-                workDate = today.toISOString().split('T')[0];
-                const workDateInput = document.getElementById('work-date');
-                if (workDateInput) {
-                    workDateInput.value = workDate;
+                // 모달 날짜가 없으면 현재 작업일자 사용
+                workDate = document.getElementById('work-date')?.value;
+                if (!workDate) {
+                    const today = new Date();
+                    workDate = today.toISOString().split('T')[0];
                 }
             }
             
@@ -2167,6 +3090,10 @@
                 alert('공정 상태를 선택해주세요.');
                 return;
             }
+            
+            // 기존 날짜와 공정 상태 확인 (날짜 변경 시 기존 데이터 제거용)
+            const oldDate = columnData[selectedColumn]?.lastUpdate || '';
+            const oldStatus = columnData[selectedColumn]?.status || 0;
             
             // 현장설치(process 6) 입력 시 현장배송(process 5)에서 확인된 기둥만 가능
             if (newStatus === 6) {
@@ -2209,13 +3136,35 @@
             
             const note = document.getElementById('modal-note').value;
             
-            // 날짜가 없으면 오늘 날짜 사용
-            if (!workDate) {
-                const today = new Date();
-                workDate = today.toISOString().split('T')[0];
-                const workDateInput = document.getElementById('work-date');
-                if (workDateInput) {
-                    workDateInput.value = workDate;
+            // 기존 날짜의 데이터 제거 (날짜가 변경된 경우)
+            if (oldDate && oldDate !== workDate && oldStatus > 0) {
+                // 기존 날짜의 해당 공정에서 기둥 제거
+                if (dailyData[oldDate] && dailyData[oldDate][oldStatus]) {
+                    dailyData[oldDate][oldStatus] = dailyData[oldDate][oldStatus].filter(
+                        col => col !== selectedColumn && 
+                        col !== parseInt(selectedColumn.replace('C', '')) && 
+                        col !== selectedColumn.replace('C', '')
+                    );
+                    // 빈 배열이면 제거
+                    if (dailyData[oldDate][oldStatus].length === 0) {
+                        delete dailyData[oldDate][oldStatus];
+                    }
+                    // 날짜에 다른 공정 데이터가 없으면 날짜 자체 제거
+                    if (Object.keys(dailyData[oldDate]).length === 0) {
+                        delete dailyData[oldDate];
+                    }
+                }
+            } else if (oldDate === workDate && oldStatus > 0 && oldStatus !== newStatus) {
+                // 같은 날짜이지만 공정이 변경된 경우 기존 공정에서 제거
+                if (dailyData[oldDate] && dailyData[oldDate][oldStatus]) {
+                    dailyData[oldDate][oldStatus] = dailyData[oldDate][oldStatus].filter(
+                        col => col !== selectedColumn && 
+                        col !== parseInt(selectedColumn.replace('C', '')) && 
+                        col !== selectedColumn.replace('C', '')
+                    );
+                    if (dailyData[oldDate][oldStatus].length === 0) {
+                        delete dailyData[oldDate][oldStatus];
+                    }
                 }
             }
             
@@ -2228,7 +3177,7 @@
             columnData[selectedColumn].lastUpdate = workDate;
             columnData[selectedColumn].updatedBy = PROCESSES.find(p => p.id === newStatus)?.company;
             
-            // Track daily progress
+            // Track daily progress (새 날짜에 추가)
             if (!dailyData[workDate]) {
                 dailyData[workDate] = {};
             }
@@ -2236,7 +3185,11 @@
                 dailyData[workDate][newStatus] = [];
             }
             // 기존 항목 제거 후 새로 추가 (중복 방지)
-            dailyData[workDate][newStatus] = dailyData[workDate][newStatus].filter(col => col !== selectedColumn);
+            dailyData[workDate][newStatus] = dailyData[workDate][newStatus].filter(
+                col => col !== selectedColumn && 
+                col !== parseInt(selectedColumn.replace('C', '')) && 
+                col !== selectedColumn.replace('C', '')
+            );
             dailyData[workDate][newStatus].push(selectedColumn);
             
             // 중복 입력 확인: 같은 날짜에 같은 기둥에 여러 공정이 있는지 확인
@@ -2425,7 +3378,24 @@
                         }
                         
                         // 중복 확인: 같은 날짜에 여러 공정이 완료된 경우
-                        if (completedProcesses.length > 1) {
+                        // 단, 주기둥커팅(1)과 소부재가공(2)은 중복 허용
+                        let isAllowedDuplicate = false;
+                        let hasP1P2Both = false; // 주기둥커팅(1)과 소부재가공(2)이 모두 있는지
+                        
+                        // 주기둥커팅(1)과 소부재가공(2)이 모두 있는지 확인
+                        const hasP1 = completedProcesses.includes(1);
+                        const hasP2 = completedProcesses.includes(2);
+                        if (hasP1 && hasP2) {
+                            isAllowedDuplicate = true;
+                            hasP1P2Both = true;
+                        }
+                        
+                        // 주기둥커팅(1)과 소부재가공(2)이 모두 있는 경우를 먼저 처리
+                        if (hasP1P2Both) {
+                            // 주기둥커팅(1)과 소부재가공(2)이 모두 있는 경우 특별 처리
+                            // cellClass는 나중에 두 개의 div로 렌더링하므로 'both'로 설정
+                            cellClass = 'gantt-cell both';
+                        } else if (completedProcesses.length > 1 && !isAllowedDuplicate) {
                             cellClass = 'gantt-cell duplicate';
                         } else if (completedProcesses.length === 1) {
                             const processNum = completedProcesses[0];
@@ -2483,10 +3453,18 @@
                         
                         bodyHtml += `<td class="${isWeekend ? 'weekend' : ''}" ${clickHandler} style="${cursorStyle}${hoverStyle}" onmouseover="${deleteMode ? 'this.style.backgroundColor=\'#ffebee\'' : ''}" onmouseout="${deleteMode ? 'this.style.backgroundColor=\'\'' : ''}">`;
                         if (cellClass) {
-                            // 실제 배송 날짜인 경우 "O" 텍스트 표시
-                            const isActualDelivery = cellClass === 'gantt-cell p5 confirmed';
-                            const cellText = isActualDelivery ? 'O' : '';
-                            bodyHtml += `<div class="${cellClass}" style="${isActualDelivery ? 'display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:bold;color:#fff;' : ''}">${cellText}</div>`;
+                            // 주기둥커팅(1)과 소부재가공(2)이 모두 있는 경우 두 개의 div로 분할 표시
+                            if (cellClass === 'gantt-cell both') {
+                                bodyHtml += `<div style="display:flex;width:100%;height:20px;border-radius:0;">`;
+                                bodyHtml += `<div class="gantt-cell p1" style="flex:1;height:20px;min-width:0;"></div>`;
+                                bodyHtml += `<div class="gantt-cell p2" style="flex:1;height:20px;min-width:0;"></div>`;
+                                bodyHtml += `</div>`;
+                            } else {
+                                // 실제 배송 날짜인 경우 "O" 텍스트 표시
+                                const isActualDelivery = cellClass === 'gantt-cell p5 confirmed';
+                                const cellText = isActualDelivery ? 'O' : '';
+                                bodyHtml += `<div class="${cellClass}" style="${isActualDelivery ? 'display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:bold;color:#fff;' : ''}">${cellText}</div>`;
+                            }
                         }
                         bodyHtml += '</td>';
                     }
@@ -2633,7 +3611,12 @@
 
         // Save/Load Data
         function saveData() {
-            saveToStorage();
+            // 모든 공정(1-6)에서 선택된 기둥들을 한 번에 저장
+            if (currentProcess && currentProcess >= 1 && currentProcess <= 6 && selectedColumns.length > 0) {
+                saveSelectedColumns();
+            } else {
+                saveToStorage();
+            }
         }
 
         function saveToStorage() {
@@ -2956,7 +3939,12 @@
                 }
                 
                 // 같은 날짜에 여러 공정이 완료된 경우
-                if (completedProcesses.length > 1) {
+                // 단, 주기둥커팅(1)과 소부재가공(2)은 중복 허용
+                const isAllowedDuplicate = completedProcesses.length === 2 && 
+                    completedProcesses.includes(1) && 
+                    completedProcesses.includes(2);
+                
+                if (completedProcesses.length > 1 && !isAllowedDuplicate) {
                     const processList = completedProcesses.map(p => `${p}.${processNames[p]}`).join(', ');
                     duplicates.push(`${colId}: ${processList}`);
                 }
@@ -4092,6 +5080,8 @@
             columnData = {};
             dailyData = {};
             transportPlan = {};
+            deliveryConfirmed = {}; // 현장배송 확인 데이터 초기화
+            actualDeliveryDate = {}; // 실제 배송 날짜 데이터 초기화
             // columnCoordinates는 유지 (현장설치현황도 좌표값 보존)
             
             // 초기 상태로 columnData 설정 (모든 기둥을 미착수 상태로)
@@ -4125,6 +5115,12 @@
                     })
                     .then(() => {
                         return db.ref(kcolRef('transportPlan')).set(transportPlan);
+                    })
+                    .then(() => {
+                        return db.ref(kcolRef('deliveryConfirmed')).set(deliveryConfirmed);
+                    })
+                    .then(() => {
+                        return db.ref(kcolRef('actualDeliveryDate')).set(actualDeliveryDate);
                     })
                     .then(() => {
                         // columnCoordinates는 유지하므로 Firebase에서도 삭제하지 않음
@@ -4165,6 +5161,32 @@
                 closeModal();
             }
         });
+
+        // Close process selection modal on outside click
+        document.getElementById('process-selection-modal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                cancelProcessSelection();
+            }
+        });
     </script>
+
+    <!-- Process Selection Modal -->
+    <div id="process-selection-modal" class="process-selection-modal">
+        <div class="process-selection-content">
+            <h3>⚠️ 삭제할 공정 선택</h3>
+            <p id="process-selection-message"></p>
+            <div class="process-selection-buttons">
+                <button class="process-select-btn p1" onclick="selectProcessForDelete(1)">
+                    1. 주기둥커팅 삭제
+                </button>
+                <button class="process-select-btn p2" onclick="selectProcessForDelete(2)">
+                    2. 소부재가공 삭제
+                </button>
+                <button class="process-select-btn cancel" onclick="cancelProcessSelection()">
+                    취소
+                </button>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
