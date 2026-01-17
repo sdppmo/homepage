@@ -299,6 +299,24 @@
                         </select>
                     </div>
                 </div>
+                <div class="input-row" style="margin-top: 15px;">
+                    <div class="input-group">
+                        <label>Type1 길이 (m)</label>
+                        <input type="number" id="Lx_type1" value="26.478" step="0.001" min="0.1" onchange="updateTypeLengths()">
+                    </div>
+                    <div class="input-group">
+                        <label>Type2 길이 (m)</label>
+                        <input type="number" id="Lx_type2" value="23.678" step="0.001" min="0.1" onchange="updateTypeLengths()">
+                    </div>
+                    <div class="input-group">
+                        <label>Type3 길이 (m)</label>
+                        <input type="number" id="Lx_type3" value="25.938" step="0.001" min="0.1" onchange="updateTypeLengths()">
+                    </div>
+                    <div class="input-group">
+                        <label>Type4 길이 (m)</label>
+                        <input type="number" id="Lx_type4" value="22.438" step="0.001" min="0.1" onchange="updateTypeLengths()">
+                    </div>
+                </div>
                 <div style="margin-top: 15px; padding: 10px; background: #e8f4f8; border-radius: 4px; font-size: 12px;">
                     <strong>고정 치수:</strong> 두 가지 조합을 모두 계산하여 더 작은 단면적을 선택합니다.<br>
                     • 조합 1: H1=500, H2=500, B1=300, B2=300<br>
@@ -430,6 +448,30 @@
         // 페이지 로드 시 초기화
         document.addEventListener('DOMContentLoaded', function() {
             updateLoadTable();
+            addLoginModal();
+            addBOQLengthModal();
+            addSubMaterialModal();
+            addUnitPriceModal();
+            
+            // 모달 외부 클릭 시 닫기
+            document.addEventListener('click', function(e) {
+                const loginModal = document.getElementById('loginModal');
+                if (loginModal && e.target === loginModal) {
+                    closeLoginModal();
+                }
+                const boqLengthModal = document.getElementById('boqLengthModal');
+                if (boqLengthModal && e.target === boqLengthModal) {
+                    closeBOQLengthModal();
+                }
+                const subMaterialModal = document.getElementById('subMaterialModal');
+                if (subMaterialModal && e.target === subMaterialModal) {
+                    closeSubMaterialModal();
+                }
+                const unitPriceModal = document.getElementById('unitPriceModal');
+                if (unitPriceModal && e.target === unitPriceModal) {
+                    closeUnitPriceModal();
+                }
+            });
         });
 
         // 하중 입력 테이블 업데이트 (기둥 개수에 따라 동적 생성)
@@ -834,91 +876,222 @@
             const tbody = document.getElementById('resultTableBody');
             tbody.innerHTML = '';
 
+            // 입력 테이블에서 현재 값을 다시 읽어와서 columnData 업데이트
+            const count = parseInt(document.getElementById('columnCount').value) || 0;
+            columnData = [];
+            
+            for (let i = 1; i <= count; i++) {
+                const nameInput = document.getElementById(`col${i}_name`);
+                const puInput = document.getElementById(`col${i}_Pu`);
+                const muxInput = document.getElementById(`col${i}_Mux`);
+                const muyInput = document.getElementById(`col${i}_Muy`);
+                
+                if (nameInput || puInput || muxInput || muyInput) {
+                    columnData.push({
+                        no: i,
+                        name: nameInput?.value?.trim() || `KC${i}`,
+                        pu: parseFloat(puInput?.value) || 0,
+                        mux: parseFloat(muxInput?.value) || 0,
+                        muy: parseFloat(muyInput?.value) || 0
+                    });
+                }
+            }
+
             // columnData 배열의 모든 기둥에 대해 계산 (기본 길이 타입 1 사용)
             if (columnData.length === 0) {
                 alert('하중 입력 테이블에 데이터가 없습니다. Pu 값을 입력해주세요.');
                 return;
             }
             
+            console.log(`계산 시작: ${columnData.length}개 기둥 처리`);
+            
             columnData.forEach(col => {
-                if (col.pu > 0) {
-                    try {
-                        // 기본 길이 타입 1 사용 (계산 후 결과 테이블에서 변경 가능)
-                        const lengths = getLengthsForType(1);
-                        const Lx = lengths.Lx;
-                        const Ly = lengths.Ly;
+                try {
+                    // Pu 값이 0이거나 입력되지 않은 경우도 결과에 포함 (경고 표시)
+                    if (col.pu <= 0) {
+                        currentResults.push({
+                            no: col.no,
+                            name: col.name || `KC${col.no}`,
+                            pu: col.pu || 0,
+                            mux: col.mux || 0,
+                            muy: col.muy || 0,
+                            pmm: 0,
+                            steelGrade: `SM${Fy}`,
+                            combination: '-',
+                            kx: Kx,
+                            lx: 4.5,
+                            ly: 4.5,
+                            h: 0,
+                            b: 0,
+                            tw: 0,
+                            tf: 0,
+                            area: 0,
+                            unitWeight: 0,
+                            Fy: Fy,
+                            E: E,
+                            nu: nu,
+                            Ky: Ky,
+                            Kz: Kz,
+                            isSlenderFlange: false,
+                            lcf: 0,
+                            lcfr: 0,
+                            isCompressiveNG: false,
+                            phi_Pn: 0,
+                            H1: 0,
+                            H2: 0,
+                            B1: 0,
+                            B2: 0,
+                            warning: 'Pu 값을 입력해주세요.'
+                        });
+                        console.warn(`기둥 ${col.name || col.no}: Pu 값이 입력되지 않았습니다.`);
+                        return;
+                    }
+                    
+                    // 기본 길이 타입 1 사용 (계산 후 결과 테이블에서 변경 가능)
+                    const lengths = getLengthsForType(1);
+                    const Lx = lengths.Lx;
+                    const Ly = lengths.Ly;
+                    
+                    // 두 가지 조합 모두 계산
+                    let bestResult = null;
+                    let bestCombination = null;
+                    
+                    for (const comb of combinations) {
+                        const optimal = findOptimalSection(
+                            col.pu, col.mux, col.muy, Fy, E, nu, Kx, Ky, Kz, Lx, Ly,
+                            comb.H1, comb.H2, comb.B1, comb.B2
+                        );
                         
-                        // 두 가지 조합 모두 계산
-                        let bestResult = null;
-                        let bestCombination = null;
-                        
-                        for (const comb of combinations) {
-                            const optimal = findOptimalSection(
-                                col.pu, col.mux, col.muy, Fy, E, nu, Kx, Ky, Kz, Lx, Ly,
-                                comb.H1, comb.H2, comb.B1, comb.B2
-                            );
-                            
-                            if (optimal && optimal.tw && optimal.tf) {
-                                // 더 작은 단면적을 선택
-                                if (!bestResult || optimal.area < bestResult.area) {
-                                    bestResult = optimal;
-                                    bestCombination = comb;
-                                }
+                        if (optimal && optimal.tw && optimal.tf) {
+                            // 더 작은 단면적을 선택
+                            if (!bestResult || optimal.area < bestResult.area) {
+                                bestResult = optimal;
+                                bestCombination = comb;
                             }
                         }
-                        
-                        if (bestResult && bestResult.tw && bestResult.tf) {
-                            // 최종 계산 결과 (재계산을 위해)
-                            const calcResult = calculateSection(
-                                bestResult.tw, bestResult.tf, Fy, E, nu, Kx, Ky, Kz, Lx, Ly, 
-                                col.pu, col.mux, col.muy,
-                                bestCombination.H1, bestCombination.H2, bestCombination.B1, bestCombination.B2
-                            );
-                            
-                            const unitWeight = calculateUnitWeight(bestResult.area);
-
-                            // 결과 객체 생성
-                            currentResults.push({
-                                no: col.no,
-                                name: col.name || `KC${col.no}`,
-                                pu: col.pu,
-                                mux: col.mux,
-                                muy: col.muy,
-                                pmm: bestResult.ratioPMM || calcResult.ratio_pmm || 0,
-                                steelGrade: `SM${Fy}`,
-                                combination: bestCombination.name,
-                                kx: Kx,
-                                lx: Lx / 1000, // mm to m
-                                ly: Ly / 1000, // mm to m
-                                h: bestCombination.H1,
-                                b: bestCombination.B1,
-                                tw: bestResult.tw,
-                                tf: bestResult.tf,
-                                area: bestResult.area,
-                                unitWeight: unitWeight,
-                                Fy: Fy,
-                                E: E,
-                                nu: nu,
-                                Ky: Ky,
-                                Kz: Kz,
-                                isSlenderFlange: bestResult.isSlenderFlange || calcResult.isSlenderFlange,
-                                lcf: calcResult.lcf,
-                                lcfr: calcResult.lcfr,
-                                isCompressiveNG: calcResult.isCompressiveNG,
-                                phi_Pn: calcResult.phi_Pn,
-                                H1: bestCombination.H1,
-                                H2: bestCombination.H2,
-                                B1: bestCombination.B1,
-                                B2: bestCombination.B2
-                            });
-                            
-                            console.log(`기둥 ${col.name || col.no}: 조합=${bestCombination.name}, Pu=${col.pu}, tw=${bestResult.tw}, tf=${bestResult.tf}, P-M-M=${bestResult.ratioPMM?.toFixed(3)}, Area=${bestResult.area?.toFixed(2)}`);
-                        } else {
-                            console.error(`기둥 ${col.name || col.no}: 두 조합 모두에서 최적 단면을 찾을 수 없습니다.`);
-                        }
-                    } catch (error) {
-                        console.error(`기둥 ${col.name || col.no} 계산 오류:`, error);
                     }
+                    
+                    if (bestResult && bestResult.tw && bestResult.tf) {
+                        // 최종 계산 결과 (재계산을 위해)
+                        const calcResult = calculateSection(
+                            bestResult.tw, bestResult.tf, Fy, E, nu, Kx, Ky, Kz, Lx, Ly, 
+                            col.pu, col.mux, col.muy,
+                            bestCombination.H1, bestCombination.H2, bestCombination.B1, bestCombination.B2
+                        );
+                        
+                        const unitWeight = calculateUnitWeight(bestResult.area);
+
+                        // 결과 객체 생성
+                        currentResults.push({
+                            no: col.no,
+                            name: col.name || `KC${col.no}`,
+                            pu: col.pu,
+                            mux: col.mux,
+                            muy: col.muy,
+                            pmm: bestResult.ratioPMM || calcResult.ratio_pmm || 0,
+                            steelGrade: `SM${Fy}`,
+                            combination: bestCombination.name,
+                            kx: Kx,
+                            lx: Lx / 1000, // mm to m
+                            ly: Ly / 1000, // mm to m
+                            h: bestCombination.H1,
+                            b: bestCombination.B1,
+                            tw: bestResult.tw,
+                            tf: bestResult.tf,
+                            area: bestResult.area,
+                            unitWeight: unitWeight,
+                            Fy: Fy,
+                            E: E,
+                            nu: nu,
+                            Ky: Ky,
+                            Kz: Kz,
+                            isSlenderFlange: bestResult.isSlenderFlange || calcResult.isSlenderFlange,
+                            lcf: calcResult.lcf,
+                            lcfr: calcResult.lcfr,
+                            isCompressiveNG: calcResult.isCompressiveNG,
+                            phi_Pn: calcResult.phi_Pn,
+                            H1: bestCombination.H1,
+                            H2: bestCombination.H2,
+                            B1: bestCombination.B1,
+                            B2: bestCombination.B2
+                        });
+                        
+                        console.log(`기둥 ${col.name || col.no}: 조합=${bestCombination.name}, Pu=${col.pu}, tw=${bestResult.tw}, tf=${bestResult.tf}, P-M-M=${bestResult.ratioPMM?.toFixed(3)}, Area=${bestResult.area?.toFixed(2)}`);
+                    } else {
+                        // 최적 단면을 찾지 못한 경우도 결과에 포함 (경고 표시)
+                        currentResults.push({
+                            no: col.no,
+                            name: col.name || `KC${col.no}`,
+                            pu: col.pu,
+                            mux: col.mux,
+                            muy: col.muy,
+                            pmm: 0,
+                            steelGrade: `SM${Fy}`,
+                            combination: '-',
+                            kx: Kx,
+                            lx: Lx / 1000,
+                            ly: Ly / 1000,
+                            h: 0,
+                            b: 0,
+                            tw: 0,
+                            tf: 0,
+                            area: 0,
+                            unitWeight: 0,
+                            Fy: Fy,
+                            E: E,
+                            nu: nu,
+                            Ky: Ky,
+                            Kz: Kz,
+                            isSlenderFlange: false,
+                            lcf: 0,
+                            lcfr: 0,
+                            isCompressiveNG: false,
+                            phi_Pn: 0,
+                            H1: 0,
+                            H2: 0,
+                            B1: 0,
+                            B2: 0,
+                            warning: '최적 단면을 찾을 수 없습니다. 하중 조건을 확인해주세요.'
+                        });
+                        console.error(`기둥 ${col.name || col.no}: 두 조합 모두에서 최적 단면을 찾을 수 없습니다.`);
+                    }
+                } catch (error) {
+                    // 계산 오류가 발생한 경우도 결과에 포함 (경고 표시)
+                    currentResults.push({
+                        no: col.no,
+                        name: col.name || `KC${col.no}`,
+                        pu: col.pu || 0,
+                        mux: col.mux || 0,
+                        muy: col.muy || 0,
+                        pmm: 0,
+                        steelGrade: `SM${Fy}`,
+                        combination: '-',
+                        kx: Kx,
+                        lx: 4.5,
+                        ly: 4.5,
+                        h: 0,
+                        b: 0,
+                        tw: 0,
+                        tf: 0,
+                        area: 0,
+                        unitWeight: 0,
+                        Fy: Fy,
+                        E: E,
+                        nu: nu,
+                        Ky: Ky,
+                        Kz: Kz,
+                        isSlenderFlange: false,
+                        lcf: 0,
+                        lcfr: 0,
+                        isCompressiveNG: false,
+                        phi_Pn: 0,
+                        H1: 0,
+                        H2: 0,
+                        B1: 0,
+                        B2: 0,
+                        warning: `계산 오류: ${error.message}`
+                    });
+                    console.error(`기둥 ${col.name || col.no} 계산 오류:`, error);
                 }
             });
 
@@ -944,8 +1117,9 @@
                 // 경고 메시지가 있는 경우
                 if (result.warning) {
                     row.innerHTML = `
-                        <td colspan="13" style="text-align: center; padding: 20px; color: #e53e3e; font-weight: 600; background: #fed7d7; border-radius: 4px;">
-                            ${result.name}: ${result.warning} (λcf = ${result.lcf?.toFixed(2) || 'N/A'} > λcfr = ${result.lcfr?.toFixed(2) || 'N/A'})
+                        <td style="text-align: center; font-weight: 600;">${result.no}</td>
+                        <td colspan="12" style="text-align: center; padding: 15px; color: #e53e3e; font-weight: 600; background: #fed7d7; border-radius: 4px;">
+                            ${result.name}: ${result.warning}
                         </td>
                     `;
                     row.style.backgroundColor = '#fed7d7';
@@ -1075,50 +1249,445 @@
             }
         }
 
-        // BOQ 생성 함수
+        // Type 길이 데이터 저장
+        let typeLengths = {
+            type1: 26.478,
+            type2: 23.678,
+            type3: 25.938,
+            type4: 22.438
+        };
+
+        // 기둥별 Type 길이 데이터 저장
+        let columnLengthData = {};
+
+        // Type 길이 업데이트
+        function updateTypeLengths() {
+            typeLengths.type1 = parseFloat(document.getElementById('Lx_type1').value) || 26.478;
+            typeLengths.type2 = parseFloat(document.getElementById('Lx_type2').value) || 23.678;
+            typeLengths.type3 = parseFloat(document.getElementById('Lx_type3').value) || 25.938;
+            typeLengths.type4 = parseFloat(document.getElementById('Lx_type4').value) || 22.438;
+        }
+
+        // BOQ 생성 함수 (길이 입력 모달 먼저 표시)
         function generateBOQ() {
             if (currentResults.length === 0) {
                 alert('먼저 계산을 실행해주세요.');
                 return;
             }
 
-            const boqSection = document.getElementById('boqSection');
-            const boqTableBody = document.getElementById('boqTableBody');
-            boqTableBody.innerHTML = '';
+            // 기둥별로 고유한 이름 추출
+            const uniqueColumns = {};
+            currentResults.forEach(result => {
+                if (!uniqueColumns[result.name]) {
+                    const existingData = columnLengthData[result.name] || {};
+                    uniqueColumns[result.name] = {
+                        name: result.name,
+                        count_type1: existingData.count_type1 || 0,
+                        count_type2: existingData.count_type2 || 0,
+                        count_type3: existingData.count_type3 || 0,
+                        count_type4: existingData.count_type4 || 0
+                    };
+                }
+            });
+
+            // 길이 입력 모달 표시
+            showBOQLengthModal(Object.values(uniqueColumns));
+        }
+
+        // BOQ 길이 입력 모달 표시 (기둥별 Type 개수 입력)
+        function showBOQLengthModal(columns) {
+            const modal = document.getElementById('boqLengthModal');
+            if (!modal) {
+                addBOQLengthModal();
+            }
+
+            const tbody = document.getElementById('boqLengthTableBody');
+            tbody.innerHTML = '';
+
+            columns.forEach((col, index) => {
+                // 기존 데이터가 있으면 사용, 없으면 0
+                const existingData = columnLengthData[col.name] || {};
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td style="text-align: center; font-weight: 600;">${index + 1}</td>
+                    <td style="font-weight: 600; color: #667eea;">${col.name}</td>
+                    <td>
+                        <div style="margin-bottom: 5px; font-size: 11px; color: #718096;">${typeLengths.type1.toFixed(3)}m</div>
+                        <input type="number" id="count_${col.name}_type1" value="${existingData.count_type1 || 0}" 
+                               step="1" min="0" placeholder="개수"
+                               oninput="updateTypeTotals()"
+                               style="width: 100%; padding: 8px; border: 1px solid #cbd5e0; border-radius: 4px; text-align: center;">
+                    </td>
+                    <td>
+                        <div style="margin-bottom: 5px; font-size: 11px; color: #718096;">${typeLengths.type2.toFixed(3)}m</div>
+                        <input type="number" id="count_${col.name}_type2" value="${existingData.count_type2 || 0}" 
+                               step="1" min="0" placeholder="개수"
+                               oninput="updateTypeTotals()"
+                               style="width: 100%; padding: 8px; border: 1px solid #cbd5e0; border-radius: 4px; text-align: center;">
+                    </td>
+                    <td>
+                        <div style="margin-bottom: 5px; font-size: 11px; color: #718096;">${typeLengths.type3.toFixed(3)}m</div>
+                        <input type="number" id="count_${col.name}_type3" value="${existingData.count_type3 || 0}" 
+                               step="1" min="0" placeholder="개수"
+                               oninput="updateTypeTotals()"
+                               style="width: 100%; padding: 8px; border: 1px solid #cbd5e0; border-radius: 4px; text-align: center;">
+                    </td>
+                    <td>
+                        <div style="margin-bottom: 5px; font-size: 11px; color: #718096;">${typeLengths.type4.toFixed(3)}m</div>
+                        <input type="number" id="count_${col.name}_type4" value="${existingData.count_type4 || 0}" 
+                               step="1" min="0" placeholder="개수"
+                               oninput="updateTypeTotals()"
+                               style="width: 100%; padding: 8px; border: 1px solid #cbd5e0; border-radius: 4px; text-align: center;">
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+            
+            // 초기 합계 계산
+            updateTypeTotals();
+
+            document.getElementById('boqLengthModal').style.display = 'flex';
+        }
+
+        // Type별 합산 및 전체 개수 계산 및 표시
+        function updateTypeTotals() {
+            const tbody = document.getElementById('boqLengthTableBody');
+            if (!tbody) return;
+
+            let totalType1 = 0;
+            let totalType2 = 0;
+            let totalType3 = 0;
+            let totalType4 = 0;
+
+            // 모든 행의 입력값 합산
+            const rows = tbody.querySelectorAll('tr');
+            rows.forEach(row => {
+                const inputs = row.querySelectorAll('input[type="number"]');
+                if (inputs.length >= 4) {
+                    totalType1 += parseInt(inputs[0].value) || 0;
+                    totalType2 += parseInt(inputs[1].value) || 0;
+                    totalType3 += parseInt(inputs[2].value) || 0;
+                    totalType4 += parseInt(inputs[3].value) || 0;
+                }
+            });
+
+            // 합계 표시
+            const totalType1El = document.getElementById('totalType1');
+            const totalType2El = document.getElementById('totalType2');
+            const totalType3El = document.getElementById('totalType3');
+            const totalType4El = document.getElementById('totalType4');
+            const totalAllEl = document.getElementById('totalAll');
+
+            if (totalType1El) totalType1El.textContent = totalType1;
+            if (totalType2El) totalType2El.textContent = totalType2;
+            if (totalType3El) totalType3El.textContent = totalType3;
+            if (totalType4El) totalType4El.textContent = totalType4;
+
+            // 전체 개수 계산
+            const totalAll = totalType1 + totalType2 + totalType3 + totalType4;
+            if (totalAllEl) totalAllEl.textContent = totalAll;
+        }
+
+        // BOQ 길이 입력 모달 닫기
+        function closeBOQLengthModal() {
+            const modal = document.getElementById('boqLengthModal');
+            if (modal) {
+                modal.style.display = 'none';
+            }
+        }
+
+        // 소부재 추가 항목 데이터 저장
+        let subMaterialItems = [];
+
+        // BOQ 길이 입력 완료 후 실제 BOQ 생성
+        function proceedWithBOQGeneration() {
+            // 입력된 기둥별 Type 개수 데이터 저장
+            const uniqueColumns = {};
+            currentResults.forEach(result => {
+                if (!uniqueColumns[result.name]) {
+                    uniqueColumns[result.name] = result.name;
+                }
+            });
+
+            Object.keys(uniqueColumns).forEach(colName => {
+                columnLengthData[colName] = {
+                    count_type1: parseInt(document.getElementById(`count_${colName}_type1`).value) || 0,
+                    count_type2: parseInt(document.getElementById(`count_${colName}_type2`).value) || 0,
+                    count_type3: parseInt(document.getElementById(`count_${colName}_type3`).value) || 0,
+                    count_type4: parseInt(document.getElementById(`count_${colName}_type4`).value) || 0
+                };
+            });
+
+            closeBOQLengthModal();
+            // 단가 입력 모달 표시
+            showUnitPriceModal();
+        }
+
+        // 단가 입력 모달 표시
+        function showUnitPriceModal() {
+            const modal = document.getElementById('unitPriceModal');
+            if (!modal) {
+                addUnitPriceModal();
+            }
+
+            // 저장된 단가 불러오기
+            const savedPrices = JSON.parse(localStorage.getItem('boqUnitPrices')) || {};
+            document.getElementById('mainMaterialUnitPrice').value = savedPrices.mainMaterial || '1900000';
+            document.getElementById('subMaterialUnitPrice').value = savedPrices.subMaterial || '1900000';
+
+            document.getElementById('unitPriceModal').style.display = 'flex';
+        }
+
+        // 단가 입력 모달 닫기
+        function closeUnitPriceModal() {
+            const modal = document.getElementById('unitPriceModal');
+            if (modal) {
+                modal.style.display = 'none';
+            }
+        }
+
+        // 단가 저장 후 BOQ 생성
+        function proceedWithUnitPrice() {
+            const mainMaterialPrice = parseFloat(document.getElementById('mainMaterialUnitPrice').value) || 1900000;
+            const subMaterialPrice = parseFloat(document.getElementById('subMaterialUnitPrice').value) || 1900000;
+
+            // 단가 저장
+            const unitPrices = {
+                mainMaterial: mainMaterialPrice,
+                subMaterial: subMaterialPrice
+            };
+            localStorage.setItem('boqUnitPrices', JSON.stringify(unitPrices));
+
+            closeUnitPriceModal();
+            // BOQ 생성
+            generateBOQWithLengths();
+        }
+
+        // 단가 입력 모달 HTML 추가
+        function addUnitPriceModal() {
+            const modalHTML = `
+                <div id="unitPriceModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; align-items: center; justify-content: center; overflow-y: auto; padding: 20px;">
+                    <div style="background: white; border-radius: 12px; padding: 30px; max-width: 500px; width: 90%; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 40px rgba(0,0,0,0.3);">
+                        <h2 style="margin-bottom: 20px; color: #1e3a5f; font-size: 24px; text-align: center;">단가 입력</h2>
+                        <p style="margin-bottom: 20px; color: #718096; font-size: 14px; text-align: center;">BOQ 생성을 위해 주부재 및 소부재 단가를 입력해주세요.</p>
+                        <div style="margin-bottom: 20px;">
+                            <label style="display: block; margin-bottom: 8px; color: #4a5568; font-weight: 600;">주부재 단가 (톤당 원)</label>
+                            <input type="number" id="mainMaterialUnitPrice" 
+                                   value="1900000" step="1000" min="0"
+                                   placeholder="주부재 단가"
+                                   style="width: 100%; padding: 12px; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 16px;">
+                            <p style="margin-top: 5px; color: #718096; font-size: 12px;">기본값: 1,900,000원/톤 (SM420 기준)</p>
+                        </div>
+                        <div style="margin-bottom: 20px;">
+                            <label style="display: block; margin-bottom: 8px; color: #4a5568; font-weight: 600;">소부재 단가 (톤당 원)</label>
+                            <input type="number" id="subMaterialUnitPrice" 
+                                   value="1900000" step="1000" min="0"
+                                   placeholder="소부재 단가"
+                                   style="width: 100%; padding: 12px; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 16px;">
+                            <p style="margin-top: 5px; color: #718096; font-size: 12px;">기본값: 1,900,000원/톤 (SM420 기준)</p>
+                        </div>
+                        <div style="display: flex; gap: 10px; justify-content: center;">
+                            <button onclick="proceedWithUnitPrice()" 
+                                    style="padding: 12px 24px; background: #667eea; color: white; border: none; border-radius: 6px; font-size: 16px; font-weight: 600; cursor: pointer;">
+                                BOQ 생성
+                            </button>
+                            <button onclick="closeUnitPriceModal()" 
+                                    style="padding: 12px 24px; background: #cbd5e0; color: #4a5568; border: none; border-radius: 6px; font-size: 16px; font-weight: 600; cursor: pointer;">
+                                취소
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.insertAdjacentHTML('beforeend', modalHTML);
+        }
+
+        // 소부재 추가 항목 입력 모달 표시
+        function showSubMaterialModal() {
+            const modal = document.getElementById('subMaterialModal');
+            if (!modal) {
+                addSubMaterialModal();
+            }
+
+            // 기존 소부재 항목 로드
+            const tbody = document.getElementById('subMaterialTableBody');
+            tbody.innerHTML = '';
+
+            // 기본 항목 (용접재, 현장 볼트이음)은 자동 계산되므로 제외
+            // 사용자가 추가한 항목만 표시
+            subMaterialItems.forEach((item, index) => {
+                const row = createSubMaterialRow(item, index);
+                tbody.appendChild(row);
+            });
+
+            // 빈 행 하나 추가 (새 항목 입력용)
+            const emptyRow = createSubMaterialRow(null, subMaterialItems.length);
+            tbody.appendChild(emptyRow);
+
+            document.getElementById('subMaterialModal').style.display = 'flex';
+        }
+
+        // 소부재 행 생성
+        function createSubMaterialRow(item, index) {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td style="text-align: center; font-weight: 600;">${index + 1}</td>
+                <td>
+                    <input type="text" id="subType_${index}" value="${item?.type || ''}" 
+                           placeholder="소부재 종류" 
+                           style="width: 100%; padding: 8px; border: 1px solid #cbd5e0; border-radius: 4px;">
+                </td>
+                <td>
+                    <input type="text" id="subSpec_${index}" value="${item?.spec || ''}" 
+                           placeholder="규격/사양" 
+                           style="width: 100%; padding: 8px; border: 1px solid #cbd5e0; border-radius: 4px;">
+                </td>
+                <td>
+                    <input type="text" id="subUnit_${index}" value="${item?.unit || ''}" 
+                           placeholder="단위" 
+                           style="width: 100%; padding: 8px; border: 1px solid #cbd5e0; border-radius: 4px;">
+                </td>
+                <td>
+                    <input type="number" id="subQty_${index}" value="${item?.quantity || ''}" 
+                           step="0.01" min="0" placeholder="수량" 
+                           style="width: 100%; padding: 8px; border: 1px solid #cbd5e0; border-radius: 4px;">
+                </td>
+                <td>
+                    <input type="text" id="subGrade_${index}" value="${item?.steelGrade || 'SM420'}" 
+                           placeholder="강종" 
+                           style="width: 100%; padding: 8px; border: 1px solid #cbd5e0; border-radius: 4px;">
+                </td>
+                <td>
+                    <input type="number" id="subWeight_${index}" value="${item?.totalSteelWeight || ''}" 
+                           step="0.01" min="0" placeholder="철골물량(kg)" 
+                           style="width: 100%; padding: 8px; border: 1px solid #cbd5e0; border-radius: 4px;">
+                </td>
+                <td>
+                    <input type="number" id="subSurcharge_${index}" value="${item?.surcharge || ''}" 
+                           step="0.01" min="0" placeholder="할증(kg)" 
+                           style="width: 100%; padding: 8px; border: 1px solid #cbd5e0; border-radius: 4px;">
+                </td>
+                <td>
+                    <input type="number" id="subAmount_${index}" value="${item?.amount || ''}" 
+                           step="1" min="0" placeholder="금액(원)" 
+                           style="width: 100%; padding: 8px; border: 1px solid #cbd5e0; border-radius: 4px;">
+                </td>
+                <td>
+                    <input type="text" id="subRemark_${index}" value="${item?.remark || ''}" 
+                           placeholder="비고" 
+                           style="width: 100%; padding: 8px; border: 1px solid #cbd5e0; border-radius: 4px; font-size: 11px;">
+                </td>
+                <td style="text-align: center;">
+                    <button onclick="removeSubMaterialRow(${index})" 
+                            style="padding: 4px 8px; background: #e53e3e; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 11px;">
+                        삭제
+                    </button>
+                </td>
+            `;
+            return row;
+        }
+
+        // 소부재 행 삭제
+        function removeSubMaterialRow(index) {
+            subMaterialItems.splice(index, 1);
+            showSubMaterialModal(); // 모달 새로고침
+        }
+
+        // 소부재 추가 항목 입력 모달 닫기
+        function closeSubMaterialModal() {
+            const modal = document.getElementById('subMaterialModal');
+            if (modal) {
+                modal.style.display = 'none';
+            }
+        }
+
+        // 소부재 추가 항목 저장 후 BOQ 생성
+        function proceedWithSubMaterialBOQ() {
+            // 입력된 소부재 항목 저장
+            subMaterialItems = [];
+            const tbody = document.getElementById('subMaterialTableBody');
+            const rows = tbody.querySelectorAll('tr');
+
+            rows.forEach((row, index) => {
+                const type = document.getElementById(`subType_${index}`)?.value.trim();
+                const spec = document.getElementById(`subSpec_${index}`)?.value.trim();
+                const unit = document.getElementById(`subUnit_${index}`)?.value.trim();
+                const quantity = parseFloat(document.getElementById(`subQty_${index}`)?.value) || 0;
+                const steelGrade = document.getElementById(`subGrade_${index}`)?.value.trim() || 'SM420';
+                const totalSteelWeight = parseFloat(document.getElementById(`subWeight_${index}`)?.value) || 0;
+                const surcharge = parseFloat(document.getElementById(`subSurcharge_${index}`)?.value) || 0;
+                const amount = parseFloat(document.getElementById(`subAmount_${index}`)?.value) || 0;
+                const remark = document.getElementById(`subRemark_${index}`)?.value.trim() || '';
+
+                // 최소한 종류나 규격이 입력된 경우만 저장
+                if (type || spec) {
+                    subMaterialItems.push({
+                        type: type || '기타',
+                        spec: spec || '',
+                        unit: unit || '개',
+                        quantity: quantity,
+                        steelGrade: steelGrade,
+                        totalSteelWeight: totalSteelWeight,
+                        surcharge: surcharge,
+                        amount: amount,
+                        remark: remark
+                    });
+                }
+            });
+
+            closeSubMaterialModal();
+            generateBOQWithLengths();
+        }
+
+        // 실제 BOQ 생성 함수 (길이 데이터 사용)
+        function generateBOQWithLengths() {
 
             let totalWeight = 0;
             let totalArea = 0;
             let totalCount = 0;
 
-            // 기둥별로 그룹화하여 동일 규격 합산 (길이 타입별로도 구분)
+            // 기둥별로 그룹화하여 동일 규격 합산 (Type별 개수 사용)
             const groupedResults = {};
             currentResults.forEach(result => {
                 if (!result.tw || !result.tf) return; // 유효하지 않은 결과 제외
                 
-                // 길이 타입도 키에 포함하여 길이 타입별로 구분
-                const key = `${result.h}-${result.b}-${result.tw}-${result.tf}-${result.steelGrade}-${result.lengthType || 1}`;
-                if (!groupedResults[key]) {
-                    groupedResults[key] = {
-                        combination: result.combination,
-                        h: result.h,
-                        b: result.b,
-                        tw: result.tw,
-                        tf: result.tf,
-                        area: result.area,
-                        unitWeight: result.unitWeight,
-                        length: result.lx,
-                        lengthType: result.lengthType || 1,
-                        steelGrade: result.steelGrade,
-                        count: 0,
-                        names: []
-                    };
+                // 기둥명에 따라 Type별 개수 가져오기
+                const colCounts = columnLengthData[result.name] || {};
+                
+                // 각 Type별로 개수만큼 BOQ 아이템 생성
+                for (let type = 1; type <= 4; type++) {
+                    const count = colCounts[`count_type${type}`] || 0;
+                    if (count <= 0) continue; // 개수가 0이면 건너뛰기
+                    
+                    const length = typeLengths[`type${type}`] || 4.5;
+                    const key = `${result.h}-${result.b}-${result.tw}-${result.tf}-${result.steelGrade}-Type${type}-${length}`;
+                    
+                    if (!groupedResults[key]) {
+                        groupedResults[key] = {
+                            combination: result.combination,
+                            h: result.h,
+                            b: result.b,
+                            tw: result.tw,
+                            tf: result.tf,
+                            area: result.area,
+                            unitWeight: result.unitWeight,
+                            length: length,
+                            lengthType: type,
+                            steelGrade: result.steelGrade,
+                            count: 0,
+                            names: []
+                        };
+                    }
+                    groupedResults[key].count += count;
+                    // 기둥명에 개수 표시
+                    for (let i = 0; i < count; i++) {
+                        groupedResults[key].names.push(count > 1 ? `${result.name}-Type${type}-${i + 1}` : `${result.name}-Type${type}`);
+                    }
                 }
-                groupedResults[key].count++;
-                groupedResults[key].names.push(result.name);
             });
 
-            // BOQ 테이블 생성
-            let rowNo = 1;
+            // BOQ 아이템 배열 생성
+            const boqItems = [];
             Object.keys(groupedResults).forEach(key => {
                 const item = groupedResults[key];
                 const totalWeightItem = item.unitWeight * item.length * item.count;
@@ -1126,42 +1695,44 @@
                 totalArea += item.area * item.count;
                 totalCount += item.count;
 
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${rowNo++}</td>
-                    <td style="text-align: left; padding-left: 10px;">${item.names.join(', ')}</td>
-                    <td>${item.combination}</td>
-                    <td>H${item.h}×B${item.b}</td>
-                    <td>${item.h}</td>
-                    <td>${item.b}</td>
-                    <td>${item.tw}</td>
-                    <td>${item.tf}</td>
-                    <td style="text-align: right;">${item.area.toFixed(2)}</td>
-                    <td style="text-align: right;">${item.unitWeight.toFixed(4)}</td>
-                    <td style="text-align: right;">${item.length.toFixed(2)}<br><span style="font-size: 10px; color: #666;">(타입${item.lengthType})</span></td>
-                    <td>${item.count}</td>
-                    <td style="text-align: right; font-weight: 600;">${totalWeightItem.toFixed(2)}</td>
-                    <td>${item.steelGrade}</td>
-                `;
-                boqTableBody.appendChild(row);
+                boqItems.push({
+                    combination: item.combination,
+                    h: item.h,
+                    b: item.b,
+                    tw: item.tw,
+                    tf: item.tf,
+                    area: item.area,
+                    unitWeight: item.unitWeight,
+                    length: item.length,
+                    lengthType: item.lengthType,
+                    steelGrade: item.steelGrade,
+                    count: item.count,
+                    names: item.names,
+                    H1: item.H1,
+                    H2: item.H2,
+                    B1: item.B1,
+                    B2: item.B2
+                });
             });
 
-            // 합계 행 추가
-            const totalRow = document.createElement('tr');
-            totalRow.className = 'total-row';
-            totalRow.innerHTML = `
-                <td colspan="11" style="text-align: right; font-weight: 600;">합계</td>
-                <td style="font-weight: 600;">${totalCount}</td>
-                <td style="text-align: right; font-weight: 600;">${totalWeight.toFixed(2)}</td>
-                <td></td>
-            `;
-            boqTableBody.appendChild(totalRow);
+            // localStorage에 BOQ 데이터 저장
+            const boqData = {
+                items: boqItems,
+                summary: {
+                    totalCount: totalCount,
+                    totalArea: totalArea,
+                    totalWeight: totalWeight
+                },
+                subMaterials: subMaterialItems // 소부재 추가 항목 포함
+            };
+            localStorage.setItem('boqData', JSON.stringify(boqData));
 
-            // BOQ 섹션 표시
-            boqSection.classList.add('show');
+            // 새 창에서 BOQ 리포트 열기
+            const boqWindow = window.open('boq-report.html', '_blank', 'width=1400,height=900');
             
-            // BOQ 섹션으로 스크롤
-            boqSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            if (!boqWindow) {
+                alert('팝업이 차단되었습니다. 팝업 차단을 해제하고 다시 시도해주세요.');
+            }
 
             console.log(`BOQ 생성 완료: ${totalCount}개 기둥, 총 중량: ${totalWeight.toFixed(2)} kg`);
         }
@@ -1321,8 +1892,80 @@
             document.body.removeChild(link);
         }
 
-        // 계산서 출력 함수
+        // 계산서 출력 함수 (로그인 체크 포함)
         function printCalculationSheet() {
+            // 로그인 상태 확인
+            if (!checkLoginStatus()) {
+                showLoginModal();
+                return;
+            }
+
+            // 로그인된 경우 계산서 출력 진행
+            proceedWithPrintCalculationSheet();
+        }
+
+        // 로그인 상태 확인
+        function checkLoginStatus() {
+            const loginData = JSON.parse(localStorage.getItem('kcolLoginData')) || null;
+            if (loginData && loginData.isLoggedIn) {
+                // 로그인 만료 시간 확인 (24시간)
+                const now = new Date().getTime();
+                if (now - loginData.loginTime < 24 * 60 * 60 * 1000) {
+                    return true;
+                } else {
+                    // 만료된 경우 로그인 정보 제거
+                    localStorage.removeItem('kcolLoginData');
+                }
+            }
+            return false;
+        }
+
+        // 로그인 모달 표시
+        function showLoginModal() {
+            const modal = document.getElementById('loginModal');
+            if (modal) {
+                modal.style.display = 'flex';
+                document.getElementById('loginUserId').focus();
+            }
+        }
+
+        // 로그인 모달 닫기
+        function closeLoginModal() {
+            const modal = document.getElementById('loginModal');
+            if (modal) {
+                modal.style.display = 'none';
+                document.getElementById('loginUserId').value = '';
+                document.getElementById('loginPassword').value = '';
+                document.getElementById('loginError').textContent = '';
+            }
+        }
+
+        // 로그인 처리
+        function handleLogin() {
+            const userId = document.getElementById('loginUserId').value.trim();
+            const password = document.getElementById('loginPassword').value;
+
+            if (!userId || !password) {
+                document.getElementById('loginError').textContent = 'ID와 비밀번호를 입력해주세요.';
+                return;
+            }
+
+            // 간단한 인증 (실제로는 서버 API 호출 필요)
+            // 테스트용: userId와 password가 모두 입력되면 로그인 성공
+            const loginData = {
+                isLoggedIn: true,
+                userId: userId,
+                loginTime: new Date().getTime()
+            };
+            localStorage.setItem('kcolLoginData', JSON.stringify(loginData));
+
+            closeLoginModal();
+            // 로그인 후 계산서 출력 계속 진행
+            proceedWithPrintCalculationSheet();
+        }
+
+        // 계산서 출력 진행 (로그인 후)
+        function proceedWithPrintCalculationSheet() {
             if (currentResults.length === 0) {
                 alert('먼저 계산을 실행해주세요.');
                 return;
@@ -1391,6 +2034,149 @@
                 console.log('Pu:', col.pu, 'Mux:', col.mux, 'Muy:', col.muy);
                 console.log('tw:', firstResult.tw, 'tf:', firstResult.tf);
             }
+        }
+
+        // 소부재 추가 항목 입력 모달 HTML 추가
+        function addSubMaterialModal() {
+            const modalHTML = `
+                <div id="subMaterialModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10001; align-items: center; justify-content: center; overflow-y: auto; padding: 20px;">
+                    <div style="background: white; border-radius: 12px; padding: 30px; max-width: 1200px; width: 95%; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 40px rgba(0,0,0,0.3);">
+                        <h2 style="margin-bottom: 20px; color: #1e3a5f; font-size: 24px; text-align: center;">소부재 추가 항목 입력</h2>
+                        <p style="margin-bottom: 20px; color: #718096; font-size: 14px; text-align: center;">추가 소부재 항목을 입력하세요. (용접재, 현장 볼트이음은 자동 계산됩니다)</p>
+                        <div style="overflow-x: auto; margin-bottom: 20px;">
+                            <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+                                <thead>
+                                    <tr style="background: #1e3a5f; color: white;">
+                                        <th style="padding: 10px; text-align: center; border: 1px solid #e2e8f0;">No.</th>
+                                        <th style="padding: 10px; text-align: center; border: 1px solid #e2e8f0;">소부재 종류</th>
+                                        <th style="padding: 10px; text-align: center; border: 1px solid #e2e8f0;">규격/사양</th>
+                                        <th style="padding: 10px; text-align: center; border: 1px solid #e2e8f0;">단위</th>
+                                        <th style="padding: 10px; text-align: center; border: 1px solid #e2e8f0;">수량</th>
+                                        <th style="padding: 10px; text-align: center; border: 1px solid #e2e8f0;">강종</th>
+                                        <th style="padding: 10px; text-align: center; border: 1px solid #e2e8f0;">철골물량(kg)</th>
+                                        <th style="padding: 10px; text-align: center; border: 1px solid #e2e8f0;">할증(kg)</th>
+                                        <th style="padding: 10px; text-align: center; border: 1px solid #e2e8f0;">금액(원)</th>
+                                        <th style="padding: 10px; text-align: center; border: 1px solid #e2e8f0;">비고</th>
+                                        <th style="padding: 10px; text-align: center; border: 1px solid #e2e8f0;">삭제</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="subMaterialTableBody">
+                                    <!-- 소부재 항목이 여기에 표시됩니다 -->
+                                </tbody>
+                            </table>
+                        </div>
+                        <div style="display: flex; gap: 10px; justify-content: center;">
+                            <button onclick="proceedWithSubMaterialBOQ()" 
+                                    style="padding: 12px 24px; background: #667eea; color: white; border: none; border-radius: 6px; font-size: 16px; font-weight: 600; cursor: pointer;">
+                                BOQ 생성
+                            </button>
+                            <button onclick="closeSubMaterialModal()" 
+                                    style="padding: 12px 24px; background: #cbd5e0; color: #4a5568; border: none; border-radius: 6px; font-size: 16px; font-weight: 600; cursor: pointer;">
+                                취소
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.insertAdjacentHTML('beforeend', modalHTML);
+        }
+
+        // BOQ 길이 입력 모달 HTML 추가
+        function addBOQLengthModal() {
+            const modalHTML = `
+                <div id="boqLengthModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; align-items: center; justify-content: center; overflow-y: auto; padding: 20px;">
+                    <div style="background: white; border-radius: 12px; padding: 30px; max-width: 900px; width: 90%; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 40px rgba(0,0,0,0.3);">
+                        <h2 style="margin-bottom: 20px; color: #1e3a5f; font-size: 24px; text-align: center;">기둥별 Type 개수 입력</h2>
+                        <p style="margin-bottom: 20px; color: #718096; font-size: 14px; text-align: center;">BOQ 생성을 위해 각 기둥별 Type1~Type4 개수를 입력해주세요.</p>
+                        <div style="overflow-x: auto; margin-bottom: 20px;">
+                            <table style="width: 100%; border-collapse: collapse;">
+                                <thead>
+                                    <tr style="background: #1e3a5f; color: white;">
+                                        <th style="padding: 12px; text-align: center; border: 1px solid #e2e8f0;">No.</th>
+                                        <th style="padding: 12px; text-align: center; border: 1px solid #e2e8f0;">기둥명</th>
+                                        <th style="padding: 12px; text-align: center; border: 1px solid #e2e8f0;">Type1 개수</th>
+                                        <th style="padding: 12px; text-align: center; border: 1px solid #e2e8f0;">Type2 개수</th>
+                                        <th style="padding: 12px; text-align: center; border: 1px solid #e2e8f0;">Type3 개수</th>
+                                        <th style="padding: 12px; text-align: center; border: 1px solid #e2e8f0;">Type4 개수</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="boqLengthTableBody">
+                                    <!-- 동적으로 생성 -->
+                                </tbody>
+                                <tfoot id="boqLengthTableFooter" style="background: #f7fafc; font-weight: 600;">
+                                    <tr>
+                                        <td colspan="2" style="padding: 12px; text-align: center; border: 1px solid #e2e8f0; color: #1e3a5f;">합계</td>
+                                        <td id="totalType1" style="padding: 12px; text-align: center; border: 1px solid #e2e8f0; color: #667eea;">0</td>
+                                        <td id="totalType2" style="padding: 12px; text-align: center; border: 1px solid #e2e8f0; color: #667eea;">0</td>
+                                        <td id="totalType3" style="padding: 12px; text-align: center; border: 1px solid #e2e8f0; color: #667eea;">0</td>
+                                        <td id="totalType4" style="padding: 12px; text-align: center; border: 1px solid #e2e8f0; color: #667eea;">0</td>
+                                    </tr>
+                                    <tr style="background: #e6fffa; border-top: 2px solid #38a169;">
+                                        <td colspan="2" style="padding: 12px; text-align: center; border: 1px solid #e2e8f0; color: #1e3a5f; font-size: 14px;">전체 개수</td>
+                                        <td colspan="4" id="totalAll" style="padding: 12px; text-align: center; border: 1px solid #e2e8f0; color: #38a169; font-size: 16px;">0</td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                        <div style="display: flex; gap: 10px; justify-content: center;">
+                            <button onclick="proceedWithBOQGeneration()" 
+                                    style="padding: 12px 24px; background: #667eea; color: white; border: none; border-radius: 6px; font-size: 16px; font-weight: 600; cursor: pointer;">
+                                BOQ 생성
+                            </button>
+                            <button onclick="closeBOQLengthModal()" 
+                                    style="padding: 12px 24px; background: #cbd5e0; color: #4a5568; border: none; border-radius: 6px; font-size: 16px; font-weight: 600; cursor: pointer;">
+                                취소
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.insertAdjacentHTML('beforeend', modalHTML);
+        }
+
+        // 로그인 모달 HTML 추가
+        function addLoginModal() {
+            // 이미 모달이 있으면 추가하지 않음
+            if (document.getElementById('loginModal')) {
+                return;
+            }
+
+            const modalHTML = `
+                <div id="loginModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; align-items: center; justify-content: center;">
+                    <div style="background: white; border-radius: 12px; padding: 30px; max-width: 400px; width: 90%; box-shadow: 0 10px 40px rgba(0,0,0,0.3);">
+                        <h2 style="margin-bottom: 20px; color: #1e3a5f; font-size: 24px; text-align: center;">로그인</h2>
+                        <p style="margin-bottom: 20px; color: #718096; font-size: 14px; text-align: center;">계산서 출력을 위해 로그인이 필요합니다.</p>
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 5px; color: #4a5568; font-weight: 600; font-size: 14px;">ID (사업자번호)</label>
+                            <input type="text" id="loginUserId" placeholder="사업자번호를 입력하세요" 
+                                   style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 6px; font-size: 14px;"
+                                   onkeypress="if(event.key==='Enter') handleLogin()">
+                        </div>
+                        <div style="margin-bottom: 20px;">
+                            <label style="display: block; margin-bottom: 5px; color: #4a5568; font-weight: 600; font-size: 14px;">비밀번호</label>
+                            <input type="password" id="loginPassword" placeholder="비밀번호를 입력하세요" 
+                                   style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 6px; font-size: 14px;"
+                                   onkeypress="if(event.key==='Enter') handleLogin()">
+                        </div>
+                        <div id="loginError" style="color: #e53e3e; font-size: 13px; margin-bottom: 15px; min-height: 20px; text-align: center;"></div>
+                        <div style="display: flex; gap: 10px;">
+                            <button onclick="handleLogin()" 
+                                    style="flex: 1; padding: 12px; background: #667eea; color: white; border: none; border-radius: 6px; font-size: 16px; font-weight: 600; cursor: pointer;">
+                                로그인
+                            </button>
+                            <button onclick="closeLoginModal()" 
+                                    style="flex: 1; padding: 12px; background: #cbd5e0; color: #4a5568; border: none; border-radius: 6px; font-size: 16px; font-weight: 600; cursor: pointer;">
+                                취소
+                            </button>
+                        </div>
+                        <div style="margin-top: 15px; text-align: center; font-size: 12px; color: #718096;">
+                            <a href="#" style="color: #667eea; text-decoration: none;">회원가입</a> | 
+                            <a href="#" style="color: #667eea; text-decoration: none;">비밀번호 찾기</a>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.insertAdjacentHTML('beforeend', modalHTML);
         }
     </script>
 </body>

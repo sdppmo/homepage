@@ -828,13 +828,13 @@
                     <a href="Cross-H-Column-Calculation-Data1.html" class="action-btn primary" onclick="saveInputData(); return true;">
                         📄 계산서(1-Column)
                     </a>
-                    <button class="action-btn secondary" onclick="printCalculationSheet();">
-                        📥 PDF(1-Column)
-                    </button>
                     <div class="beam-type-btns">
                         <button class="beam-type-btn" id="auto-find-section-btn" onclick="window.location.href='auto-find-section.html'">Auto Find Section<br>(Included Bill of Quantity)</button>
                         <button class="beam-type-btn">SRC(Cross H)</button>
                     </div>
+                    <button class="action-btn secondary" onclick="printCalculationSheet();">
+                        📥 PDF(1-Column)
+                    </button>
                         </div>
                     </div>
                     
@@ -1105,8 +1105,67 @@
             localStorage.setItem('kcolInputData', JSON.stringify(inputData));
         }
 
-        // PDF 다운로드 - 계산서 2페이지 출력
-        function printCalculationSheet() {
+        // 로그인 상태 확인
+        function checkLoginStatus() {
+            const loginData = JSON.parse(localStorage.getItem('kcolLoginData')) || null;
+            if (loginData && loginData.isLoggedIn) {
+                // 로그인 만료 시간 확인 (24시간)
+                const now = new Date().getTime();
+                if (now - loginData.loginTime < 24 * 60 * 60 * 1000) {
+                    return true;
+                } else {
+                    // 만료된 경우 로그인 정보 제거
+                    localStorage.removeItem('kcolLoginData');
+                }
+            }
+            return false;
+        }
+
+        // 로그인 모달 표시
+        function showLoginModal() {
+            const modal = document.getElementById('loginModal');
+            if (modal) {
+                modal.style.display = 'flex';
+                document.getElementById('loginUserId').focus();
+            }
+        }
+
+        // 로그인 모달 닫기
+        function closeLoginModal() {
+            const modal = document.getElementById('loginModal');
+            if (modal) {
+                modal.style.display = 'none';
+                document.getElementById('loginUserId').value = '';
+                document.getElementById('loginPassword').value = '';
+                document.getElementById('loginError').textContent = '';
+            }
+        }
+
+        // 로그인 처리
+        function handleLogin() {
+            const userId = document.getElementById('loginUserId').value.trim();
+            const password = document.getElementById('loginPassword').value;
+
+            if (!userId || !password) {
+                document.getElementById('loginError').textContent = 'ID와 비밀번호를 입력해주세요.';
+                return;
+            }
+
+            // 간단한 인증 (실제로는 서버 API 호출 필요)
+            const loginData = {
+                isLoggedIn: true,
+                userId: userId,
+                loginTime: new Date().getTime()
+            };
+            localStorage.setItem('kcolLoginData', JSON.stringify(loginData));
+
+            closeLoginModal();
+            // 로그인 후 PDF 출력 계속 진행
+            proceedWithPrintCalculationSheet();
+        }
+
+        // PDF 출력 진행 (로그인 후)
+        function proceedWithPrintCalculationSheet() {
             // 먼저 입력 데이터 저장
             saveInputData();
             
@@ -1121,6 +1180,18 @@
                     }, 800);
                 };
             }
+        }
+
+        // PDF 다운로드 - 계산서 2페이지 출력 (로그인 체크 포함)
+        function printCalculationSheet() {
+            // 로그인 상태 확인
+            if (!checkLoginStatus()) {
+                showLoginModal();
+                return;
+            }
+
+            // 로그인된 경우 PDF 출력 진행
+            proceedWithPrintCalculationSheet();
         }
 
         // H1/H2 필드 모드 전환 함수 (select ↔ input)
@@ -1767,6 +1838,60 @@
             document.addEventListener('DOMContentLoaded', initializeMultiColumnTable);
         } else {
             initializeMultiColumnTable();
+            addLoginModal();
+            
+            // 모달 외부 클릭 시 닫기
+            document.addEventListener('click', function(e) {
+                const modal = document.getElementById('loginModal');
+                if (modal && e.target === modal) {
+                    closeLoginModal();
+                }
+            });
+        }
+
+        // 로그인 모달 HTML 추가
+        function addLoginModal() {
+            // 이미 모달이 있으면 추가하지 않음
+            if (document.getElementById('loginModal')) {
+                return;
+            }
+
+            const modalHTML = `
+                <div id="loginModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; align-items: center; justify-content: center;">
+                    <div style="background: white; border-radius: 12px; padding: 30px; max-width: 400px; width: 90%; box-shadow: 0 10px 40px rgba(0,0,0,0.3);">
+                        <h2 style="margin-bottom: 20px; color: #1e3a5f; font-size: 24px; text-align: center;">로그인</h2>
+                        <p style="margin-bottom: 20px; color: #718096; font-size: 14px; text-align: center;">PDF 보기를 위해 로그인이 필요합니다.</p>
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 5px; color: #4a5568; font-weight: 600; font-size: 14px;">ID (사업자번호)</label>
+                            <input type="text" id="loginUserId" placeholder="사업자번호를 입력하세요" 
+                                   style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 6px; font-size: 14px;"
+                                   onkeypress="if(event.key==='Enter') handleLogin()">
+                        </div>
+                        <div style="margin-bottom: 20px;">
+                            <label style="display: block; margin-bottom: 5px; color: #4a5568; font-weight: 600; font-size: 14px;">비밀번호</label>
+                            <input type="password" id="loginPassword" placeholder="비밀번호를 입력하세요" 
+                                   style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 6px; font-size: 14px;"
+                                   onkeypress="if(event.key==='Enter') handleLogin()">
+                        </div>
+                        <div id="loginError" style="color: #e53e3e; font-size: 13px; margin-bottom: 15px; min-height: 20px; text-align: center;"></div>
+                        <div style="display: flex; gap: 10px;">
+                            <button onclick="handleLogin()" 
+                                    style="flex: 1; padding: 12px; background: #667eea; color: white; border: none; border-radius: 6px; font-size: 16px; font-weight: 600; cursor: pointer;">
+                                로그인
+                            </button>
+                            <button onclick="closeLoginModal()" 
+                                    style="flex: 1; padding: 12px; background: #cbd5e0; color: #4a5568; border: none; border-radius: 6px; font-size: 16px; font-weight: 600; cursor: pointer;">
+                                취소
+                            </button>
+                        </div>
+                        <div style="margin-top: 15px; text-align: center; font-size: 12px; color: #718096;">
+                            <a href="#" style="color: #667eea; text-decoration: none;">회원가입</a> | 
+                            <a href="#" style="color: #667eea; text-decoration: none;">비밀번호 찾기</a>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.insertAdjacentHTML('beforeend', modalHTML);
         }
     </script>
 </body>
