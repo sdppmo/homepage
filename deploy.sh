@@ -114,7 +114,7 @@ for arg in "$@"; do
 done
 
 # ============================================================
-# Handle --stop (stop local server)
+# Handle --stop (stop local server and cleanup)
 # ============================================================
 if [ "$STOP_LOCAL" = true ]; then
     log_step "Stopping local test server..."
@@ -124,6 +124,20 @@ if [ "$STOP_LOCAL" = true ]; then
     else
         log_warn "No local container running"
     fi
+    
+    log_step "Cleaning up Docker images..."
+    # Remove all images with our image name
+    IMAGES=$(docker images -q "$IMAGE_NAME" 2>/dev/null)
+    if [ -n "$IMAGES" ]; then
+        docker rmi $IMAGES 2>/dev/null && log_success "Docker images removed"
+    else
+        log_warn "No images to clean up"
+    fi
+    
+    # Optional: prune dangling images
+    docker image prune -f > /dev/null 2>&1
+    
+    log_success "Cleanup complete"
     exit 0
 fi
 

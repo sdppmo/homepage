@@ -644,12 +644,13 @@
         function tick() {
           var now = new Date();
           var utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+          var ms = now.getMilliseconds();
           
           // Indonesia (UTC+7)
           var indo = new Date(utc + (7 * 3600000));
           var indoH = ((indo.getHours() % 12) * 30) + (indo.getMinutes() * 0.5);
           var indoM = (indo.getMinutes() * 6) + (indo.getSeconds() * 0.1);
-          var indoS = indo.getSeconds() * 6;
+          var indoS = (indo.getSeconds() * 6) + (ms * 0.006);
           hourIndo.style.transform = 'rotate(' + indoH + 'deg)';
           minIndo.style.transform = 'rotate(' + indoM + 'deg)';
           secIndo.style.transform = 'rotate(' + indoS + 'deg)';
@@ -666,7 +667,7 @@
           var ny = new Date(utc + (-5 * 3600000));
           var nyH = ((ny.getHours() % 12) * 30) + (ny.getMinutes() * 0.5);
           var nyM = (ny.getMinutes() * 6) + (ny.getSeconds() * 0.1);
-          var nyS = ny.getSeconds() * 6;
+          var nyS = (ny.getSeconds() * 6) + (ms * 0.006);
           hourNY.style.transform = 'rotate(' + nyH + 'deg)';
           minNY.style.transform = 'rotate(' + nyM + 'deg)';
           secNY.style.transform = 'rotate(' + nyS + 'deg)';
@@ -683,7 +684,7 @@
           var sf = new Date(utc + (-8 * 3600000));
           var sfH = ((sf.getHours() % 12) * 30) + (sf.getMinutes() * 0.5);
           var sfM = (sf.getMinutes() * 6) + (sf.getSeconds() * 0.1);
-          var sfS = sf.getSeconds() * 6;
+          var sfS = (sf.getSeconds() * 6) + (ms * 0.006);
           hourSF.style.transform = 'rotate(' + sfH + 'deg)';
           minSF.style.transform = 'rotate(' + sfM + 'deg)';
           secSF.style.transform = 'rotate(' + sfS + 'deg)';
@@ -698,7 +699,7 @@
         }
         
         tick();
-        setInterval(tick, 1000);
+        setInterval(tick, 50);
       }
       
       if (document.readyState === 'loading') {
