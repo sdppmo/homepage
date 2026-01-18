@@ -293,6 +293,16 @@
                 </div>
                 <div class="input-row" style="margin-top: 15px;">
                     <div class="input-group">
+                        <label>Lx (m)</label>
+                        <input type="number" id="Lx" value="4.5" step="0.001" min="0.1">
+                    </div>
+                    <div class="input-group">
+                        <label>Ly (m)</label>
+                        <input type="number" id="Ly" value="4.5" step="0.001" min="0.1">
+                    </div>
+                </div>
+                <div class="input-row" style="margin-top: 15px;">
+                    <div class="input-group">
                         <label>Type1 길이 (m)</label>
                         <input type="number" id="Lx_type1" value="26.478" step="0.001" min="0.1" onchange="updateTypeLengths()">
                     </div>
@@ -994,10 +1004,11 @@
                         return;
                     }
                     
-                    // 기본 길이 타입 1 사용 (계산 후 결과 테이블에서 변경 가능)
-                    const lengths = getLengthsForType(1);
-                    const Lx = lengths.Lx;
-                    const Ly = lengths.Ly;
+                    // 공통 설정의 Lx, Ly 값 사용
+                    const commonLx = parseFloat(document.getElementById('Lx')?.value) || 4.5; // m
+                    const commonLy = parseFloat(document.getElementById('Ly')?.value) || 4.5; // m
+                    const Lx = commonLx * 1000; // m to mm
+                    const Ly = commonLy * 1000; // m to mm
                     
                     // 조합별 강종 설정: 조합 1, 2는 SM420과 SM355, 조합 3은 SM355만
                     const steelGradesForComb1_2 = [
@@ -1248,6 +1259,43 @@
                 }
                 tbody.appendChild(row);
             });
+            
+            // 조합 1/2와 조합 3 결과 확인
+            const comb3Names = ['H400×B200', 'H450×B200', 'H500×B200', 'H506×B201', 'H482×B300', 'H488×B300', 'H582×B300', 'H588×B300', 'H600×B200'];
+            const hasComb3Result = currentResults.some(result => {
+                if (result.warning || !result.combination) return false;
+                return comb3Names.some(name => result.combination === name);
+            });
+            const hasComb1_2Result = currentResults.some(result => {
+                if (result.warning || !result.combination) return false;
+                return result.combination.startsWith('BH'); // 조합1,2는 BH로 시작
+            });
+            
+            // 기존 Note 제거
+            const existingNote1 = document.getElementById('comb3NoResultNote');
+            if (existingNote1) existingNote1.remove();
+            const existingNote2 = document.getElementById('combParallelNote');
+            if (existingNote2) existingNote2.remove();
+            
+            // Note 추가 조건 확인
+            const tableContainer = tbody.parentElement.parentElement; // table의 부모 div
+            
+            // 조건 1: 조합 1/2와 조합 3이 병행 표기될 때
+            if (hasComb1_2Result && hasComb3Result) {
+                const noteDiv = document.createElement('div');
+                noteDiv.id = 'combParallelNote';
+                noteDiv.style.cssText = 'margin-top: 15px; padding: 12px; background: #fff3cd; border: 1px solid #ffc107; border-radius: 6px; font-size: 13px; color: #856404; line-height: 1.6;';
+                noteDiv.innerHTML = '<strong>Note:</strong> 조합 1 또는 조합 2 (Built-Up Cross H&lt;SM420/SM355&gt;)와 조합 3 (Rolled H 단면&lt;SM355&gt;)이 병행하여 표기됩니다. BOQ작성시 유의하시기 바랍니다.';
+                tableContainer.appendChild(noteDiv);
+            }
+            // 조건 2: 조합 3 결과가 없을 때
+            else if (!hasComb3Result && currentResults.length > 0) {
+                const noteDiv = document.createElement('div');
+                noteDiv.id = 'comb3NoResultNote';
+                noteDiv.style.cssText = 'margin-top: 15px; padding: 12px; background: #fff3cd; border: 1px solid #ffc107; border-radius: 6px; font-size: 13px; color: #856404; line-height: 1.6;';
+                noteDiv.innerHTML = '<strong>Note:</strong> 조합 3 (Rolled H 단면&lt;SM355&gt;: H400, H450, H500, H506, H482, H488, H582, H588, H600)의 적용이 없습니다. SM420 단면이 보다 경제적 단면인 결과값을 제공합니다.';
+                tableContainer.appendChild(noteDiv);
+            }
         }
 
         // 특정 행 재계산 (tw, tf 변경 시)

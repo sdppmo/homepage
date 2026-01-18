@@ -294,8 +294,41 @@
             </table>
         </div>
 
-        <div style="margin-top: 40px;">
-            <h2 style="color: #1e3a5f; font-size: 20px; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px solid #667eea;">3. 소부재 물량 정리</h2>
+        <!-- Rolled H 물량 정리 (조합3이 있을 때만 표시) -->
+        <div id="rolledHSection" style="margin-top: 40px; display: none;">
+            <h2 style="color: #1e3a5f; font-size: 20px; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px solid #667eea;">3. Rolled H 물량 정리</h2>
+            <table class="boq-table">
+                <thead>
+                    <tr>
+                        <th>No.</th>
+                        <th>기둥번호</th>
+                        <th>단면 규격</th>
+                        <th>길이<br>(m)</th>
+                        <th>개수</th>
+                        <th>단중<br>(kg/m)</th>
+                        <th>총 중량<br>(kg)</th>
+                        <th>강종</th>
+                        <th>비고</th>
+                    </tr>
+                </thead>
+                <tbody id="rolledHTableBody">
+                    <!-- Rolled H 물량 데이터가 여기에 표시됩니다 -->
+                </tbody>
+                <tfoot>
+                    <tr class="total-row">
+                        <td colspan="4" class="text-right" style="font-weight: 700;">합계</td>
+                        <td id="rolledHTotalCountFooter">0</td>
+                        <td>-</td>
+                        <td id="rolledHTotalWeightFooter">0</td>
+                        <td>-</td>
+                        <td id="rolledHTotalNoteFooter">-</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <div id="subMaterialSection" style="margin-top: 40px;">
+            <h2 id="subMaterialTitle" style="color: #1e3a5f; font-size: 20px; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px solid #667eea;">3. 소부재 물량 정리</h2>
             <table class="boq-table">
                 <thead>
                     <tr>
@@ -655,6 +688,65 @@
             // 기둥 TYPE별 길이 테이블 생성
             console.log('loadBOQData - boqData.typeLengths:', boqData.typeLengths);
             console.log('loadBOQData - boqData.columnLengthData:', boqData.columnLengthData);
+        }
+
+        // Rolled H 물량 정리 생성 (조합3)
+        function generateRolledHBOQ(items) {
+            // Rolled H 섹션 표시
+            document.getElementById('rolledHSection').style.display = 'block';
+            
+            const tbody = document.getElementById('rolledHTableBody');
+            tbody.innerHTML = '';
+            
+            let totalCount = 0;
+            let totalWeight = 0;
+            let rowNo = 1;
+            
+            // 조합별로 그룹화하여 합산
+            const groupedData = {}; // { "H400×B200-26.478": {...} }
+            
+            items.forEach(item => {
+                const key = `${item.combination}-${item.length.toFixed(2)}`;
+                if (!groupedData[key]) {
+                    groupedData[key] = {
+                        combination: item.combination,
+                        length: item.length,
+                        count: 0,
+                        unitWeight: item.unitWeight,
+                        totalWeight: 0,
+                        names: [],
+                        steelGrade: item.steelGrade
+                    };
+                }
+                groupedData[key].count += item.count;
+                groupedData[key].totalWeight += item.unitWeight * item.length * item.count;
+                groupedData[key].names.push(...item.names);
+            });
+            
+            // 그룹화된 데이터를 테이블에 표시
+            Object.values(groupedData).forEach(group => {
+                totalCount += group.count;
+                totalWeight += group.totalWeight;
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${rowNo++}</td>
+                    <td class="text-left">${[...new Set(group.names)].join(', ')}</td>
+                    <td>${group.combination}</td>
+                    <td class="text-right">${group.length.toFixed(2)}</td>
+                    <td>${group.count}</td>
+                    <td class="text-right">${group.unitWeight.toFixed(2)}</td>
+                    <td class="text-right">${parseFloat(group.totalWeight.toFixed(2)).toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                    <td>${group.steelGrade}</td>
+                    <td>-</td>
+                `;
+                tbody.appendChild(row);
+            });
+            
+            // 합계 표시
+            document.getElementById('rolledHTotalCountFooter').textContent = totalCount;
+            document.getElementById('rolledHTotalWeightFooter').textContent = parseFloat(totalWeight.toFixed(2)).toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            document.getElementById('rolledHTotalNoteFooter').textContent = '-';
         }
 
         // 소부재 물량 정리 생성
