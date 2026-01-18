@@ -443,8 +443,10 @@ SERVICE_INFO=$(aws lightsail get-container-services \
     --query "containerServices[0]" \
     --output json)
 
-STATE=$(echo "$SERVICE_INFO" | grep -oP '"state"\s*:\s*"\K[^"]+' | head -1 || echo "UPDATING")
-URL=$(echo "$SERVICE_INFO" | grep -oP '"url"\s*:\s*"\K[^"]+' | head -1 || echo "Pending...")
+STATE=$(echo "$SERVICE_INFO" | sed -n 's/.*"state"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' | head -1)
+STATE=${STATE:-UPDATING}
+URL=$(echo "$SERVICE_INFO" | sed -n 's/.*"url"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' | head -1)
+URL=${URL:-Pending...}
 
 echo -e "Service State: ${YELLOW}${STATE}${NC}"
 echo -e "Service URL:   ${GREEN}${URL}${NC}"
