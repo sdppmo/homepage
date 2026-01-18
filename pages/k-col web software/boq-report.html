@@ -452,8 +452,36 @@
             document.getElementById('totalWeightFooter').textContent = parseFloat(totalWeight.toFixed(2)).toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
             document.getElementById('totalColumnAmountFooter').textContent = totalColumnAmount > 0 ? Math.round(totalColumnAmount).toLocaleString('ko-KR') + '원' : '0원';
 
-            // Built-UP 부재 Plate 물량 정리
-            generatePlateBOQ(boqData.items);
+            // 조합1/2(Built-UP)와 조합3(Rolled H) 분리
+            const comb3Names = ['H400×B200', 'H450×B200', 'H500×B200', 'H506×B201', 'H482×B300', 'H488×B300', 'H582×B300', 'H588×B300', 'H600×B200'];
+            const rolledHItems = boqData.items.filter(item => {
+                return comb3Names.some(name => item.combination === name);
+            });
+            const builtUpItems = boqData.items.filter(item => {
+                return !comb3Names.some(name => item.combination === name);
+            });
+            
+            // 조합1/2와 조합3이 함께 있는지 확인
+            const hasComb1_2 = builtUpItems.length > 0;
+            const hasComb3 = rolledHItems.length > 0;
+            const hasBoth = hasComb1_2 && hasComb3;
+            
+            // Built-UP 부재 Plate 물량 정리 (조합1/2만 처리)
+            if (hasComb1_2) {
+                generatePlateBOQ(builtUpItems);
+            }
+            
+            // 조합1/2와 조합3이 함께 있을 때만 Rolled H 물량 정리 표시
+            if (hasBoth) {
+                generateRolledHBOQ(rolledHItems);
+                // 소부재 물량 정리 제목을 "4. 소부재 물량 정리"로 변경
+                document.getElementById('subMaterialTitle').textContent = '4. 소부재 물량 정리';
+            } else {
+                // 조합3만 있거나 없으면 Rolled H 섹션 숨김
+                document.getElementById('rolledHSection').style.display = 'none';
+                // 소부재 물량 정리 제목을 "3. 소부재 물량 정리"로 유지
+                document.getElementById('subMaterialTitle').textContent = '3. 소부재 물량 정리';
+            }
             
             // 총 금액 계산 및 표시 (기둥 금액 + 소부재 금액)
             updateTotalAmount();

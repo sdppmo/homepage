@@ -261,6 +261,8 @@
             background: #5568d3;
         }
     </style>
+    <!-- SheetJS for Excel file handling -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
 </head>
 <body>
     <div class="container">
@@ -350,7 +352,18 @@
 
             <!-- 하중 입력 -->
             <div class="section">
-                <div class="section-title">하중 입력</div>
+                <div class="section-title" style="display: flex; justify-content: space-between; align-items: center;">
+                    <span>하중 입력</span>
+                    <div style="display: flex; gap: 8px;">
+                        <button onclick="exportLoadToExcel()" style="padding: 6px 12px; background: #38a169; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 13px;">
+                            📥 엑셀 다운로드
+                        </button>
+                        <label for="excelFileInput" style="padding: 6px 12px; background: #667eea; color: white; border-radius: 4px; cursor: pointer; font-size: 13px; display: inline-block;">
+                            📤 엑셀 업로드
+                        </label>
+                        <input type="file" id="excelFileInput" accept=".xlsx,.xls" style="display: none;" onchange="importLoadFromExcel(event)">
+                    </div>
+                </div>
                 <table class="load-table">
                     <thead>
                         <tr>
@@ -592,6 +605,130 @@
                     col.muy = parseFloat(value) || 0;
                 }
             }
+        }
+
+        // 하중 입력 데이터를 엑셀로 다운로드
+        function exportLoadToExcel() {
+            try {
+                // 현재 columnData를 사용하여 워크북 생성
+                const wsData = [
+                    ['No.', '기둥 이름', 'Pu (kN)', 'Mux (kN·m)', 'Muy (kN·m)']
+                ];
+                
+                columnData.forEach(col => {
+                    wsData.push([
+                        col.no,
+                        col.name || `KC${col.no}`,
+                        col.pu || 0,
+                        col.mux || 0,
+                        col.muy || 0
+                    ]);
+                });
+                
+                const ws = XLSX.utils.aoa_to_sheet(wsData);
+                
+                // 컬럼 너비 설정
+                ws['!cols'] = [
+                    { wch: 5 },   // No.
+                    { wch: 15 },  // 기둥 이름
+                    { wch: 12 },  // Pu
+                    { wch: 12 },  // Mux
+                    { wch: 12 }   // Muy
+                ];
+                
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, '하중입력');
+                
+                // 파일명 생성 (현재 날짜/시간 포함)
+                const now = new Date();
+                const dateStr = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}`;
+                const fileName = `하중입력_${dateStr}.xlsx`;
+                
+                XLSX.writeFile(wb, fileName);
+                alert(`하중 입력 데이터가 "${fileName}" 파일로 다운로드되었습니다.`);
+            } catch (error) {
+                console.error('엑셀 다운로드 오류:', error);
+                alert('엑셀 다운로드 중 오류가 발생했습니다: ' + error.message);
+            }
+        }
+
+        // 엑셀 파일에서 하중 입력 데이터 가져오기
+        function importLoadFromExcel(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    
+                    // 첫 번째 시트 사용
+                    const firstSheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[firstSheetName];
+                    
+                    // JSON으로 변환
+                    const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '' });
+                    
+                    if (jsonData.length < 2) {
+                        alert('엑셀 파일에 데이터가 없습니다. 헤더 행과 최소 1개의 데이터 행이 필요합니다.');
+                        return;
+                    }
+                    
+                    // 헤더 확인 (첫 번째 행)
+                    const headers = jsonData[0].map(h => String(h).toLowerCase().trim());
+                    const noIdx = headers.findIndex(h => h.includes('no') || h === 'no.');
+                    const nameIdx = headers.findIndex(h => h.includes('기둥') || h.includes('name') || h.includes('이름'));
+                    const puIdx = headers.findIndex(h => h.includes('pu'));
+                    const muxIdx = headers.findIndex(h => h.includes('mux'));
+                    const muyIdx = headers.findIndex(h => h.includes('muy'));
+                    
+                    if (puIdx === -1) {
+                        alert('엑셀 파일에 "Pu" 컬럼이 없습니다. 컬럼명을 확인해주세요.');
+                        return;
+                    }
+                    
+                    // 데이터 파싱
+                    const importedData = [];
+                    for (let i = 1; i < jsonData.length; i++) {
+                        const row = jsonData[i];
+                        if (!row || row.length === 0) continue;
+                        
+                        const no = noIdx !== -1 ? (parseInt(row[noIdx]) || i) : i;
+                        const name = nameIdx !== -1 ? String(row[nameIdx] || '').trim() || `KC${i}` : `KC${i}`;
+                        const pu = puIdx !== -1 ? parseFloat(row[puIdx]) || 0 : 0;
+                        const mux = muxIdx !== -1 ? parseFloat(row[muxIdx]) || 0 : 0;
+                        const muy = muyIdx !== -1 ? parseFloat(row[muyIdx]) || 0 : 0;
+                        
+                        importedData.push({ no, name, pu, mux, muy });
+                    }
+                    
+                    if (importedData.length === 0) {
+                        alert('엑셀 파일에서 유효한 데이터를 찾을 수 없습니다.');
+                        return;
+                    }
+                    
+                    // columnData 업데이트
+                    columnData = importedData;
+                    
+                    // 기둥 개수 업데이트 (엑셀에 실제로 있는 행 수 사용)
+                    const actualCount = importedData.length;
+                    document.getElementById('columnCount').value = actualCount;
+                    
+                    // 테이블 업데이트
+                    updateLoadTable();
+                    
+                    alert(`${importedData.length}개의 하중 입력 데이터를 불러왔습니다.`);
+                } catch (error) {
+                    console.error('엑셀 파일 읽기 오류:', error);
+                    alert('엑셀 파일 읽기 중 오류가 발생했습니다: ' + error.message);
+                }
+            };
+            
+            reader.readAsArrayBuffer(file);
+            
+            // 파일 입력 초기화 (같은 파일 다시 선택 가능하도록)
+            event.target.value = '';
         }
 
         // 길이 타입별 Lx, Ly 가져오기 (기본값 사용)
@@ -1579,6 +1716,187 @@
         // 소부재 추가 항목 데이터 저장
         let subMaterialItems = [];
 
+        // BOQ Type 개수 데이터를 엑셀로 다운로드
+        function exportBOQTypeCountToExcel() {
+            try {
+                const tbody = document.getElementById('boqLengthTableBody');
+                if (!tbody || tbody.children.length === 0) {
+                    alert('기둥별 Type 개수 데이터가 없습니다.');
+                    return;
+                }
+                
+                // 워크북 데이터 생성
+                const wsData = [
+                    ['No.', '기둥명', 'Type1 개수', 'Type2 개수', 'Type3 개수', 'Type4 개수']
+                ];
+                
+                // Type 길이 정보도 포함
+                wsData.push([
+                    '', 
+                    `(Type1: ${typeLengths.type1.toFixed(3)}m)`, 
+                    `(Type2: ${typeLengths.type2.toFixed(3)}m)`, 
+                    `(Type3: ${typeLengths.type3.toFixed(3)}m)`, 
+                    `(Type4: ${typeLengths.type4.toFixed(3)}m)`
+                ]);
+                wsData.push([]); // 빈 행
+                
+                const rows = tbody.querySelectorAll('tr');
+                rows.forEach((row, index) => {
+                    const noCell = row.querySelector('td:first-child');
+                    const nameCell = row.querySelector('td:nth-child(2)');
+                    const inputs = row.querySelectorAll('input[type="number"]');
+                    
+                    if (noCell && nameCell && inputs.length >= 4) {
+                        const no = noCell.textContent.trim();
+                        const name = nameCell.textContent.trim();
+                        const type1Count = parseInt(inputs[0].value) || 0;
+                        const type2Count = parseInt(inputs[1].value) || 0;
+                        const type3Count = parseInt(inputs[2].value) || 0;
+                        const type4Count = parseInt(inputs[3].value) || 0;
+                        
+                        wsData.push([
+                            no,
+                            name,
+                            type1Count,
+                            type2Count,
+                            type3Count,
+                            type4Count
+                        ]);
+                    }
+                });
+                
+                const ws = XLSX.utils.aoa_to_sheet(wsData);
+                
+                // 컬럼 너비 설정
+                ws['!cols'] = [
+                    { wch: 5 },   // No.
+                    { wch: 15 },  // 기둥명
+                    { wch: 12 },  // Type1
+                    { wch: 12 },  // Type2
+                    { wch: 12 },  // Type3
+                    { wch: 12 }   // Type4
+                ];
+                
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, 'BOQ Type 개수');
+                
+                // 파일명 생성
+                const now = new Date();
+                const dateStr = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}`;
+                const fileName = `BOQ_Type개수_${dateStr}.xlsx`;
+                
+                XLSX.writeFile(wb, fileName);
+                alert(`BOQ Type 개수 데이터가 "${fileName}" 파일로 다운로드되었습니다.`);
+            } catch (error) {
+                console.error('엑셀 다운로드 오류:', error);
+                alert('엑셀 다운로드 중 오류가 발생했습니다: ' + error.message);
+            }
+        }
+
+        // 엑셀 파일에서 BOQ Type 개수 데이터 가져오기
+        function importBOQTypeCountFromExcel(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    
+                    // 첫 번째 시트 사용
+                    const firstSheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[firstSheetName];
+                    
+                    // JSON으로 변환
+                    const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '' });
+                    
+                    if (jsonData.length < 2) {
+                        alert('엑셀 파일에 데이터가 없습니다.');
+                        return;
+                    }
+                    
+                    // 헤더 찾기 (첫 번째 행 또는 데이터 행 중 하나)
+                    let headerRowIdx = 0;
+                    let dataStartRowIdx = 1;
+                    
+                    // 첫 번째 행이 헤더인지 확인
+                    const firstRow = jsonData[0] || [];
+                    if (firstRow[0] && String(firstRow[0]).toLowerCase().includes('no')) {
+                        headerRowIdx = 0;
+                        dataStartRowIdx = 1;
+                    }
+                    
+                    // 헤더 찾기
+                    const headers = jsonData[headerRowIdx].map(h => String(h).toLowerCase().trim());
+                    const noIdx = headers.findIndex(h => h.includes('no') || h === 'no.');
+                    const nameIdx = headers.findIndex(h => h.includes('기둥') || h.includes('name') || h.includes('명'));
+                    const type1Idx = headers.findIndex(h => h.includes('type1') || h.includes('type 1'));
+                    const type2Idx = headers.findIndex(h => h.includes('type2') || h.includes('type 2'));
+                    const type3Idx = headers.findIndex(h => h.includes('type3') || h.includes('type 3'));
+                    const type4Idx = headers.findIndex(h => h.includes('type4') || h.includes('type 4'));
+                    
+                    if (type1Idx === -1 || type2Idx === -1 || type3Idx === -1 || type4Idx === -1) {
+                        alert('엑셀 파일에 Type1~Type4 컬럼이 없습니다. 컬럼명을 확인해주세요.');
+                        return;
+                    }
+                    
+                    // 데이터 파싱 및 입력 필드 업데이트
+                    let importedCount = 0;
+                    for (let i = dataStartRowIdx; i < jsonData.length; i++) {
+                        const row = jsonData[i];
+                        if (!row || row.length === 0) continue;
+                        
+                        // 빈 행 또는 헤더 정보 행 스킵
+                        const firstCell = String(row[0] || '').trim().toLowerCase();
+                        if (!firstCell || firstCell.includes('type') || firstCell === '') continue;
+                        
+                        const name = nameIdx !== -1 ? String(row[nameIdx] || '').trim() : '';
+                        if (!name) continue; // 기둥명이 없으면 스킵
+                        
+                        const type1Count = type1Idx !== -1 ? parseInt(row[type1Idx]) || 0 : 0;
+                        const type2Count = type2Idx !== -1 ? parseInt(row[type2Idx]) || 0 : 0;
+                        const type3Count = type3Idx !== -1 ? parseInt(row[type3Idx]) || 0 : 0;
+                        const type4Count = type4Idx !== -1 ? parseInt(row[type4Idx]) || 0 : 0;
+                        
+                        // 해당 기둥의 입력 필드 찾아서 업데이트
+                        const type1Input = document.getElementById(`count_${name}_type1`);
+                        const type2Input = document.getElementById(`count_${name}_type2`);
+                        const type3Input = document.getElementById(`count_${name}_type3`);
+                        const type4Input = document.getElementById(`count_${name}_type4`);
+                        
+                        if (type1Input && type2Input && type3Input && type4Input) {
+                            type1Input.value = type1Count;
+                            type2Input.value = type2Count;
+                            type3Input.value = type3Count;
+                            type4Input.value = type4Count;
+                            
+                            // 이벤트 발생 (합계 업데이트를 위해)
+                            type1Input.dispatchEvent(new Event('input', { bubbles: true }));
+                            
+                            importedCount++;
+                        }
+                    }
+                    
+                    if (importedCount > 0) {
+                        // 합계 업데이트
+                        updateTypeTotals();
+                        alert(`${importedCount}개의 기둥 Type 개수 데이터를 불러왔습니다.`);
+                    } else {
+                        alert('엑셀 파일에서 유효한 데이터를 찾을 수 없습니다. 기둥명이 일치하는지 확인해주세요.');
+                    }
+                } catch (error) {
+                    console.error('엑셀 파일 읽기 오류:', error);
+                    alert('엑셀 파일 읽기 중 오류가 발생했습니다: ' + error.message);
+                }
+            };
+            
+            reader.readAsArrayBuffer(file);
+            
+            // 파일 입력 초기화
+            event.target.value = '';
+        }
+
         // BOQ 길이 입력 완료 후 실제 BOQ 생성
         function proceedWithBOQGeneration() {
             // 입력된 기둥별 Type 개수 데이터 저장
@@ -2302,7 +2620,18 @@
             const modalHTML = `
                 <div id="boqLengthModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; align-items: center; justify-content: center; overflow-y: auto; padding: 20px;">
                     <div style="background: white; border-radius: 12px; padding: 30px; max-width: 900px; width: 90%; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 40px rgba(0,0,0,0.3);">
-                        <h2 style="margin-bottom: 20px; color: #1e3a5f; font-size: 24px; text-align: center;">기둥별 Type 개수 입력</h2>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                            <h2 style="margin: 0; color: #1e3a5f; font-size: 24px;">기둥별 Type 개수 입력</h2>
+                            <div style="display: flex; gap: 8px;">
+                                <button onclick="exportBOQTypeCountToExcel()" style="padding: 6px 12px; background: #38a169; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 13px;">
+                                    📥 엑셀 다운로드
+                                </button>
+                                <label for="boqTypeCountExcelInput" style="padding: 6px 12px; background: #667eea; color: white; border-radius: 4px; cursor: pointer; font-size: 13px; display: inline-block; margin: 0;">
+                                    📤 엑셀 업로드
+                                </label>
+                                <input type="file" id="boqTypeCountExcelInput" accept=".xlsx,.xls" style="display: none;" onchange="importBOQTypeCountFromExcel(event)">
+                            </div>
+                        </div>
                         <p style="margin-bottom: 20px; color: #718096; font-size: 14px; text-align: center;">BOQ 생성을 위해 각 기둥별 Type1~Type4 개수를 입력해주세요.</p>
                         <div style="overflow-x: auto; margin-bottom: 20px;">
                             <table style="width: 100%; border-collapse: collapse;">
