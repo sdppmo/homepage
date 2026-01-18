@@ -1,7 +1,7 @@
 # AI Agent Context - SongDoPartners Homepage
 
 > This document provides context for AI agents working on this project.
-> Last updated: 2026-01-15
+> Last updated: 2026-01-18
 
 ## Project Overview
 
@@ -197,12 +197,7 @@ homepage/
 ├── README.md               # User documentation
 ├── AGENTS.md               # This file - AI agent context
 │
-├── # SENSITIVE (not deployed)
-├── admin/                  # Contains accounts.txt with credentials
-│   ├── accounts.txt        # ⚠️ Hardcoded test credentials
-│   └── *.pdf               # Firebase setup guides
-│
-└── .gitignore              # Git ignore rules
+└── .gitignore              # Git ignore rules (includes admin/)
 ```
 
 ---
@@ -212,12 +207,12 @@ homepage/
 ### `deploy.sh` - Main Deployment Script
 
 ```bash
-./deploy.sh                 # Full: build + security + deploy to Lightsail
-./deploy.sh --local         # Build + run local server at http://localhost:8080
-./deploy.sh --stop          # Stop local server
+./deploy.sh                 # Full: build + security scan + deploy to Lightsail
+./deploy.sh --local         # Build + run local server at http://localhost:8080 (no AWS deploy)
+./deploy.sh --stop          # Stop local server + cleanup Docker images
 ./deploy.sh --build-only    # Build Docker image only
 ./deploy.sh --deploy-only   # Deploy existing image to Lightsail
-./deploy.sh --quick         # Skip security scans
+./deploy.sh --quick         # Skip Trivy security scans
 ```
 
 **Configuration (in script):**
@@ -225,6 +220,13 @@ homepage/
 - `AWS_REGION="ap-northeast-2"`
 - `IMAGE_NAME="sdppmo-homepage"`
 - `LOCAL_PORT=8080`
+- `LOCAL_CONTAINER="sdppmo-local-test"`
+
+**Features:**
+- Pre-flight checks (Docker, AWS CLI, Lightsail access)
+- Security vulnerability scanning via Trivy
+- Security header validation
+- macOS/Linux compatible (uses `sed` instead of `grep -P`)
 
 ### `nginx.conf` - Production Nginx Configuration
 
@@ -246,28 +248,28 @@ homepage/
 
 ## Known Issues & Technical Debt
 
-### 🔴 Security Issues
+### ✅ Resolved Security Issues
 
-1. **Hardcoded Passwords in Frontend**
-   - File: `index.html` lines 195-200
-   - `TEMP_ACCOUNTS` object contains plain-text passwords
-   - Visible in browser source code
-   - Current mitigation: Demo/internal use only
+1. **~~Hardcoded Passwords in Frontend~~** *(Fixed 2026-01-18)*
+   - Removed `TEMP_ACCOUNTS` object from `index.html`
+   - Login now uses demo mode (any non-empty ID/password works)
+   - No credentials stored in frontend code
 
-2. **Admin Folder in Git**
-   - `admin/accounts.txt` contains credentials
-   - Should be removed from git history
-   - Currently excluded from Docker via `.dockerignore`
+2. **~~Admin Folder in Git~~** *(Fixed 2026-01-18)*
+   - `admin/` folder removed from git history via `git filter-branch`
+   - Added to `.gitignore` to prevent future commits
+   - Excluded from Docker via `.dockerignore`
 
 ### 🟡 Technical Debt
 
 1. **No Semantic Versioning**
-   - Uses timestamps, not semver
+   - Uses timestamps (e.g., `20260118-154455`), not semver
    - No git tag integration
 
 2. **Client-Side Only Auth**
    - Login is UI demo only
    - No actual authentication backend
+   - For production: integrate Firebase Auth or backend API
 
 3. **No CI/CD Pipeline**
    - Manual deployment via `deploy.sh`
@@ -387,6 +389,25 @@ After deploying:
 | Build only | `./deploy.sh --build-only` |
 | Check status | `aws lightsail get-container-services --service-name sdppmo-container-service-1 --region ap-northeast-2` |
 | View logs | `aws lightsail get-container-log --service-name sdppmo-container-service-1 --container-name homepage --region ap-northeast-2` |
+
+---
+
+## Recent Changes (2026-01-18)
+
+### Security Fixes
+- ✅ Removed hardcoded credentials (`TEMP_ACCOUNTS`) from `index.html`
+- ✅ Removed `admin/` folder from git history
+- ✅ Login switched to demo mode (any ID/password works for UI demo)
+
+### Bug Fixes
+- ✅ Fixed world clocks ticking at different rates (consolidated to single 50ms interval script)
+- ✅ Fixed duplicate login/clock handlers conflict between `main.js` and inline scripts
+- ✅ Fixed `grep -P` compatibility issue in `deploy.sh` for macOS
+
+### Improvements
+- ✅ `deploy.sh --stop` now cleans up Docker images
+- ✅ Footer layout changed to 3x2 grid for company logos
+- ✅ News section repositioned to avoid footer overlap
 
 ---
 
