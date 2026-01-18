@@ -390,6 +390,9 @@
                     <button class="btn btn-secondary" onclick="printCalculationSheet()" style="flex: 1;">
                         📄 계산서 출력
                     </button>
+                    <button class="btn" onclick="exportResultToExcel()" style="flex: 1; background: #667eea; color: white;">
+                        📥 결과 다운로드 (Excel)
+                    </button>
                     <button class="btn" onclick="generateBOQ()" style="flex: 1; background: #38a169; color: white;">
                         📋 BOQ 산출
                     </button>
@@ -1432,6 +1435,119 @@
                 noteDiv.style.cssText = 'margin-top: 15px; padding: 12px; background: #fff3cd; border: 1px solid #ffc107; border-radius: 6px; font-size: 13px; color: #856404; line-height: 1.6;';
                 noteDiv.innerHTML = '<strong>Note:</strong> 조합 3 (Rolled H 단면&lt;SM355&gt;: H400, H450, H500, H506, H482, H488, H582, H588, H600)의 적용이 없습니다. SM420 단면이 보다 경제적 단면인 결과값을 제공합니다.';
                 tableContainer.appendChild(noteDiv);
+            }
+        }
+
+        // Auto Find Section 결과를 Excel로 다운로드
+        function exportResultToExcel() {
+            if (!currentResults || currentResults.length === 0) {
+                alert('다운로드할 결과 데이터가 없습니다. 먼저 계산을 실행해주세요.');
+                return;
+            }
+
+            try {
+                // 헤더 행 생성
+                const wsData = [
+                    ['No.', '기둥명', 'Pu (kN)', 'P-M-M', '강종', '조합', 'K', 'L (m)', 'H (mm)', 'B (mm)', 'tw (mm)', 'tf (mm)', '단면적 (mm²)', '단중 (kg/m)', '단가 (원/톤)', '단위길이당 금액 (원/m)', '비고']
+                ];
+
+                // 데이터 행 추가
+                currentResults.forEach(result => {
+                    if (result.warning) {
+                        // 경고가 있는 경우
+                        wsData.push([
+                            result.no || '',
+                            result.name || '',
+                            result.pu || 0,
+                            '-',
+                            '-',
+                            '-',
+                            '-',
+                            '-',
+                            '-',
+                            '-',
+                            '-',
+                            '-',
+                            '-',
+                            '-',
+                            '-',
+                            '-',
+                            result.warning || ''
+                        ]);
+                    } else {
+                        // 정상 결과
+                        const remarks = [];
+                        if (result.isSlenderFlange) {
+                            remarks.push('Slender check needed');
+                        }
+                        if (result.isCompressiveNG) {
+                            remarks.push('Compressive NG (φPn < Pu)');
+                        }
+                        if (result.pmm > 1.0) {
+                            remarks.push('P-M-M > 1.0');
+                        }
+
+                        wsData.push([
+                            result.no || '',
+                            result.name || '',
+                            result.pu ? result.pu.toFixed(1) : 0,
+                            result.pmm > 0 ? result.pmm.toFixed(3) : '-',
+                            result.steelGrade || '-',
+                            result.combination || '-',
+                            result.kx ? result.kx.toFixed(1) : '-',
+                            result.lx ? result.lx.toFixed(1) : '-',
+                            result.h || '-',
+                            result.b || '-',
+                            result.tw || '-',
+                            result.tf || '-',
+                            result.area ? result.area.toFixed(2) : '-',
+                            result.unitWeight ? result.unitWeight.toFixed(4) : '-',
+                            result.unitPrice ? result.unitPrice.toLocaleString('ko-KR') : '-',
+                            result.costPerMeter ? result.costPerMeter.toFixed(0) : '-',
+                            remarks.join(', ') || '-'
+                        ]);
+                    }
+                });
+
+                // 워크북 생성
+                const wb = XLSX.utils.book_new();
+                const ws = XLSX.utils.aoa_to_sheet(wsData);
+
+                // 열 너비 설정
+                ws['!cols'] = [
+                    { wch: 6 },   // No.
+                    { wch: 12 },  // 기둥명
+                    { wch: 10 },  // Pu
+                    { wch: 10 },  // P-M-M
+                    { wch: 10 },  // 강종
+                    { wch: 15 },  // 조합
+                    { wch: 6 },   // K
+                    { wch: 8 },   // L
+                    { wch: 8 },   // H
+                    { wch: 8 },   // B
+                    { wch: 8 },   // tw
+                    { wch: 8 },   // tf
+                    { wch: 12 },  // 단면적
+                    { wch: 10 },  // 단중
+                    { wch: 12 },  // 단가
+                    { wch: 15 },  // 단위길이당 금액
+                    { wch: 30 }   // 비고
+                ];
+
+                // 시트 추가
+                XLSX.utils.book_append_sheet(wb, ws, 'Auto Find Section Result');
+
+                // 파일명 생성 (날짜 포함)
+                const now = new Date();
+                const dateStr = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}`;
+                const fileName = `AutoFindSectionResult_${dateStr}.xlsx`;
+
+                // 파일 다운로드
+                XLSX.writeFile(wb, fileName);
+                alert(`Auto Find Section 결과가 "${fileName}" 파일로 다운로드되었습니다.`);
+            } catch (error) {
+                console.error('Excel 다운로드 오류:', error);
+                alert('Excel 파일 다운로드 중 오류가 발생했습니다: ' + error.message);
             }
         }
 
