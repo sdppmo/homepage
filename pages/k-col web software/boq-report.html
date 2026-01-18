@@ -225,7 +225,7 @@
         </div>
 
         <div style="margin-bottom: 30px;">
-            <h2 style="color: #1e3a5f; font-size: 20px; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px solid #667eea;">1. 기둥 물량 정리(Cross H)</h2>
+            <h2 style="color: #1e3a5f; font-size: 20px; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px solid #667eea;">1. 기둥 물량 정리(Cross H) - Auto Find Selection 기능</h2>
             <table class="boq-table">
                 <thead>
                     <tr>
@@ -330,6 +330,7 @@
             </table>
         </div>
 
+
         <div class="actions">
             <button class="btn btn-print" onclick="window.print()">🖨️ 인쇄</button>
             <button class="btn btn-export" onclick="exportToCSV()">📥 CSV 다운로드</button>
@@ -361,9 +362,10 @@
             let totalArea = 0;
             let totalWeight = 0;
             let totalColumnAmount = 0;
-            // 저장된 주부재 단가 불러오기 (기본값: 1,900,000원/톤)
+            // 저장된 주부재 단가 불러오기 (기본값: SM420 1,900,000원/톤, SM355 1,830,000원/톤)
             const savedPrices = JSON.parse(localStorage.getItem('boqUnitPrices')) || {};
-            const columnUnitPrice = savedPrices.mainMaterial || 1900000; // 톤당 단가 (원)
+            const columnUnitPriceSM420 = savedPrices.mainMaterialSM420 || 1900000; // SM420 톤당 단가 (원)
+            const columnUnitPriceSM355 = savedPrices.mainMaterialSM355 || 1830000; // SM355 톤당 단가 (원)
             const steelDensity = 7850; // kg/m³
 
             const tbody = document.getElementById('boqTableBody');
@@ -375,12 +377,17 @@
                 totalArea += item.area * item.count;
                 totalWeight += totalWeightItem;
 
-                // 기둥 금액 계산: 중량(톤) × 단가
-                // SM420 강종만 단가 적용, 다른 강종은 0 또는 별도 단가 적용 가능
+                // 기둥 금액 계산: 중량(톤) × 단가 (강종별)
                 const weightInTon = totalWeightItem / 1000; // kg to ton
-                const columnAmount = (item.steelGrade === 'SM420' || item.steelGrade === 'SM420') 
-                    ? weightInTon * columnUnitPrice 
-                    : 0; // SM420이 아니면 금액 0 또는 별도 계산 필요
+                let columnUnitPrice = 0;
+                if (item.steelGrade === 'SM420' || item.steelGrade.includes('SM420')) {
+                    columnUnitPrice = columnUnitPriceSM420;
+                } else if (item.steelGrade === 'SM355' || item.steelGrade.includes('SM355')) {
+                    columnUnitPrice = columnUnitPriceSM355;
+                } else {
+                    columnUnitPrice = columnUnitPriceSM420; // 기본값
+                }
+                const columnAmount = weightInTon * columnUnitPrice;
                 totalColumnAmount += columnAmount;
 
                 const row = document.createElement('tr');
@@ -393,13 +400,13 @@
                     <td>${item.tw}</td>
                     <td>${item.tf}</td>
                     <td class="text-right">${item.area.toFixed(2)}</td>
-                    <td class="text-right">${item.unitWeight.toFixed(4)}</td>
-                    <td class="text-right">${item.length.toFixed(3)}</td>
+                    <td class="text-right">${item.unitWeight.toFixed(2)}</td>
+                    <td class="text-right">${item.length.toFixed(2)}</td>
                     <td>Type${item.lengthType || ''}</td>
                     <td>${item.count}</td>
                     <td class="text-right">${parseFloat(totalWeightItem.toFixed(2)).toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                     <td>${item.steelGrade}</td>
-                    <td class="text-right">${columnAmount > 0 ? columnAmount.toLocaleString() : '-'}</td>
+                    <td class="text-right">${columnAmount > 0 ? Math.round(columnAmount).toLocaleString('ko-KR') : '-'}</td>
                 `;
                 tbody.appendChild(row);
             });
@@ -410,7 +417,7 @@
             document.getElementById('totalWeight').textContent = parseFloat(totalWeight.toFixed(2)).toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' kg';
             document.getElementById('totalCountFooter').textContent = totalCount;
             document.getElementById('totalWeightFooter').textContent = parseFloat(totalWeight.toFixed(2)).toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-            document.getElementById('totalColumnAmountFooter').textContent = totalColumnAmount > 0 ? totalColumnAmount.toLocaleString() + '원' : '0원';
+            document.getElementById('totalColumnAmountFooter').textContent = totalColumnAmount > 0 ? Math.round(totalColumnAmount).toLocaleString('ko-KR') + '원' : '0원';
 
             // Built-UP 부재 Plate 물량 정리
             generatePlateBOQ(boqData.items);
@@ -434,8 +441,8 @@
             // 총 금액 = 기둥 금액 + 소부재 금액
             const totalAmount = totalColumnAmount + subMaterialTotalAmount;
             
-            // 총 금액 표시
-            document.getElementById('totalAmount').textContent = totalAmount.toLocaleString() + '원';
+            // 총 금액 표시 (소수점 제거)
+            document.getElementById('totalAmount').textContent = Math.round(totalAmount).toLocaleString('ko-KR') + '원';
         }
 
         // Built-UP 부재 Plate 물량 정리 생성
@@ -611,10 +618,10 @@
                     <td>${rowNo++}</td>
                     <td>${plate.thickness_mm}mm</td>
                     <td>${plate.usageParts}</td>
-                    <td class="text-right">${plate.avgWidth.toFixed(0)}</td>
+                    <td class="text-right">${plate.avgWidth.toFixed(2)}</td>
                     <td class="text-right">${plate.thickness_mm}</td>
-                    <td class="text-right">${plate.unitWeight.toFixed(4)}</td>
-                    <td class="text-right">${plate.totalLength.toFixed(3)}</td>
+                    <td class="text-right">${plate.unitWeight.toFixed(2)}</td>
+                    <td class="text-right">${plate.totalLength.toFixed(2)}</td>
                     <td>${plate.totalCount}</td>
                     <td class="text-right">${parseFloat(plate.totalWeight.toFixed(2)).toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                     <td>${plate.steelGrade}</td>
@@ -624,12 +631,18 @@
             });
 
             // Plate 합계에 대한 노트 (전체 합계가 25톤 미만인 경우)
-            const totalWeightInTon = plateTotalWeight / 1000;
+            // 주기둥 총중량 가져오기 (1번 기둥 물량 정리 테이블의 합계)
+            const columnTotalWeightText = document.getElementById('totalWeightFooter').textContent || '0';
+            const columnTotalWeight = parseFloat(columnTotalWeightText.replace(/[^0-9.]/g, '')) || 0;
+            
+            // 주기둥 총중량을 Plate 총중량으로 사용 (1번과 동일하게)
+            const plateTotalWeightForDisplay = columnTotalWeight;
+            const totalWeightInTon = plateTotalWeightForDisplay / 1000;
             const totalNote = totalWeightInTon < 25 ? '후판주문' : '';
 
-            // Plate 합계 표시
+            // Plate 합계 표시 (주기둥 총중량과 동일)
             document.getElementById('plateTotalCountFooter').textContent = plateTotalCount;
-            document.getElementById('plateTotalWeightFooter').textContent = parseFloat(plateTotalWeight.toFixed(2)).toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            document.getElementById('plateTotalWeightFooter').textContent = parseFloat(plateTotalWeightForDisplay.toFixed(2)).toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
             document.getElementById('plateTotalNoteFooter').textContent = totalNote;
             if (totalNote) {
                 document.getElementById('plateTotalNoteFooter').style.color = '#e53e3e';
@@ -638,6 +651,10 @@
 
             // 소부재 물량 정리 생성
             generateSubMaterialBOQ(items);
+            
+            // 기둥 TYPE별 길이 테이블 생성
+            console.log('loadBOQData - boqData.typeLengths:', boqData.typeLengths);
+            console.log('loadBOQData - boqData.columnLengthData:', boqData.columnLengthData);
         }
 
         // 소부재 물량 정리 생성
@@ -704,9 +721,9 @@
                         unit: item.unit,
                         quantity: item.quantity || 0,
                         steelGrade: item.steelGrade || 'SM420',
-                        totalSteelWeight: itemWeight.toFixed(2),
+                        totalSteelWeight: columnTotalWeight.toFixed(2), // 주기둥 총중량과 동일
                         surcharge: itemSurcharge.toFixed(2),
-                        amount: itemTotalAmount, // 총중량 × 단가
+                        amount: itemTotalAmount, // 할증 × 단가
                         remark: item.remark || ''
                     });
                 });
@@ -735,12 +752,13 @@
 
             subMaterialData.forEach((item, index) => {
                 const qty = parseFloat(item.quantity) || 0;
-                const weight = parseFloat(item.totalSteelWeight) || 0;
+                // 주기둥부재물량은 주기둥 총중량과 동일하게 표시
+                const weight = columnTotalWeight; // 주기둥 총중량 사용
                 const surcharge = parseFloat(item.surcharge) || 0;
                 const amount = parseFloat(item.amount) || 0;
 
                 subMaterialTotalQty += qty;
-                subMaterialTotalWeight += weight;
+                // 주기둥부재물량 합계는 각 행마다 주기둥 총중량을 더하는 것이 아니라, 마지막에 주기둥 총중량으로 설정
                 subMaterialTotalSurcharge += surcharge;
                 subMaterialTotalAmount += amount;
 
@@ -755,7 +773,7 @@
                     <td class="text-right">${parseFloat(weight.toFixed(2)).toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                     <td class="text-right">${parseFloat(surcharge.toFixed(2)).toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                     <td class="text-right">${plate3UnitPrice.toLocaleString()}</td>
-                    <td class="text-right">${amount > 0 ? amount.toLocaleString() : '-'}</td>
+                    <td class="text-right">${amount > 0 ? Math.round(amount).toLocaleString('ko-KR') : '-'}</td>
                     <td class="text-left" style="font-size: 11px; color: #666;">${item.remark || ''}</td>
                 `;
                 subMaterialTbody.appendChild(row);
@@ -768,11 +786,61 @@
             document.getElementById('subMaterialTotalSurchargeFooter').textContent = subMaterialTotalSurcharge > 0 ? parseFloat(subMaterialTotalSurcharge.toFixed(2)).toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0';
             // 소부재 단가 표시
             document.getElementById('subMaterialTotalUnitPriceFooter').textContent = plate3UnitPrice.toLocaleString();
-            document.getElementById('subMaterialTotalAmountFooter').textContent = subMaterialTotalAmount > 0 ? subMaterialTotalAmount.toLocaleString() + '원' : '-';
+            document.getElementById('subMaterialTotalAmountFooter').textContent = subMaterialTotalAmount > 0 ? Math.round(subMaterialTotalAmount).toLocaleString('ko-KR') + '원' : '-';
             
             // 총 금액 업데이트
             updateTotalAmount();
         }
+
+        // Auto Find Selection Table 생성
+        function generateAutoFindTable(autoFindResults) {
+            const tbody = document.getElementById('autoFindTableBody');
+            tbody.innerHTML = '';
+            
+            console.log('generateAutoFindTable 호출됨, autoFindResults:', autoFindResults);
+            
+            if (!autoFindResults || autoFindResults.length === 0) {
+                console.log('autoFindResults가 비어있음');
+                tbody.innerHTML = '<tr><td colspan="16" style="text-align: center; padding: 30px; color: #999;">Auto Find Selection 데이터가 없습니다.</td></tr>';
+                return;
+            }
+            
+            let rowNo = 1;
+            autoFindResults.forEach((result) => {
+                // 경고 메시지가 있는 경우 건너뛰기
+                if (result.warning) {
+                    console.log('경고 메시지가 있는 항목 건너뛰기:', result.name || result.no);
+                    return;
+                }
+                
+                console.log('행 추가:', rowNo, result.name || result.no, result);
+                
+                const currentRowNo = rowNo++;
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${currentRowNo}</td>
+                    <td class="text-left" style="font-weight: 600; color: #667eea;">${result.name || `KC${result.no}`}</td>
+                    <td class="text-right">${result.pu !== undefined && result.pu !== null ? result.pu.toFixed(2) : '-'}</td>
+                    <td class="text-right">${result.mux !== undefined && result.mux !== null ? result.mux.toFixed(2) : '-'}</td>
+                    <td class="text-right">${result.muy !== undefined && result.muy !== null ? result.muy.toFixed(2) : '-'}</td>
+                    <td class="text-right" style="${result.pmm > 1.0 ? 'color: #e53e3e; font-weight: 600;' : 'color: #38a169;'}">${result.pmm !== undefined && result.pmm !== null && result.pmm > 0 ? result.pmm.toFixed(2) : '-'}</td>
+                    <td>${result.steelGrade || '-'}</td>
+                    <td style="font-weight: 600; color: #667eea;">${result.combination || '-'}</td>
+                    <td>${result.h || '-'}</td>
+                    <td>${result.b || '-'}</td>
+                    <td>${result.tw || '-'}</td>
+                    <td>${result.tf || '-'}</td>
+                    <td class="text-right">${result.area !== undefined && result.area !== null ? result.area.toFixed(2) : '-'}</td>
+                    <td class="text-right">${result.unitWeight !== undefined && result.unitWeight !== null ? result.unitWeight.toFixed(2) : '-'}</td>
+                    <td class="text-right" style="color: #667eea; font-weight: 600;">${result.unitPrice !== undefined && result.unitPrice !== null ? result.unitPrice.toLocaleString('ko-KR') : '-'}</td>
+                    <td class="text-right" style="color: #38a169; font-weight: 600;">${result.costPerMeter !== undefined && result.costPerMeter !== null ? result.costPerMeter.toFixed(2) : '-'}</td>
+                `;
+                tbody.appendChild(row);
+            });
+            
+            console.log('generateAutoFindTable 완료, 추가된 행 수:', rowNo - 1);
+        }
+
 
         // CSV 다운로드
         function exportToCSV() {
@@ -787,7 +855,7 @@
 
             boqData.items.forEach((item, index) => {
                 const totalWeightItem = item.unitWeight * item.length * item.count;
-                csv += `${index + 1},"${item.names.join(', ')}",${item.combination},${item.h},${item.b},${item.tw},${item.tf},${item.area.toFixed(2)},${item.unitWeight.toFixed(4)},${item.length.toFixed(3)},Type${item.lengthType || ''},${item.count},${totalWeightItem.toFixed(2)},${item.steelGrade}\n`;
+                csv += `${index + 1},"${item.names.join(', ')}",${item.combination},${item.h},${item.b},${item.tw},${item.tf},${item.area.toFixed(2)},${item.unitWeight.toFixed(2)},${item.length.toFixed(2)},Type${item.lengthType || ''},${item.count},${totalWeightItem.toFixed(2)},${item.steelGrade}\n`;
             });
 
             // 총계 추가
