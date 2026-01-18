@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Slim-Box Web Support - SongDoPartners</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <style>
+        /* Override global styles for this page */
+        html, body {
+            overflow: auto !important;
+            overflow-x: hidden !important;
+            height: auto !important;
+            min-height: 100vh;
+        }
+
+        /* Slim-Box Web Support Page Styles */
+        .support-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .support-wrapper {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: visible;
+        }
+
+        .support-header {
+            background: linear-gradient(135deg, #1e3a5f, #2d5a87);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .support-header h1 {
+            font-size: 46.8px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            letter-spacing: -0.5px;
+        }
+
+        .support-header .subtitle {
+            font-size: 23.4px;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+
+        .support-header .home-link {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+
+        .support-header .home-link:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+
+        .support-content {
+            padding: 100px 40px;
+            text-align: center;
+        }
+
+        .coming-soon-message {
+            color: #718096;
+            font-size: 28.6px;
+            font-weight: 500;
+            margin-bottom: 30px;
+        }
+
+        .icon-large {
+            font-size: 120px;
+            margin-bottom: 30px;
+            opacity: 0.6;
+        }
+
+        @media (max-width: 768px) {
+            .support-header h1 {
+                font-size: 36px;
+            }
+
+            .coming-soon-message {
+                font-size: 24px;
+            }
+
+            .icon-large {
+                font-size: 80px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="support-container">
+        <div class="support-wrapper">
+            <div class="support-header">
+                <h1>📦 Slim-Box Web Support</h1>
+                <p class="subtitle">Slim-Box 웹 지원 시스템</p>
+                <a href="../index.html" class="home-link">🏠 홈으로 돌아가기</a>
+            </div>
+
+            <div class="support-content">
+                <div class="icon-large">🚧</div>
+                <p class="coming-soon-message">Slim-Box Web Support는 준비중입니다.</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

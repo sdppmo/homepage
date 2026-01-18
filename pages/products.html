@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Products - SongDoPartners</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <style>
+        html, body {
+            overflow: auto !important;
+            overflow-x: hidden !important;
+            height: auto !important;
+            min-height: 100vh;
+        }
+
+        .products-container {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            padding: 40px 20px;
+        }
+
+        .products-wrapper {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .products-header {
+            text-align: center;
+            color: white;
+            margin-bottom: 50px;
+        }
+
+        .products-header h1 {
+            font-size: 48.6px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            letter-spacing: -0.5px;
+        }
+
+        .products-header .subtitle {
+            font-size: 23.4px;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+
+        .products-header .home-link {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+
+        .products-header .home-link:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+
+        .product-panel {
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.3s, box-shadow 0.3s;
+            border: 2px solid #e2e8f0;
+        }
+
+        .product-panel:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+        }
+
+        .product-icon {
+            font-size: 64px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .product-title {
+            font-size: 32.4px;
+            font-weight: 700;
+            color: #1e3a5f;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .product-description {
+            font-size: 20.8px;
+            color: #4a5568;
+            line-height: 1.7;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .product-details {
+            background: #f7fafc;
+            border-radius: 12px;
+            padding: 25px;
+            margin-top: 20px;
+        }
+
+        .product-details ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .product-details li {
+            padding: 12px 0;
+            padding-left: 30px;
+            position: relative;
+            font-size: 20.8px;
+            color: #2d3748;
+            line-height: 1.6;
+        }
+
+        .product-details li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #667eea;
+            font-weight: bold;
+            font-size: 24px;
+        }
+
+        @media (max-width: 768px) {
+            .products-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .products-header h1 {
+                font-size: 36px;
+            }
+
+            .product-title {
+                font-size: 28px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="products-container">
+        <div class="products-wrapper">
+            <div class="products-header">
+                <h1>🏭 Products</h1>
+                <p class="subtitle">SongDoPartners 제품 소개</p>
+                <a href="../index.html" class="home-link">🏠 홈으로 돌아가기</a>
+            </div>
+
+            <div class="products-grid">
+                <!-- Panel 1: K-COL -->
+                <a href="k-col web software/k-col-user-guide.html" style="text-decoration: none; color: inherit;">
+                    <div class="product-panel" style="cursor: pointer;">
+                        <div class="product-icon">🏗️</div>
+                        <h2 class="product-title">K-COL</h2>
+                        <p class="product-description">
+                            K-COL은 Cross H형 강재 기둥 설계 및 제작 관리 시스템입니다. 
+                            TOP-DOWN 공법에 최적화된 구조 설계를 지원합니다.
+                        </p>
+                        <div class="product-details">
+                            <ul>
+                                <li>Cross H형 단면 설계</li>
+                                <li>TOP-DOWN 공법 지원</li>
+                                <li>구조 계산 자동화</li>
+                                <li>BOQ 산출 및 물량 관리</li>
+                                <li>공정 관리 시스템</li>
+                                <li>현장 Mapping 기능</li>
+                            </ul>
+                        </div>
+                    </div>
+                </a>
+
+                <!-- Panel 2: Slim-Box -->
+                <div class="product-panel">
+                    <div class="product-icon">📦</div>
+                    <h2 class="product-title">Slim-Box</h2>
+                    <p class="product-description">
+                        Slim-Box는 흙막이용 CIP에 설치되는 H형강을 강합성파일로 구조적성능을 발휘하기 위해 특별히 제작된 흙막이 가시설 파일입니다.
+                    </p>
+                    <div class="product-details">
+                        <ul>
+                            <li>흙막이용 CIP 설치 적용</li>
+                            <li>H형강 강합성파일 구조</li>
+                            <li>구조적 성능 향상</li>
+                            <li>가시설 파일 특수 제작</li>
+                            <li>지하공사 안정성 확보</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Panel 3: EX_Slim-Beam -->
+                <div class="product-panel">
+                    <div class="product-icon">🌉</div>
+                    <h2 class="product-title">EX_Slim-Beam</h2>
+                    <p class="product-description">
+                        EX_Slim-Beam은 확장 가능한 슬림 빔 구조로 대형 공간 설계에 최적화된 제품입니다. 
+                        긴 경간 구조에 효율적으로 적용할 수 있습니다.
+                    </p>
+                    <div class="product-details">
+                        <ul>
+                            <li>확장 가능한 설계</li>
+                            <li>대형 경간 지원</li>
+                            <li>슬림한 단면</li>
+                            <li>구조 효율성</li>
+                            <li>시공 용이성</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

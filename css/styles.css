@@ -224,6 +224,17 @@ a.nav-item:hover {
   background: #222;
 }
 
+/* 황금색 네비게이션 항목 */
+a.nav-item.gold {
+  color: #ffcc00;
+  background: linear-gradient(180deg, #1a2050 0%, #101535 100%);
+}
+
+a.nav-item.gold:hover {
+  color: #ffcc00;
+  background: linear-gradient(180deg, #252a60 0%, #1a1f45 100%);
+}
+
 /* Brochure Grid */
 .brochure-grid {
   display: grid;
@@ -272,6 +283,17 @@ a.brochure-btn:hover {
   background: linear-gradient(180deg, #ffd700 0%, #cc9900 100%);
   color: #000;
   font-weight: bold;
+}
+
+.brochure-btn.white {
+  background: linear-gradient(180deg, #1a1a2a 0%, #0a0a1a 100%);
+  color: #fff;
+  border: 1px solid #444;
+  font-weight: 600;
+}
+
+.brochure-btn.white:hover {
+  background: linear-gradient(180deg, #2a2a3a 0%, #1a1a2a 100%);
 }
 
 /* Product Logos - In bottom row, matches footer height */

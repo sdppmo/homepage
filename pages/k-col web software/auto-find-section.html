@@ -1370,13 +1370,22 @@
                     
                     const warningText = slenderWarning + compressiveWarning;
                     
+                    // 조합3 감지 (Rolled H)
+                    const comb3Names = ['H400×B200', 'H450×B200', 'H500×B200', 'H506×B201', 'H482×B300', 'H488×B300', 'H582×B300', 'H588×B300', 'H600×B200'];
+                    const isComb3 = result.combination && comb3Names.includes(result.combination);
+                    const combinationColor = isComb3 ? '#e53e3e' : '#667eea'; // 조합3은 빨간색, 그 외는 파란색
+                    
+                    // 강종 SM355 감지
+                    const isSM355 = result.steelGrade && (result.steelGrade === 'SM355' || result.steelGrade.includes('SM355'));
+                    const steelGradeColor = isSM355 ? '#e53e3e' : '#4a5568'; // SM355는 빨간색, 그 외는 기본 색상
+                    
                     row.innerHTML = `
                         <td style="text-align: center; font-weight: 600;">${result.no}</td>
                         <td style="font-weight: 600; color: #667eea;">${result.name}${warningText}</td>
                         <td style="text-align: right;">${result.pu.toFixed(1)}</td>
                         <td class="pmm-cell" style="text-align: right; ${result.pmm > 1.0 ? 'color: #e53e3e; font-weight: 600;' : 'color: #38a169;'}">${result.pmm > 0 ? result.pmm.toFixed(3) : '-'}</td>
-                        <td style="text-align: center;">${result.steelGrade}</td>
-                        <td style="text-align: center; font-weight: 600; color: #667eea;">${result.combination || '-'}</td>
+                        <td style="text-align: center; font-weight: 600; color: ${steelGradeColor};">${result.steelGrade}</td>
+                        <td style="text-align: center; font-weight: 600; color: ${combinationColor};">${result.combination || '-'}</td>
                         <td style="text-align: center;">${result.kx.toFixed(1)}</td>
                         <td style="text-align: right;">${result.lx.toFixed(1)}</td>
                         <td style="text-align: center;">${result.h}</td>
@@ -1831,6 +1840,7 @@
 
         // 소부재 추가 항목 데이터 저장
         let subMaterialItems = [];
+        let boqWindowRef = null; // BOQ 창 참조 저장
 
         // BOQ Type 개수 데이터를 엑셀로 다운로드
         function exportBOQTypeCountToExcel() {
@@ -2288,6 +2298,8 @@
 
         // 실제 BOQ 생성 함수 (길이 데이터 사용)
         function generateBOQWithLengths() {
+            // 기존 데이터 초기화
+            subMaterialItems = [];
 
             let totalWeight = 0;
             let totalArea = 0;
@@ -2322,7 +2334,11 @@
                             lengthType: type,
                             steelGrade: result.steelGrade,
                             count: 0,
-                            names: []
+                            names: [],
+                            H1: result.H1 || result.h,
+                            H2: result.H2 || result.h,
+                            B1: result.B1 || result.b,
+                            B2: result.B2 || result.b
                         };
                     }
                     groupedResults[key].count += count;
@@ -2377,10 +2393,15 @@
             };
             localStorage.setItem('boqData', JSON.stringify(boqData));
 
+            // 기존 BOQ 창이 있으면 닫기
+            if (boqWindowRef && !boqWindowRef.closed) {
+                boqWindowRef.close();
+            }
+
             // 새 창에서 BOQ 리포트 열기
-            const boqWindow = window.open('boq-report.html', '_blank', 'width=1400,height=900');
+            boqWindowRef = window.open('boq-report.html', '_blank', 'width=1400,height=900');
             
-            if (!boqWindow) {
+            if (!boqWindowRef) {
                 alert('팝업이 차단되었습니다. 팝업 차단을 해제하고 다시 시도해주세요.');
             }
 

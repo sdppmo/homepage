@@ -315,7 +315,7 @@
             </table>
             <!-- NOTE -->
             <div style="margin-top: 15px; padding: 12px 16px; background: #fffbf0; border-left: 4px solid #f6ad55; border-radius: 6px; font-size: 13px; color: #744210; line-height: 1.6;">
-                <strong>Note:</strong> 조정된 Plate 두께로 Auto Find Section 에 변경하면 BOQ가 최종적으로 완성됩니다.
+                <strong>Note:</strong> 조정된 Plate 두께는 두께통합설정내에 규칙이 존재하므로 신규 Auto Find Section을 원하면 <span style="color: #e53e3e; font-weight: 600;">두께통합설정내 규칙을 삭제하고 실행</span>하시기 바랍니다.
             </div>
         </div>
 
@@ -875,14 +875,31 @@
             const plateData = {}; // { "tw8-H1-Web": {...}, "tf13-H1-Flange": {...} }
             const steelDensity = 7850; // kg/m³
             
+            // 조합3(Rolled H) 제외: Built-UP 부재 물량 정리에서는 조합3을 빼고 처리
+            const comb3Names = ['H400×B200', 'H450×B200', 'H500×B200', 'H506×B201', 'H482×B300', 'H488×B300', 'H582×B300', 'H588×B300', 'H600×B200'];
+            const builtUpItemsOnly = items.filter(item => {
+                return !comb3Names.some(name => item.combination === name);
+            });
+            
             // 저장된 두께 통합 규칙 사용 (최신 값 로드)
             const thicknessMapping = JSON.parse(localStorage.getItem('thicknessMergeRules')) || {};
 
-            items.forEach(item => {
+            builtUpItemsOnly.forEach(item => {
+                // Auto Find Section에서 저장된 H1, H2, B1, B2 사용 (없으면 h, b 사용)
                 const H1 = item.H1 || item.h;
                 const H2 = item.H2 || item.h;
                 const B1 = item.B1 || item.b;
                 const B2 = item.B2 || item.b;
+                
+                // 디버깅: H1, H2, B1, B2 값 확인
+                if (!item.H1 || !item.H2 || !item.B1 || !item.B2) {
+                    console.warn('[BOQ Plate] H1/H2/B1/B2가 없어서 h/b 사용:', {
+                        name: item.names?.[0] || 'unknown',
+                        H1: item.H1, H2: item.H2, B1: item.B1, B2: item.B2,
+                        h: item.h, b: item.b,
+                        사용값: { H1, H2, B1, B2 }
+                    });
+                }
                 
                 // 원본 두께 저장
                 const originalTw1 = item.tw;
@@ -1064,7 +1081,10 @@
                 const steelGrade = plates[0].steelGrade;
                 
                 // 원본 두께 정보 수집 (매핑 전 두께)
-                const originalThicknesses = plates.map(p => p.originalThickness || p.thickness_mm).filter((t, i, arr) => arr.indexOf(t) === i);
+                // originalThickness 또는 originalThicknessValue를 사용
+                const originalThicknesses = plates.map(p => {
+                    return p.originalThickness || p.originalThicknessValue || p.thickness_mm;
+                }).filter((t, i, arr) => arr.indexOf(t) === i);
                 
                 // 원본 물량 합산 (통합 전 물량) - 각 Plate의 originalTotalWeight 합산
                 const originalTotalWeight = plates.reduce((sum, p) => sum + (p.originalTotalWeight || p.totalWeight), 0);
@@ -1141,8 +1161,10 @@
                     
                     // 원본 두께 목록에서 통합 규칙이 적용된 것 찾기
                     if (plate.originalThicknesses && plate.originalThicknesses.length > 0) {
+                        // originalThicknesses에서 현재 thickness_mm와 다른 것들 중, 통합 규칙에 해당하는 것 찾기
                         const appliedMerges = plate.originalThicknesses
-                            .filter(t => mergedFromThicknesses.includes(t) && t !== plate.thickness_mm);
+                            .filter(t => t !== plate.thickness_mm && mergedFromThicknesses.includes(t));
+                        
                         if (appliedMerges.length > 0) {
                             // 원본 물량과 통합 후 물량 비교
                             const originalWeight = plate.originalTotalWeight || plate.totalWeight;
@@ -1157,6 +1179,9 @@
                                 mergeNote = appliedMerges.map(t => `${t}mm → ${plate.thickness_mm}mm`).join(', ') + 
                                     ` (원본: ${parseFloat(originalWeight.toFixed(2)).toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}kg)`;
                             }
+                        } else if (mergedFromThicknesses.length > 0) {
+                            // originalThicknesses에 없지만 통합 규칙이 있는 경우 (다른 두께가 같은 두께로 통합된 경우)
+                            mergeNote = mergedFromThicknesses.map(t => `${t}mm → ${plate.thickness_mm}mm`).join(', ');
                         }
                     } else if (mergedFromThicknesses.length > 0) {
                         // originalThicknesses가 없으면 통합 규칙만으로 표시
@@ -1165,7 +1190,20 @@
                 }
                 
                 // 비고 컬럼에 통합 정보와 후판주문 정보 모두 표시
-                const noteText = [mergeNote, note].filter(n => n).join(' | ');
+                const noteParts = [mergeNote, note].filter(n => n);
+                let noteTextHtml = noteParts.join(' | ');
+                
+                // 후판주문을 빨간색으로 표시
+                if (note === '후판주문') {
+                    noteTextHtml = noteParts.map(part => {
+                        if (part === '후판주문') {
+                            return `<span style="color: #e53e3e; font-weight: 600;">${part}</span>`;
+                        }
+                        return part;
+                    }).join(' | ');
+                }
+                
+                const noteTextColor = noteTextHtml ? (note === '후판주문' ? '#4a5568' : '#4a5568') : '#666';
 
                 const row = document.createElement('tr');
                 row.innerHTML = `
@@ -1179,22 +1217,23 @@
                     <td>${plate.totalCount}</td>
                     <td class="text-right">${parseFloat(plate.totalWeight.toFixed(2)).toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                     <td>${plate.steelGrade}</td>
-                    <td class="text-left" style="color: ${noteText ? '#4a5568' : '#666'}; font-weight: ${mergeNote ? '600' : 'normal'}; font-size: ${mergeNote ? '12px' : '11px'}; line-height: 1.5;">${noteText || '-'}</td>
+                    <td class="text-left" style="color: ${noteTextColor}; font-weight: ${mergeNote ? '600' : 'normal'}; font-size: ${mergeNote ? '12px' : '11px'}; line-height: 1.5;">${noteTextHtml || '-'}</td>
                 `;
                 plateTbody.appendChild(row);
             });
 
             // Plate 합계에 대한 노트 (전체 합계가 25톤 미만인 경우)
-            // 주기둥 총중량 가져오기 (1번 기둥 물량 정리 테이블의 합계)
-            const columnTotalWeightText = document.getElementById('totalWeightFooter').textContent || '0';
-            const columnTotalWeight = parseFloat(columnTotalWeightText.replace(/[^0-9.]/g, '')) || 0;
+            // Built-UP 항목만의 총중량 계산 (조합3 제외)
+            const builtUpTotalWeight = builtUpItemsOnly.reduce((sum, item) => {
+                return sum + (item.unitWeight * item.length * item.count);
+            }, 0);
             
-            // 주기둥 총중량을 Plate 총중량으로 사용 (1번과 동일하게)
-            const plateTotalWeightForDisplay = columnTotalWeight;
+            // Built-UP 항목만의 총중량을 Plate 총중량으로 사용 (조합3 제외)
+            const plateTotalWeightForDisplay = builtUpTotalWeight;
             const totalWeightInTon = plateTotalWeightForDisplay / 1000;
             const totalNote = totalWeightInTon < 25 ? '후판주문' : '';
 
-            // Plate 합계 표시 (주기둥 총중량과 동일)
+            // Plate 합계 표시 (Built-UP 항목만의 총중량)
             document.getElementById('plateTotalCountFooter').textContent = plateTotalCount;
             document.getElementById('plateTotalWeightFooter').textContent = parseFloat(plateTotalWeightForDisplay.toFixed(2)).toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
             document.getElementById('plateTotalNoteFooter').textContent = totalNote;
@@ -1203,8 +1242,8 @@
                 document.getElementById('plateTotalNoteFooter').style.fontWeight = '600';
             }
 
-            // 소부재 물량 정리 생성
-            generateSubMaterialBOQ(items);
+            // 소부재 물량 정리 생성 (조합3 제외된 Built-UP 항목만)
+            generateSubMaterialBOQ(builtUpItemsOnly);
             
             // 기둥 TYPE별 길이 테이블 생성
             console.log('loadBOQData - boqData.typeLengths:', boqData.typeLengths);
@@ -1384,7 +1423,7 @@
             const surchargeRate = 0.15; // 할증률 15%
 
             // 전체 철골 물량 계산 (기둥 + Plate)
-            // 기둥 물량: 기둥 물량 정리 테이블의 합계 사용 (모든 비숫자 문자 제거 후 파싱)
+            // 기둥 물량: 1번 기둥 물량 정리 테이블의 합계 사용 (조합3 포함 전체)
             const columnTotalWeightText = document.getElementById('totalWeightFooter').textContent || '0';
             const columnTotalWeight = parseFloat(columnTotalWeightText.replace(/[^0-9.]/g, '')) || 0;
             
