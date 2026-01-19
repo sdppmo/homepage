@@ -347,13 +347,14 @@ a.brochure-btn:hover {
 }
 
 /* Background Image - Covers entire right pane */
+/* WebP: 984KB vs original 9.8MB PNG (90% smaller, full 2816×1536 resolution) */
 .bg-image {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: url('../assets/images/background_vessel_nyc.png') center center no-repeat;
+  background: url('../assets/images/background_vessel_nyc.webp') center center no-repeat;
   background-size: cover;
   z-index: 0;
 }

@@ -212,3 +212,4 @@ __marimo__/
 
 # SENSITIVE - Admin folder with credentials (NEVER commit)
 admin/
+assets/images/*_original.*

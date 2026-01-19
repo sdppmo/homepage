@@ -32,3 +32,10 @@ Thumbs.db
 # Logs
 *.log
 logs/
+
+# Image backups and fallbacks (WebP only in production)
+**/*_original.*
+**/*_original.png
+assets/images/background_vessel_nyc.jpg
+assets/images/background_vessel_nyc.png
+assets/images/background_vessel_nyc_original.png
