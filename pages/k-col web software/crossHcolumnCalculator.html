@@ -2283,12 +2283,44 @@
         }
 
         // 엑셀 파일에서 기둥번호 가져오기 (기둥번호만 업데이트)
-        function importColumnNumbersFromExcel(event) {
+        async function importColumnNumbersFromExcel(event) {
             const file = event.target.files[0];
             if (!file) return;
             
-            // XLSX 라이브러리 확인
-            const XLSXLib = window.XLSX || (typeof XLSX !== 'undefined' ? XLSX : null);
+            // XLSX 라이브러리 확인 및 대기
+            let XLSXLib = window.XLSX || (typeof XLSX !== 'undefined' ? XLSX : null);
+            
+            if (!XLSXLib || typeof XLSXLib.read === 'undefined') {
+                // 라이브러리 로드 시도 (백업)
+                console.log('XLSX 라이브러리 로드 중...');
+                try {
+                    // 직접 스크립트 로드
+                    await new Promise((resolve, reject) => {
+                        const script = document.createElement('script');
+                        script.src = 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
+                        script.onload = function() {
+                            setTimeout(function() {
+                                if (typeof XLSX !== 'undefined' && window.XLSX && window.XLSX.utils) {
+                                    console.log('XLSX 라이브러리 로드 성공');
+                                    XLSXLib = window.XLSX;
+                                    resolve();
+                                } else {
+                                    reject(new Error('XLSX 객체를 찾을 수 없습니다.'));
+                                }
+                            }, 100);
+                        };
+                        script.onerror = function() {
+                            reject(new Error('스크립트 로드 실패'));
+                        };
+                        document.head.appendChild(script);
+                    });
+                } catch (loadError) {
+                    console.error('XLSX 라이브러리 로드 실패:', loadError);
+                    alert('엑셀 라이브러리를 로드할 수 없습니다.\n\n해결 방법:\n1. 인터넷 연결을 확인해주세요\n2. 브라우저 캐시를 삭제하고 페이지를 새로고침해주세요 (Ctrl+Shift+R)\n3. 브라우저 콘솔(F12)에서 자세한 오류를 확인해주세요\n4. 방화벽이나 보안 프로그램이 CDN 접근을 차단하지 않는지 확인해주세요');
+                    return;
+                }
+            }
+            
             if (!XLSXLib || typeof XLSXLib.read === 'undefined') {
                 alert('엑셀 라이브러리가 로드되지 않았습니다.\n\n해결 방법:\n1. 페이지를 새로고침해주세요 (F5 또는 Ctrl+R)\n2. 인터넷 연결을 확인해주세요');
                 console.error('XLSX is not defined for importColumnNumbersFromExcel');
@@ -3025,20 +3057,40 @@
             const phi_Vny = phi_vw * Vny;
             const phi_Vnx = phi_vw * Vnx;
 
-            // ===== 비율 계산 =====
-            const ratio_comp = Pu / phi_Pn;
-            const ratio_bendX = phi_Mnx > 0 ? Mux / phi_Mnx : 0;
-            const ratio_bendY = phi_Mny > 0 ? Muy / phi_Mny : 0;
+            // ===== 비율 계산 (Auto Find Section과 완전히 동일한 공식) =====
+            // Auto Find Section: ratio_comp=Pu/phi_Pn, ratio_bendX=phi_Mnx>0?Mux/phi_Mnx:0, ratio_bendY=phi_Mny>0?Muy/phi_Mny:0
+            // Auto Find Section: ratio_pmm=ratio_comp>=0.2?ratio_comp+8/9*(ratio_bendX+ratio_bendY):ratio_comp/2+ratio_bendX+ratio_bendY
+            const ratio_comp = Pu/phi_Pn;
+            const ratio_bendX = phi_Mnx>0?Mux/phi_Mnx:0;
+            const ratio_bendY = phi_Mny>0?Muy/phi_Mny:0;
             const ratio_shearX = phi_Vnx > 0 ? Vux / phi_Vnx : 0;
             const ratio_shearY = phi_Vny > 0 ? Vuy / phi_Vny : 0;
 
-            // P-M-M 조합
-            let ratio_pmm;
-            if (ratio_comp >= 0.2) {
-                ratio_pmm = ratio_comp + (8/9) * (ratio_bendX + ratio_bendY);
-            } else {
-                ratio_pmm = ratio_comp / 2 + (ratio_bendX + ratio_bendY);
-            }
+            // P-M-M 조합 (Auto Find Section과 동일한 삼항 연산자 형식)
+            const ratio_pmm = ratio_comp>=0.2?ratio_comp+8/9*(ratio_bendX+ratio_bendY):ratio_comp/2+ratio_bendX+ratio_bendY;
+
+            // 디버깅: 간편계산식 PMM 계산 상세 로그 (Auto Find Section과 비교용)
+            console.log('=== 간편계산식 PMM 계산 상세 (Auto Find Section과 비교용) ===');
+            console.log(`area: ${area.toFixed(2)} (ag1=${ag1}, ag2=${ag2}, ag3=${ag3}, ag4=${ag4}, ag5=${ag5}, ag6=${ag6}, ag7=${ag7.toFixed(2)}, ag8=${ag8.toFixed(2)}, ag9=${ag9})`);
+            console.log(`Ix: ${Ix.toFixed(2)} (Ix1=${Ix1.toFixed(2)}, Ix2=${Ix2.toFixed(2)}, Ix3=${Ix3.toFixed(2)}, Ix4=${Ix4.toFixed(2)}, Ix5=${Ix5.toFixed(2)}, Ix6=${Ix6.toFixed(2)})`);
+            console.log(`Iy: ${Iy.toFixed(2)} (Iy1=${Iy1.toFixed(2)}, Iy2=${Iy2.toFixed(2)}, Iy3=${Iy3.toFixed(2)}, Iy4=${Iy4.toFixed(2)}, Iy5=${Iy5.toFixed(2)}, Iy6=${Iy6.toFixed(2)})`);
+            console.log(`sx: ${sx.toFixed(2)}, sy: ${sy.toFixed(2)}`);
+            console.log(`zx: ${zx.toFixed(2)} (Zx1=${Zx1.toFixed(2)}, Zx2=${Zx2.toFixed(2)}, Zx3=${Zx3.toFixed(2)}, Zx4=${Zx4.toFixed(2)}, Zx5=${Zx5.toFixed(2)}, Zx6=${Zx6.toFixed(2)})`);
+            console.log(`zy: ${zy.toFixed(2)} (Zy1=${Zy1.toFixed(2)}, Zy2=${Zy2.toFixed(2)}, Zy3=${Zy3.toFixed(2)}, Zy4=${Zy4.toFixed(2)}, Zy5=${Zy5.toFixed(2)}, Zy6=${Zy6.toFixed(2)})`);
+            console.log(`J: ${J.toFixed(2)} (J1=${J1.toFixed(2)}, J2=${J2.toFixed(2)})`);
+            console.log(`cw: ${cw.toFixed(2)}`);
+            console.log(`lambda: ${lambda.toFixed(4)} (lambdaX=${lambdaX.toFixed(4)}, lambdaY=${lambdaY.toFixed(4)})`);
+            console.log(`Fe1: ${Fe1.toFixed(2)}, Fe2: ${Fe2.toFixed(2)}, Fe: ${Fe.toFixed(2)}`);
+            console.log(`Fcr: ${Fcr.toFixed(2)}`);
+            console.log(`phi_Pn: ${phi_Pn.toFixed(4)} (phi_c=${phi_c}, area=${area.toFixed(2)}, Fcr=${Fcr.toFixed(2)})`);
+            console.log(`Mpx: ${Mpx.toFixed(6)}, Mpy: ${Mpy.toFixed(6)}`);
+            console.log(`phi_Mnx: ${phi_Mnx.toFixed(6)} (phi_b=${phi_b}, Mpx=${Mpx.toFixed(6)}), phi_Mny: ${phi_Mny.toFixed(6)} (phi_b=${phi_b}, Mpy=${Mpy.toFixed(6)})`);
+            console.log(`Pu: ${Pu}, Mux: ${Mux}, Muy: ${Muy}`);
+            console.log(`ratio_comp: ${ratio_comp.toFixed(6)} (Pu=${Pu}/phi_Pn=${phi_Pn.toFixed(4)})`);
+            console.log(`ratio_bendX: ${ratio_bendX.toFixed(6)} (Mux=${Mux}/phi_Mnx=${phi_Mnx.toFixed(6)}), ratio_bendY: ${ratio_bendY.toFixed(6)} (Muy=${Muy}/phi_Mny=${phi_Mny.toFixed(6)})`);
+            console.log(`8/9: ${(8/9).toFixed(10)}`);
+            console.log(`8/9*(rBendX+rBendY): ${(8/9*(ratio_bendX+ratio_bendY)).toFixed(6)}`);
+            console.log(`P-M-M: ${ratio_pmm.toFixed(6)} (조건: ratio_comp>=0.2? ${ratio_comp>=0.2})`);
 
             // ===== 결과 업데이트 =====
             // 단면적 표시 (실시간 계산 함수 호출)
