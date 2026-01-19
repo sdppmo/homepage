@@ -262,24 +262,75 @@
         }
     </style>
     <!-- SheetJS for Excel file handling -->
-    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script>
-        // XLSX 라이브러리 로드 확인
-        window.addEventListener('load', function() {
-            if (typeof XLSX === 'undefined') {
-                console.error('XLSX 라이브러리 로드 실패 - 대체 CDN 시도');
-                // 대체 CDN 로드
-                const script = document.createElement('script');
-                script.src = 'https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js';
-                script.onerror = function() {
-                    console.error('모든 XLSX CDN 로드 실패');
-                    alert('엑셀 라이브러리 로드에 실패했습니다. 인터넷 연결을 확인하거나 페이지를 새로고침해주세요.');
-                };
-                document.head.appendChild(script);
-            } else {
-                console.log('XLSX 라이브러리 로드 성공');
-            }
-        });
+        // XLSX 라이브러리 로드 함수
+        function loadXLSXLibrary() {
+            return new Promise((resolve, reject) => {
+                // 이미 로드되어 있는지 확인
+                if (typeof XLSX !== 'undefined' && window.XLSX && window.XLSX.utils) {
+                    console.log('XLSX 라이브러리가 이미 로드되어 있습니다.');
+                    resolve(window.XLSX);
+                    return;
+                }
+
+                // CDN 목록 (우선순위 순서)
+                const cdnUrls = [
+                    'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js',
+                    'https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js',
+                    'https://cdn.sheetjs.com/xlsx-0.18.5/package/dist/xlsx.full.min.js'
+                ];
+
+                let currentIndex = 0;
+
+                function tryLoadNext() {
+                    if (currentIndex >= cdnUrls.length) {
+                        reject(new Error('모든 CDN에서 XLSX 라이브러리를 로드할 수 없습니다.'));
+                        return;
+                    }
+
+                    const script = document.createElement('script');
+                    script.src = cdnUrls[currentIndex];
+                    script.async = true;
+
+                    script.onload = function() {
+                        // 로드 완료 후 확인
+                        if (typeof XLSX !== 'undefined' && window.XLSX && window.XLSX.utils) {
+                            console.log('XLSX 라이브러리 로드 성공:', cdnUrls[currentIndex]);
+                            window.XLSX = window.XLSX || XLSX; // 전역 객체로 설정
+                            resolve(window.XLSX);
+                        } else {
+                            console.warn('스크립트는 로드되었지만 XLSX 객체를 찾을 수 없습니다.');
+                            currentIndex++;
+                            tryLoadNext();
+                        }
+                    };
+
+                    script.onerror = function() {
+                        console.warn('CDN 로드 실패:', cdnUrls[currentIndex]);
+                        currentIndex++;
+                        tryLoadNext();
+                    };
+
+                    document.head.appendChild(script);
+                }
+
+                tryLoadNext();
+            });
+        }
+
+        // 페이지 로드 시 라이브러리 로드
+        let xlsxLoadPromise = null;
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', function() {
+                xlsxLoadPromise = loadXLSXLibrary().catch(function(error) {
+                    console.error('XLSX 라이브러리 로드 실패:', error);
+                });
+            });
+        } else {
+            xlsxLoadPromise = loadXLSXLibrary().catch(function(error) {
+                console.error('XLSX 라이브러리 로드 실패:', error);
+            });
+        }
     </script>
 </head>
 <body>
@@ -377,7 +428,7 @@
                             📥 엑셀 다운로드
                         </button>
                         <label for="excelFileInput" style="padding: 6px 12px; background: #667eea; color: white; border-radius: 4px; cursor: pointer; font-size: 13px; display: inline-block;">
-                            📤 엑셀 업로드
+                            📤 하중 엑셀 업로드
                         </label>
                         <input type="file" id="excelFileInput" accept=".xlsx,.xls" style="display: none;" onchange="importLoadFromExcel(event)">
                     </div>
@@ -629,10 +680,50 @@
         }
 
         // 하중 입력 데이터를 엑셀로 다운로드
-        function exportLoadToExcel() {
+        async function exportLoadToExcel() {
             try {
-                // XLSX 라이브러리 확인 (window.XLSX 또는 전역 XLSX)
-                const XLSXLib = window.XLSX || (typeof XLSX !== 'undefined' ? XLSX : null);
+                // XLSX 라이브러리 로드 확인 및 대기
+                let XLSXLib = window.XLSX || (typeof XLSX !== 'undefined' ? XLSX : null);
+                
+                if (!XLSXLib || typeof XLSXLib.utils === 'undefined') {
+                    // 라이브러리 로드 시도
+                    console.log('XLSX 라이브러리 로드 중...');
+                    
+                    try {
+                        // loadXLSXLibrary 함수가 있으면 사용
+                        if (typeof loadXLSXLibrary === 'function') {
+                            XLSXLib = await loadXLSXLibrary();
+                        } else {
+                            // 직접 로드 시도
+                            const script = document.createElement('script');
+                            script.src = 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
+                            script.async = false; // 동기 로드로 변경
+                            document.head.appendChild(script);
+                            
+                            // 로드 완료 대기 (최대 5초)
+                            await new Promise((resolve, reject) => {
+                                let attempts = 0;
+                                const checkInterval = setInterval(() => {
+                                    attempts++;
+                                    if (typeof XLSX !== 'undefined' && window.XLSX && window.XLSX.utils) {
+                                        clearInterval(checkInterval);
+                                        XLSXLib = window.XLSX;
+                                        resolve();
+                                    } else if (attempts > 50) { // 5초 대기
+                                        clearInterval(checkInterval);
+                                        reject(new Error('라이브러리 로드 타임아웃'));
+                                    }
+                                }, 100);
+                            });
+                        }
+                    } catch (loadError) {
+                        console.error('XLSX 라이브러리 로드 실패:', loadError);
+                        alert('엑셀 라이브러리를 로드할 수 없습니다.\n\n해결 방법:\n1. 인터넷 연결을 확인해주세요\n2. 브라우저 캐시를 삭제하고 페이지를 새로고침해주세요 (Ctrl+Shift+R)\n3. 브라우저 콘솔(F12)에서 자세한 오류를 확인해주세요\n4. 방화벽이나 보안 프로그램이 CDN 접근을 차단하지 않는지 확인해주세요');
+                        return;
+                    }
+                }
+                
+                // 최종 확인
                 if (!XLSXLib || typeof XLSXLib.utils === 'undefined') {
                     alert('엑셀 라이브러리가 로드되지 않았습니다.\n\n해결 방법:\n1. 페이지를 새로고침해주세요 (F5 또는 Ctrl+R)\n2. 인터넷 연결을 확인해주세요\n3. 브라우저 콘솔(F12)에서 오류를 확인해주세요');
                     console.error('XLSX is not defined. window.XLSX:', window.XLSX, 'typeof XLSX:', typeof XLSX);
@@ -700,28 +791,112 @@
                 
                 // Blob 방식으로 엑셀 파일 다운로드 (더 안정적)
                 try {
+                    // 워크북을 배열로 변환
+                    if (!XLSXLib.write) {
+                        throw new Error('XLSX.write 함수를 사용할 수 없습니다. 라이브러리가 올바르게 로드되지 않았습니다.');
+                    }
+                    
                     const wbout = XLSXLib.write(wb, { bookType: 'xlsx', type: 'array', cellStyles: false });
+                    
+                    if (!wbout || wbout.length === 0) {
+                        throw new Error('엑셀 파일 데이터 생성에 실패했습니다.');
+                    }
+                    
+                    // Blob 생성
+                    if (typeof Blob === 'undefined') {
+                        throw new Error('Blob을 지원하지 않는 브라우저입니다. 최신 브라우저를 사용해주세요.');
+                    }
+                    
                     const blob = new Blob([wbout], { 
                         type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
                     });
+                    
+                    if (!blob || blob.size === 0) {
+                        throw new Error('엑셀 파일 생성에 실패했습니다. (파일 크기 0)');
+                    }
+                    
+                    // 다운로드 링크 생성 및 실행
+                    if (typeof URL === 'undefined' || typeof URL.createObjectURL === 'undefined') {
+                        throw new Error('URL.createObjectURL을 지원하지 않는 브라우저입니다.');
+                    }
+                    
+                    // 팝업 차단을 피하기 위한 다운로드 방법
                     const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = fileName;
-                    document.body.appendChild(a);
-                    a.click();
-                    setTimeout(() => {
-                        document.body.removeChild(a);
-                        URL.revokeObjectURL(url);
-                    }, 100);
+                    
+                    try {
+                        // 방법 1: 직접 링크 클릭 (가장 안전)
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = fileName;
+                        a.style.display = 'none';
+                        
+                        // DOM에 추가 (일부 브라우저에서 필요)
+                        document.body.appendChild(a);
+                        
+                        // 사용자 상호작용 컨텍스트 내에서 실행
+                        a.click();
+                        
+                        // 정리
+                        setTimeout(() => {
+                            try {
+                                document.body.removeChild(a);
+                            } catch (e) {
+                                // 이미 제거되었을 수 있음
+                            }
+                            setTimeout(() => {
+                                URL.revokeObjectURL(url);
+                            }, 1000);
+                        }, 100);
+                        
+                        alert(`하중 입력 데이터가 "${fileName}" 파일로 다운로드되었습니다.\n\n파일 크기: ${(blob.size / 1024).toFixed(2)} KB\n\n팝업이 차단된 경우 브라우저 주소창 옆 팝업 차단 아이콘을 클릭하여 허용해주세요.`);
+                    } catch (clickError) {
+                        // 방법 2: window.open 사용 (대체 방법)
+                        console.warn('a.click() 실패, window.open 시도:', clickError);
+                        const newWindow = window.open(url, '_blank');
+                        if (newWindow) {
+                            alert(`하중 입력 데이터 다운로드를 시작했습니다.\n\n파일명: ${fileName}\n파일 크기: ${(blob.size / 1024).toFixed(2)} KB\n\n새 창이 열리면 파일을 저장해주세요.`);
+                            setTimeout(() => {
+                                URL.revokeObjectURL(url);
+                            }, 1000);
+                        } else {
+                            // 방법 3: 사용자에게 직접 다운로드 링크 제공
+                            const downloadMsg = `팝업이 차단되었습니다.\n\n다음 링크를 클릭하거나 우클릭하여 "다른 이름으로 저장"을 선택해주세요:\n\n파일명: ${fileName}\n파일 크기: ${(blob.size / 1024).toFixed(2)} KB`;
+                            alert(downloadMsg);
+                            
+                            // 화면에 다운로드 링크 표시
+                            const linkDiv = document.createElement('div');
+                            linkDiv.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:white;padding:20px;border:2px solid #667eea;border-radius:8px;z-index:10000;box-shadow:0 4px 12px rgba(0,0,0,0.3);';
+                            linkDiv.innerHTML = `
+                                <h3 style="margin:0 0 10px 0;color:#1e3a5f;">파일 다운로드</h3>
+                                <p style="margin:0 0 15px 0;color:#666;">팝업이 차단되었습니다. 아래 링크를 클릭하거나 우클릭하여 저장해주세요:</p>
+                                <a href="${url}" download="${fileName}" style="display:inline-block;padding:10px 20px;background:#667eea;color:white;text-decoration:none;border-radius:4px;margin-right:10px;">${fileName} 다운로드</a>
+                                <button onclick="this.parentElement.remove(); URL.revokeObjectURL('${url}');" style="padding:10px 20px;background:#999;color:white;border:none;border-radius:4px;cursor:pointer;">닫기</button>
+                            `;
+                            document.body.appendChild(linkDiv);
+                            
+                            // 30초 후 자동 정리
+                            setTimeout(() => {
+                                if (document.body.contains(linkDiv)) {
+                                    linkDiv.remove();
+                                    URL.revokeObjectURL(url);
+                                }
+                            }, 30000);
+                        }
+                    }
                 } catch (writeError) {
                     console.error('파일 생성 오류:', writeError);
+                    const errorMsg = writeError.message || String(writeError);
+                    alert(`엑셀 파일 다운로드 중 오류가 발생했습니다.\n\n오류 내용: ${errorMsg}\n\n해결 방법:\n1. 페이지를 새로고침해주세요 (F5)\n2. 브라우저 콘솔(F12)에서 자세한 오류를 확인해주세요\n3. 다른 브라우저에서 시도해보세요`);
                     throw writeError;
                 }
-                alert(`하중 입력 데이터가 "${fileName}" 파일로 다운로드되었습니다.`);
             } catch (error) {
                 console.error('엑셀 다운로드 오류:', error);
-                alert('엑셀 다운로드 중 오류가 발생했습니다: ' + (error.message || String(error)));
+                const errorMsg = error.message || String(error);
+                
+                // 에러 메시지가 이미 표시되었는지 확인
+                if (!error.message || !error.message.includes('엑셀 파일 다운로드')) {
+                    alert(`엑셀 다운로드 중 오류가 발생했습니다.\n\n오류 내용: ${errorMsg}\n\n해결 방법:\n1. 페이지를 새로고침해주세요 (F5 또는 Ctrl+R)\n2. 인터넷 연결을 확인해주세요\n3. 브라우저 콘솔(F12)에서 자세한 오류를 확인해주세요\n4. 하중 데이터를 다시 입력한 후 시도해주세요`);
+                }
             }
         }
 
@@ -809,8 +984,348 @@
             reader.readAsArrayBuffer(file);
             
             // 파일 입력 초기화 (같은 파일 다시 선택 가능하도록)
+        }
+
+        // 엑셀 파일에서 기둥번호 가져오기 (기둥번호만 업데이트)
+        function importColumnNumbersFromExcel(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            // XLSX 라이브러리 확인
+            const XLSXLib = window.XLSX || (typeof XLSX !== 'undefined' ? XLSX : null);
+            if (!XLSXLib || typeof XLSXLib.read === 'undefined') {
+                alert('엑셀 라이브러리가 로드되지 않았습니다.\n\n해결 방법:\n1. 페이지를 새로고침해주세요 (F5 또는 Ctrl+R)\n2. 인터넷 연결을 확인해주세요');
+                console.error('XLSX is not defined for importColumnNumbersFromExcel');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSXLib.read(data, { type: 'array' });
+                    
+                    // 첫 번째 시트 사용
+                    const firstSheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[firstSheetName];
+                    
+                    // JSON으로 변환
+                    const jsonData = XLSXLib.utils.sheet_to_json(worksheet, { header: 1, defval: '' });
+                    
+                    if (jsonData.length < 2) {
+                        alert('엑셀 파일에 데이터가 없습니다. 헤더 행과 최소 1개의 데이터 행이 필요합니다.\n\n엑셀 형식:\n- No. (또는 번호)\n- 기둥번호 (또는 기둥이름, 기둥명)');
+                        return;
+                    }
+                    
+                    // 헤더 확인 (첫 번째 행)
+                    const headers = jsonData[0].map(h => String(h).toLowerCase().trim());
+                    const noIdx = headers.findIndex(h => h.includes('no') || h.includes('번호'));
+                    const nameIdx = headers.findIndex(h => h.includes('기둥') || h.includes('name') || h.includes('이름') || h.includes('명'));
+                    
+                    // 좌표 컬럼 찾기 (여러 가능한 이름 지원)
+                    const xIdx = headers.findIndex(h => h.includes('x') || h.includes('가로') || h.includes('left') || h.includes('좌표x'));
+                    const yIdx = headers.findIndex(h => (h.includes('y') || h.includes('세로') || h.includes('top') || h.includes('좌표y')) && !h.includes('type'));
+                    
+                    if (nameIdx === -1) {
+                        alert('엑셀 파일에 "기둥번호" 또는 "기둥이름" 컬럼이 없습니다.\n\n필수 컬럼:\n- 기둥번호 (또는 기둥이름, 기둥명)\n\n선택 컬럼:\n- No. (또는 번호)\n- X 좌표 (또는 X, 가로, Left, 좌표X) - 퍼센트 값(%)\n- Y 좌표 (또는 Y, 세로, Top, 좌표Y) - 퍼센트 값(%)\n\n엑셀 형식 예시:\nNo. | 기둥번호 | X 좌표(%) | Y 좌표(%)\n1   | KC1     | 25.5      | 30.2\n2   | KC2     | 45.3      | 28.7');
+                        return;
+                    }
+                    
+                    // 데이터 파싱
+                    const importedColumnNumbers = [];
+                    // 기존 좌표 데이터 불러오기 (있는 경우)
+                    let columnCoordinates = {};
+                    try {
+                        const savedCoords = localStorage.getItem('columnCoordinates');
+                        if (savedCoords) {
+                            columnCoordinates = JSON.parse(savedCoords);
+                        }
+                    } catch (e) {
+                        console.warn('기존 좌표 데이터 로드 실패:', e);
+                    }
+                    let hasCoordinates = false;
+                    
+                    for (let i = 1; i < jsonData.length; i++) {
+                        const row = jsonData[i];
+                        if (!row || row.length === 0) continue;
+                        
+                        const no = noIdx !== -1 ? (parseInt(row[noIdx]) || i) : i;
+                        const name = nameIdx !== -1 ? String(row[nameIdx] || '').trim() : '';
+                        
+                        if (name) {
+                            const imported = { no, name };
+                            
+                            // 좌표가 있으면 추가
+                            if (xIdx !== -1 && yIdx !== -1) {
+                                const x = parseFloat(row[xIdx]);
+                                const y = parseFloat(row[yIdx]);
+                                
+                                if (!isNaN(x) && !isNaN(y)) {
+                                    // 좌표 저장 (퍼센트 값으로 저장, 0-100 범위)
+                                    const coordX = Math.max(0, Math.min(100, x));
+                                    const coordY = Math.max(0, Math.min(100, y));
+                                    
+                                    imported.x = coordX;
+                                    imported.y = coordY;
+                                    columnCoordinates[name] = {
+                                        left: coordX,
+                                        top: coordY
+                                    };
+                                    hasCoordinates = true;
+                                }
+                            }
+                            
+                            importedColumnNumbers.push(imported);
+                        }
+                    }
+                    
+                    // 좌표가 있으면 localStorage에 저장
+                    if (hasCoordinates) {
+                        localStorage.setItem('columnCoordinates', JSON.stringify(columnCoordinates));
+                    }
+                    
+                    if (importedColumnNumbers.length === 0) {
+                        alert('엑셀 파일에서 유효한 기둥번호를 찾을 수 없습니다.');
+                        return;
+                    }
+                    
+                    // columnData 업데이트 (기둥번호만 변경, 기존 하중 데이터는 유지)
+                    let updatedCount = 0;
+                    importedColumnNumbers.forEach(imported => {
+                        // no로 찾기
+                        const col = columnData.find(c => c.no === imported.no);
+                        if (col) {
+                            col.name = imported.name;
+                            updatedCount++;
+                        } else {
+                            // no가 없으면 순서대로 할당
+                            if (columnData.length > 0) {
+                                // 기존 데이터가 있으면 빈 슬롯 찾기 또는 새로 추가
+                                if (imported.no <= columnData.length) {
+                                    columnData[imported.no - 1].name = imported.name;
+                                    updatedCount++;
+                                } else {
+                                    // 새로 추가
+                                    columnData.push({
+                                        no: imported.no,
+                                        name: imported.name,
+                                        pu: 0,
+                                        mux: 0,
+                                        muy: 0
+                                    });
+                                    updatedCount++;
+                                }
+                            } else {
+                                // columnData가 비어있으면 새로 생성
+                                columnData.push({
+                                    no: imported.no,
+                                    name: imported.name,
+                                    pu: 0,
+                                    mux: 0,
+                                    muy: 0
+                                });
+                                updatedCount++;
+                            }
+                        }
+                    });
+                    
+                    // 기둥 개수 업데이트
+                    if (importedColumnNumbers.length > columnData.length) {
+                        document.getElementById('columnCount').value = importedColumnNumbers.length;
+                    }
+                    
+                    // 테이블 업데이트
+                    updateLoadTable();
+                    
+                    // 결과 메시지 생성
+                    let resultMessage = `기둥번호 ${updatedCount}개를 업데이트했습니다.\n\n업데이트된 기둥번호:\n${importedColumnNumbers.slice(0, 10).map(c => c.name).join(', ')}${importedColumnNumbers.length > 10 ? '...' : ''}`;
+                    
+                    if (hasCoordinates) {
+                        const coordCount = importedColumnNumbers.filter(c => c.x !== undefined && c.y !== undefined).length;
+                        resultMessage += `\n\n좌표 정보:\n${coordCount}개 기둥의 좌표를 저장했습니다.\n(X, Y 좌표는 퍼센트 값으로 저장됨)`;
+                    }
+                    
+                    alert(resultMessage);
+                } catch (error) {
+                    console.error('엑셀 파일 읽기 오류:', error);
+                    alert('엑셀 파일 읽기 중 오류가 발생했습니다: ' + error.message);
+                }
+            };
+            
+            reader.readAsArrayBuffer(file);
+            
+            // 파일 입력 초기화 (같은 파일 다시 선택 가능하도록)
             event.target.value = '';
         }
+
+        // 기둥평면도 파일 처리
+        function handleColumnPlanFile(input) {
+            const file = input.files[0];
+            if (!file) return;
+            
+            // 파일 크기 제한 (10MB)
+            if (file.size > 10 * 1024 * 1024) {
+                alert('파일 크기가 너무 큽니다. 10MB 이하의 이미지를 업로드해주세요.');
+                return;
+            }
+            
+            // 이미지 파일인지 확인
+            if (!file.type.startsWith('image/')) {
+                alert('이미지 파일만 업로드 가능합니다.');
+                return;
+            }
+            
+            const fileNameEl = document.getElementById('columnPlanFileName');
+            if (fileNameEl) {
+                fileNameEl.textContent = `선택된 파일: ${file.name} (${(file.size / 1024).toFixed(2)} KB)`;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const preview = document.getElementById('columnPlanPreview');
+                const img = document.getElementById('columnPlanImage');
+                
+                if (preview && img) {
+                    img.src = e.target.result;
+                    preview.style.display = 'block';
+                    
+                    // localStorage에 이미지 저장 (base64)
+                    try {
+                        localStorage.setItem('columnPlanImage', e.target.result);
+                        console.log('평면도 이미지가 저장되었습니다.');
+                    } catch (err) {
+                        console.warn('평면도 이미지 저장 실패 (크기 초과):', err);
+                        alert('평면도 이미지가 너무 커서 저장할 수 없습니다. 브라우저 저장 공간을 확인해주세요.');
+                    }
+                }
+            };
+            reader.onerror = function() {
+                alert('파일을 읽는 중 오류가 발생했습니다.');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // 기둥번호 엑셀 다운로드 (기존 columnData 사용)
+        function exportColumnNumbersToExcel() {
+            // XLSX 라이브러리 확인 및 대기
+            (async function() {
+                try {
+                    let XLSXLib = window.XLSX || (typeof XLSX !== 'undefined' ? XLSX : null);
+                    
+                    if (!XLSXLib || typeof XLSXLib.utils === 'undefined') {
+                        // 라이브러리 로드 시도
+                        if (typeof loadXLSXLibrary === 'function') {
+                            XLSXLib = await loadXLSXLibrary();
+                        }
+                        
+                        if (!XLSXLib || typeof XLSXLib.utils === 'undefined') {
+                            alert('엑셀 라이브러리가 로드되지 않았습니다.\n\n해결 방법:\n1. 페이지를 새로고침해주세요 (F5 또는 Ctrl+R)\n2. 인터넷 연결을 확인해주세요');
+                            return;
+                        }
+                    }
+                    
+                    // columnData 또는 localStorage의 좌표 데이터 사용
+                    const columnCoordinates = JSON.parse(localStorage.getItem('columnCoordinates') || '{}');
+                    
+                    const wsData = [
+                        ['No.', '기둥번호', 'X 좌표(%)', 'Y 좌표(%)']
+                    ];
+                    
+                    // columnData에서 기둥번호 가져오기
+                    if (columnData && columnData.length > 0) {
+                        columnData.forEach((col, index) => {
+                            const coord = columnCoordinates[col.name] || {};
+                            wsData.push([
+                                col.no || (index + 1),
+                                col.name || `KC${col.no || (index + 1)}`,
+                                coord.left || '',
+                                coord.top || ''
+                            ]);
+                        });
+                    } else {
+                        // columnData가 없으면 항상 기본값 6개 사용 (No.5는 KC2, No.6은 KC3)
+                        // 기본값 6개를 엑셀 데이터로 직접 추가
+                        wsData.push([1, 'KC1', 0, 0]);
+                        wsData.push([2, 'KC2', 0, 10000]);
+                        wsData.push([3, 'KC3', 10000, 10000]);
+                        wsData.push([4, 'KC4', 10000, 0]);
+                        wsData.push([5, 'KC2', 3000, 3000]);  // No.5는 KC2 (3000, 3000)
+                        wsData.push([6, 'KC3', 6000, 6000]);  // No.6은 KC3 (6000, 6000)
+                    }
+                    
+                    if (wsData.length <= 1) {
+                        alert('다운로드할 기둥번호 데이터가 없습니다.');
+                        return;
+                    }
+                    
+                    const ws = XLSXLib.utils.aoa_to_sheet(wsData);
+                    
+                    // 컬럼 너비 설정
+                    ws['!cols'] = [
+                        { wch: 5 },   // No.
+                        { wch: 15 },  // 기둥번호
+                        { wch: 12 },  // X 좌표
+                        { wch: 12 }   // Y 좌표
+                    ];
+                    
+                    const wb = XLSXLib.utils.book_new();
+                    XLSXLib.utils.book_append_sheet(wb, ws, '기둥번호');
+                    
+                    // 파일명 생성
+                    const now = new Date();
+                    const dateStr = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}`;
+                    const fileName = `기둥번호_${dateStr}.xlsx`;
+                    
+                    // Blob 방식으로 엑셀 파일 다운로드
+                    try {
+                        const wbout = XLSXLib.write(wb, { bookType: 'xlsx', type: 'array', cellStyles: false });
+                        const blob = new Blob([wbout], { 
+                            type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
+                        });
+                        
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = fileName;
+                        a.style.display = 'none';
+                        document.body.appendChild(a);
+                        a.click();
+                        
+                        setTimeout(() => {
+                            try {
+                                document.body.removeChild(a);
+                            } catch (e) {}
+                            setTimeout(() => URL.revokeObjectURL(url), 1000);
+                        }, 100);
+                        
+                        alert(`기둥번호 데이터가 "${fileName}" 파일로 다운로드되었습니다.\n\n파일 크기: ${(blob.size / 1024).toFixed(2)} KB`);
+                    } catch (writeError) {
+                        console.error('파일 생성 오류:', writeError);
+                        throw writeError;
+                    }
+                } catch (error) {
+                    console.error('엑셀 다운로드 오류:', error);
+                    alert('엑셀 다운로드 중 오류가 발생했습니다: ' + (error.message || String(error)));
+                }
+            })();
+        }
+
+        // 페이지 로드 시 저장된 평면도 이미지 불러오기
+        document.addEventListener('DOMContentLoaded', function() {
+            try {
+                const savedImage = localStorage.getItem('columnPlanImage');
+                if (savedImage) {
+                    const preview = document.getElementById('columnPlanPreview');
+                    const img = document.getElementById('columnPlanImage');
+                    if (preview && img) {
+                        img.src = savedImage;
+                        preview.style.display = 'block';
+                    }
+                }
+            } catch (e) {
+                console.warn('저장된 평면도 이미지 로드 실패:', e);
+            }
+        });
 
         // 길이 타입별 Lx, Ly 가져오기 (기본값 사용)
         function getLengthsForType(type) {
@@ -1637,21 +2152,44 @@
                 const dateStr = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}`;
                 const fileName = `AutoFindSectionResult_${dateStr}.xlsx`;
 
-                // Blob 방식으로 엑셀 파일 다운로드
+                // Blob 방식으로 엑셀 파일 다운로드 (팝업 차단 방지)
                 const wbout = XLSXLib.write(wb, { bookType: 'xlsx', type: 'array', cellStyles: false });
                 const blob = new Blob([wbout], { 
                     type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
                 });
                 const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = fileName;
-                document.body.appendChild(a);
-                a.click();
-                setTimeout(() => {
-                    document.body.removeChild(a);
-                    URL.revokeObjectURL(url);
-                }, 100);
+                
+                try {
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = fileName;
+                    a.style.display = 'none';
+                    document.body.appendChild(a);
+                    a.click();
+                    setTimeout(() => {
+                        try {
+                            document.body.removeChild(a);
+                        } catch (e) {}
+                        setTimeout(() => URL.revokeObjectURL(url), 1000);
+                    }, 100);
+                } catch (e) {
+                    // 팝업 차단 시 대체 방법
+                    const linkDiv = document.createElement('div');
+                    linkDiv.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:white;padding:20px;border:2px solid #667eea;border-radius:8px;z-index:10000;box-shadow:0 4px 12px rgba(0,0,0,0.3);';
+                    linkDiv.innerHTML = `
+                        <h3 style="margin:0 0 10px 0;color:#1e3a5f;">파일 다운로드</h3>
+                        <p style="margin:0 0 15px 0;color:#666;">팝업이 차단되었습니다. 아래 링크를 클릭하세요:</p>
+                        <a href="${url}" download="${fileName}" style="display:inline-block;padding:10px 20px;background:#667eea;color:white;text-decoration:none;border-radius:4px;">${fileName} 다운로드</a>
+                        <button onclick="this.parentElement.remove(); setTimeout(() => URL.revokeObjectURL('${url}'), 1000);" style="margin-left:10px;padding:10px 20px;background:#999;color:white;border:none;border-radius:4px;cursor:pointer;">닫기</button>
+                    `;
+                    document.body.appendChild(linkDiv);
+                    setTimeout(() => {
+                        if (document.body.contains(linkDiv)) {
+                            linkDiv.remove();
+                            URL.revokeObjectURL(url);
+                        }
+                    }, 30000);
+                }
                 alert(`Auto Find Section 결과가 "${fileName}" 파일로 다운로드되었습니다.`);
             } catch (error) {
                 console.error('Excel 다운로드 오류:', error);
@@ -2018,21 +2556,44 @@
                 const dateStr = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}`;
                 const fileName = `BOQ_Type개수_${dateStr}.xlsx`;
                 
-                // Blob 방식으로 엑셀 파일 다운로드
+                // Blob 방식으로 엑셀 파일 다운로드 (팝업 차단 방지)
                 const wbout = XLSXLib.write(wb, { bookType: 'xlsx', type: 'array', cellStyles: false });
                 const blob = new Blob([wbout], { 
                     type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
                 });
                 const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = fileName;
-                document.body.appendChild(a);
-                a.click();
-                setTimeout(() => {
-                    document.body.removeChild(a);
-                    URL.revokeObjectURL(url);
-                }, 100);
+                
+                try {
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = fileName;
+                    a.style.display = 'none';
+                    document.body.appendChild(a);
+                    a.click();
+                    setTimeout(() => {
+                        try {
+                            document.body.removeChild(a);
+                        } catch (e) {}
+                        setTimeout(() => URL.revokeObjectURL(url), 1000);
+                    }, 100);
+                } catch (e) {
+                    // 팝업 차단 시 대체 방법
+                    const linkDiv = document.createElement('div');
+                    linkDiv.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:white;padding:20px;border:2px solid #667eea;border-radius:8px;z-index:10000;box-shadow:0 4px 12px rgba(0,0,0,0.3);';
+                    linkDiv.innerHTML = `
+                        <h3 style="margin:0 0 10px 0;color:#1e3a5f;">파일 다운로드</h3>
+                        <p style="margin:0 0 15px 0;color:#666;">팝업이 차단되었습니다. 아래 링크를 클릭하세요:</p>
+                        <a href="${url}" download="${fileName}" style="display:inline-block;padding:10px 20px;background:#667eea;color:white;text-decoration:none;border-radius:4px;">${fileName} 다운로드</a>
+                        <button onclick="this.parentElement.remove(); setTimeout(() => URL.revokeObjectURL('${url}'), 1000);" style="margin-left:10px;padding:10px 20px;background:#999;color:white;border:none;border-radius:4px;cursor:pointer;">닫기</button>
+                    `;
+                    document.body.appendChild(linkDiv);
+                    setTimeout(() => {
+                        if (document.body.contains(linkDiv)) {
+                            linkDiv.remove();
+                            URL.revokeObjectURL(url);
+                        }
+                    }, 30000);
+                }
                 alert(`BOQ Type 개수 데이터가 "${fileName}" 파일로 다운로드되었습니다.`);
             } catch (error) {
                 console.error('엑셀 다운로드 오류:', error);
@@ -2527,14 +3088,67 @@
                 boqWindowRef.close();
             }
 
-            // 새 창에서 BOQ 리포트 열기
-            boqWindowRef = window.open('boq-report.html', '_blank', 'width=1400,height=900');
-            
-            if (!boqWindowRef) {
-                alert('팝업이 차단되었습니다. 팝업 차단을 해제하고 다시 시도해주세요.');
+            // 새 창에서 BOQ 리포트 열기 (팝업 차단 방지)
+            try {
+                // 팝업 차단을 피하기 위해 직접 링크 방식 사용
+                // window.open 대신 화면에 링크 표시 또는 새 탭으로 열기
+                const openBOQ = function() {
+                    // 먼저 window.open 시도
+                    boqWindowRef = window.open('boq-report.html', '_blank', 'width=1400,height=900');
+                    
+                    // 잠시 후 팝업이 열렸는지 확인
+                    setTimeout(() => {
+                        if (!boqWindowRef || boqWindowRef.closed || typeof boqWindowRef.closed === 'undefined') {
+                            // 팝업이 차단된 경우 - 화면에 링크 표시
+                            const linkDiv = document.createElement('div');
+                            linkDiv.id = 'boqPopupBlockedModal';
+                            linkDiv.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:white;padding:30px;border:2px solid #667eea;border-radius:8px;z-index:10000;box-shadow:0 4px 12px rgba(0,0,0,0.3);max-width:500px;text-align:center;';
+                            linkDiv.innerHTML = `
+                                <h3 style="margin:0 0 15px 0;color:#1e3a5f;font-size:20px;">BOQ 리포트 열기</h3>
+                                <p style="margin:0 0 20px 0;color:#666;font-size:14px;line-height:1.6;">팝업이 차단되었습니다.<br>아래 링크를 클릭하여 BOQ 리포트를 열어주세요:</p>
+                                <a href="boq-report.html" target="_blank" style="display:inline-block;padding:12px 30px;background:#667eea;color:white;text-decoration:none;border-radius:6px;font-size:16px;font-weight:600;margin-bottom:15px;margin-right:10px;">BOQ 리포트 열기</a>
+                                <button onclick="document.getElementById('boqPopupBlockedModal')?.remove();" style="padding:12px 20px;background:#999;color:white;border:none;border-radius:6px;cursor:pointer;font-size:14px;font-weight:600;">닫기</button>
+                            `;
+                            
+                            // 기존 모달이 있으면 제거
+                            const existingModal = document.getElementById('boqPopupBlockedModal');
+                            if (existingModal) {
+                                existingModal.remove();
+                            }
+                            
+                            document.body.appendChild(linkDiv);
+                            
+                            // 30초 후 자동 정리
+                            setTimeout(() => {
+                                const modal = document.getElementById('boqPopupBlockedModal');
+                                if (modal && document.body.contains(modal)) {
+                                    modal.remove();
+                                }
+                            }, 30000);
+                        } else {
+                            // 팝업이 성공적으로 열린 경우
+                            console.log(`BOQ 생성 완료: ${totalCount}개 기둥, 총 중량: ${totalWeight.toFixed(2)} kg`);
+                        }
+                    }, 100);
+                };
+                
+                // 사용자 상호작용 컨텍스트에서 실행
+                openBOQ();
+                
+            } catch (error) {
+                console.error('BOQ 창 열기 오류:', error);
+                // 오류 발생 시 직접 링크 제공
+                const linkDiv = document.createElement('div');
+                linkDiv.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:white;padding:30px;border:2px solid #e53e3e;border-radius:8px;z-index:10000;box-shadow:0 4px 12px rgba(0,0,0,0.3);max-width:500px;text-align:center;';
+                linkDiv.innerHTML = `
+                    <h3 style="margin:0 0 15px 0;color:#1e3a5f;font-size:20px;">BOQ 리포트 열기</h3>
+                    <p style="margin:0 0 20px 0;color:#666;font-size:14px;line-height:1.6;">오류가 발생했습니다.<br>아래 링크를 클릭하여 BOQ 리포트를 열어주세요:</p>
+                    <a href="boq-report.html" target="_blank" style="display:inline-block;padding:12px 30px;background:#667eea;color:white;text-decoration:none;border-radius:6px;font-size:16px;font-weight:600;margin-bottom:15px;">BOQ 리포트 열기</a>
+                    <br>
+                    <button onclick="this.parentElement.remove();" style="padding:8px 20px;background:#999;color:white;border:none;border-radius:4px;cursor:pointer;font-size:14px;">닫기</button>
+                `;
+                document.body.appendChild(linkDiv);
             }
-
-            console.log(`BOQ 생성 완료: ${totalCount}개 기둥, 총 중량: ${totalWeight.toFixed(2)} kg`);
         }
 
         // BOQ 인쇄 함수
