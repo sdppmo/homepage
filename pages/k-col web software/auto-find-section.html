@@ -376,9 +376,9 @@
                         <label style="font-weight: 600; color: #2c4a7c;">P-M-M Limit</label>
                         <input type="number" id="pmmLimit" value="1.0" step="0.01" min="0.1" max="2.0" 
                                style="width: 100%; padding: 8px; border: 2px solid #2c4a7c; border-radius: 4px; font-size: 13px; font-weight: 600;"
-                               title="P-M-M 값이 이 값 이하인 단면을 찾습니다. 예: 0.9로 설정하면 0.9 이하의 단면을 찾습니다.">
+                               title="P-M-M 허용 최대값입니다. 이 값 이하인 단면을 찾습니다. 예: 0.9로 설정하면 0.9 이하의 단면을 찾습니다.">
                         <div style="font-size: 11px; color: #666; margin-top: 4px;">
-                            P-M-M ≤ 이 값인 단면 선택
+                            P-M-M 최대 허용값 (≤ 이 값인 단면 선택)
                         </div>
                     </div>
                 </div>
@@ -590,20 +590,24 @@
         ];
         
         // 두께 범위를 동적으로 생성하는 함수
+        // 조합1, 조합2용 tw 범위 생성 (최소값부터 최대값까지 1mm 단위로 증가)
         function getTwRange() {
             const twMin = parseInt(document.getElementById('twMin')?.value) || 8;
             const twMax = parseInt(document.getElementById('twMax')?.value) || 16;
             const range = [];
+            // 1mm 단위로 증가: [twMin, twMin+1, twMin+2, ..., twMax]
             for (let i = twMin; i <= twMax; i++) {
                 range.push(i);
             }
             return range;
         }
         
+        // 조합1, 조합2용 tf 범위 생성 (최소값부터 최대값까지 1mm 단위로 증가)
         function getTfRange() {
             const tfMin = parseInt(document.getElementById('tfMin')?.value) || 10;
             const tfMax = parseInt(document.getElementById('tfMax')?.value) || 20;
             const range = [];
+            // 1mm 단위로 증가: [tfMin, tfMin+1, tfMin+2, ..., tfMax]
             for (let i = tfMin; i <= tfMax; i++) {
                 range.push(i);
             }
@@ -1890,7 +1894,7 @@
             let bestDiff = Infinity; // PMM limit와의 차이
             let bestIsSlenderFlange = false;
 
-            // 사용자가 설정한 P-M-M limit 값 가져오기 (기본값: 1.0)
+            // 사용자가 설정한 P-M-M 최대 허용값 가져오기 (기본값: 1.0)
             const pmmLimit = parseFloat(document.getElementById('pmmLimit')?.value) || 1.0;
 
             // 조합 3 (Rolled H)인지 확인
@@ -1904,26 +1908,29 @@
             let twRange, tfRange;
             
             if (isCombination3) {
-                // 조합 3: H 단면에 따라 정해진 표준 tw, tf 값만 사용 (plate 두께 고정, 변경 불가)
+                // 조합 3: 주어진 H-beam의 표준 tw, tf 값만 사용 (1mm 단위 증가 없음, 고정 값만)
+                // rolledHStandardThickness에 정의된 표준 두께 값만 사용
                 const standardThickness = rolledHStandardThickness[h1];
                 const standardTw = standardThickness.tw;
                 const standardTf = standardThickness.tf;
                 
-                // 조합 3: 표준 tw, tf 값만 사용 (고정)
+                // 조합 3: 표준 tw, tf 값만 사용 (고정, 1mm 단위 증가 없음)
                 twRange = [standardTw];
                 tfRange = [standardTf];
-                console.log(`[findOptimalSection 조합3] h1=${h1}, b1=${b1}, tw=${standardTw}, tf=${standardTf}`);
+                console.log(`[findOptimalSection 조합3] h1=${h1}, b1=${b1}, tw=${standardTw} (고정), tf=${standardTf} (고정)`);
             } else {
                 // 조합 1, 2: 사용자가 입력한 범위 사용
-                // getTwRange()와 getTfRange()는 최소값(twMin, tfMin)부터 최대값까지 순차적으로 배열을 반환
-                twRange = getTwRange(); // [twMin, twMin+1, ..., twMax] 순서
-                tfRange = getTfRange(); // [tfMin, tfMin+1, ..., tfMax] 순서
-                console.log(`[findOptimalSection 조합1/2] h1=${h1}, b1=${b1}, twRange=[${twRange.join(',')}], tfRange=[${tfRange.join(',')}]`);
+                // getTwRange()와 getTfRange()는 최소값(twMin, tfMin)부터 최대값까지 1mm 단위로 증가하는 배열을 반환
+                // 예: twMin=8, twMax=16 → [8, 9, 10, 11, 12, 13, 14, 15, 16] (1mm 단위 증가)
+                twRange = getTwRange(); // [twMin, twMin+1, twMin+2, ..., twMax] (1mm 단위)
+                tfRange = getTfRange(); // [tfMin, tfMin+1, tfMin+2, ..., tfMax] (1mm 단위)
+                console.log(`[findOptimalSection 조합1/2] h1=${h1}, b1=${b1}, twRange=[${twRange.join(',')}] (1mm 단위), tfRange=[${tfRange.join(',')}] (1mm 단위)`);
             }
             
-            // 조합 1, 2의 경우: 최소 plate 두께부터 순차적으로 검색하여 단면 결정
-            // twMin, tfMin부터 시작하여 순차적으로 증가시키면서 검색
-            // 최소 단면적을 가진 단면을 선택 (최소 두께부터 검색하므로 최소 단면적이 먼저 발견됨)
+            // 조합 1, 2의 경우: 최소 plate 두께부터 1mm 단위로 순차적으로 증가하여 검색
+            // twRange = [twMin, twMin+1, twMin+2, ..., twMax] (1mm 단위 증가)
+            // tfRange = [tfMin, tfMin+1, tfMin+2, ..., tfMax] (1mm 단위 증가)
+            // 최소 두께부터 시작하여 1mm씩 증가시키면서 조건을 만족하는 최소 단면적 단면을 찾음
             for (const tw of twRange) {
                 for (const tf of tfRange) {
                     if (tf < tw) continue; // tf >= tw 조건
@@ -1936,8 +1943,8 @@
                     // Slender Web인 경우 제외
                     if (result.isSlenderWeb) continue;
                     
-                    // P-M-M ≤ pmmLimit을 만족하는 최소 단면적 단면 찾기
-                    // 최소 두께부터 검색하므로 조건을 만족하는 최소 단면적 단면이 먼저 발견됨
+                    // P-M-M ≤ pmmLimit(최대 허용값)을 만족하는 최소 단면적 단면 찾기
+                    // 최소 두께부터 1mm 단위로 검색하므로 조건을 만족하는 최소 단면적 단면이 먼저 발견됨
                     if (result.ratio_pmm > 0 && result.ratio_pmm <= pmmLimit) {
                         if (result.area < bestArea) {
                             bestArea = result.area;
@@ -1951,8 +1958,8 @@
                 }
             }
 
-            // P-M-M ≤ pmmLimit을 만족하는 단면이 없으면, P-M-M가 가장 작은 단면 반환
-            // ratio는 pmmLimit까지 허용하므로, pmmLimit을 초과하는 경우는 최소 ratio를 선택 (단, λcf ≤ λcfr이고 φPn ≥ Pu인 경우만)
+            // P-M-M ≤ pmmLimit(최대 허용값)을 만족하는 단면이 없으면, P-M-M가 가장 작은 단면 반환
+            // ratio는 pmmLimit(최대 허용값)까지 허용하므로, pmmLimit을 초과하는 경우는 발견된 단면 중 최소 ratio를 선택 (단, λcf ≤ λcfr이고 φPn ≥ Pu인 경우만)
             if (bestTw === null) {
                 let minPMM = Infinity;
                 const twRange2 = isCombination3 ? twRange : getTwRange();
@@ -2097,11 +2104,11 @@
                     let bestUnitPrice = null;
                     let bestCostPerMeter = Infinity; // 단위 길이당 금액 (원/m)
                     
-                    // ===== 1단계: 조합1, 조합2를 먼저 수행 (최소 plate 두께부터 순차적으로 검색) =====
-                    console.log(`기둥 ${col.name || col.no}: [1단계] 조합1, 조합2 검색 시작 (최소 두께부터 순차 검색)`);
+                    // ===== 1단계: 조합1, 조합2를 먼저 수행 (최소 plate 두께부터 1mm 단위로 증가하여 검색) =====
+                    console.log(`기둥 ${col.name || col.no}: [1단계] 조합1, 조합2 검색 시작 (최소 두께부터 1mm 단위로 증가)`);
                     
-                    // 조합1, 조합2는 사용자 입력 두께 범위 내에서 최소 plate 두께(twMin, tfMin)부터 시작하여
-                    // 순차적으로 증가시키면서 검색하여 단면을 결정
+                    // 조합1: 최소 두께(twMin, tfMin)부터 1mm 단위로 증가하여 검색
+                    // 조합2: 최소 두께(twMin, tfMin)부터 1mm 단위로 증가하여 검색
                     // 조합1 (인덱스 0)과 조합2 (인덱스 1)만 먼저 검색
                     const comb1_2 = combinations.slice(0, 2); // 조합1, 조합2만 추출
                     
@@ -2111,8 +2118,8 @@
                             const unitPricePerTon = steel.unitPrice;
                             const unitPricePerKg = unitPricePerTon / 1000; // 톤당 단가를 kg당 단가로 변환
                             
-                            // 조합1, 조합2는 사용자 입력 두께 범위 내에서 최소 plate 두께부터 순차적으로 검색
-                            // findOptimalSection 내부에서 twMin, tfMin부터 순차적으로 증가시키면서 검색
+                            // 조합1, 조합2는 사용자 입력 두께 범위 내에서 최소 plate 두께부터 1mm 단위로 증가하여 검색
+                            // findOptimalSection 내부에서 twMin, tfMin부터 1mm씩 증가시키면서 검색
                             const optimal = findOptimalSection(
                                 col.pu, col.mux, col.muy, fy, E, nu, Kx, Ky, Kz, Lx, Ly,
                                 comb.H1, comb.H2, comb.B1, comb.B2
@@ -2141,11 +2148,12 @@
                     console.log(`기둥 ${col.name || col.no}: [1단계 완료] 조합1/2 최적 단면: ${bestCombination ? bestCombination.name : '없음'}, 단위길이당금액=${bestCostPerMeter !== Infinity ? bestCostPerMeter.toFixed(0) : '없음'}원/m`);
                     
                     // ===== 2단계: 조합3 검색 (조합1/2보다 경제적이면 적용) =====
-                    // 조합1, 조합2에서 최소 두께부터 검색하여 단면을 결정한 후,
+                    // 조합1, 조합2에서 최소 두께부터 1mm 단위로 증가하여 검색하여 단면을 결정한 후,
                     // 조합3을 검색하여 더 경제적인 단면이 있으면 선택
-                    console.log(`기둥 ${col.name || col.no}: [2단계] 조합3 검색 시작 (조합1/2보다 경제적이면 적용)`);
+                    // 조합3: 주어진 H-beam의 표준 tw, tf 값만 사용 (1mm 단위 증가 없음, 고정 값만)
+                    console.log(`기둥 ${col.name || col.no}: [2단계] 조합3 검색 시작 (표준 tw, tf 값만 사용, 조합1/2보다 경제적이면 적용)`);
                     
-                    // 조합3은 표준 두께 값 사용
+                    // 조합3은 표준 두께 값만 사용 (rolledHStandardThickness에 정의된 tw, tf 고정 값)
                     const comb3 = combinations.slice(2); // 조합3부터 끝까지 추출
                     
                     for (const comb of comb3) {
@@ -2154,7 +2162,8 @@
                             const unitPricePerTon = steel.unitPrice;
                             const unitPricePerKg = unitPricePerTon / 1000; // 톤당 단가를 kg당 단가로 변환
                             
-                            // 조합3은 표준 두께 값 사용 (findOptimalSection 내부에서 처리)
+                            // 조합3은 주어진 H-beam의 표준 tw, tf 값만 사용 (1mm 단위 증가 없음, 고정 값만)
+                            // findOptimalSection 내부에서 rolledHStandardThickness의 표준 값만 사용
                             const optimal = findOptimalSection(
                                 col.pu, col.mux, col.muy, fy, E, nu, Kx, Ky, Kz, Lx, Ly,
                                 comb.H1, comb.H2, comb.B1, comb.B2
@@ -2190,12 +2199,12 @@
                             bestCombination.H1, bestCombination.H2, bestCombination.B1, bestCombination.B2
                         );
                         
-                        // 사용자가 설정한 P-M-M limit 값 확인
+                        // 사용자가 설정한 P-M-M 최대 허용값 확인
                         const pmmLimit = parseFloat(document.getElementById('pmmLimit')?.value) || 1.0;
                         // 최종 PMM 값은 재계산한 calcResult.ratio_pmm을 사용 (간편계산식과 계산서와 동일한 값)
                         const finalPMM = calcResult.ratio_pmm || 0;
                         
-                        // PMM limit를 초과하는 경우 경고 메시지와 함께 표시
+                        // PMM 최대 허용값을 초과하는 경우 경고 메시지와 함께 표시
                         if (finalPMM > pmmLimit) {
                             currentResults.push({
                                 no: col.no,
@@ -2229,11 +2238,11 @@
                                 H2: 0,
                                 B1: 0,
                                 B2: 0,
-                                warning: `P-M-M Limit (${pmmLimit.toFixed(2)}) 이하의 단면을 찾을 수 없습니다. 최소 P-M-M: ${finalPMM.toFixed(3)}`
+                                warning: `P-M-M 최대 허용값 (${pmmLimit.toFixed(2)}) 이하의 단면을 찾을 수 없습니다. 발견된 최소 P-M-M: ${finalPMM.toFixed(3)}`
                             });
-                            console.warn(`기둥 ${col.name || col.no}: P-M-M Limit (${pmmLimit}) 이하의 단면을 찾을 수 없음. 최소 P-M-M: ${finalPMM.toFixed(3)}`);
+                            console.warn(`기둥 ${col.name || col.no}: P-M-M 최대 허용값 (${pmmLimit}) 이하의 단면을 찾을 수 없음. 발견된 최소 P-M-M: ${finalPMM.toFixed(3)}`);
                         } else {
-                            // PMM limit 이하인 경우만 결과에 추가
+                            // PMM 최대 허용값 이하인 경우만 결과에 추가
                             const unitWeight = calculateUnitWeight(bestResult.area);
                             const costPerMeter = unitWeight * (bestUnitPrice / 1000); // 단위 길이당 금액 (원/m)
 
