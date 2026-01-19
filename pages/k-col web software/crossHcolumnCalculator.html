@@ -1218,26 +1218,51 @@
         }
 
         // 기본 기둥번호 및 좌표 초기화 함수
-        function initializeDefaultColumns() {
-            // localStorage에 저장된 좌표 데이터 확인
-            const savedCoords = localStorage.getItem('columnCoordinates');
-            
-            // 이미 저장된 데이터가 있으면 기본값 설정하지 않음
-            if (savedCoords) {
+        // 현재 기둥번호를 기본값으로 저장
+        function saveCurrentAsDefault() {
+            try {
+                const currentCoords = localStorage.getItem('columnCoordinates');
+                if (!currentCoords) {
+                    alert('저장할 기둥번호 데이터가 없습니다.\n\n먼저 엑셀을 업로드하거나 기둥번호를 입력해주세요.');
+                    return;
+                }
+                
+                const coords = JSON.parse(currentCoords);
+                if (Object.keys(coords).length === 0) {
+                    alert('저장할 기둥번호 데이터가 없습니다.\n\n먼저 엑셀을 업로드하거나 기둥번호를 입력해주세요.');
+                    return;
+                }
+                
+                // 현재 좌표 데이터를 기본값으로 저장
+                localStorage.setItem('defaultColumnCoordinates', currentCoords);
+                console.log('현재 기둥번호를 기본값으로 저장 완료:', coords);
+                
+                const count = Object.keys(coords).length;
+                alert(`현재 ${count}개의 기둥번호가 기본값으로 저장되었습니다.\n\n다음부터 초기화 시 이 설정이 사용됩니다.`);
+            } catch (error) {
+                console.error('기본값 저장 오류:', error);
+                alert('기본값 저장 중 오류가 발생했습니다: ' + (error.message || String(error)));
+            }
+        }
+
+        // 기본값 좌표 가져오기 (저장된 기본값이 있으면 사용, 없으면 하드코딩된 기본값)
+        function getDefaultCoordinates() {
+            // 저장된 기본값 확인
+            const savedDefault = localStorage.getItem('defaultColumnCoordinates');
+            if (savedDefault) {
                 try {
-                    const coords = JSON.parse(savedCoords);
+                    const coords = JSON.parse(savedDefault);
                     if (Object.keys(coords).length > 0) {
-                        console.log('기존 좌표 데이터가 있습니다. 기본값을 설정하지 않습니다.');
-                        return;
+                        console.log('저장된 기본값 사용:', coords);
+                        return coords;
                     }
                 } catch (e) {
-                    console.warn('저장된 좌표 데이터 로드 실패:', e);
+                    console.warn('저장된 기본값 로드 실패:', e);
                 }
             }
             
-            // 기본값 설정: 6개 기둥 (엑셀 파일과 동일)
-            // 중복된 기둥번호를 고유하게 만들기 위해 KC2-2, KC3-2 사용
-            const defaultCoordinates = {
+            // 하드코딩된 기본값 (저장된 기본값이 없을 때만 사용)
+            return {
                 'KC1': { 
                     left: 0, 
                     top: 0, 
@@ -1275,10 +1300,31 @@
                     no: 6
                 }
             };
+        }
+
+        function initializeDefaultColumns() {
+            // localStorage에 저장된 좌표 데이터 확인
+            const savedCoords = localStorage.getItem('columnCoordinates');
+            
+            // 이미 저장된 데이터가 있으면 기본값 설정하지 않음
+            if (savedCoords) {
+                try {
+                    const coords = JSON.parse(savedCoords);
+                    if (Object.keys(coords).length > 0) {
+                        console.log('기존 좌표 데이터가 있습니다. 기본값을 설정하지 않습니다.');
+                        return;
+                    }
+                } catch (e) {
+                    console.warn('저장된 좌표 데이터 로드 실패:', e);
+                }
+            }
+            
+            // 기본값 가져오기 (저장된 기본값 또는 하드코딩된 기본값)
+            const defaultCoordinates = getDefaultCoordinates();
             
             // localStorage에 좌표 정보 저장
             localStorage.setItem('columnCoordinates', JSON.stringify(defaultCoordinates));
-            console.log('기본값 6개 기둥 설정 완료:', defaultCoordinates);
+            console.log('기본값 기둥 설정 완료:', defaultCoordinates);
         }
 
         // 기둥평면도 / 기둥번호 입력 모달 열기
@@ -1646,13 +1692,16 @@
                             <div style="margin-bottom: 20px;">
                                 <label style="display: block; margin-bottom: 12px; color: #4a5568; font-weight: 600; font-size: 16px;">기둥번호 및 좌표 입력 (엑셀)</label>
                                 <div style="background: #f7fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; margin-bottom: 15px;">
-                                    <div style="display: flex; gap: 10px; margin-bottom: 15px; justify-content: center;">
+                                    <div style="display: flex; gap: 10px; margin-bottom: 15px; justify-content: center; flex-wrap: wrap;">
                                         <button onclick="exportColumnNumbersToExcel()" style="padding: 12px 24px; background: #38a169; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; transition: background 0.2s;">
                                             📥 엑셀 다운로드
                                         </button>
                                         <label for="columnNumberExcelInput" style="padding: 12px 24px; background: #f59e0b; color: white; border-radius: 6px; cursor: pointer; font-size: 14px; display: inline-block; font-weight: 600; transition: background 0.2s;">
                                             🏗️ 엑셀 업로드 (기둥번호 + 좌표)
                                         </label>
+                                        <button onclick="saveCurrentAsDefault()" style="padding: 12px 24px; background: #667eea; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; transition: background 0.2s;">
+                                            💾 기본값으로 저장
+                                        </button>
                                     </div>
                                     <input type="file" id="columnNumberExcelInput" accept=".xlsx,.xls" style="display: none;" onchange="importColumnNumbersFromExcel(event)">
                                     <div id="columnStatusInfo" style="margin-top: 15px; padding: 15px; background: #e8f4f8; border-radius: 6px; border-left: 4px solid #667eea;">
@@ -1794,11 +1843,16 @@
                                 // 원본 이름이 있으면 원본 이름으로 표시, 없으면 고유 이름 사용
                                 const displayName = coord.originalName || name;
                                 const no = coord.no !== undefined ? coord.no : '';
+                                
+                                // 원본 좌표값 표시 (변환 없이)
+                                const displayX = coord.left !== undefined ? coord.left : 0;
+                                const displayY = coord.top !== undefined ? coord.top : 0;
+                                
                                 listHTML += '<tr style="border-bottom: 1px solid #f0f0f0;">';
                                 listHTML += `<td style="padding: 6px; text-align: center; color: #666;">${no}</td>`;
                                 listHTML += `<td style="padding: 6px; color: #1e3a5f; font-weight: 600;">${displayName}</td>`;
-                                listHTML += `<td style="padding: 6px; text-align: right; color: #666;">${coord.left !== undefined ? coord.left : 0}</td>`;
-                                listHTML += `<td style="padding: 6px; text-align: right; color: #666;">${coord.top !== undefined ? coord.top : 0}</td>`;
+                                listHTML += `<td style="padding: 6px; text-align: right; color: #666;">${displayX}</td>`;
+                                listHTML += `<td style="padding: 6px; text-align: right; color: #666;">${displayY}</td>`;
                                 listHTML += '</tr>';
                             });
                             
@@ -2522,42 +2576,28 @@
             }
             
             try {
-                // localStorage에서 좌표 데이터 불러오기 (기둥번호 포함)
-                let columnCoordinates = {};
-                try {
-                    const savedCoords = localStorage.getItem('columnCoordinates');
-                    if (savedCoords) {
-                        columnCoordinates = JSON.parse(savedCoords);
-                    }
-                } catch (e) {
-                    console.warn('좌표 데이터 로드 실패:', e);
-                }
-                
-                // 기본값 6개 기둥 정의
-                const defaultCoordinates = {
-                    'KC1': { left: 0, top: 0 },
-                    'KC2': { left: 0, top: 10000 },
-                    'KC3': { left: 10000, top: 10000 },
-                    'KC4': { left: 10000, top: 0 },
-                    'KC5': { left: 3000, top: 3000 },
-                    'KC6': { left: 6000, top: 6000 }
-                };
-                
-                // 저장된 데이터가 없거나 6개 미만이면 기본값 6개 사용
-                let columnNumbers = Object.keys(columnCoordinates).filter(name => name && name.trim());
+                // 기본값 가져오기 (저장된 기본값 또는 하드코딩된 기본값)
+                const defaultCoordinates = getDefaultCoordinates();
                 
                 const wsData = [
                     ['No.', '기둥번호', 'X 좌표(%)', 'Y 좌표(%)']
                 ];
                 
-                // 항상 기본값 6개를 엑셀에 직접 적용 (엑셀 파일과 동일)
-                // 기본값 6개를 엑셀 데이터로 직접 추가 (순서 보장)
-                wsData.push([1, 'KC1', 0, 0]);
-                wsData.push([2, 'KC2', 0, 10000]);
-                wsData.push([3, 'KC3', 10000, 10000]);
-                wsData.push([4, 'KC4', 10000, 0]);
-                wsData.push([5, 'KC2', 3000, 3000]);  // No.5는 KC2 (3000, 3000)
-                wsData.push([6, 'KC3', 6000, 6000]);  // No.6은 KC3 (6000, 6000)
+                // 기본값을 배열로 변환하여 엑셀에 추가 (no 순서대로 정렬)
+                const columnsArray = Object.keys(defaultCoordinates).map(key => {
+                    const col = defaultCoordinates[key];
+                    return {
+                        no: col.no || 0,
+                        name: col.originalName || key,
+                        x: col.left || 0,
+                        y: col.top || 0
+                    };
+                }).sort((a, b) => a.no - b.no);
+                
+                // 정렬된 순서대로 엑셀 데이터에 추가
+                columnsArray.forEach(col => {
+                    wsData.push([col.no, col.name, col.x, col.y]);
+                });
                 
                 const ws = XLSXLib.utils.aoa_to_sheet(wsData);
                 
