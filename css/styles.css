@@ -111,68 +111,185 @@ html, body {
   border-right: none;
 }
 
-/* Login Form */
-.login-form {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  gap: 5px;
-  align-items: center;
+/* Auth Section - Modern Design */
+.auth-section {
+  margin-top: 12px;
+  padding: 16px;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
 }
 
-.login-form .label {
-  background: #ffd700;
-  color: #000;
-  padding: 6px 12px;
-  font-size: 13px;
-  font-weight: bold;
-}
-
-.login-form input {
-  padding: 6px 8px;
-  border: 1px solid #999;
-  font-size: 13px;
-  background: #fff;
-}
-
-.login-form input::placeholder {
-  color: #888;
-  font-size: 12px;
-}
-
-.login-btn {
-  grid-column: 3;
-  grid-row: 1 / 3;
-  background: linear-gradient(180deg, #4a90d9 0%, #2a70b9 100%);
-  color: #fff;
-  border: 2px solid #1a5090;
-  padding: 12px 16px;
-  font-size: 14px;
-  font-weight: bold;
-  cursor: pointer;
-  line-height: 1.2;
-}
-
-.login-help-text {
-  font-size: 11px;
-  color: #444;
+.auth-guest {
   text-align: center;
-  margin: 6px 0 4px;
 }
 
-.help-buttons {
+.auth-buttons {
   display: flex;
-  justify-content: center;
-  gap: 6px;
-  padding-bottom: 2px;
+  gap: 10px;
+  margin-bottom: 12px;
 }
 
-.help-btn {
-  background: linear-gradient(180deg, #e8e8e8 0%, #c8c8c8 100%);
-  border: 1px solid #999;
-  padding: 5px 12px;
-  font-size: 12px;
-  color: #333;
+.auth-btn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
   cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.auth-btn svg {
+  flex-shrink: 0;
+}
+
+.auth-btn.primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #fff;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.auth-btn.primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+}
+
+.auth-btn.secondary {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.auth-btn.secondary:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.auth-hint {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0;
+}
+
+/* Logged In State */
+.auth-user {
+  display: block;
+}
+
+.user-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  padding: 14px;
+}
+
+.user-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* GitHub-style Avatar */
+.gh-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 600;
+  color: #fff;
+  text-transform: uppercase;
+  flex-shrink: 0;
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.user-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.user-email {
+  font-size: 11px;
+  color: #94a3b8;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.user-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.user-action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  border: none;
+  white-space: nowrap;
+}
+
+.user-action-btn.admin {
+  background: rgba(99, 102, 241, 0.15);
+  color: #a5b4fc;
+  border: 1px solid rgba(99, 102, 241, 0.25);
+}
+
+.user-action-btn.admin:hover {
+  background: rgba(99, 102, 241, 0.25);
+}
+
+.user-action-btn.settings {
+  background: rgba(34, 197, 94, 0.15);
+  color: #86efac;
+  border: 1px solid rgba(34, 197, 94, 0.25);
+}
+
+.user-action-btn.settings:hover {
+  background: rgba(34, 197, 94, 0.25);
+}
+
+.user-action-btn.logout {
+  background: rgba(100, 116, 139, 0.2);
+  color: #94a3b8;
+  border: 1px solid rgba(100, 116, 139, 0.25);
+}
+
+.user-action-btn.logout:hover {
+  background: rgba(100, 116, 139, 0.3);
+  color: #cbd5e1;
 }
 
 /* Navigation Menu */
@@ -902,37 +1019,23 @@ a.brochure-btn:hover {
     padding: 6px 4px;
   }
   
-  .login-form {
-    grid-template-columns: auto 1fr;
-    gap: 4px;
+  .auth-section {
+    padding: 12px;
+    margin-top: 8px;
   }
   
-  .login-form .label {
-    padding: 5px 8px;
-    font-size: 12px;
+  .auth-buttons {
+    flex-direction: column;
+    gap: 8px;
   }
   
-  .login-form input {
-    padding: 5px 6px;
-    font-size: 12px;
+  .auth-btn {
+    padding: 10px 14px;
+    font-size: 13px;
   }
   
-  .login-btn {
-    grid-column: 1 / 3;
-    grid-row: 3;
-    width: 100%;
-    padding: 10px;
-    margin-top: 5px;
-  }
-  
-  .help-buttons {
-    flex-wrap: wrap;
-  }
-  
-  .help-btn {
-    flex: 1 1 auto;
-    font-size: 11px;
-    padding: 4px 8px;
+  .auth-actions {
+    justify-content: center;
   }
   
   .nav-item {
