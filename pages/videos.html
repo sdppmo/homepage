@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>동영상 자료 - SongDoPartners</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <style>
+        html, body {
+            overflow: auto !important;
+            overflow-x: hidden !important;
+            height: auto !important;
+            min-height: 100vh;
+        }
+
+        .videos-container {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            padding: 40px 20px;
+        }
+
+        .videos-wrapper {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .videos-header {
+            text-align: center;
+            color: white;
+            margin-bottom: 50px;
+        }
+
+        .videos-header h1 {
+            font-size: 48.6px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            letter-spacing: -0.5px;
+        }
+
+        .videos-header .subtitle {
+            font-size: 23.4px;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+
+        .videos-header .home-link {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+
+        .videos-header .home-link:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+
+        .videos-section {
+            margin-bottom: 60px;
+        }
+
+        .videos-section-title {
+            font-size: 32.4px;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid rgba(255,255,255,0.3);
+        }
+
+        .videos-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+            gap: 30px;
+        }
+
+        .video-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .video-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        }
+
+        .video-wrapper {
+            position: relative;
+            padding-bottom: 56.25%; /* 16:9 aspect ratio */
+            height: 0;
+            overflow: hidden;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .video-wrapper iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .video-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1e3a5f;
+            margin-bottom: 10px;
+        }
+
+        .video-description {
+            font-size: 16px;
+            color: #4a5568;
+            line-height: 1.6;
+        }
+
+        .video-placeholder {
+            background: #e2e8f0;
+            border-radius: 8px;
+            padding: 60px 20px;
+            text-align: center;
+            color: #718096;
+            font-size: 18px;
+        }
+
+        @media (max-width: 768px) {
+            .videos-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .videos-header h1 {
+                font-size: 36px;
+            }
+
+            .videos-section-title {
+                font-size: 28px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="videos-container">
+        <div class="videos-wrapper">
+            <div class="videos-header">
+                <h1>🎬 동영상 자료</h1>
+                <p class="subtitle">제품 소개, 시공 과정, 기술 설명 등의 동영상 자료</p>
+                <a href="products.html" class="home-link">← 제품 페이지로 돌아가기</a>
+                <a href="../index.html" class="home-link" style="margin-left: 10px;">🏠 홈으로 돌아가기</a>
+            </div>
+
+            <!-- 제품 소개 동영상 -->
+            <div class="videos-section">
+                <h2 class="videos-section-title">제품 소개 동영상</h2>
+                <div class="videos-grid">
+                    <div class="video-card">
+                        <div class="video-wrapper">
+                            <iframe 
+                                src="https://www.youtube.com/embed/7Ht_llhNbps" 
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                                allowfullscreen>
+                            </iframe>
+                        </div>
+                        <h3 class="video-title">제품 소개 동영상</h3>
+                        <p class="video-description">K-COL 및 기타 제품 소개 동영상입니다.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 시공 과정 영상 -->
+            <div class="videos-section">
+                <h2 class="videos-section-title">시공 과정 영상</h2>
+                <div class="videos-grid">
+                    <div class="video-card">
+                        <div class="video-wrapper">
+                            <div class="video-placeholder">
+                                유튜브 동영상 링크를 추가하세요
+                            </div>
+                        </div>
+                        <h3 class="video-title">시공 과정 영상</h3>
+                        <p class="video-description">현장 시공 과정을 보여주는 동영상입니다.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 기술 설명 영상 -->
+            <div class="videos-section">
+                <h2 class="videos-section-title">기술 설명 영상</h2>
+                <div class="videos-grid">
+                    <div class="video-card">
+                        <div class="video-wrapper">
+                            <div class="video-placeholder">
+                                유튜브 동영상 링크를 추가하세요
+                            </div>
+                        </div>
+                        <h3 class="video-title">기술 설명 영상</h3>
+                        <p class="video-description">제품 기술 및 구조 설계에 대한 설명 동영상입니다.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 프로젝트 하이라이트 -->
+            <div class="videos-section">
+                <h2 class="videos-section-title">프로젝트 하이라이트</h2>
+                <div class="videos-grid">
+                    <div class="video-card">
+                        <div class="video-wrapper">
+                            <div class="video-placeholder">
+                                유튜브 동영상 링크를 추가하세요
+                            </div>
+                        </div>
+                        <h3 class="video-title">프로젝트 하이라이트</h3>
+                        <p class="video-description">주요 프로젝트의 하이라이트 동영상입니다.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 교육 자료 영상 -->
+            <div class="videos-section">
+                <h2 class="videos-section-title">교육 자료 영상</h2>
+                <div class="videos-grid">
+                    <div class="video-card">
+                        <div class="video-wrapper">
+                            <div class="video-placeholder">
+                                유튜브 동영상 링크를 추가하세요
+                            </div>
+                        </div>
+                        <h3 class="video-title">교육 자료 영상</h3>
+                        <p class="video-description">제품 사용법 및 교육 자료 동영상입니다.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

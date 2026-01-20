@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>논문 및 기술 자료 - SongDoPartners</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <style>
+        html, body {
+            overflow: auto !important;
+            overflow-x: hidden !important;
+            height: auto !important;
+            min-height: 100vh;
+        }
+
+        .papers-container {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            padding: 40px 20px;
+        }
+
+        .papers-wrapper {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .papers-header {
+            text-align: center;
+            color: white;
+            margin-bottom: 50px;
+        }
+
+        .papers-header h1 {
+            font-size: 48.6px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            letter-spacing: -0.5px;
+        }
+
+        .papers-header .subtitle {
+            font-size: 23.4px;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+
+        .papers-header .home-link {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+
+        .papers-header .home-link:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+
+        .papers-section {
+            margin-bottom: 60px;
+        }
+
+        .papers-section-title {
+            font-size: 32.4px;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid rgba(255,255,255,0.3);
+        }
+
+        .papers-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 25px;
+        }
+
+        .paper-card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transition: transform 0.3s, box-shadow 0.3s;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .paper-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        }
+
+        .paper-icon {
+            font-size: 48px;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .paper-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: #1e3a5f;
+            margin-bottom: 12px;
+            text-align: center;
+            line-height: 1.4;
+        }
+
+        .paper-description {
+            font-size: 16px;
+            color: #4a5568;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            flex-grow: 1;
+            text-align: center;
+        }
+
+        .paper-meta {
+            font-size: 14px;
+            color: #718096;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .paper-download {
+            display: inline-block;
+            width: 100%;
+            padding: 12px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 16px;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+        }
+
+        .paper-download:hover {
+            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .paper-download:active {
+            transform: translateY(0);
+        }
+
+        .paper-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 15px;
+            justify-content: center;
+        }
+
+        .paper-tag {
+            display: inline-block;
+            padding: 4px 12px;
+            background: #e2e8f0;
+            color: #4a5568;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        @media (max-width: 768px) {
+            .papers-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .papers-header h1 {
+                font-size: 36px;
+            }
+
+            .papers-section-title {
+                font-size: 28px;
+            }
+
+            .paper-card {
+                padding: 25px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="papers-container">
+        <div class="papers-wrapper">
+            <div class="papers-header">
+                <h1>📄 논문 및 기술 자료</h1>
+                <p class="subtitle">제품 및 기술에 관한 연구 논문과 기술 자료</p>
+                <a href="products.html" class="home-link">← 제품 페이지로 돌아가기</a>
+                <a href="../index.html" class="home-link" style="margin-left: 10px;">🏠 홈으로 돌아가기</a>
+            </div>
+
+            <!-- 구조 설계 연구 -->
+            <div class="papers-section">
+                <h2 class="papers-section-title">구조 설계 연구</h2>
+                <div class="papers-grid">
+                    <div class="paper-card">
+                        <div class="paper-icon">🏗️</div>
+                        <h3 class="paper-title">라흐타 센터 구조 설계 및 시공</h3>
+                        <p class="paper-description">
+                            유럽에서 가장 높은 건물인 라흐타 센터의 구조 설계 및 시공에 관한 연구 논문입니다. 
+                            Cross H형 강재 기둥의 구조적 성능과 시공 방법을 상세히 다룹니다.
+                        </p>
+                        <div class="paper-meta">
+                            <strong>출처:</strong> CTBUH (Council on Tall Buildings and Urban Habitat)
+                        </div>
+                        <div class="paper-tags">
+                            <span class="paper-tag">구조 설계</span>
+                            <span class="paper-tag">Cross H</span>
+                            <span class="paper-tag">고층건물</span>
+                            <span class="paper-tag">시공 사례</span>
+                        </div>
+                        <a href="https://global.ctbuh.org/resources/papers/download/4376-the-structural-engineering-design-and-construction-of-the-tallest-building-in-europe-lakhta-center-st-peters.pdf" 
+                           target="_blank" 
+                           rel="noopener noreferrer" 
+                           class="paper-download">
+                            📥 논문 다운로드 (PDF)
+                        </a>
+                    </div>
+
+                    <div class="paper-card">
+                        <div class="paper-icon">📐</div>
+                        <h3 class="paper-title">130-13 기술 자료</h3>
+                        <p class="paper-description">
+                            구조 설계 관련 기술 자료입니다.
+                        </p>
+                        <div class="paper-meta">
+                            <strong>유형:</strong> 기술 자료
+                        </div>
+                        <div class="paper-tags">
+                            <span class="paper-tag">기술 자료</span>
+                            <span class="paper-tag">구조 설계</span>
+                        </div>
+                        <a href="../assets/pdf/130-13.pdf" 
+                           target="_blank" 
+                           rel="noopener noreferrer" 
+                           class="paper-download">
+                            📥 자료 다운로드 (PDF)
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 성능 분석 논문 -->
+            <div class="papers-section">
+                <h2 class="papers-section-title">성능 분석 논문</h2>
+                <div class="papers-grid">
+                    <div class="paper-card">
+                        <div class="paper-icon">📊</div>
+                        <h3 class="paper-title">H형강 성능 분석 자료</h3>
+                        <p class="paper-description">
+                            현대제철 H형강의 성능 분석 및 기술 자료입니다.
+                        </p>
+                        <div class="paper-meta">
+                            <strong>제조사:</strong> 현대제철
+                        </div>
+                        <div class="paper-tags">
+                            <span class="paper-tag">H형강</span>
+                            <span class="paper-tag">성능 분석</span>
+                            <span class="paper-tag">제품 자료</span>
+                        </div>
+                        <a href="../assets/pdf/hyundai-steel-h-beam.pdf" 
+                           target="_blank" 
+                           rel="noopener noreferrer" 
+                           class="paper-download">
+                            📥 자료 다운로드 (PDF)
+                        </a>
+                    </div>
+
+                    <div class="paper-card">
+                        <div class="paper-icon">🔬</div>
+                        <h3 class="paper-title">POS H 형강 기술 자료</h3>
+                        <p class="paper-description">
+                            POS H 형강의 기술 자료 및 제품 사양서입니다.
+                        </p>
+                        <div class="paper-meta">
+                            <strong>제조사:</strong> POSCO
+                        </div>
+                        <div class="paper-tags">
+                            <span class="paper-tag">H형강</span>
+                            <span class="paper-tag">POSCO</span>
+                            <span class="paper-tag">제품 사양</span>
+                        </div>
+                        <a href="../assets/pdf/Pos-H Brochure step4.pdf" 
+                           target="_blank" 
+                           rel="noopener noreferrer" 
+                           class="paper-download">
+                            📥 자료 다운로드 (PDF)
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- 기술 자료 -->
+            <div class="papers-section">
+                <h2 class="papers-section-title">기술 자료</h2>
+                <div class="papers-grid">
+                    <div class="paper-card">
+                        <div class="paper-icon">📚</div>
+                        <h3 class="paper-title">추가 논문 및 자료</h3>
+                        <p class="paper-description">
+                            추가 논문 및 기술 자료는 준비 중입니다. 
+                            새로운 자료가 업데이트되면 이 페이지에 추가됩니다.
+                        </p>
+                        <div class="paper-meta">
+                            <strong>상태:</strong> 준비 중
+                        </div>
+                        <div class="paper-tags">
+                            <span class="paper-tag">업데이트 예정</span>
+                        </div>
+                        <div class="paper-download" style="background: #cbd5e0; cursor: not-allowed; opacity: 0.6;">
+                            📥 준비 중
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
