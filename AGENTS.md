@@ -173,10 +173,17 @@ homepage/
 ├── css/
 │   └── styles.css          # All styles including responsive design
 ├── js/
-│   └── main.js             # JavaScript utilities
+│   ├── auth-config.js      # Cognito settings (public, no secrets)
+│   ├── auth.js             # Cognito Hosted UI + PKCE flow
+│   ├── auth-guard.js       # Page access guard
+│   ├── clocks.js           # World clocks
+│   ├── login.js            # Login UI + session state
+│   ├── main.js             # Global init + navigation
+│   └── modal.js            # Project selection modal
 ├── assets/
 │   ├── images/             # Product logos, backgrounds, partner logos
-│   └── pdf/                # Downloadable brochures
+│   ├── pdf/                # Downloadable brochures
+│   └── powerpoint/         # Source slide decks
 ├── pages/
 │   ├── k-col web software/ # K-COL calculator pages
 │   └── K-product/          # Product pages
@@ -186,6 +193,7 @@ homepage/
 ├── nginx.conf              # Production nginx config with security headers
 ├── docker-compose.yml      # Local testing
 ├── deploy.sh               # Main deployment script
+├── bugcheck.sh             # Pre-deployment verification script
 ├── .dockerignore           # Excludes sensitive files from Docker
 │
 ├── # Local Development

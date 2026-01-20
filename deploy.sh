@@ -12,6 +12,8 @@
 #   ./deploy.sh --build-only       # Only build Docker image
 #   ./deploy.sh --deploy-only      # Only deploy existing image
 #   ./deploy.sh --quick            # Skip security scans (faster)
+#   ./deploy.sh --upload-protected # Upload protected pages to Supabase Storage
+#   ./deploy.sh --deploy-functions # Deploy Supabase Edge Functions
 #   ./deploy.sh --help             # Show help
 #
 # Prerequisites:
@@ -73,6 +75,8 @@ DEPLOY_ONLY=false
 QUICK_MODE=false
 LOCAL_MODE=false
 STOP_LOCAL=false
+UPLOAD_PROTECTED=false
+DEPLOY_FUNCTIONS=false
 LOCAL_PORT=8080
 LOCAL_CONTAINER="sdppmo-local-test"
 
@@ -87,6 +91,12 @@ for arg in "$@"; do
         --quick)
             QUICK_MODE=true
             ;;
+        --upload-protected)
+            UPLOAD_PROTECTED=true
+            ;;
+        --deploy-functions)
+            DEPLOY_FUNCTIONS=true
+            ;;
         --local)
             LOCAL_MODE=true
             ;;
@@ -100,8 +110,10 @@ for arg in "$@"; do
             echo "  --local        Build + run local test server at http://localhost:$LOCAL_PORT (NO AWS deploy)"
             echo "  --stop         Stop local test server"
             echo "  --build-only   Only build Docker image, don't deploy"
-            echo "  --deploy-only  Only deploy existing image to Lightsail"
-            echo "  --quick        Skip security scans for faster deployment"
+            echo "  --deploy-only      Only deploy existing image to Lightsail"
+            echo "  --quick            Skip security scans for faster deployment"
+            echo "  --upload-protected Upload protected pages to Supabase Storage"
+            echo "  --deploy-functions Deploy Supabase Edge Functions"
             echo "  -h, --help     Show this help message"
             echo ""
             echo "Configuration (edit in script):"
@@ -138,6 +150,82 @@ if [ "$STOP_LOCAL" = true ]; then
     docker image prune -f > /dev/null 2>&1
     
     log_success "Cleanup complete"
+    exit 0
+fi
+
+# ============================================================
+# Handle --upload-protected (upload protected pages to Supabase)
+# ============================================================
+if [ "$UPLOAD_PROTECTED" = true ]; then
+    log_step "Uploading protected pages to Supabase Storage..."
+    
+    # Check if Python3 is available
+    if ! command -v python3 &> /dev/null; then
+        log_error "Python3 is required for this operation"
+        exit 1
+    fi
+    
+    # Check if .env.local exists
+    if [ ! -f ".env.local" ]; then
+        log_error ".env.local file not found"
+        echo ""
+        echo "Create .env.local with:"
+        echo "  SUPABASE_URL=https://your-project.supabase.co"
+        echo "  SUPABASE_SERVICE_ROLE_KEY=your-service-role-key"
+        exit 1
+    fi
+    
+    # Run the upload script
+    python3 scripts/upload-protected-pages.py
+    
+    if [ $? -eq 0 ]; then
+        log_success "Protected pages uploaded successfully"
+    else
+        log_error "Failed to upload protected pages"
+        exit 1
+    fi
+    
+    exit 0
+fi
+
+# ============================================================
+# Handle --deploy-functions (deploy Supabase Edge Functions)
+# ============================================================
+if [ "$DEPLOY_FUNCTIONS" = true ]; then
+    log_step "Deploying Supabase Edge Functions..."
+    
+    # Check if Python3 is available
+    if ! command -v python3 &> /dev/null; then
+        log_error "Python3 is required for this operation"
+        exit 1
+    fi
+    
+    # Check if Supabase CLI is available
+    if ! command -v supabase &> /dev/null; then
+        log_error "Supabase CLI is required. Install with: brew install supabase/tap/supabase"
+        exit 1
+    fi
+    
+    # Check if .env.local exists
+    if [ ! -f ".env.local" ]; then
+        log_error ".env.local file not found"
+        echo ""
+        echo "Create .env.local with:"
+        echo "  SUPABASE_PROJECT_REF=your-project-ref"
+        echo "  SUPABASE_ACCESS_TOKEN=your-access-token (optional)"
+        exit 1
+    fi
+    
+    # Run the deploy script
+    python3 scripts/deploy-edge-functions.py
+    
+    if [ $? -eq 0 ]; then
+        log_success "Edge Functions deployed successfully"
+    else
+        log_error "Failed to deploy Edge Functions"
+        exit 1
+    fi
+    
     exit 0
 fi
 
@@ -450,6 +538,50 @@ URL=${URL:-Pending...}
 
 echo -e "Service State: ${YELLOW}${STATE}${NC}"
 echo -e "Service URL:   ${GREEN}${URL}${NC}"
+
+# ============================================================
+# Upload protected pages to Supabase Storage
+# ============================================================
+if [ -f ".env.local" ] && [ -f "scripts/upload-protected-pages.py" ]; then
+    echo ""
+    log_step "Uploading protected pages to Supabase Storage..."
+    if command -v python3 &> /dev/null; then
+        python3 scripts/upload-protected-pages.py
+        if [ $? -eq 0 ]; then
+            log_success "Protected pages uploaded to Supabase"
+        else
+            log_warn "Failed to upload protected pages (non-critical)"
+        fi
+    else
+        log_warn "Python3 not found - skipping Supabase upload"
+    fi
+else
+    if [ ! -f ".env.local" ]; then
+        log_warn "Skipping Supabase upload (.env.local not found)"
+    fi
+fi
+
+# ============================================================
+# Deploy Supabase Edge Functions
+# ============================================================
+if [ -f ".env.local" ] && [ -f "scripts/deploy-edge-functions.py" ]; then
+    echo ""
+    log_step "Deploying Supabase Edge Functions..."
+    if command -v python3 &> /dev/null && command -v supabase &> /dev/null; then
+        python3 scripts/deploy-edge-functions.py
+        if [ $? -eq 0 ]; then
+            log_success "Edge Functions deployed to Supabase"
+        else
+            log_warn "Failed to deploy Edge Functions (non-critical)"
+        fi
+    else
+        if ! command -v supabase &> /dev/null; then
+            log_warn "Supabase CLI not found - skipping Edge Function deploy"
+        else
+            log_warn "Python3 not found - skipping Edge Function deploy"
+        fi
+    fi
+fi
 
 # ============================================================
 # Done!

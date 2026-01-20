@@ -136,6 +136,7 @@ celerybeat.pid
 
 # Environments
 .env
+.env.local
 .envrc
 .venv
 env/
@@ -213,3 +214,6 @@ __marimo__/
 # SENSITIVE - Admin folder with credentials (NEVER commit)
 admin/
 assets/images/*_original.*
+
+# Supabase CLI temp files
+supabase/.temp/
