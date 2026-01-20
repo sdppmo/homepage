@@ -1024,26 +1024,45 @@
                     if (typeof loadXLSXLibrary === 'function') {
                         XLSXLib = await loadXLSXLibrary();
                     } else {
-                        // 직접 스크립트 로드
-                        await new Promise((resolve, reject) => {
-                            const script = document.createElement('script');
-                            script.src = 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
-                            script.onload = function() {
-                                setTimeout(function() {
-                                    if (typeof XLSX !== 'undefined' && window.XLSX && window.XLSX.utils) {
-                                        console.log('XLSX 라이브러리 로드 성공');
-                                        XLSXLib = window.XLSX;
-                                        resolve();
-                                    } else {
-                                        reject(new Error('XLSX 객체를 찾을 수 없습니다.'));
-                                    }
-                                }, 100);
-                            };
-                            script.onerror = function() {
-                                reject(new Error('스크립트 로드 실패'));
-                            };
-                            document.head.appendChild(script);
-                        });
+                        // 직접 스크립트 로드 (여러 CDN 시도)
+                        const cdnUrls = [
+                            'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js',
+                            'https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js',
+                            'https://cdn.sheetjs.com/xlsx-0.18.5/package/dist/xlsx.full.min.js'
+                        ];
+                        
+                        let loaded = false;
+                        for (let i = 0; i < cdnUrls.length; i++) {
+                            try {
+                                await new Promise((resolve, reject) => {
+                                    const script = document.createElement('script');
+                                    script.src = cdnUrls[i];
+                                    script.async = false;
+                                    script.onload = function() {
+                                        setTimeout(function() {
+                                            if (typeof XLSX !== 'undefined' && window.XLSX && window.XLSX.utils) {
+                                                console.log('XLSX 라이브러리 로드 성공:', cdnUrls[i]);
+                                                XLSXLib = window.XLSX;
+                                                loaded = true;
+                                                resolve();
+                                            } else {
+                                                reject(new Error('XLSX 객체를 찾을 수 없습니다.'));
+                                            }
+                                        }, 100);
+                                    };
+                                    script.onerror = function() {
+                                        reject(new Error('스크립트 로드 실패'));
+                                    };
+                                    document.head.appendChild(script);
+                                });
+                                if (loaded) break;
+                            } catch (err) {
+                                console.warn('CDN 로드 실패:', cdnUrls[i], err);
+                                if (i === cdnUrls.length - 1) {
+                                    throw new Error('모든 CDN에서 XLSX 라이브러리를 로드할 수 없습니다.');
+                                }
+                            }
+                        }
                     }
                 } catch (loadError) {
                     console.error('XLSX 라이브러리 로드 실패:', loadError);
@@ -1053,8 +1072,8 @@
             }
             
             if (!XLSXLib || typeof XLSXLib.read === 'undefined') {
-                alert('엑셀 라이브러리가 로드되지 않았습니다.\n\n해결 방법:\n1. 페이지를 새로고침해주세요 (F5 또는 Ctrl+R)\n2. 인터넷 연결을 확인해주세요');
-                console.error('XLSX is not defined for import');
+                alert('엑셀 라이브러리가 로드되지 않았습니다.\n\n해결 방법:\n1. 페이지를 새로고침해주세요 (F5 또는 Ctrl+R)\n2. 인터넷 연결을 확인해주세요\n3. 브라우저 콘솔(F12)에서 자세한 오류를 확인해주세요');
+                console.error('XLSX is not defined for import. XLSXLib:', XLSXLib);
                 return;
             }
             
@@ -1147,26 +1166,45 @@
                     if (typeof loadXLSXLibrary === 'function') {
                         XLSXLib = await loadXLSXLibrary();
                     } else {
-                        // 직접 스크립트 로드
-                        await new Promise((resolve, reject) => {
-                            const script = document.createElement('script');
-                            script.src = 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
-                            script.onload = function() {
-                                setTimeout(function() {
-                                    if (typeof XLSX !== 'undefined' && window.XLSX && window.XLSX.utils) {
-                                        console.log('XLSX 라이브러리 로드 성공');
-                                        XLSXLib = window.XLSX;
-                                        resolve();
-                                    } else {
-                                        reject(new Error('XLSX 객체를 찾을 수 없습니다.'));
-                                    }
-                                }, 100);
-                            };
-                            script.onerror = function() {
-                                reject(new Error('스크립트 로드 실패'));
-                            };
-                            document.head.appendChild(script);
-                        });
+                        // 직접 스크립트 로드 (여러 CDN 시도)
+                        const cdnUrls = [
+                            'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js',
+                            'https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js',
+                            'https://cdn.sheetjs.com/xlsx-0.18.5/package/dist/xlsx.full.min.js'
+                        ];
+                        
+                        let loaded = false;
+                        for (let i = 0; i < cdnUrls.length; i++) {
+                            try {
+                                await new Promise((resolve, reject) => {
+                                    const script = document.createElement('script');
+                                    script.src = cdnUrls[i];
+                                    script.async = false;
+                                    script.onload = function() {
+                                        setTimeout(function() {
+                                            if (typeof XLSX !== 'undefined' && window.XLSX && window.XLSX.utils) {
+                                                console.log('XLSX 라이브러리 로드 성공:', cdnUrls[i]);
+                                                XLSXLib = window.XLSX;
+                                                loaded = true;
+                                                resolve();
+                                            } else {
+                                                reject(new Error('XLSX 객체를 찾을 수 없습니다.'));
+                                            }
+                                        }, 100);
+                                    };
+                                    script.onerror = function() {
+                                        reject(new Error('스크립트 로드 실패'));
+                                    };
+                                    document.head.appendChild(script);
+                                });
+                                if (loaded) break;
+                            } catch (err) {
+                                console.warn('CDN 로드 실패:', cdnUrls[i], err);
+                                if (i === cdnUrls.length - 1) {
+                                    throw new Error('모든 CDN에서 XLSX 라이브러리를 로드할 수 없습니다.');
+                                }
+                            }
+                        }
                     }
                 } catch (loadError) {
                     console.error('XLSX 라이브러리 로드 실패:', loadError);
@@ -1176,8 +1214,8 @@
             }
             
             if (!XLSXLib || typeof XLSXLib.read === 'undefined') {
-                alert('엑셀 라이브러리가 로드되지 않았습니다.\n\n해결 방법:\n1. 페이지를 새로고침해주세요 (F5 또는 Ctrl+R)\n2. 인터넷 연결을 확인해주세요');
-                console.error('XLSX is not defined for importColumnNumbersFromExcel');
+                alert('엑셀 라이브러리가 로드되지 않았습니다.\n\n해결 방법:\n1. 페이지를 새로고침해주세요 (F5 또는 Ctrl+R)\n2. 인터넷 연결을 확인해주세요\n3. 브라우저 콘솔(F12)에서 자세한 오류를 확인해주세요');
+                console.error('XLSX is not defined for importColumnNumbersFromExcel. XLSXLib:', XLSXLib);
                 return;
             }
             
@@ -3073,26 +3111,45 @@
                     if (typeof loadXLSXLibrary === 'function') {
                         XLSXLib = await loadXLSXLibrary();
                     } else {
-                        // 직접 스크립트 로드
-                        await new Promise((resolve, reject) => {
-                            const script = document.createElement('script');
-                            script.src = 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
-                            script.onload = function() {
-                                setTimeout(function() {
-                                    if (typeof XLSX !== 'undefined' && window.XLSX && window.XLSX.utils) {
-                                        console.log('XLSX 라이브러리 로드 성공');
-                                        XLSXLib = window.XLSX;
-                                        resolve();
-                                    } else {
-                                        reject(new Error('XLSX 객체를 찾을 수 없습니다.'));
-                                    }
-                                }, 100);
-                            };
-                            script.onerror = function() {
-                                reject(new Error('스크립트 로드 실패'));
-                            };
-                            document.head.appendChild(script);
-                        });
+                        // 직접 스크립트 로드 (여러 CDN 시도)
+                        const cdnUrls = [
+                            'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js',
+                            'https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js',
+                            'https://cdn.sheetjs.com/xlsx-0.18.5/package/dist/xlsx.full.min.js'
+                        ];
+                        
+                        let loaded = false;
+                        for (let i = 0; i < cdnUrls.length; i++) {
+                            try {
+                                await new Promise((resolve, reject) => {
+                                    const script = document.createElement('script');
+                                    script.src = cdnUrls[i];
+                                    script.async = false;
+                                    script.onload = function() {
+                                        setTimeout(function() {
+                                            if (typeof XLSX !== 'undefined' && window.XLSX && window.XLSX.utils) {
+                                                console.log('XLSX 라이브러리 로드 성공:', cdnUrls[i]);
+                                                XLSXLib = window.XLSX;
+                                                loaded = true;
+                                                resolve();
+                                            } else {
+                                                reject(new Error('XLSX 객체를 찾을 수 없습니다.'));
+                                            }
+                                        }, 100);
+                                    };
+                                    script.onerror = function() {
+                                        reject(new Error('스크립트 로드 실패'));
+                                    };
+                                    document.head.appendChild(script);
+                                });
+                                if (loaded) break;
+                            } catch (err) {
+                                console.warn('CDN 로드 실패:', cdnUrls[i], err);
+                                if (i === cdnUrls.length - 1) {
+                                    throw new Error('모든 CDN에서 XLSX 라이브러리를 로드할 수 없습니다.');
+                                }
+                            }
+                        }
                     }
                 } catch (loadError) {
                     console.error('XLSX 라이브러리 로드 실패:', loadError);
@@ -3102,8 +3159,8 @@
             }
             
             if (!XLSXLib || typeof XLSXLib.read === 'undefined') {
-                alert('엑셀 라이브러리가 로드되지 않았습니다.\n\n해결 방법:\n1. 페이지를 새로고침해주세요 (F5 또는 Ctrl+R)\n2. 인터넷 연결을 확인해주세요');
-                console.error('XLSX is not defined for importBOQTypeCountFromExcel');
+                alert('엑셀 라이브러리가 로드되지 않았습니다.\n\n해결 방법:\n1. 페이지를 새로고침해주세요 (F5 또는 Ctrl+R)\n2. 인터넷 연결을 확인해주세요\n3. 브라우저 콘솔(F12)에서 자세한 오류를 확인해주세요');
+                console.error('XLSX is not defined for importBOQTypeCountFromExcel. XLSXLib:', XLSXLib);
                 return;
             }
             

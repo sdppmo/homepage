@@ -67,6 +67,25 @@
             margin-top: 40px;
         }
 
+        .small-panels-container {
+            grid-column: 1 / -1;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+            margin-top: 0;
+        }
+
+        .product-panel.small-panel {
+            width: 100%;
+            max-width: 100%;
+        }
+
+        @media (max-width: 768px) {
+            .small-panels-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
         .product-panel {
             background: white;
             border-radius: 16px;
@@ -214,6 +233,66 @@
                             <li>구조 효율성</li>
                             <li>시공 용이성</li>
                         </ul>
+                    </div>
+                </div>
+
+                <!-- Small Panels Container (사진, 논문, 동영상) -->
+                <div class="small-panels-container">
+                    <!-- Panel 4: 사진 -->
+                    <div class="product-panel small-panel">
+                        <div class="product-icon">📸</div>
+                        <h2 class="product-title">사진</h2>
+                        <p class="product-description">
+                            제품 및 프로젝트 관련 사진 자료를 확인하실 수 있습니다. 
+                            현장 사진, 제품 상세 이미지, 시공 과정 등을 제공합니다.
+                        </p>
+                        <div class="product-details">
+                            <ul>
+                                <li>제품 상세 이미지</li>
+                                <li>현장 시공 사진</li>
+                                <li>프로젝트 갤러리</li>
+                                <li>구조 상세 사진</li>
+                                <li>시공 과정 기록</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Panel 5: 논문 -->
+                    <div class="product-panel small-panel">
+                        <div class="product-icon">📄</div>
+                        <h2 class="product-title">논문</h2>
+                        <p class="product-description">
+                            제품 및 기술에 관한 연구 논문과 기술 자료를 제공합니다. 
+                            구조 설계 이론, 성능 분석, 시공 사례 연구 등을 확인하실 수 있습니다.
+                        </p>
+                        <div class="product-details">
+                            <ul>
+                                <li>구조 설계 연구</li>
+                                <li>성능 분석 논문</li>
+                                <li>시공 사례 연구</li>
+                                <li>기술 자료</li>
+                                <li>학술 논문</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Panel 6: 동영상 -->
+                    <div class="product-panel small-panel">
+                        <div class="product-icon">🎬</div>
+                        <h2 class="product-title">동영상</h2>
+                        <p class="product-description">
+                            제품 소개, 시공 과정, 기술 설명 등의 동영상 자료를 제공합니다. 
+                            시각적 자료를 통해 제품과 기술을 더욱 쉽게 이해하실 수 있습니다.
+                        </p>
+                        <div class="product-details">
+                            <ul>
+                                <li>제품 소개 동영상</li>
+                                <li>시공 과정 영상</li>
+                                <li>기술 설명 영상</li>
+                                <li>프로젝트 하이라이트</li>
+                                <li>교육 자료 영상</li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
             </div>
