@@ -778,7 +778,7 @@
                 <p style="margin-top:5px;opacity:0.9;">K-COLUMN 50EA 제작 및 설치 공정</p>
             </div>
             <div class="header-info">
-                <div>공사기간: 2025.12.26 ~ 2026.03.15</div>
+                <div>공사기간: 2025.12.26 ~ 2026.04.30</div>
                 <div style="margin-top:5px;">총 기둥수: <strong>50개</strong></div>
             </div>
         </div>
@@ -956,6 +956,30 @@
             <div class="input-section">
                 <h3>✏️ 일일 공정 입력 <span id="selected-company-name" style="color:#666;font-weight:400;font-size:14px;"></span></h3>
                 
+                <!-- 엑셀 일괄 업로드 섹션 (공정 1-6) -->
+                <div id="process-excel-upload" style="margin-bottom:20px;padding:20px;background:#e3f2fd;border-radius:8px;border:2px solid #2196f3;box-shadow:0 2px 8px rgba(33,150,243,0.2);">
+                    <div style="margin-bottom:12px;font-weight:700;color:#2c4a7c;font-size:16px;">📊 엑셀 일괄 업로드 (공정 1-6)</div>
+                    <div style="margin-bottom:15px;padding:10px;background:rgba(255,255,255,0.7);border-radius:6px;font-size:13px;color:#555;line-height:1.6;">
+                        엑셀 파일로 모든 공정(주기둥커팅, 소부재가공, 주기둥조립, 소부재조립, 현장배송, 현장설치)을 한꺼번에 업로드할 수 있습니다.<br>
+                        <strong style="color:#2c4a7c;">엑셀 형식:</strong> 첫 행에 <strong style="color:#d32f2f;">기둥번호, 주기둥커팅날짜, 소부재가공날짜, 주기둥조립날짜, 소부재조립날짜, 현장배송날짜, 현장설치날짜</strong> 헤더를 넣어주세요.<br>
+                        <strong style="color:#2c4a7c;">파일 확장자:</strong> <strong style="color:#d32f2f;">*.xlsx</strong> (엑셀 2007 이상 형식)<br>
+                        <span style="color:#666;font-size:12px;">※ 날짜가 없는 공정은 빈 셀로 두면 됩니다.</span>
+                    </div>
+                    <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;padding-top:10px;border-top:1px solid rgba(33,150,243,0.3);">
+                        <input type="file" accept=".xlsx,.xls,.csv" id="process-excel-file" onchange="handleProcessExcelFile(event)" style="padding:10px 15px;border:2px solid #2196f3;border-radius:6px;background:white;font-size:14px;cursor:pointer;min-width:200px;" title="엑셀 파일 선택 (*.xlsx)">
+                        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                            <button class="action-btn primary" onclick="downloadAllProcessTemplate()" style="padding:8px 16px;font-size:13px;font-weight:600;background:#2c4a7c;color:white;">📄 통합템플릿 (1-6)</button>
+                            <button class="action-btn" onclick="downloadProcessTemplate(1)" style="padding:8px 16px;font-size:13px;background:#e74c3c;color:white;">📄 주기둥커팅</button>
+                            <button class="action-btn" onclick="downloadProcessTemplate(2)" style="padding:8px 16px;font-size:13px;background:#ff9800;color:white;">📄 소부재가공</button>
+                            <button class="action-btn" onclick="downloadProcessTemplate(3)" style="padding:8px 16px;font-size:13px;background:#2196f3;color:white;">📄 주기둥조립</button>
+                            <button class="action-btn" onclick="downloadProcessTemplate(4)" style="padding:8px 16px;font-size:13px;background:#00bcd4;color:white;">📄 소부재조립</button>
+                            <button class="action-btn" onclick="downloadProcessTemplate(5)" style="padding:8px 16px;font-size:13px;background:#9c27b0;color:white;">📄 현장배송</button>
+                            <button class="action-btn" onclick="downloadProcessTemplate(6)" style="padding:8px 16px;font-size:13px;background:#4caf50;color:white;">📄 현장설치</button>
+                        </div>
+                        <span id="process-excel-status" style="color:#555;font-size:13px;font-weight:500;margin-left:10px;">파일을 업로드해주세요.</span>
+                    </div>
+                </div>
+                
                 <!-- 중복 입력 경고 -->
                 <div id="duplicate-warning" style="display:none;margin-bottom:15px;padding:12px;background:#fff3cd;border:2px solid #ff9800;border-radius:8px;color:#856404;font-size:13px;">
                     <div id="duplicate-warning-content" style="margin-bottom:10px;">
@@ -1023,6 +1047,21 @@
                 </div>
             </div>
             
+            <!-- 엑셀 일괄 업로드 섹션 -->
+            <div id="transport-excel-upload" style="margin-bottom:20px;padding:20px;background:#e8f5e9;border-radius:8px;border:2px solid #4caf50;box-shadow:0 2px 8px rgba(76,175,80,0.2);">
+                <div style="margin-bottom:12px;font-weight:700;color:#2c4a7c;font-size:16px;">📊 엑셀 일괄 업로드</div>
+                <div style="margin-bottom:15px;padding:10px;background:rgba(255,255,255,0.7);border-radius:6px;font-size:13px;color:#555;line-height:1.6;">
+                    엑셀 파일로 운송차수계획을 한꺼번에 업로드할 수 있습니다.<br>
+                    <strong style="color:#2c4a7c;">엑셀 형식:</strong> 첫 행에 <strong style="color:#d32f2f;">기둥번호, 차수, 운송날짜</strong> 헤더를 넣어주세요.<br>
+                    <strong style="color:#2c4a7c;">파일 확장자:</strong> <strong style="color:#d32f2f;">*.xlsx</strong> (엑셀 2007 이상 형식)
+                </div>
+                    <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;padding-top:10px;border-top:1px solid rgba(76,175,80,0.3);">
+                        <input type="file" accept=".xlsx,.xls,.csv" id="transport-plan-file" onchange="handleTransportPlanFile(event)" style="padding:10px 15px;border:2px solid #4caf50;border-radius:6px;background:white;font-size:14px;cursor:pointer;min-width:200px;" title="엑셀 파일 선택 (*.xlsx)">
+                        <button class="action-btn primary" onclick="downloadProcessTemplate(5)" style="padding:10px 20px;font-size:14px;font-weight:600;background:#9c27b0;color:white;">📄 현장배송</button>
+                        <span id="transport-plan-status" style="color:#555;font-size:13px;font-weight:500;margin-left:10px;">파일을 업로드해주세요.</span>
+                    </div>
+            </div>
+            
             <!-- 차수 관리 섹션 -->
             <div style="margin-bottom:20px;padding:15px;background:#fff;border-radius:8px;border:1px solid #e0e0e0;">
                 <div style="display:flex;align-items:center;gap:15px;margin-bottom:15px;flex-wrap:wrap;">
@@ -1080,6 +1119,7 @@
             <!-- 저장 버튼 -->
             <div style="text-align:right;">
                 <button class="action-btn" onclick="checkDuplicateColumns()" style="background:#ff9800;color:white;margin-right:10px;">🔍 중복 기둥 체크</button>
+                <button class="action-btn" onclick="forceSyncToGantt()" style="background:#2196f3;color:white;margin-right:10px;">🔄 공정표 동기화</button>
                 <button class="action-btn primary" onclick="saveTransportPlan()">💾 운송차수계획 저장</button>
                 <button class="action-btn secondary" onclick="clearTransportSelection()">🔄 선택 초기화</button>
             </div>
@@ -1271,7 +1311,7 @@
         // Constants
         const TOTAL_COLUMNS = 50;
         const START_DATE = new Date('2025-12-26');
-        const END_DATE = new Date('2026-03-15');
+        const END_DATE = new Date('2026-04-30');
 
         // Project scoping (6 projects)
         const urlParams = new URLSearchParams(window.location.search);
@@ -1900,7 +1940,9 @@
             }
             
             if (panelId === 'gantt') {
-                loadTransportPlan(); // 운송계획 로드
+                loadTransportPlan(); // 운송계획 로드 (내부에서 syncTransportToDailyData 호출)
+                // 강제로 다시 동기화하여 공정표에 반영
+                syncTransportToDailyData(false);
                 renderGanttChart();
             } else if (panelId === 'chart') {
                 renderCharts();
@@ -3312,6 +3354,18 @@
                 loadTransportPlan();
             }
             
+            // 디버깅: dailyData 확인
+            console.log('공정표 렌더링 시작');
+            console.log('dailyData:', dailyData);
+            let process5Count = 0;
+            for (let date in dailyData) {
+                if (dailyData[date] && dailyData[date][5]) {
+                    process5Count += dailyData[date][5].length;
+                    console.log(`날짜 ${date}: process 5에 ${dailyData[date][5].length}개 기둥`, dailyData[date][5]);
+                }
+            }
+            console.log(`총 process 5 기둥 수: ${process5Count}`);
+            
             // Generate date range
             const dates = [];
             let currentDate = new Date(START_DATE);
@@ -3369,10 +3423,14 @@
                         const completedProcesses = [];
                         for (let p = 1; p <= 6; p++) {
                             const dayData = dailyData[dateStr]?.[p];
-                            if (dayData) {
+                            if (dayData && Array.isArray(dayData)) {
                                 // 숫자 형식(c) 또는 문자열 형식(colId) 모두 확인
-                                if (dayData.includes(c) || dayData.includes(colId) || dayData.includes(String(c))) {
+                                const found = dayData.includes(c) || dayData.includes(colId) || dayData.includes(String(c));
+                                if (found) {
                                     completedProcesses.push(p);
+                                    if (p === 5 && c <= 5) { // 처음 5개 기둥만 로그
+                                        console.log(`기둥 ${colId}가 날짜 ${dateStr}에 process 5로 발견됨`);
+                                    }
                                 }
                             }
                         }
@@ -3428,15 +3486,34 @@
                                     const tripData = transportPlan[tripNum];
                                     if (tripData && typeof tripData === 'object') {
                                         const columns = tripData.columns;
-                                        const date = tripData.date;
+                                        let date = tripData.date;
+                                        
+                                        // 날짜 형식 정규화 (YYYY-MM-DD)
+                                        if (date && typeof date === 'string') {
+                                            date = date.trim();
+                                            // 날짜 형식 변환 시도
+                                            const dateObj = new Date(date);
+                                            if (!isNaN(dateObj.getTime())) {
+                                                const year = dateObj.getFullYear();
+                                                const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+                                                const day = String(dateObj.getDate()).padStart(2, '0');
+                                                date = `${year}-${month}-${day}`;
+                                            }
+                                        }
                                         
                                         // 기둥이 해당 차수에 포함되어 있고, 날짜가 일치하는지 확인
-                                        if (columns && Array.isArray(columns) && date && date.trim() !== '' && date === dateStr) {
+                                        if (columns && Array.isArray(columns) && date && date === dateStr) {
                                             // columns 배열에 숫자로 변환한 값이 있는지 확인
-                                            const columnIndex = columns.findIndex(col => Number(col) === Number(c));
+                                            const columnIndex = columns.findIndex(col => {
+                                                const colNum = typeof col === 'number' ? col : parseInt(String(col).replace(/[^0-9]/g, ''));
+                                                return colNum === c;
+                                            });
                                             if (columnIndex !== -1) {
                                                 // 실제 배송 날짜가 아니면 옅은 마젠타로 표시 (운송계획일)
                                                 cellClass = 'gantt-cell p5'; // 옅은 마젠타 - 운송계획일
+                                                if (c <= 5) { // 처음 5개 기둥만 로그
+                                                    console.log(`기둥 ${colId}가 transportPlan에서 날짜 ${dateStr}에 발견됨`);
+                                                }
                                                 break;
                                             }
                                         }
@@ -4376,12 +4453,28 @@
             const tripData = transportPlan[currentTransportTrip] || { columns: [], date: '' };
             const selectedColumns = tripData.columns || [];
             
+            // 각 기둥이 어느 차수에 저장되어 있는지 찾기
+            const columnToTripMap = {}; // { columnId: tripNum }
+            for (let tripNum in transportPlan) {
+                const trip = transportPlan[tripNum];
+                if (trip && trip.columns && Array.isArray(trip.columns)) {
+                    trip.columns.forEach(colId => {
+                        const numId = typeof colId === 'number' ? colId : parseInt(colId);
+                        if (numId && !columnToTripMap[numId]) {
+                            columnToTripMap[numId] = parseInt(tripNum);
+                        }
+                    });
+                }
+            }
+            
             for (let i = 1; i <= TOTAL_COLUMNS; i++) {
                 const div = document.createElement('div');
                 div.className = 'column-item';
                 
                 const isSelected = selectedColumns.includes(i);
                 const isDuplicate = duplicateColumns[i] && duplicateColumns[i].length > 1;
+                const savedInOtherTrip = columnToTripMap[i] && columnToTripMap[i] !== currentTransportTrip;
+                const savedTripNum = columnToTripMap[i];
                 
                 // 기둥 번호와 운송일자 표시
                 const columnLabel = document.createElement('div');
@@ -4413,6 +4506,15 @@
                     weightLabel.style.opacity = '0.85';
                     weightLabel.style.fontWeight = '600';
                     div.appendChild(weightLabel);
+                } else if (savedInOtherTrip) {
+                    // 다른 차수에 저장된 기둥: 차수 번호 표시
+                    const tripLabel = document.createElement('div');
+                    tripLabel.textContent = `${savedTripNum}차수`;
+                    tripLabel.style.fontSize = '12px';
+                    tripLabel.style.marginTop = '4px';
+                    tripLabel.style.fontWeight = '600';
+                    tripLabel.style.color = '#666';
+                    div.appendChild(tripLabel);
                 }
                 
                 if (isDuplicate) {
@@ -4437,6 +4539,17 @@
                     div.style.flexDirection = 'column';
                     div.style.alignItems = 'center';
                     div.style.justifyContent = 'center';
+                } else if (savedInOtherTrip) {
+                    // 다른 차수에 저장된 기둥: 회색 배경, 투명도 50%
+                    div.style.background = 'rgba(158, 158, 158, 0.5)';
+                    div.style.color = '#666';
+                    div.style.boxShadow = 'none';
+                    div.style.border = '1px solid rgba(158, 158, 158, 0.7)';
+                    div.style.display = 'flex';
+                    div.style.flexDirection = 'column';
+                    div.style.alignItems = 'center';
+                    div.style.justifyContent = 'center';
+                    div.title = `${savedTripNum}차수에 저장된 기둥`;
                 } else {
                     div.style.background = '#f5f5f5';
                     div.style.color = '#666';
@@ -4451,15 +4564,21 @@
                 div.style.transition = 'all 0.2s';
                 
                 div.onmouseenter = function() {
-                    if (!isSelected) {
+                    if (!isSelected && !savedInOtherTrip) {
                         this.style.background = '#e8f5e9';
+                        this.style.transform = 'scale(1.05)';
+                    } else if (savedInOtherTrip) {
+                        this.style.background = 'rgba(158, 158, 158, 0.7)';
                         this.style.transform = 'scale(1.05)';
                     }
                 };
                 
                 div.onmouseleave = function() {
-                    if (!isSelected) {
+                    if (!isSelected && !savedInOtherTrip) {
                         this.style.background = '#f5f5f5';
+                        this.style.transform = 'scale(1)';
+                    } else if (savedInOtherTrip) {
+                        this.style.background = 'rgba(158, 158, 158, 0.5)';
                         this.style.transform = 'scale(1)';
                     }
                 };
@@ -4556,11 +4675,932 @@
             const url = URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.href = url;
-            link.download = 'transport_volume_template.csv';
+            const dateStr = new Date().toISOString().split('T')[0].replace(/-/g, '');
+            link.download = `운송물량산정_템플릿_${dateStr}.csv`;
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
             URL.revokeObjectURL(url);
+        }
+
+        // XLSX 라이브러리 로드 확인 및 대기
+        async function ensureXLSXLoaded() {
+            if (typeof XLSX !== 'undefined' && window.XLSX && window.XLSX.utils) {
+                return window.XLSX;
+            }
+            
+            // 라이브러리 로드 시도
+            return new Promise((resolve, reject) => {
+                const cdnUrls = [
+                    'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js',
+                    'https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js',
+                    'https://cdn.sheetjs.com/xlsx-0.18.5/package/dist/xlsx.full.min.js'
+                ];
+                
+                let currentIndex = 0;
+                
+                function tryLoad() {
+                    if (currentIndex >= cdnUrls.length) {
+                        reject(new Error('모든 CDN에서 XLSX 라이브러리를 로드할 수 없습니다.'));
+                        return;
+                    }
+                    
+                    const script = document.createElement('script');
+                    script.src = cdnUrls[currentIndex];
+                    script.async = false;
+                    
+                    script.onload = function() {
+                        if (typeof XLSX !== 'undefined' && window.XLSX && window.XLSX.utils) {
+                            window.XLSX = window.XLSX || XLSX;
+                            resolve(window.XLSX);
+                        } else {
+                            currentIndex++;
+                            tryLoad();
+                        }
+                    };
+                    
+                    script.onerror = function() {
+                        currentIndex++;
+                        tryLoad();
+                    };
+                    
+                    document.head.appendChild(script);
+                }
+                
+                tryLoad();
+            });
+        }
+
+        // 통합 템플릿 다운로드 (공정 1-6 모두 포함)
+        async function downloadAllProcessTemplate() {
+            let XLSXLib;
+            try {
+                XLSXLib = await ensureXLSXLoaded();
+            } catch (err) {
+                alert('엑셀 라이브러리를 로드할 수 없습니다.\n\n해결 방법:\n1. 인터넷 연결을 확인해주세요\n2. 브라우저 캐시를 삭제하고 페이지를 새로고침해주세요 (Ctrl+Shift+R)\n3. 브라우저 콘솔(F12)에서 자세한 오류를 확인해주세요\n4. 방화벽이나 보안 프로그램이 CDN 접근을 차단하지 않는지 확인해주세요');
+                return;
+            }
+            
+            try {
+                const headers = ['기둥번호', '주기둥커팅날짜', '소부재가공날짜', '주기둥조립날짜', '소부재조립날짜', '현장배송날짜', '현장설치날짜'];
+                const sample = [
+                    ['1', '2026-01-15', '2026-01-16', '2026-01-20', '2026-01-21', '2026-01-25', '2026-01-30'],
+                    ['2', '2026-01-15', '2026-01-17', '2026-01-20', '2026-01-22', '2026-01-25', '2026-01-30'],
+                    ['3', '2026-01-16', '2026-01-18', '2026-01-21', '2026-01-23', '2026-01-26', '2026-02-01'],
+                    ['4', '2026-01-16', '', '2026-01-21', '2026-01-24', '', '2026-02-01']
+                ];
+                
+                // 데이터 배열 생성 (헤더 + 샘플 데이터)
+                const wsData = [headers, ...sample];
+                
+                // 워크시트 생성
+                const ws = XLSXLib.utils.aoa_to_sheet(wsData);
+                
+                // 컬럼 너비 설정
+                ws['!cols'] = [
+                    { wch: 12 }, // 기둥번호
+                    { wch: 18 }, // 주기둥커팅날짜
+                    { wch: 18 }, // 소부재가공날짜
+                    { wch: 18 }, // 주기둥조립날짜
+                    { wch: 18 }, // 소부재조립날짜
+                    { wch: 18 }, // 현장배송날짜
+                    { wch: 18 }  // 현장설치날짜
+                ];
+                
+                // 워크북 생성
+                const wb = XLSXLib.utils.book_new();
+                XLSXLib.utils.book_append_sheet(wb, ws, '공정입력');
+                
+                // 파일명 생성 (현재 날짜 포함)
+                const dateStr = new Date().toISOString().split('T')[0].replace(/-/g, '');
+                const fileName = `공정1-6입력_통합템플릿_${dateStr}.xlsx`;
+                
+                // Blob 방식으로 엑셀 파일 다운로드 (더 안정적)
+                try {
+                    const wbout = XLSXLib.write(wb, { bookType: 'xlsx', type: 'array', cellStyles: false });
+                    const blob = new Blob([wbout], { 
+                        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
+                    });
+                    
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = fileName;
+                    a.style.display = 'none';
+                    document.body.appendChild(a);
+                    a.click();
+                    
+                    setTimeout(() => {
+                        try {
+                            document.body.removeChild(a);
+                        } catch (e) {}
+                        setTimeout(() => URL.revokeObjectURL(url), 1000);
+                    }, 100);
+                } catch (writeErr) {
+                    console.error('파일 쓰기 오류:', writeErr);
+                    // XLSX.writeFile로 폴백 시도
+                    try {
+                        XLSX.writeFile(wb, fileName);
+                    } catch (fallbackErr) {
+                        throw new Error('엑셀 파일 생성에 실패했습니다: ' + (writeErr.message || String(writeErr)));
+                    }
+                }
+                
+            } catch (err) {
+                console.error('템플릿 다운로드 오류:', err);
+                alert('템플릿 다운로드 중 오류가 발생했습니다.\n\n오류: ' + (err.message || String(err)) + '\n\n해결 방법:\n1. 브라우저를 새로고침해주세요 (Ctrl+Shift+R)\n2. 브라우저 콘솔(F12)에서 자세한 오류를 확인해주세요');
+            }
+        }
+
+        // 공정별 템플릿 다운로드 (엑셀 형식)
+        // processNum: 1=주기둥커팅, 2=소부재가공, 3=주기둥조립, 4=소부재조립, 5=현장배송, 6=현장설치
+        async function downloadProcessTemplate(processNum) {
+            let XLSXLib;
+            try {
+                XLSXLib = await ensureXLSXLoaded();
+            } catch (err) {
+                alert('엑셀 라이브러리를 로드할 수 없습니다.\n\n해결 방법:\n1. 인터넷 연결을 확인해주세요\n2. 브라우저 캐시를 삭제하고 페이지를 새로고침해주세요 (Ctrl+Shift+R)\n3. 브라우저 콘솔(F12)에서 자세한 오류를 확인해주세요\n4. 방화벽이나 보안 프로그램이 CDN 접근을 차단하지 않는지 확인해주세요');
+                return;
+            }
+            
+            try {
+                const processNames = {
+                    1: { name: '주기둥커팅', header: '주기둥커팅날짜', color: '#e74c3c' },
+                    2: { name: '소부재가공', header: '소부재가공날짜', color: '#ff9800' },
+                    3: { name: '주기둥조립', header: '주기둥조립날짜', color: '#2196f3' },
+                    4: { name: '소부재조립', header: '소부재조립날짜', color: '#00bcd4' },
+                    5: { name: '현장배송', header: '운송날짜', color: '#9c27b0' },
+                    6: { name: '현장설치', header: '현장설치날짜', color: '#4caf50' }
+                };
+                
+                const processInfo = processNames[processNum];
+                if (!processInfo) {
+                    alert('유효하지 않은 공정 번호입니다.');
+                    return;
+                }
+                
+                let headers, sample, sheetName;
+                
+                if (processNum === 5) {
+                    // 현장배송: 기둥번호, 차수, 운송날짜
+                    headers = ['기둥번호', '차수', '운송날짜'];
+                    sample = [
+                        ['1', '1', '2026-01-15'],
+                        ['2', '1', '2026-01-15'],
+                        ['3', '2', '2026-01-20'],
+                        ['4', '2', '2026-01-20'],
+                        ['5', '3', '2026-01-25']
+                    ];
+                    sheetName = '운송차수계획';
+                } else if (processNum === 6) {
+                    // 현장설치: 기둥번호, 현장설치날짜
+                    headers = ['기둥번호', '현장설치날짜'];
+                    sample = [
+                        ['1', '2026-01-30'],
+                        ['2', '2026-01-30'],
+                        ['3', '2026-02-01'],
+                        ['4', '2026-02-01']
+                    ];
+                    sheetName = '현장설치';
+                } else {
+                    // 공정 1-4: 기둥번호, 해당 공정 날짜
+                    headers = ['기둥번호', processInfo.header];
+                    sample = [
+                        ['1', '2026-01-15'],
+                        ['2', '2026-01-15'],
+                        ['3', '2026-01-16'],
+                        ['4', '2026-01-17']
+                    ];
+                    sheetName = processInfo.name;
+                }
+                
+                // 데이터 배열 생성 (헤더 + 샘플 데이터)
+                const wsData = [headers, ...sample];
+                
+                // 워크시트 생성
+                const ws = XLSXLib.utils.aoa_to_sheet(wsData);
+                
+                // 컬럼 너비 설정
+                const colWidths = processNum === 5 ? 
+                    [{ wch: 12 }, { wch: 8 }, { wch: 15 }] : 
+                    [{ wch: 12 }, { wch: 18 }];
+                ws['!cols'] = colWidths;
+                
+                // 워크북 생성
+                const wb = XLSXLib.utils.book_new();
+                XLSXLib.utils.book_append_sheet(wb, ws, sheetName);
+                
+                // 파일명 생성 (현재 날짜 포함)
+                const dateStr = new Date().toISOString().split('T')[0].replace(/-/g, '');
+                const fileName = `${processInfo.name}_템플릿_${dateStr}.xlsx`;
+                
+                // Blob 방식으로 엑셀 파일 다운로드 (더 안정적)
+                try {
+                    const wbout = XLSXLib.write(wb, { bookType: 'xlsx', type: 'array', cellStyles: false });
+                    const blob = new Blob([wbout], { 
+                        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
+                    });
+                    
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = fileName;
+                    a.style.display = 'none';
+                    document.body.appendChild(a);
+                    a.click();
+                    
+                    setTimeout(() => {
+                        try {
+                            document.body.removeChild(a);
+                        } catch (e) {}
+                        setTimeout(() => URL.revokeObjectURL(url), 1000);
+                    }, 100);
+                } catch (writeErr) {
+                    console.error('파일 쓰기 오류:', writeErr);
+                    // XLSX.writeFile로 폴백 시도
+                    try {
+                        XLSX.writeFile(wb, fileName);
+                    } catch (fallbackErr) {
+                        throw new Error('엑셀 파일 생성에 실패했습니다: ' + (writeErr.message || String(writeErr)));
+                    }
+                }
+                
+            } catch (err) {
+                console.error('템플릿 다운로드 오류:', err);
+                alert('템플릿 다운로드 중 오류가 발생했습니다.\n\n오류: ' + (err.message || String(err)) + '\n\n해결 방법:\n1. 브라우저를 새로고침해주세요 (Ctrl+Shift+R)\n2. 브라우저 콘솔(F12)에서 자세한 오류를 확인해주세요');
+            }
+        }
+
+        // 공정 1-4: 엑셀 업로드 처리
+        async function handleProcessExcelFile(event) {
+            const file = event.target.files[0];
+            const statusEl = document.getElementById('process-excel-status');
+            
+            if (!file) {
+                if (statusEl) statusEl.textContent = '파일을 업로드해주세요.';
+                return;
+            }
+            
+            let XLSXLib;
+            try {
+                XLSXLib = await ensureXLSXLoaded();
+            } catch (err) {
+                alert('엑셀 라이브러리를 로드할 수 없습니다.\n\n해결 방법:\n1. 인터넷 연결을 확인해주세요\n2. 브라우저 캐시를 삭제하고 페이지를 새로고침해주세요 (Ctrl+Shift+R)\n3. 브라우저 콘솔(F12)에서 자세한 오류를 확인해주세요\n4. 방화벽이나 보안 프로그램이 CDN 접근을 차단하지 않는지 확인해주세요');
+                if (statusEl) statusEl.textContent = '⚠️ 엑셀 라이브러리 로드 실패';
+                return;
+            }
+            
+            if (statusEl) statusEl.textContent = '파일을 읽는 중...';
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSXLib.read(data, { type: 'array', cellDates: true, cellNF: false, cellText: false });
+                    const firstSheet = workbook.SheetNames[0];
+                    const sheet = workbook.Sheets[firstSheet];
+                    const rows = XLSXLib.utils.sheet_to_json(sheet, { defval: '', raw: false, dateNF: 'yyyy-mm-dd' });
+                    
+                    if (rows.length === 0) {
+                        alert('엑셀 파일에 데이터가 없습니다.');
+                        if (statusEl) statusEl.textContent = '⚠️ 파일에 데이터가 없습니다.';
+                        return;
+                    }
+                    
+                    // 기존 데이터 덮어쓸지 확인
+                    const shouldOverwrite = confirm('기존 공정 데이터를 엑셀 데이터로 덮어쓰시겠습니까?\n\n취소를 선택하면 기존 데이터에 추가됩니다.');
+                    
+                    if (shouldOverwrite) {
+                        // 기존 dailyData의 공정 1-6 초기화
+                        for (let date in dailyData) {
+                            if (dailyData[date]) {
+                                for (let p = 1; p <= 6; p++) {
+                                    if (dailyData[date][p]) {
+                                        dailyData[date][p] = [];
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    
+                    let successCount = 0;
+                    let errorCount = 0;
+                    const errors = [];
+                    
+                    // 엑셀 데이터 파싱
+                    rows.forEach((row, idx) => {
+                        try {
+                            // 컬럼명 정규화
+                            const normalizedRow = {};
+                            Object.keys(row).forEach(k => {
+                                normalizedRow[k.trim().toLowerCase()] = row[k];
+                            });
+                            
+                            // 기둥번호 찾기
+                            const colNo = row['기둥번호'] || row['기둥'] || row['번호'] || row['Column'] || row['No'] || 
+                                         normalizedRow['기둥번호'] || normalizedRow['기둥'] || normalizedRow['번호'] || 
+                                         normalizedRow['column'] || normalizedRow['no'];
+                            
+                            if (!colNo) {
+                                errorCount++;
+                                errors.push(`행 ${idx + 2}: 기둥번호가 없습니다.`);
+                                return;
+                            }
+                            
+                            // 기둥번호 정규화
+                            const columnId = parseInt(String(colNo).replace(/[^0-9]/g, ''));
+                            if (!columnId || columnId < 1 || columnId > TOTAL_COLUMNS) {
+                                errorCount++;
+                                errors.push(`행 ${idx + 2}: 유효하지 않은 기둥번호입니다 (${colNo}).`);
+                                return;
+                            }
+                            
+                            const colId = columnId + 'C';
+                            
+                            // 각 공정별 날짜 처리 (공정 1-6)
+                            const processDates = [
+                                { name: '주기둥커팅날짜', process: 1, keys: ['주기둥커팅날짜', '주기둥커팅', '커팅날짜', 'process1', 'p1'] },
+                                { name: '소부재가공날짜', process: 2, keys: ['소부재가공날짜', '소부재가공', '가공날짜', 'process2', 'p2'] },
+                                { name: '주기둥조립날짜', process: 3, keys: ['주기둥조립날짜', '주기둥조립', '조립날짜', 'process3', 'p3'] },
+                                { name: '소부재조립날짜', process: 4, keys: ['소부재조립날짜', '소부재조립', '소조립날짜', 'process4', 'p4'] },
+                                { name: '현장배송날짜', process: 5, keys: ['현장배송날짜', '현장배송', '배송날짜', '운송날짜', 'process5', 'p5'] },
+                                { name: '현장설치날짜', process: 6, keys: ['현장설치날짜', '현장설치', '설치날짜', 'process6', 'p6'] }
+                            ];
+                            
+                            processDates.forEach(({ name, process, keys }) => {
+                                // 날짜 찾기
+                                let date = null;
+                                for (let key of keys) {
+                                    date = row[key] || normalizedRow[key.toLowerCase()];
+                                    if (date) break;
+                                }
+                                
+                                if (!date) return; // 날짜가 없으면 스킵
+                                
+                                // 날짜 정규화
+                                let formattedDate = '';
+                                if (date instanceof Date) {
+                                    const year = date.getFullYear();
+                                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                                    const day = String(date.getDate()).padStart(2, '0');
+                                    formattedDate = `${year}-${month}-${day}`;
+                                } else {
+                                    const dateStr = String(date).trim();
+                                    if (dateStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
+                                        formattedDate = dateStr;
+                                    } else if (dateStr.match(/^\d{4}\/\d{2}\/\d{2}$/)) {
+                                        formattedDate = dateStr.replace(/\//g, '-');
+                                    } else if (/^\d+\.?\d*$/.test(dateStr) && parseFloat(dateStr) > 0 && parseFloat(dateStr) < 1000000) {
+                                        // Excel serial number
+                                        const excelEpoch = new Date(1899, 11, 30);
+                                        const serialNumber = parseFloat(dateStr);
+                                        const dateObj = new Date(excelEpoch.getTime() + serialNumber * 24 * 60 * 60 * 1000);
+                                        if (!isNaN(dateObj.getTime())) {
+                                            const year = dateObj.getFullYear();
+                                            const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+                                            const day = String(dateObj.getDate()).padStart(2, '0');
+                                            formattedDate = `${year}-${month}-${day}`;
+                                        }
+                                    } else {
+                                        const dateObj = new Date(dateStr);
+                                        if (!isNaN(dateObj.getTime()) && dateObj.getFullYear() > 1900) {
+                                            const year = dateObj.getFullYear();
+                                            const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+                                            const day = String(dateObj.getDate()).padStart(2, '0');
+                                            formattedDate = `${year}-${month}-${day}`;
+                                        }
+                                    }
+                                }
+                                
+                                if (formattedDate) {
+                                    // dailyData 초기화
+                                    if (!dailyData[formattedDate]) {
+                                        dailyData[formattedDate] = {};
+                                    }
+                                    if (!dailyData[formattedDate][process]) {
+                                        dailyData[formattedDate][process] = [];
+                                    }
+                                    
+                                    // 기둥 추가 (중복 제거)
+                                    if (!dailyData[formattedDate][process].includes(colId) && 
+                                        !dailyData[formattedDate][process].includes(columnId) &&
+                                        !dailyData[formattedDate][process].includes(String(columnId))) {
+                                        dailyData[formattedDate][process].push(colId);
+                                    }
+                                    
+                                    // columnData 업데이트
+                                    if (!columnData[colId]) {
+                                        columnData[colId] = { status: 0, lastUpdate: '' };
+                                    }
+                                    if (process === 6) {
+                                        // 현장설치는 status를 6으로 업데이트
+                                        columnData[colId].status = 6;
+                                        columnData[colId].lastUpdate = formattedDate;
+                                    } else if (process === 5) {
+                                        // 현장배송은 status를 업데이트하지 않음 (운송차수계획과 동일하게 처리)
+                                        // dailyData에만 저장
+                                    } else if (columnData[colId].status < process) {
+                                        // 공정 1-4는 status 업데이트
+                                        columnData[colId].status = process;
+                                        columnData[colId].lastUpdate = formattedDate;
+                                    }
+                                }
+                            });
+                            
+                            successCount++;
+                        } catch (err) {
+                            errorCount++;
+                            errors.push(`행 ${idx + 2}: ${err.message || '처리 오류'}`);
+                        }
+                    });
+                    
+                    // 빈 배열 정리
+                    for (let date in dailyData) {
+                        if (dailyData[date]) {
+                            for (let p = 1; p <= 6; p++) {
+                                if (dailyData[date][p] && dailyData[date][p].length === 0) {
+                                    delete dailyData[date][p];
+                                }
+                            }
+                            if (Object.keys(dailyData[date]).length === 0) {
+                                delete dailyData[date];
+                            }
+                        }
+                    }
+                    
+                    // 저장
+                    saveToStorage();
+                    
+                    // 화면 업데이트
+                    renderColumnGrid('column-grid-overview');
+                    renderColumnGrid('column-grid-input');
+                    updateProgressBars();
+                    renderGanttChart();
+                    
+                    // 결과 메시지
+                    let message = `✅ 업로드 완료: ${successCount}개 기둥 처리됨`;
+                    if (errorCount > 0) {
+                        message += `\n⚠️ 오류: ${errorCount}개 행 처리 실패`;
+                        if (errors.length > 0 && errors.length <= 10) {
+                            message += '\n\n오류 상세:\n' + errors.slice(0, 10).join('\n');
+                        }
+                    }
+                    
+                    alert(message);
+                    
+                    if (statusEl) {
+                        statusEl.textContent = `업로드 완료: ${successCount}개 기둥 처리됨`;
+                    }
+                    
+                } catch (err) {
+                    console.error('공정 엑셀 처리 오류:', err);
+                    alert('파일을 읽는 중 오류가 발생했습니다. 템플릿 형식을 확인해주세요.\n\n오류: ' + err.message);
+                    if (statusEl) statusEl.textContent = '⚠️ 파일을 읽는 중 오류가 발생했습니다.';
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        // 공정 5-6 (현장배송, 현장설치): 엑셀 업로드 처리
+        function handleProcess56ExcelFile(event) {
+            const file = event.target.files[0];
+            const statusEl = document.getElementById('process-56-excel-status');
+            
+            if (!file) {
+                if (statusEl) statusEl.textContent = '파일을 업로드해주세요.';
+                return;
+            }
+            
+            if (typeof XLSX === 'undefined') {
+                alert('엑셀 라이브러리를 불러오지 못했습니다. 인터넷 연결을 확인해주세요.');
+                return;
+            }
+            
+            if (statusEl) statusEl.textContent = '파일을 읽는 중...';
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array', cellDates: true, cellNF: false, cellText: false });
+                    const firstSheet = workbook.SheetNames[0];
+                    const sheet = workbook.Sheets[firstSheet];
+                    const rows = XLSX.utils.sheet_to_json(sheet, { defval: '', raw: false, dateNF: 'yyyy-mm-dd' });
+                    
+                    if (rows.length === 0) {
+                        alert('엑셀 파일에 데이터가 없습니다.');
+                        if (statusEl) statusEl.textContent = '⚠️ 파일에 데이터가 없습니다.';
+                        return;
+                    }
+                    
+                    // 공정 선택 (현장배송 또는 현장설치)
+                    const processChoice = confirm('어떤 공정을 업로드하시겠습니까?\n\n확인 = 현장배송 (공정 5)\n취소 = 현장설치 (공정 6)');
+                    const processNum = processChoice ? 5 : 6;
+                    const processName = processChoice ? '현장배송' : '현장설치';
+                    
+                    // 기존 데이터 덮어쓸지 확인
+                    const shouldOverwrite = confirm(`기존 ${processName} 데이터를 엑셀 데이터로 덮어쓰시겠습니까?\n\n취소를 선택하면 기존 데이터에 추가됩니다.`);
+                    
+                    if (shouldOverwrite) {
+                        // 기존 dailyData의 해당 공정만 초기화
+                        for (let date in dailyData) {
+                            if (dailyData[date] && dailyData[date][processNum]) {
+                                dailyData[date][processNum] = [];
+                            }
+                        }
+                    }
+                    
+                    let successCount = 0;
+                    let errorCount = 0;
+                    const errors = [];
+                    
+                    // 엑셀 데이터 파싱
+                    rows.forEach((row, idx) => {
+                        try {
+                            // 컬럼명 정규화
+                            const normalizedRow = {};
+                            Object.keys(row).forEach(k => {
+                                normalizedRow[k.trim().toLowerCase()] = row[k];
+                            });
+                            
+                            // 기둥번호 찾기
+                            const colNo = row['기둥번호'] || row['기둥'] || row['번호'] || row['Column'] || row['No'] || 
+                                         normalizedRow['기둥번호'] || normalizedRow['기둥'] || normalizedRow['번호'] || 
+                                         normalizedRow['column'] || normalizedRow['no'];
+                            
+                            if (!colNo) {
+                                errorCount++;
+                                errors.push(`행 ${idx + 2}: 기둥번호가 없습니다.`);
+                                return;
+                            }
+                            
+                            // 기둥번호 정규화
+                            const columnId = parseInt(String(colNo).replace(/[^0-9]/g, ''));
+                            if (!columnId || columnId < 1 || columnId > TOTAL_COLUMNS) {
+                                errorCount++;
+                                errors.push(`행 ${idx + 2}: 유효하지 않은 기둥번호입니다 (${colNo}).`);
+                                return;
+                            }
+                            
+                            const colId = columnId + 'C';
+                            
+                            // 날짜 찾기 (공정별로 다른 키 사용)
+                            let date = null;
+                            if (processNum === 5) {
+                                // 현장배송
+                                date = row['현장배송날짜'] || row['배송날짜'] || row['운송날짜'] || row['날짜'] || row['Date'] || 
+                                       normalizedRow['현장배송날짜'] || normalizedRow['배송날짜'] || normalizedRow['운송날짜'] || 
+                                       normalizedRow['날짜'] || normalizedRow['date'];
+                            } else {
+                                // 현장설치
+                                date = row['현장설치날짜'] || row['설치날짜'] || row['날짜'] || row['Date'] || 
+                                       normalizedRow['현장설치날짜'] || normalizedRow['설치날짜'] || normalizedRow['날짜'] || 
+                                       normalizedRow['date'];
+                            }
+                            
+                            if (!date) {
+                                errorCount++;
+                                errors.push(`행 ${idx + 2}: 날짜가 없습니다.`);
+                                return;
+                            }
+                            
+                            // 날짜 정규화
+                            let formattedDate = '';
+                            if (date instanceof Date) {
+                                const year = date.getFullYear();
+                                const month = String(date.getMonth() + 1).padStart(2, '0');
+                                const day = String(date.getDate()).padStart(2, '0');
+                                formattedDate = `${year}-${month}-${day}`;
+                            } else {
+                                const dateStr = String(date).trim();
+                                if (dateStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
+                                    formattedDate = dateStr;
+                                } else if (dateStr.match(/^\d{4}\/\d{2}\/\d{2}$/)) {
+                                    formattedDate = dateStr.replace(/\//g, '-');
+                                } else if (/^\d+\.?\d*$/.test(dateStr) && parseFloat(dateStr) > 0 && parseFloat(dateStr) < 1000000) {
+                                    // Excel serial number
+                                    const excelEpoch = new Date(1899, 11, 30);
+                                    const serialNumber = parseFloat(dateStr);
+                                    const dateObj = new Date(excelEpoch.getTime() + serialNumber * 24 * 60 * 60 * 1000);
+                                    if (!isNaN(dateObj.getTime())) {
+                                        const year = dateObj.getFullYear();
+                                        const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+                                        const day = String(dateObj.getDate()).padStart(2, '0');
+                                        formattedDate = `${year}-${month}-${day}`;
+                                    }
+                                } else {
+                                    const dateObj = new Date(dateStr);
+                                    if (!isNaN(dateObj.getTime()) && dateObj.getFullYear() > 1900) {
+                                        const year = dateObj.getFullYear();
+                                        const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+                                        const day = String(dateObj.getDate()).padStart(2, '0');
+                                        formattedDate = `${year}-${month}-${day}`;
+                                    }
+                                }
+                            }
+                            
+                            if (!formattedDate) {
+                                errorCount++;
+                                errors.push(`행 ${idx + 2}: 유효하지 않은 날짜 형식입니다.`);
+                                return;
+                            }
+                            
+                            // dailyData 초기화
+                            if (!dailyData[formattedDate]) {
+                                dailyData[formattedDate] = {};
+                            }
+                            if (!dailyData[formattedDate][processNum]) {
+                                dailyData[formattedDate][processNum] = [];
+                            }
+                            
+                            // 기둥 추가 (중복 제거)
+                            if (!dailyData[formattedDate][processNum].includes(colId) && 
+                                !dailyData[formattedDate][processNum].includes(columnId) &&
+                                !dailyData[formattedDate][processNum].includes(String(columnId))) {
+                                dailyData[formattedDate][processNum].push(colId);
+                            }
+                            
+                            // columnData 업데이트
+                            if (!columnData[colId]) {
+                                columnData[colId] = { status: 0, lastUpdate: '' };
+                            }
+                            if (processNum === 6) {
+                                // 현장설치는 status를 6으로 업데이트
+                                columnData[colId].status = 6;
+                                columnData[colId].lastUpdate = formattedDate;
+                            } else if (processNum === 5) {
+                                // 현장배송은 status를 업데이트하지 않음 (운송차수계획과 동일하게 처리)
+                                // dailyData에만 저장
+                            }
+                            
+                            successCount++;
+                        } catch (err) {
+                            errorCount++;
+                            errors.push(`행 ${idx + 2}: ${err.message || '처리 오류'}`);
+                        }
+                    });
+                    
+                    // 빈 배열 정리
+                    for (let date in dailyData) {
+                        if (dailyData[date]) {
+                            if (dailyData[date][processNum] && dailyData[date][processNum].length === 0) {
+                                delete dailyData[date][processNum];
+                            }
+                            if (Object.keys(dailyData[date]).length === 0) {
+                                delete dailyData[date];
+                            }
+                        }
+                    }
+                    
+                    // 저장
+                    saveToStorage();
+                    
+                    // 화면 업데이트
+                    renderColumnGrid('column-grid-overview');
+                    renderColumnGrid('column-grid-input');
+                    updateProgressBars();
+                    renderGanttChart();
+                    
+                    // 결과 메시지
+                    let message = `✅ ${processName} 업로드 완료: ${successCount}개 기둥 처리됨`;
+                    if (errorCount > 0) {
+                        message += `\n⚠️ 오류: ${errorCount}개 행 처리 실패`;
+                        if (errors.length > 0 && errors.length <= 10) {
+                            message += '\n\n오류 상세:\n' + errors.slice(0, 10).join('\n');
+                        }
+                    }
+                    
+                    alert(message);
+                    
+                    if (statusEl) {
+                        statusEl.textContent = `${processName} 업로드 완료: ${successCount}개 기둥 처리됨`;
+                    }
+                    
+                } catch (err) {
+                    console.error('공정 5-6 엑셀 처리 오류:', err);
+                    alert('파일을 읽는 중 오류가 발생했습니다. 템플릿 형식을 확인해주세요.\n\n오류: ' + err.message);
+                    if (statusEl) statusEl.textContent = '⚠️ 파일을 읽는 중 오류가 발생했습니다.';
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        // 운송차수계획: 템플릿 다운로드 (엑셀 형식) - 호환성을 위해 유지
+        function downloadTransportPlanTemplate() {
+            downloadProcessTemplate(5);
+        }
+
+        // 운송차수계획: 엑셀 업로드 처리
+        function handleTransportPlanFile(event) {
+            const file = event.target.files[0];
+            const statusEl = document.getElementById('transport-plan-status');
+            
+            if (!file) {
+                if (statusEl) statusEl.textContent = '파일을 업로드해주세요.';
+                return;
+            }
+            
+            if (typeof XLSX === 'undefined') {
+                alert('엑셀 라이브러리를 불러오지 못했습니다. 인터넷 연결을 확인해주세요.');
+                return;
+            }
+            
+            if (statusEl) statusEl.textContent = '파일을 읽는 중...';
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array', cellDates: true, cellNF: false, cellText: false });
+                    const firstSheet = workbook.SheetNames[0];
+                    const sheet = workbook.Sheets[firstSheet];
+                    const rows = XLSX.utils.sheet_to_json(sheet, { defval: '', raw: false, dateNF: 'yyyy-mm-dd' });
+                    
+                    if (rows.length === 0) {
+                        alert('엑셀 파일에 데이터가 없습니다.');
+                        if (statusEl) statusEl.textContent = '⚠️ 파일에 데이터가 없습니다.';
+                        return;
+                    }
+                    
+                    // 기존 운송차수계획 백업 (선택사항: 덮어쓸지 확인)
+                    const shouldOverwrite = confirm('기존 운송차수계획을 엑셀 데이터로 덮어쓰시겠습니까?\n\n취소를 선택하면 기존 데이터에 추가됩니다.');
+                    
+                    if (shouldOverwrite) {
+                        transportPlan = {};
+                    }
+                    
+                    let successCount = 0;
+                    let errorCount = 0;
+                    const errors = [];
+                    
+                    // 엑셀 데이터 파싱
+                    rows.forEach((row, idx) => {
+                        try {
+                            // 컬럼명 정규화 (대소문자 무시, 공백 제거)
+                            const normalizedRow = {};
+                            Object.keys(row).forEach(k => {
+                                normalizedRow[k.trim().toLowerCase()] = row[k];
+                            });
+                            
+                            // 기둥번호 찾기
+                            const colNo = row['기둥번호'] || row['기둥'] || row['번호'] || row['Column'] || row['No'] || 
+                                         normalizedRow['기둥번호'] || normalizedRow['기둥'] || normalizedRow['번호'] || 
+                                         normalizedRow['column'] || normalizedRow['no'];
+                            
+                            // 차수 찾기
+                            const tripNum = row['차수'] || row['차수번호'] || row['Trip'] || row['TripNum'] || 
+                                          normalizedRow['차수'] || normalizedRow['차수번호'] || normalizedRow['trip'] || 
+                                          normalizedRow['tripnum'];
+                            
+                            // 운송날짜 찾기
+                            const date = row['운송날짜'] || row['날짜'] || row['Date'] || row['운송일'] || 
+                                        normalizedRow['운송날짜'] || normalizedRow['날짜'] || normalizedRow['date'] || 
+                                        normalizedRow['운송일'];
+                            
+                            if (!colNo) {
+                                errorCount++;
+                                errors.push(`행 ${idx + 2}: 기둥번호가 없습니다.`);
+                                return;
+                            }
+                            
+                            // 기둥번호 정규화 (숫자만 추출)
+                            const columnId = parseInt(String(colNo).replace(/[^0-9]/g, ''));
+                            if (!columnId || columnId < 1 || columnId > TOTAL_COLUMNS) {
+                                errorCount++;
+                                errors.push(`행 ${idx + 2}: 유효하지 않은 기둥번호입니다 (${colNo}).`);
+                                return;
+                            }
+                            
+                            // 차수 정규화
+                            const tripNumber = parseInt(String(tripNum).replace(/[^0-9]/g, '')) || 1;
+                            
+                            // 날짜 정규화 (YYYY-MM-DD 형식으로 변환)
+                            let formattedDate = '';
+                            if (date) {
+                                let dateStr = String(date).trim();
+                                
+                                // 빈 문자열 체크
+                                if (!dateStr || dateStr === '' || dateStr === 'undefined' || dateStr === 'null') {
+                                    formattedDate = '';
+                                } else {
+                                    // Date 객체인 경우
+                                    if (date instanceof Date) {
+                                        const year = date.getFullYear();
+                                        const month = String(date.getMonth() + 1).padStart(2, '0');
+                                        const day = String(date.getDate()).padStart(2, '0');
+                                        formattedDate = `${year}-${month}-${day}`;
+                                    }
+                                    // YYYY-MM-DD 형식
+                                    else if (dateStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
+                                        formattedDate = dateStr;
+                                    }
+                                    // YYYY/MM/DD 형식
+                                    else if (dateStr.match(/^\d{4}\/\d{2}\/\d{2}$/)) {
+                                        formattedDate = dateStr.replace(/\//g, '-');
+                                    }
+                                    // Excel serial number 형식 (예: 44927)
+                                    else if (/^\d+\.?\d*$/.test(dateStr) && parseFloat(dateStr) > 0 && parseFloat(dateStr) < 1000000) {
+                                        // Excel serial number를 날짜로 변환 (1900-01-01 기준)
+                                        const excelEpoch = new Date(1899, 11, 30); // Excel epoch: 1899-12-30
+                                        const serialNumber = parseFloat(dateStr);
+                                        const dateObj = new Date(excelEpoch.getTime() + serialNumber * 24 * 60 * 60 * 1000);
+                                        if (!isNaN(dateObj.getTime())) {
+                                            const year = dateObj.getFullYear();
+                                            const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+                                            const day = String(dateObj.getDate()).padStart(2, '0');
+                                            formattedDate = `${year}-${month}-${day}`;
+                                        }
+                                    }
+                                    // 일반 날짜 문자열 파싱
+                                    else {
+                                        const dateObj = new Date(dateStr);
+                                        if (!isNaN(dateObj.getTime()) && dateObj.getFullYear() > 1900) {
+                                            const year = dateObj.getFullYear();
+                                            const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+                                            const day = String(dateObj.getDate()).padStart(2, '0');
+                                            formattedDate = `${year}-${month}-${day}`;
+                                        }
+                                    }
+                                }
+                            }
+                            
+                            // 차수 데이터 초기화
+                            if (!transportPlan[tripNumber]) {
+                                transportPlan[tripNumber] = { columns: [], date: '' };
+                            }
+                            
+                            // 기둥 추가 (중복 제거)
+                            if (!transportPlan[tripNumber].columns.includes(columnId)) {
+                                transportPlan[tripNumber].columns.push(columnId);
+                            }
+                            
+                            // 날짜가 있으면 차수의 날짜로 설정 (같은 차수 내에서 마지막 날짜로 업데이트)
+                            if (formattedDate) {
+                                transportPlan[tripNumber].date = formattedDate;
+                            }
+                            
+                            successCount++;
+                        } catch (err) {
+                            errorCount++;
+                            errors.push(`행 ${idx + 2}: ${err.message || '처리 오류'}`);
+                        }
+                    });
+                    
+                    // 차수별로 기둥 정렬
+                    for (let tripNum in transportPlan) {
+                        if (transportPlan[tripNum].columns) {
+                            transportPlan[tripNum].columns.sort((a, b) => a - b);
+                        }
+                    }
+                    
+                    // 화면 업데이트
+                    renderTransportTrips();
+                    renderTransportColumnGrid();
+                    updateTransportTripInfo();
+                    
+                    // 결과 메시지
+                    let message = `✅ 업로드 완료: ${successCount}개 기둥 처리됨`;
+                    if (errorCount > 0) {
+                        message += `\n⚠️ 오류: ${errorCount}개 행 처리 실패`;
+                        if (errors.length > 0 && errors.length <= 10) {
+                            message += '\n\n오류 상세:\n' + errors.slice(0, 10).join('\n');
+                        }
+                    }
+                    
+                    alert(message);
+                    
+                    if (statusEl) {
+                        statusEl.textContent = `업로드 완료: ${successCount}개 기둥, ${Object.keys(transportPlan).length}개 차수`;
+                    }
+                    
+                    // 자동 저장 및 동기화 (공정표에 반영)
+                    // localStorage에 저장
+                    localStorage.setItem(kcolKey('transportPlan'), JSON.stringify(transportPlan));
+                    
+                    // dailyData에 동기화 (확인 없이 자동 동기화)
+                    const syncResult = syncTransportToDailyData(false);
+                    if (syncResult) {
+                        // 화면 업데이트
+                        renderGanttChart();
+                        renderColumnGrid('column-grid-overview');
+                        renderColumnGrid('column-grid-input');
+                        updateProgressBars();
+                    }
+                    
+                    // Firebase에 저장 (활성화된 경우)
+                    if (isFirebaseEnabled && db) {
+                        db.ref(kcolRef('transportPlan')).set(transportPlan).catch((error) => {
+                            console.error('Firebase 저장 오류:', error);
+                        });
+                    }
+                    
+                } catch (err) {
+                    console.error('운송차수계획 엑셀 처리 오류:', err);
+                    alert('파일을 읽는 중 오류가 발생했습니다. 템플릿 형식을 확인해주세요.\n\n오류: ' + err.message);
+                    if (statusEl) statusEl.textContent = '⚠️ 파일을 읽는 중 오류가 발생했습니다.';
+                }
+            };
+            reader.readAsArrayBuffer(file);
         }
 
         // 운송물량산정: 표 렌더링
@@ -4878,18 +5918,26 @@
         // 운송계획 저장
         // 운송차수계획을 dailyData의 현장배송(process 5)에 동기화
         function syncTransportToDailyData(needConfirm = false) {
+            console.log('syncTransportToDailyData 시작, transportPlan:', transportPlan);
+            
             // 현장배송 상태로 변경될 기둥 목록 수집
             const columnsToUpdate = [];
             for (let tripNum in transportPlan) {
                 const tripData = transportPlan[tripNum];
+                console.log(`차수 ${tripNum} 확인:`, tripData);
+                
                 if (!tripData || !tripData.date || !tripData.columns || tripData.columns.length === 0) {
+                    console.log(`차수 ${tripNum} 스킵: 날짜 또는 기둥이 없음`);
                     continue;
                 }
                 
                 const date = tripData.date.trim();
                 if (!date) {
+                    console.log(`차수 ${tripNum} 스킵: 날짜가 비어있음`);
                     continue;
                 }
+                
+                console.log(`차수 ${tripNum} 처리: 날짜=${date}, 기둥=${tripData.columns.length}개`);
                 
                 for (let col of tripData.columns) {
                     let colId;
@@ -4941,6 +5989,7 @@
                 }
                 
                 const columns = tripData.columns;
+                console.log(`차수 ${tripNum} 동기화: 날짜=${date}, 기둥=${columns.length}개`);
                 
                 // dailyData 초기화
                 if (!dailyData[date]) {
@@ -4969,8 +6018,11 @@
                     // 중복 방지: 이미 추가되지 않은 경우만 추가
                     if (!dailyData[date][5].includes(colId)) {
                         dailyData[date][5].push(colId);
+                        console.log(`  기둥 ${colId} 추가됨`);
                     }
                 }
+                
+                console.log(`날짜 ${date}에 ${dailyData[date][5].length}개 기둥 저장됨:`, dailyData[date][5]);
                 
                 // 3단계: columnData의 status와 lastUpdate 업데이트
                 for (let col of columns) {
@@ -5019,12 +6071,22 @@
         function saveTransportPlan() {
             localStorage.setItem(kcolKey('transportPlan'), JSON.stringify(transportPlan));
             
-            // 운송차수계획을 dailyData의 현장배송(process 5)에 동기화 (확인 필요)
-            const syncResult = syncTransportToDailyData(true);
-            if (!syncResult) {
-                // 사용자가 취소한 경우 저장도 취소
-                return;
+            // 운송차수계획을 dailyData의 현장배송(process 5)에 동기화 (확인 없이 자동 동기화)
+            const syncResult = syncTransportToDailyData(false);
+            
+            // 디버깅: 동기화 결과 확인
+            console.log('운송차수계획 동기화 결과:', syncResult);
+            console.log('transportPlan:', transportPlan);
+            
+            // dailyData 확인
+            let totalColumnsInDailyData = 0;
+            for (let date in dailyData) {
+                if (dailyData[date] && dailyData[date][5]) {
+                    totalColumnsInDailyData += dailyData[date][5].length;
+                    console.log(`날짜 ${date}: ${dailyData[date][5].length}개 기둥`, dailyData[date][5]);
+                }
             }
+            console.log('dailyData 총 기둥 수:', totalColumnsInDailyData);
             
             // Firebase에 저장 (활성화된 경우)
             if (isFirebaseEnabled && db) {
@@ -5049,6 +6111,42 @@
                 renderColumnGrid('column-grid-input');
                 updateProgressBars();
             }
+        }
+
+        // 공정표 강제 동기화
+        function forceSyncToGantt() {
+            console.log('공정표 강제 동기화 시작');
+            console.log('현재 transportPlan:', transportPlan);
+            
+            // transportPlan 확인
+            let totalColumns = 0;
+            for (let tripNum in transportPlan) {
+                const tripData = transportPlan[tripNum];
+                if (tripData && tripData.columns && tripData.date) {
+                    totalColumns += tripData.columns.length;
+                    console.log(`차수 ${tripNum}: 날짜=${tripData.date}, 기둥=${tripData.columns.length}개`);
+                }
+            }
+            console.log(`총 ${totalColumns}개 기둥이 transportPlan에 있음`);
+            
+            // 동기화 실행
+            const syncResult = syncTransportToDailyData(false);
+            console.log('동기화 결과:', syncResult);
+            
+            // dailyData 확인
+            let process5Count = 0;
+            for (let date in dailyData) {
+                if (dailyData[date] && dailyData[date][5]) {
+                    process5Count += dailyData[date][5].length;
+                    console.log(`날짜 ${date}: ${dailyData[date][5].length}개 기둥`, dailyData[date][5]);
+                }
+            }
+            console.log(`dailyData에 총 ${process5Count}개 기둥이 process 5로 저장됨`);
+            
+            // 공정표 다시 렌더링
+            renderGanttChart();
+            
+            alert(`✅ 동기화 완료!\n\n- transportPlan: ${totalColumns}개 기둥\n- dailyData process 5: ${process5Count}개 기둥\n\n공정표를 확인해주세요.`);
         }
 
         // 선택 초기화
