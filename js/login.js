@@ -90,18 +90,13 @@
   }
 
   // Check if email is in bootstrap admin list (works before SDK loads)
-  function isBootstrapAdmin(email) {
-    var adminEmails = (config.adminEmails || []).map(function(e) { 
-      return (e || '').toLowerCase(); 
-    });
-    return adminEmails.indexOf((email || '').toLowerCase()) !== -1;
-  }
+  // Admin check is now done via database role only
 
   // Show instant state to prevent flash
   var instantSession = getInstantSession();
   if (instantSession) {
     // Immediately show logged-in state with cached profile if available
-    showLoggedInState(instantSession.email, instantSession.profile, isBootstrapAdmin(instantSession.email));
+    showLoggedInState(instantSession.email, instantSession.profile);
   } else {
     showGuestState();
   }
@@ -157,7 +152,7 @@
     if (authSection) authSection.style.visibility = 'visible';
   }
 
-  function showLoggedInState(email, profile, forceBootstrapAdmin) {
+  function showLoggedInState(email, profile) {
     if (authGuest) authGuest.style.display = 'none';
     if (authUser) authUser.style.display = 'block';
     if (authSection) authSection.style.visibility = 'visible';
@@ -178,9 +173,8 @@
     // Show admin link if user is admin or bootstrap admin
     if (adminLink) {
       var isAdminRole = profile && profile.role === 'admin';
-      var isBootstrap = forceBootstrapAdmin || (window.SDP && window.SDP.auth && 
-        window.SDP.auth.isBootstrapAdminEmail && window.SDP.auth.isBootstrapAdminEmail());
-      adminLink.style.display = (isAdminRole || isBootstrap) ? 'inline-flex' : 'none';
+      // Admin check based on database role only
+      adminLink.style.display = isAdminRole ? 'inline-flex' : 'none';
     }
   }
 

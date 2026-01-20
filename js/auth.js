@@ -101,18 +101,9 @@
     });
   }
 
-  // Check if current user email is in bootstrap admin list
-  function isBootstrapAdminEmail() {
-    var emails = config.adminEmails || [];
-    var email = sessionCache && sessionCache.user ? sessionCache.user.email : '';
-    if (!email) return false;
-    return emails.map(function(e) { return (e || '').toLowerCase(); })
-      .indexOf(email.toLowerCase()) !== -1;
-  }
-
-  // Check if user is admin
+  // Check if user is admin (based on database role only)
   function isAdmin() {
-    return (profileCache && profileCache.role === 'admin') || isBootstrapAdminEmail();
+    return profileCache && profileCache.role === 'admin';
   }
 
   // Get user display label
@@ -135,7 +126,6 @@
     getProfile: getProfile,
     signInWithPassword: signInWithPassword,
     logout: logout,
-    isBootstrapAdminEmail: isBootstrapAdminEmail,
     isAdmin: isAdmin,
     getUserLabel: getUserLabel,
     getAccessToken: getAccessToken

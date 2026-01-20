@@ -9,7 +9,7 @@
     provider: 'supabase',
     url: 'https://iwudkwhafyrhgzuntdgm.supabase.co',
     anonKey: 'sb_publishable_6GvHywiSQrcVXGapyPwvBA_lh2A76OW',
-    adminEmails: ['samhskim1@gmail.com'],
+    // Admin is determined by user_profiles.role = 'admin' in database
     protectedPaths: [
       '/pages/k-col web software/',
       '/pages/K-product/2H_steel_product.html',

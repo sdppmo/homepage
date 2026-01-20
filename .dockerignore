@@ -39,3 +39,19 @@ logs/
 assets/images/background_vessel_nyc.jpg
 assets/images/background_vessel_nyc.png
 assets/images/background_vessel_nyc_original.png
+
+# Protected pages (served via Supabase Edge Function, NOT nginx)
+# These pages require authentication and should not be publicly accessible
+pages/k-col web software/auto-find-section.html
+pages/k-col web software/boq-report.html
+
+# Supabase functions (deployed separately to Supabase)
+supabase/
+
+# Deployment scripts (not needed in container)
+scripts/
+deploy.sh
+bugcheck.sh
+
+# Environment files
+.env*
