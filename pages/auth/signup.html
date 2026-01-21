@@ -834,28 +834,46 @@
                 }
 
                 window.SDP.auth.getClient().then(function(client) {
-                    return client.auth.signUp({
-                        email: email,
-                        password: password,
-                        options: {
-                            emailRedirectTo: window.location.origin,
-                            data: {
-                                business_name: business,
-                                business_number: bizNum,
-                                phone: phone
-                            }
+                    // Call backend Edge Function for validation and signup
+                    return client.functions.invoke('signup-user', {
+                        body: {
+                            email: email,
+                            password: password,
+                            business_name: business,
+                            business_number: bizNum,
+                            phone: phone
                         }
                     });
-                }).then(function(result) {
-                    if (result.error) throw result.error;
+                }).then(function(response) {
+                    // Check for Edge Function errors
+                    if (response.error) {
+                        throw new Error(response.error.message || '회원가입에 실패했습니다.');
+                    }
                     
-                    // Check if user already exists (Supabase returns empty identities for existing users)
-                    if (result.data && result.data.user && result.data.user.identities && result.data.user.identities.length === 0) {
+                    var result = response.data;
+                    
+                    // Handle validation errors from backend
+                    if (result.error === 'validation_error') {
+                        showError(result.message);
+                        setLoading(false);
+                        return;
+                    }
+                    
+                    // Handle user already exists
+                    if (result.error === 'user_exists') {
                         showAlreadyRegistered();
                         setLoading(false);
                         return;
                     }
                     
+                    // Handle other errors
+                    if (result.error) {
+                        showError(result.message || '회원가입에 실패했습니다.');
+                        setLoading(false);
+                        return;
+                    }
+                    
+                    // Success
                     showSuccess();
                     setLoading(false);
                 }).catch(function(err) {
