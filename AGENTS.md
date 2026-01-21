@@ -1,7 +1,7 @@
 # AI Agent Context - SongDoPartners Homepage
 
 > This document provides context for AI agents working on this project.
-> Last updated: 2026-01-20
+> Last updated: 2026-01-21
 
 ## Project Overview
 
@@ -187,6 +187,9 @@ homepage/
 │   ├── pdf/                # Downloadable brochures
 │   └── powerpoint/         # Source slide decks
 ├── pages/
+│   ├── auth/               # Authentication pages
+│   │   ├── login.html      # Dedicated login page
+│   │   └── signup.html     # Dedicated signup page
 │   ├── k-col web software/ # K-COL calculator pages
 │   │   └── protected/      # Loader shells for protected pages
 │   └── K-product/          # Product pages
@@ -428,7 +431,28 @@ After deploying:
 
 ---
 
-## Recent Changes (2026-01-20)
+## Recent Changes (2026-01-21)
+
+### Dedicated Auth Pages
+- ✅ Added `/pages/auth/login.html` - standalone login page with modern dark theme
+- ✅ Added `/pages/auth/signup.html` - standalone signup page with password requirements checklist
+- ✅ Real-time password strength validation (8+ chars, upper/lower, number, special char)
+- ✅ Removed modal-based authentication from main page
+- ✅ Login redirects to dedicated page instead of showing modal
+
+### Login Session Improvements
+- ✅ Fixed login UI flickering on page load
+- ✅ Proper token refresh handling - if expired, redirect to login
+- ✅ Cached session check for instant UI display
+
+### UI/UX Updates
+- ✅ Auth section buttons fill container width
+- ✅ Removed promotional text from auth section
+- ✅ Clean, minimal button design
+
+---
+
+## Previous Changes (2026-01-20)
 
 ### Server-Side Protected Pages
 - ✅ Added `serve-protected-page` Edge Function for secure page access
@@ -452,6 +476,36 @@ After deploying:
 - ✅ Korean localization for auth UI
 - ✅ Password complexity requirements
 - ✅ User profile management (business name, phone, etc.)
+
+---
+
+## Authentication Flow
+
+### Login Flow
+1. User clicks "로그인" button on main page
+2. Redirects to `/pages/auth/login.html`
+3. User enters email/password
+4. On success, redirects back to original page (or homepage)
+
+### Signup Flow
+1. User clicks "회원가입" button on main page
+2. Redirects to `/pages/auth/signup.html`
+3. User enters email, password (with real-time validation), company info
+4. On success, shows confirmation to check email
+5. User verifies email and can then login
+
+### Session Management
+- Sessions stored in `localStorage` by Supabase client
+- `login.js` checks for cached session on page load
+- If valid token exists → show logged-in state immediately
+- If token expired but refresh token exists → wait for SDK refresh
+- If refresh fails → redirect to login page
+
+### Protected Pages
+- Protected pages use `/pages/k-col web software/protected/*.html` loader shells
+- Loader calls Supabase Edge Function `serve-protected-page`
+- Edge Function validates JWT and checks user permissions
+- If authorized, returns actual page content from Supabase Storage
 
 ---
 
