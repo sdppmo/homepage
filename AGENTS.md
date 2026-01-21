@@ -1,7 +1,7 @@
 # AI Agent Context - SongDoPartners Homepage
 
 > This document provides context for AI agents working on this project.
-> Last updated: 2026-01-18
+> Last updated: 2026-01-20
 
 ## Project Overview
 
@@ -173,9 +173,11 @@ homepage/
 ├── css/
 │   └── styles.css          # All styles including responsive design
 ├── js/
-│   ├── auth-config.js      # Cognito settings (public, no secrets)
-│   ├── auth.js             # Cognito Hosted UI + PKCE flow
-│   ├── auth-guard.js       # Page access guard
+│   ├── auth-config.js      # Supabase config (URL, public key)
+│   ├── auth.js             # Supabase authentication
+│   ├── auth-guard.js       # Page access guard (for protected pages)
+│   ├── feature-guard.js    # Permission-based UI access control
+│   ├── protected-loader.js # Loads protected pages via Edge Function
 │   ├── clocks.js           # World clocks
 │   ├── login.js            # Login UI + session state
 │   ├── main.js             # Global init + navigation
@@ -186,7 +188,20 @@ homepage/
 │   └── powerpoint/         # Source slide decks
 ├── pages/
 │   ├── k-col web software/ # K-COL calculator pages
+│   │   └── protected/      # Loader shells for protected pages
 │   └── K-product/          # Product pages
+│
+├── # Supabase Edge Functions
+├── supabase/
+│   └── functions/
+│       ├── serve-protected-page/  # Serves protected HTML with auth check
+│       ├── admin-users/           # Admin user management API
+│       └── send-admin-alert/      # New user notification emails
+│
+├── # Deployment Scripts
+├── scripts/
+│   ├── upload-protected-pages.py  # Upload HTML to Supabase Storage
+│   └── deploy-edge-functions.py   # Deploy Edge Functions via CLI
 │
 ├── # Docker & Deployment
 ├── Dockerfile              # Security-hardened nginx:alpine image
@@ -194,7 +209,7 @@ homepage/
 ├── docker-compose.yml      # Local testing
 ├── deploy.sh               # Main deployment script
 ├── bugcheck.sh             # Pre-deployment verification script
-├── .dockerignore           # Excludes sensitive files from Docker
+├── .dockerignore           # Excludes sensitive/protected files from Docker
 │
 ├── # Local Development
 ├── start-server.sh         # Local Python server (Mac/Linux)
@@ -205,7 +220,10 @@ homepage/
 ├── README.md               # User documentation
 ├── AGENTS.md               # This file - AI agent context
 │
-└── .gitignore              # Git ignore rules (includes admin/)
+├── # Environment (git-ignored)
+├── .env.local              # Supabase secrets (SERVICE_ROLE_KEY)
+│
+└── .gitignore              # Git ignore rules
 ```
 
 ---
@@ -215,12 +233,14 @@ homepage/
 ### `deploy.sh` - Main Deployment Script
 
 ```bash
-./deploy.sh                 # Full: build + security scan + deploy to Lightsail
-./deploy.sh --local         # Build + run local server at http://localhost:8080 (no AWS deploy)
-./deploy.sh --stop          # Stop local server + cleanup Docker images
-./deploy.sh --build-only    # Build Docker image only
-./deploy.sh --deploy-only   # Deploy existing image to Lightsail
-./deploy.sh --quick         # Skip Trivy security scans
+./deploy.sh                   # Full: build + security scan + deploy to Lightsail + Supabase
+./deploy.sh --local           # Build + run local server at http://localhost:8080
+./deploy.sh --stop            # Stop local server + cleanup Docker images
+./deploy.sh --build-only      # Build Docker image only
+./deploy.sh --deploy-only     # Deploy existing image to Lightsail
+./deploy.sh --quick           # Skip Trivy security scans
+./deploy.sh --upload-protected  # Upload protected pages to Supabase Storage
+./deploy.sh --deploy-functions  # Deploy Edge Functions to Supabase
 ```
 
 **Configuration (in script):**
@@ -274,14 +294,20 @@ homepage/
    - Uses timestamps (e.g., `20260118-154455`), not semver
    - No git tag integration
 
-2. **Client-Side Only Auth**
-   - Login is UI demo only
-   - No actual authentication backend
-   - For production: integrate Firebase Auth or backend API
-
-3. **No CI/CD Pipeline**
+2. **No CI/CD Pipeline**
    - Manual deployment via `deploy.sh`
    - Could be automated with GitHub Actions
+
+### ✅ Recently Resolved (2026-01-20)
+
+1. **Server-Side Authentication** *(Implemented)*
+   - Supabase Auth with JWT tokens
+   - Protected pages served via Edge Functions
+   - Permission-based access control (access_column, access_beam)
+
+2. **Admin Email Exposure** *(Fixed)*
+   - Removed hardcoded admin emails from frontend
+   - Admin status determined by database role only
 
 ---
 
@@ -395,27 +421,37 @@ After deploying:
 | Full deploy | `./deploy.sh` |
 | Quick deploy | `./deploy.sh --quick` |
 | Build only | `./deploy.sh --build-only` |
+| Upload protected pages | `./deploy.sh --upload-protected` |
+| Deploy Edge Functions | `./deploy.sh --deploy-functions` |
 | Check status | `aws lightsail get-container-services --service-name sdppmo-container-service-1 --region ap-northeast-2` |
 | View logs | `aws lightsail get-container-log --service-name sdppmo-container-service-1 --container-name homepage --region ap-northeast-2` |
 
 ---
 
-## Recent Changes (2026-01-18)
+## Recent Changes (2026-01-20)
 
-### Security Fixes
-- ✅ Removed hardcoded credentials (`TEMP_ACCOUNTS`) from `index.html`
-- ✅ Removed `admin/` folder from git history
-- ✅ Login switched to demo mode (any ID/password works for UI demo)
+### Server-Side Protected Pages
+- ✅ Added `serve-protected-page` Edge Function for secure page access
+- ✅ Protected pages (Auto Find Section, BOQ) stored in Supabase Storage
+- ✅ Permission-based access control (`access_column`, `access_beam`)
+- ✅ In-memory caching for Edge Function performance
+- ✅ Protected pages excluded from Docker image (`.dockerignore`)
 
-### Bug Fixes
-- ✅ Fixed world clocks ticking at different rates (consolidated to single 50ms interval script)
-- ✅ Fixed duplicate login/clock handlers conflict between `main.js` and inline scripts
-- ✅ Fixed `grep -P` compatibility issue in `deploy.sh` for macOS
+### Security Improvements
+- ✅ Removed hardcoded admin emails from frontend code
+- ✅ Admin status determined by database `role` field only
+- ✅ Hardcoded email in `send-admin-alert` moved to environment variable
 
-### Improvements
-- ✅ `deploy.sh --stop` now cleans up Docker images
-- ✅ Footer layout changed to 3x2 grid for company logos
-- ✅ News section repositioned to avoid footer overlap
+### Deployment Automation
+- ✅ Added `--upload-protected` to upload HTML to Supabase Storage
+- ✅ Added `--deploy-functions` to deploy Edge Functions via Supabase CLI
+- ✅ Full deploy now includes Supabase uploads automatically
+
+### Previous Changes (2026-01-18)
+- ✅ Supabase Auth integration (signup, login, session management)
+- ✅ Korean localization for auth UI
+- ✅ Password complexity requirements
+- ✅ User profile management (business name, phone, etc.)
 
 ---
 

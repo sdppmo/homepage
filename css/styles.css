@@ -124,10 +124,14 @@ html, body {
   text-align: center;
 }
 
+.auth-guest,
+.auth-user {
+  width: 100%;
+}
+
 .auth-buttons {
   display: flex;
   gap: 10px;
-  margin-bottom: 12px;
 }
 
 .auth-btn {
@@ -171,12 +175,6 @@ html, body {
   border-color: rgba(255, 255, 255, 0.3);
 }
 
-.auth-hint {
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.6);
-  margin: 0;
-}
-
 /* Logged In State */
 .auth-user {
   display: block;
@@ -187,6 +185,8 @@ html, body {
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 10px;
   padding: 14px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .user-card-header {

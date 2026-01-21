@@ -1,6 +1,6 @@
 /**
  * Auth UI Controller
- * Handles login/signup modals and auth state display
+ * Handles auth state display and redirects to dedicated auth pages
  */
 (function() {
   'use strict';
@@ -49,32 +49,45 @@
 
   if (!authSection) return;
 
+  // Get Supabase localStorage key
+  function getSupabaseStorageKey() {
+    var config = window.SDP_AUTH_CONFIG || {};
+    if (!config.url) return null;
+    var match = config.url.match(/https:\/\/([^.]+)\.supabase\.co/);
+    if (!match) return null;
+    return 'sb-' + match[1] + '-auth-token';
+  }
+
   // Instant session check from localStorage (before SDK loads)
+  // Returns: { email, user, profile, isValid, needsRefresh } or null
   function getInstantSession() {
     try {
-      var config = window.SDP_AUTH_CONFIG || {};
-      if (!config.url) return null;
-      // Extract project ref from URL: https://xxx.supabase.co -> xxx
-      var match = config.url.match(/https:\/\/([^.]+)\.supabase\.co/);
-      if (!match) return null;
-      var projectRef = match[1];
-      var key = 'sb-' + projectRef + '-auth-token';
+      var key = getSupabaseStorageKey();
+      if (!key) return null;
       var stored = localStorage.getItem(key);
       if (!stored) return null;
       var data = JSON.parse(stored);
-      // Check if session exists and not expired
+      
       if (data && data.user && data.access_token) {
         var expiresAt = data.expires_at || 0;
-        if (expiresAt * 1000 > Date.now()) {
-          // Also get cached profile
-          var cachedProfile = null;
-          try {
-            var profileKey = 'sdp-profile-' + data.user.id;
-            var profileData = localStorage.getItem(profileKey);
-            if (profileData) cachedProfile = JSON.parse(profileData);
-          } catch (e) {}
-          return { email: data.user.email, user: data.user, profile: cachedProfile };
-        }
+        var now = Date.now() / 1000; // Convert to seconds
+        var isValid = expiresAt > now;
+        var hasRefreshToken = !!data.refresh_token;
+        
+        var cachedProfile = null;
+        try {
+          var profileKey = 'sdp-profile-' + data.user.id;
+          var profileData = localStorage.getItem(profileKey);
+          if (profileData) cachedProfile = JSON.parse(profileData);
+        } catch (e) {}
+        
+        return { 
+          email: data.user.email, 
+          user: data.user, 
+          profile: cachedProfile,
+          isValid: isValid,
+          needsRefresh: !isValid && hasRefreshToken
+        };
       }
     } catch (e) {}
     return null;
@@ -89,27 +102,49 @@
     } catch (e) {}
   }
 
-  // Check if email is in bootstrap admin list (works before SDK loads)
-  // Admin check is now done via database role only
+  // Redirect to login page
+  function redirectToLogin() {
+    var currentPath = window.location.pathname;
+    window.location.href = '/pages/auth/login.html?redirect=' + encodeURIComponent(currentPath);
+  }
 
   // Show instant state to prevent flash
   var instantSession = getInstantSession();
+  var shownInstantLogin = false;
+  var waitingForRefresh = false;
+  
   if (instantSession) {
-    // Immediately show logged-in state with cached profile if available
-    showLoggedInState(instantSession.email, instantSession.profile);
+    if (instantSession.isValid) {
+      // Token is valid - show logged-in immediately (no flicker)
+      showLoggedInState(instantSession.email, instantSession.profile);
+      shownInstantLogin = true;
+    } else if (instantSession.needsRefresh) {
+      // Token expired but has refresh token - wait for SDK to refresh
+      // Keep auth section hidden until SDK confirms
+      waitingForRefresh = true;
+    } else {
+      // Token expired and no refresh token - show guest state
+      showGuestState();
+    }
   } else {
+    // No session at all - show guest state immediately
     showGuestState();
   }
 
-  // Create auth modal
-  var modal = createAuthModal();
-  document.body.appendChild(modal.overlay);
-
   // Full session check with profile (updates UI after SDK loads)
+  var sdkCheckComplete = false;
+  
   if (SUPABASE_MODE) {
     window.SDP.auth.getSession().then(function(session) {
+      sdkCheckComplete = true;
       if (!session) {
-        showGuestState();
+        // No valid session - refresh failed or no session
+        if (waitingForRefresh) {
+          // Was waiting for refresh but it failed - redirect to login page
+          redirectToLogin();
+        } else if (!shownInstantLogin) {
+          showGuestState();
+        }
         return;
       }
       return window.SDP.auth.getProfile().then(function(profile) {
@@ -118,20 +153,43 @@
         showLoggedInState(session.user.email, profile);
       });
     }).catch(function() {
-      showGuestState();
+      sdkCheckComplete = true;
+      if (waitingForRefresh) {
+        // Refresh failed - redirect to login page
+        redirectToLogin();
+      } else if (!shownInstantLogin) {
+        showGuestState();
+      }
     });
+    
+    // Fallback timeout: if waiting for refresh and SDK takes too long
+    if (waitingForRefresh || !shownInstantLogin) {
+      setTimeout(function() {
+        if (!sdkCheckComplete) {
+          if (waitingForRefresh) {
+            // Refresh taking too long - redirect to login
+            redirectToLogin();
+          } else {
+            showGuestState();
+          }
+        }
+      }, 3000); // 3 second timeout for refresh
+    }
+  } else if (!shownInstantLogin) {
+    // If SDK not available and no instant session, show guest state
+    showGuestState();
   }
 
-  // Event listeners
+  // Event listeners - redirect to dedicated auth pages
   if (loginBtn) {
     loginBtn.addEventListener('click', function() {
-      modal.show('login');
+      redirectToLogin();
     });
   }
 
   if (signupBtn) {
     signupBtn.addEventListener('click', function() {
-      modal.show('signup');
+      window.location.href = '/pages/auth/signup.html';
     });
   }
 
@@ -170,224 +228,20 @@
     if (userName) userName.textContent = displayName;
     if (userEmail) userEmail.textContent = email || '';
 
-    // Show admin link if user is admin or bootstrap admin
+    // Show admin link if user is admin
     if (adminLink) {
       var isAdminRole = profile && profile.role === 'admin';
-      // Admin check based on database role only
       adminLink.style.display = isAdminRole ? 'inline-flex' : 'none';
     }
   }
 
-  // Auth Modal
-  function createAuthModal() {
-    var overlay = document.createElement('div');
-    overlay.className = 'auth-modal-overlay';
-    overlay.innerHTML = '\
-      <div class="auth-modal">\
-        <button class="auth-modal-close" type="button">&times;</button>\
-        <h2 class="auth-modal-title">로그인</h2>\
-        <form class="auth-modal-form" id="authModalForm">\
-          <div class="auth-modal-field">\
-            <label>이메일</label>\
-            <input type="email" id="authEmail" required placeholder="example@email.com">\
-          </div>\
-          <div class="auth-modal-field">\
-            <label>비밀번호</label>\
-            <input type="password" id="authPassword" required placeholder="비밀번호 입력">\
-          </div>\
-          <div class="auth-modal-field signup-only" style="display:none;">\
-            <label>회사명</label>\
-            <input type="text" id="authBusiness" placeholder="회사명을 입력하세요">\
-          </div>\
-          <div class="auth-modal-field signup-only" style="display:none;">\
-            <label>사업자등록번호</label>\
-            <input type="text" id="authBizNum" placeholder="000-00-00000" maxlength="12">\
-          </div>\
-          <div class="auth-modal-field signup-only" style="display:none;">\
-            <label>전화번호</label>\
-            <input type="tel" id="authPhone" placeholder="010-0000-0000">\
-          </div>\
-          <div class="auth-modal-error" id="authError"></div>\
-          <button type="submit" class="auth-modal-submit">로그인</button>\
-        </form>\
-        <div class="auth-modal-footer">\
-          <span class="auth-modal-switch" id="authSwitch">계정이 없으신가요? <strong>회원가입</strong></span>\
-        </div>\
-      </div>\
-    ';
-
-    // Add modal styles
-    var style = document.createElement('style');
-    style.textContent = '\
-      .auth-modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.75); display: none; align-items: center; justify-content: center; z-index: 9999; backdrop-filter: blur(6px); }\
-      .auth-modal-overlay.show { display: flex; }\
-      .auth-modal { background: linear-gradient(180deg, #1e2642 0%, #151b2e 100%); border-radius: 16px; padding: 36px 32px; width: 100%; max-width: 420px; position: relative; box-shadow: 0 25px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.05); }\
-      .auth-modal-close { position: absolute; top: 14px; right: 14px; background: rgba(255,255,255,0.05); border: none; color: #666; font-size: 20px; cursor: pointer; line-height: 1; padding: 6px 10px; border-radius: 6px; transition: all 0.2s; }\
-      .auth-modal-close:hover { color: #fff; background: rgba(255,255,255,0.1); }\
-      .auth-modal-title { color: #fff; font-size: 22px; margin: 0 0 28px; text-align: center; font-weight: 600; letter-spacing: -0.3px; }\
-      .auth-modal-form { display: flex; flex-direction: column; gap: 18px; }\
-      .auth-modal-field { display: flex; flex-direction: column; gap: 8px; }\
-      .auth-modal-field label { color: #8b95a8; font-size: 13px; font-weight: 600; letter-spacing: 0.3px; }\
-      .auth-modal-field input { padding: 14px 16px; border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; background: rgba(255,255,255,0.03); color: #fff; font-size: 14px; transition: all 0.2s; }\
-      .auth-modal-field input:focus { outline: none; border-color: #667eea; background: rgba(102,126,234,0.05); box-shadow: 0 0 0 3px rgba(102,126,234,0.15); }\
-      .auth-modal-field input::placeholder { color: #4a5568; }\
-      .auth-modal-error { color: #f87171; font-size: 13px; text-align: center; min-height: 18px; padding: 4px 0; }\
-      .auth-modal-submit { padding: 16px; border: none; border-radius: 10px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #fff; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.2s; letter-spacing: 0.3px; margin-top: 4px; }\
-      .auth-modal-submit:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(102,126,234,0.4); }\
-      .auth-modal-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }\
-      .auth-modal-footer { margin-top: 24px; text-align: center; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.06); }\
-      .auth-modal-switch { color: #6b7280; font-size: 13px; cursor: pointer; }\
-      .auth-modal-switch strong { color: #818cf8; font-weight: 600; }\
-      .auth-modal-switch:hover strong { text-decoration: underline; }\
-      @keyframes shake { 0%,100%{transform:translateX(0)} 20%,60%{transform:translateX(-5px)} 40%,80%{transform:translateX(5px)} }\
-      .shake { animation: shake 0.4s ease; }\
-    ';
-    document.head.appendChild(style);
-
-    var modalEl = overlay.querySelector('.auth-modal');
-    var closeBtn = overlay.querySelector('.auth-modal-close');
-    var form = overlay.querySelector('#authModalForm');
-    var titleEl = overlay.querySelector('.auth-modal-title');
-    var submitBtn = overlay.querySelector('.auth-modal-submit');
-    var switchEl = overlay.querySelector('#authSwitch');
-    var errorEl = overlay.querySelector('#authError');
-    var signupFields = overlay.querySelectorAll('.signup-only');
-    var emailInput = overlay.querySelector('#authEmail');
-    var passwordInput = overlay.querySelector('#authPassword');
-    var businessInput = overlay.querySelector('#authBusiness');
-    var bizNumInput = overlay.querySelector('#authBizNum');
-    var phoneInput = overlay.querySelector('#authPhone');
-
-    var currentMode = 'login';
-
-    function show(mode) {
-      currentMode = mode || 'login';
-      overlay.classList.add('show');
-      errorEl.textContent = '';
-      emailInput.value = '';
-      passwordInput.value = '';
-      if (businessInput) businessInput.value = '';
-      if (bizNumInput) bizNumInput.value = '';
-
-      if (currentMode === 'signup') {
-        titleEl.textContent = '회원가입';
-        submitBtn.textContent = '가입하기';
-        switchEl.innerHTML = '이미 계정이 있으신가요? <strong>로그인</strong>';
-        signupFields.forEach(function(el) { el.style.display = 'flex'; });
-      } else {
-        titleEl.textContent = '로그인';
-        submitBtn.textContent = '로그인';
-        switchEl.innerHTML = '계정이 없으신가요? <strong>회원가입</strong>';
-        signupFields.forEach(function(el) { el.style.display = 'none'; });
-      }
-
-      setTimeout(function() { emailInput.focus(); }, 100);
-    }
-
-    function hide() {
-      overlay.classList.remove('show');
-    }
-
-    closeBtn.addEventListener('click', hide);
-    overlay.addEventListener('click', function(e) {
-      if (e.target === overlay) hide();
-    });
-
-    switchEl.addEventListener('click', function() {
-      show(currentMode === 'login' ? 'signup' : 'login');
-    });
-
-    form.addEventListener('submit', function(e) {
-      e.preventDefault();
-      errorEl.textContent = '';
-
-      var email = emailInput.value.trim();
-      var password = passwordInput.value;
-      var business = businessInput ? businessInput.value.trim() : '';
-      var bizNum = bizNumInput ? bizNumInput.value.trim() : '';
-      var phone = phoneInput ? phoneInput.value.trim() : '';
-
-      if (!email || !password) {
-        errorEl.textContent = '이메일과 비밀번호를 입력하세요.';
-        return;
-      }
-
-      // Password complexity for signup
-      if (currentMode === 'signup') {
-        var pwdRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>])[A-Za-z\d!@#$%^&*(),.?":{}|<>]{8,}$/;
-        if (!pwdRegex.test(password)) {
-          errorEl.textContent = '비밀번호는 8자 이상, 대/소문자, 숫자, 특수문자를 포함해야 합니다';
-          passwordInput.classList.add('shake');
-          setTimeout(function() { passwordInput.classList.remove('shake'); }, 400);
-          return;
-        }
-      }
-
-      submitBtn.disabled = true;
-      submitBtn.textContent = currentMode === 'signup' ? '가입 중...' : '로그인 중...';
-
-      if (!SUPABASE_MODE) {
-        errorEl.textContent = '인증 시스템이 설정되지 않았습니다.';
-        submitBtn.disabled = false;
-        submitBtn.textContent = currentMode === 'signup' ? '가입하기' : '로그인';
-        return;
-      }
-
-      if (currentMode === 'signup') {
-        window.SDP.auth.getClient().then(function(client) {
-          return client.auth.signUp({
-            email: email,
-            password: password,
-            options: {
-              data: { 
-                business_name: business,
-                business_number: bizNum,
-                phone: phone
-              }
-            }
-          });
-        }).then(function(result) {
-          if (result.error) throw result.error;
-          hide();
-          alert('회원가입 완료! 이메일 인증 후 로그인하세요.');
-        }).catch(function(err) {
-          errorEl.textContent = err.message || '회원가입 실패';
-        }).finally(function() {
-          submitBtn.disabled = false;
-          submitBtn.textContent = '가입하기';
-        });
-      } else {
-        window.SDP.auth.signInWithPassword(email, password)
-          .then(function(result) {
-            hide();
-            // Cache profile for instant display
-            if (result.session && result.profile) {
-              cacheProfile(result.session.user.id, result.profile);
-            }
-            showLoggedInState(email, result.profile);
-          })
-          .catch(function(err) {
-            errorEl.textContent = err.message || '로그인 실패';
-          })
-          .finally(function() {
-            submitBtn.disabled = false;
-            submitBtn.textContent = '로그인';
-          });
-      }
-    });
-
-    return { overlay: overlay, show: show, hide: hide };
-  }
-
-  // Handle auth messages from redirects
+  // Handle auth=required redirects (legacy support)
   var params = new URLSearchParams(window.location.search);
   if (params.get('auth') === 'required') {
-    setTimeout(function() {
-      if (modal) modal.show('login');
-    }, 500);
+    redirectToLogin();
   }
 
-  // Settings Modal
+  // Settings Modal (still needed for logged-in users)
   var settingsBtn = document.getElementById('settingsBtn');
   if (settingsBtn && SUPABASE_MODE) {
     var settingsModal = createSettingsModal();
@@ -630,12 +484,12 @@
         return;
       }
 
-      var userEmail = emailInput.value;
+      var userEmailValue = emailInput.value;
 
       // First verify current password by re-authenticating
       window.SDP.auth.getClient().then(function(client) {
         return client.auth.signInWithPassword({ 
-          email: userEmail, 
+          email: userEmailValue, 
           password: currentPassword 
         });
       }).then(function(result) {

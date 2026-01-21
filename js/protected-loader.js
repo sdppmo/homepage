@@ -27,7 +27,7 @@
 
   // Show error state
   function showError(title, message, showLoginBtn) {
-    var loginBtn = showLoginBtn ? '<button onclick="window.location.assign(\'/?auth=required&redirect=\' + encodeURIComponent(window.location.pathname))" style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; padding: 12px 32px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; margin-top: 20px;">로그인하기</button>' : '';
+    var loginBtn = showLoginBtn ? '<button onclick="window.location.assign(\'/pages/auth/login.html?redirect=\' + encodeURIComponent(window.location.pathname))" style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; padding: 12px 32px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; margin-top: 20px;">로그인하기</button>' : '';
     var homeBtn = '<button onclick="window.location.assign(\'/\')" style="background: #6b7280; color: white; border: none; padding: 12px 32px; border-radius: 8px; font-size: 14px; cursor: pointer; margin-top: 10px; margin-left: 10px;">홈으로</button>';
     
     document.body.innerHTML = '\
