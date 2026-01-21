@@ -478,6 +478,18 @@
             <a href="login.html" class="login-link-btn">로그인</a>
         </div>
 
+        <div class="success-message" id="alreadyRegistered">
+            <div class="success-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                    <circle cx="12" cy="7" r="4"/>
+                </svg>
+            </div>
+            <h2>이미 가입된 이메일입니다</h2>
+            <p>해당 이메일로 이미 회원가입이 되어있습니다.<br>로그인 페이지에서 로그인해주세요.</p>
+            <a href="login.html" class="login-link-btn">로그인 페이지로 이동</a>
+        </div>
+
         <div class="login-link" id="loginLink">
             이미 계정이 있으신가요? <a href="login.html">로그인</a>
         </div>
@@ -551,6 +563,13 @@
                 loginLink.style.display = 'none';
             }
 
+            function showAlreadyRegistered() {
+                document.getElementById('alreadyRegistered').classList.add('show');
+                errorMessage.classList.remove('show');
+                form.style.display = 'none';
+                loginLink.style.display = 'none';
+            }
+
             function hideMessages() {
                 errorMessage.classList.remove('show');
                 successMessage.classList.remove('show');
@@ -615,7 +634,9 @@
                     var message = err.message || '회원가입에 실패했습니다.';
                     // Translate common Supabase errors
                     if (message.includes('already registered')) {
-                        message = '이미 가입된 이메일입니다. 로그인 페이지로 이동하시겠어요?';
+                        showAlreadyRegistered();
+                        setLoading(false);
+                        return;
                     } else if (message.includes('Password should be at least')) {
                         message = '비밀번호가 너무 짧습니다. 8자 이상으로 설정해주세요.';
                     }
