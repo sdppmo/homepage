@@ -613,6 +613,24 @@ a.brochure-btn.white:hover {
   border-right: none;
 }
 
+.exchange-cell[onclick] {
+  transition: background-color 0.2s;
+}
+
+.exchange-cell[onclick]:hover {
+  background-color: #f0f4ff;
+}
+
+/* KOSIS 클릭 가능한 셀 */
+.exchange-cell.kosis-clickable {
+  transition: all 0.2s;
+}
+
+.exchange-cell.kosis-clickable:hover {
+  background-color: #f0f4ff;
+  transform: scale(1.02);
+}
+
 .exchange-cell.highlight {
   background: #fffacd;
 }
@@ -630,7 +648,80 @@ a.brochure-btn.white:hover {
   position: absolute;
   bottom: 0;
   left: 20px;
+  z-index: 9999; /* ensure clickable above any overlays */
+  pointer-events: auto;
+}
+
+/* Ensure exchange table content always receives clicks */
+.exchange-table-bottom-left * {
+  pointer-events: auto;
+}
+
+/* Price Section - 철근 가격 정보 */
+.price-section {
+  position: absolute;
+  bottom: 0;
+  left: 250px;
   z-index: 10;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 8px;
+  padding: 15px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  min-width: 280px;
+  max-width: 320px;
+}
+
+.price-section h2 {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1e3a5f;
+  margin-bottom: 8px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #667eea;
+}
+
+.price-section > p {
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 12px;
+}
+
+.price-section table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 10px;
+}
+
+.price-section thead {
+  background: linear-gradient(180deg, #666 0%, #555 100%);
+  color: #fff;
+}
+
+.price-section th {
+  padding: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: left;
+}
+
+.price-section td {
+  padding: 8px;
+  font-size: 12px;
+  color: #333;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.price-section tbody tr:hover {
+  background: #f8fafc;
+}
+
+.price-section small {
+  display: block;
+  font-size: 10px;
+  color: #718096;
+  line-height: 1.4;
+  margin-top: 8px;
 }
 
 /* News Section - Semi-transparent */
