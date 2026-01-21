@@ -437,7 +437,7 @@
         }
         return window.SDP.auth.getProfile().then(function(profile) {
           if (profile && profile.is_approved === false && !window.SDP.auth.isBootstrapAdminEmail()) {
-            window.location.assign('/pending.html');
+            window.location.assign('/pages/auth/pending.html');
             return;
           }
           if (!profile || profile.role !== 'admin') {

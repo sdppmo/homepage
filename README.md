@@ -96,8 +96,8 @@ curl -I http://localhost:8080/.git  # 404
 python -m http.server 8080
 
 # 또는
-./start-server.sh      # Mac/Linux
-start-server.bat       # Windows
+./scripts/start-server.sh      # Mac/Linux
+scripts/start-server.bat       # Windows
 ```
 
 ---

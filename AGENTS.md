@@ -189,7 +189,8 @@ homepage/
 ├── pages/
 │   ├── auth/               # Authentication pages
 │   │   ├── login.html      # Dedicated login page
-│   │   └── signup.html     # Dedicated signup page
+│   │   ├── signup.html     # Dedicated signup page
+│   │   └── pending.html    # Pending approval page
 │   ├── k-col web software/ # K-COL calculator pages
 │   │   └── protected/      # Loader shells for protected pages
 │   └── K-product/          # Product pages
@@ -201,10 +202,6 @@ homepage/
 │       ├── admin-users/           # Admin user management API
 │       └── send-admin-alert/      # New user notification emails
 │
-├── # Deployment Scripts
-├── scripts/
-│   ├── upload-protected-pages.py  # Upload HTML to Supabase Storage
-│   └── deploy-edge-functions.py   # Deploy Edge Functions via CLI
 │
 ├── # Docker & Deployment
 ├── Dockerfile              # Security-hardened nginx:alpine image
@@ -214,10 +211,12 @@ homepage/
 ├── bugcheck.sh             # Pre-deployment verification script
 ├── .dockerignore           # Excludes sensitive/protected files from Docker
 │
-├── # Local Development
-├── start-server.sh         # Local Python server (Mac/Linux)
-├── start-server.bat        # Local Python server (Windows)
-├── start-server.ps1        # Local Python server (PowerShell)
+├── scripts/                    # Build/deploy/dev scripts
+│   ├── start-server.sh         # Local Python server (Mac/Linux)
+│   ├── start-server.bat        # Local Python server (Windows)
+│   ├── start-server.ps1        # Local Python server (PowerShell)
+│   ├── deploy-edge-functions.py  # Deploy Edge Functions via CLI
+│   └── upload-protected-pages.py # Upload HTML to Supabase Storage
 │
 ├── # Documentation
 ├── README.md               # User documentation

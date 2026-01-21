@@ -24,7 +24,7 @@
     if (!profile) return;
     // Check if user is approved (admins and bootstrap admins bypass this)
     if (profile.is_approved === false && !auth.isAdmin()) {
-      window.location.assign('/pending.html');
+      window.location.assign('/pages/auth/pending.html');
     }
   }).catch(function(err) {
     console.warn('Auth guard error:', err);
