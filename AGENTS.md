@@ -509,6 +509,101 @@ After deploying:
 
 ---
 
+## Email Configuration (Supabase + Resend)
+
+### Overview
+- **Email Provider**: Resend (https://resend.com)
+- **Sender Email**: `sdppmo@kcol.kr`
+- **Integration**: Supabase Custom SMTP
+
+### Supabase Dashboard Settings
+
+#### 1. URL Configuration (중요!)
+**Location**: Project Settings → Authentication → URL Configuration
+
+| Setting | Value |
+|---------|-------|
+| Site URL | `https://kcol.kr` |
+| Redirect URLs | `https://kcol.kr/**`, `https://www.kcol.kr/**` |
+
+> ⚠️ **Site URL은 `{{ .ConfirmationURL }}`의 base URL로 사용됨**
+> Site URL이 설정되지 않으면 이메일의 인증 링크가 작동하지 않음
+
+#### 2. Custom SMTP Configuration
+**Location**: Project Settings → Authentication → SMTP Settings
+
+| Setting | Value |
+|---------|-------|
+| Enable Custom SMTP | ✅ On |
+| Sender email | `sdppmo@kcol.kr` |
+| Sender name | `송도파트너스피엠오` |
+| Host | `smtp.resend.com` |
+| Port | `465` |
+| Username | `resend` |
+| Password | Resend API Key (`re_xxxxxxxx`) |
+
+#### 3. Email Templates
+**Location**: Authentication → Email Templates
+
+**Confirm Signup (회원가입 인증)**:
+```html
+<h2>송도파트너스피엠오 회원가입을 환영합니다</h2>
+
+<p>안녕하세요,</p>
+
+<p>송도파트너스피엠오 서비스에 가입해 주셔서 감사합니다.<br>
+아래 버튼을 클릭하여 이메일 인증을 완료해 주세요.</p>
+
+<p style="margin: 32px 0;">
+  <a href="{{ .ConfirmationURL }}" style="background-color: #667eea; color: #ffffff; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: 600;">이메일 인증하기</a>
+</p>
+
+<p>버튼이 작동하지 않는 경우, 아래 링크를 브라우저에 직접 붙여넣어 주세요:<br>
+<a href="{{ .ConfirmationURL }}">{{ .ConfirmationURL }}</a></p>
+
+<hr style="border: none; border-top: 1px solid #e5e5e5; margin: 32px 0;">
+
+<p style="font-size: 12px; color: #999999;">
+※ 본 메일은 발신 전용이며, 회신하셔도 답변을 받으실 수 없습니다.
+</p>
+
+<p style="font-size: 13px; color: #666666;">
+본 메일은 송도파트너스피엠오 회원가입 요청에 의해 자동 발송되었습니다.<br>
+회원가입을 요청하지 않으셨다면 이 메일을 무시하셔도 됩니다.
+</p>
+
+<p style="font-size: 13px; color: #666666;">
+주식회사 송도파트너스피엠오<br>
+<a href="https://kcol.kr">https://kcol.kr</a> | sdppmo@kcol.kr
+</p>
+```
+
+### Resend Dashboard Settings
+
+#### Domain Configuration
+**Location**: Resend Dashboard → Domains
+
+1. Add domain: `kcol.kr`
+2. Add DNS records to Gabia:
+   - SPF record (TXT)
+   - DKIM records (CNAME × 3)
+   - Optional: DMARC record (TXT)
+
+#### API Key
+- Create API key with "Sending access" permission
+- Use this key as SMTP password in Supabase
+
+### Troubleshooting
+
+| Issue | Solution |
+|-------|----------|
+| `{{ .ConfirmationURL }}` 빈 값 | Site URL 설정 확인 (Project Settings → Auth → URL Configuration) |
+| 이메일 발송 안됨 | Resend 도메인 인증 상태 확인, DNS 레코드 전파 대기 (최대 48시간) |
+| 인증 링크 클릭 시 404 | Redirect URLs에 도메인 추가 여부 확인 |
+| 스팸함으로 이동 | DKIM, SPF, DMARC 레코드 모두 설정 권장 |
+
+---
+
 ## Contact
 
 - Email: sbd_pmo@naver.com
