@@ -88,23 +88,23 @@
         <!-- Navigation Menu -->
         <nav class="nav-menu">
           <a href="pages/consulting.html" class="nav-item gold">Consulting</a>
-          <a href="pages/products.html" class="nav-item">Products</a>
-          <a href="pages/slim-box-web-support.html" class="nav-item gold">Slim-Box Web Support</a>
-          <a href="pages/k-col web software/crossHcolumnCalculator.html" class="nav-item active" data-requires-auth="true" data-required-groups="kcol-user">K-COL Web Software</a>
-          <a href="pages/K-product/2H_steel_product.html" class="nav-item" id="kcol-product-schedule-link" data-requires-auth="true" data-required-groups="kcol-admin">K-COL Product Schedule</a>
-          <div class="nav-item">EX_Slim-Beam Web Support</div>
-          <div class="nav-item">KS Code Database</div>
-          <div class="nav-item">Networks</div>
-          <div class="nav-item">About SDP</div>
+          <a href="pages/products.html" class="nav-item gold">Products</a>
+          <a href="pages/slim-box-web-support.html" class="nav-item gray-text">Slim-Os Web Support (soon)</a>
+          <a href="pages/k-col web software/crossHcolumnCalculator.html" class="nav-item active gold" data-requires-auth="true" data-required-groups="kcol-user">K-COL Web Software</a>
+          <a href="pages/K-product/2H_steel_product.html" class="nav-item gold" id="kcol-product-schedule-link" data-requires-auth="true" data-required-groups="kcol-admin">K-COL Product Schedule</a>
+          <div class="nav-item small-text gray-text">EX-Slim-Box(Not in Service)</div>
+          <a href="pages/ks-code-database.html" class="nav-item gold">KS code DB(철골용)</a>
+          <a href="pages/qa.html" class="nav-item gold">Q & A (logged-in user)</a>
+          <div class="nav-item gray-text">About SDP</div>
         </nav>
 
         <!-- Brochure Grid -->
         <div class="brochure-grid">
-          <button class="brochure-btn">K-COL Brochure</button>
+          <a href="pages/k-col web software/k-col-user-guide.html#kcol-guide-header" class="brochure-btn">K-COL Brochure</a>
           <a href="assets/pdf/hyundai-steel-h-beam.pdf" target="_blank" class="brochure-btn">현대제철 H형강</a>
-          <button class="brochure-btn">SLim-Box Brochure</button>
+          <button class="brochure-btn gray-text">SLim-Box Brochure</button>
           <a href="assets/pdf/Pos-H Brochure step4.pdf" target="_blank" class="brochure-btn white">POS H 형강</a>
-          <button class="brochure-btn">Ex_Slim-Beam Brochure</button>
+          <button class="brochure-btn gray-text">Ex_Slim-Beam Brochure</button>
           <button class="brochure-btn yellow">Sunex MTL</button>
         </div>
       </aside>
@@ -130,15 +130,15 @@
               <div class="clock-label">Indonesia <span class="ampm-indicator" id="ampm-indonesia">AM</span></div>
             </div>
             <div class="clock-container">
-              <div class="clock" id="clock-newyork">
+              <div class="clock" id="clock-seoul">
                 <div class="clock-face">
-                  <div class="hand hour-hand" id="hour-newyork"></div>
-                  <div class="hand minute-hand" id="minute-newyork"></div>
-                  <div class="hand second-hand" id="second-newyork"></div>
+                  <div class="hand hour-hand" id="hour-seoul"></div>
+                  <div class="hand minute-hand" id="minute-seoul"></div>
+                  <div class="hand second-hand" id="second-seoul"></div>
                   <div class="clock-center"></div>
                 </div>
               </div>
-              <div class="clock-label">New York <span class="ampm-indicator" id="ampm-newyork">AM</span></div>
+              <div class="clock-label">Seoul <span class="ampm-indicator" id="ampm-seoul">AM</span></div>
             </div>
             <div class="clock-container">
               <div class="clock" id="clock-sanfrancisco">
@@ -151,43 +151,61 @@
               </div>
               <div class="clock-label">San Francisco <span class="ampm-indicator" id="ampm-sanfrancisco">AM</span></div>
             </div>
+            <div class="clock-container">
+              <div class="clock" id="clock-newyork">
+                <div class="clock-face">
+                  <div class="hand hour-hand" id="hour-newyork"></div>
+                  <div class="hand minute-hand" id="minute-newyork"></div>
+                  <div class="hand second-hand" id="second-newyork"></div>
+                  <div class="clock-center"></div>
+                </div>
+              </div>
+              <div class="clock-label">New York <span class="ampm-indicator" id="ampm-newyork">AM</span></div>
+            </div>
           </div>
 
           <!-- Right Sidebar -->
           <aside class="right-sidebar">
-            <!-- Exchange Table -->
-            <div class="exchange-table">
-              <div class="exchange-header">환율(won/$)</div>
-              <div class="exchange-row">
-                <div class="exchange-cell">건설지수(12월)</div>
-                <div class="exchange-cell">건설지수(1월)</div>
-              </div>
-              <div class="exchange-row">
-                <div class="exchange-cell">철강가격 (12월)</div>
-                <div class="exchange-cell">철강가격 (1월)</div>
-              </div>
-              <div class="exchange-row">
-                <div class="exchange-cell">판재가격(12월)</div>
-                <div class="exchange-cell">판재가격(1월)</div>
-              </div>
-              <div class="exchange-row">
-                <div class="exchange-cell">철근가격(12월)</div>
-                <div class="exchange-cell">철근가격(1월)</div>
-              </div>
-              <div class="exchange-row">
-                <div class="exchange-cell">레미콘가격(12월)</div>
-                <div class="exchange-cell">레미콘가격(1월)</div>
-              </div>
-            </div>
-
             <!-- News Section -->
             <div class="news-section">
               <div class="news-title">NEWS</div>
-              <div class="news-item">K-COL Steel Column<br>Program is released on<br>1 of Dec.</div>
+              <div class="news-item">K-COL Steel Column<br>Program is release on<br>1 of Dec.<br>New Auto Find Section<br>to be loaded on<br>1 of Feb.</div>
               <div class="news-item">Slimbox tests on 1 of Jan<br>with posco Global R&D<br>Center at Songdo, Incheon</div>
               <div class="news-item">H beam price up<br>50won/kg on Nov. from<br>Hyundai-steel</div>
             </div>
           </aside>
+
+          <!-- Exchange Table - 좌측 하단 -->
+          <div class="exchange-table exchange-table-bottom-left">
+            <div class="exchange-header">
+              <a href="https://www.bok.or.kr/portal/singl/baseRate/list.do?dataSeCd=01&menuNo=200643" target="_blank" class="exchange-link" title="한국은행 환율 정보 보기">
+                환율(won/$): <span id="exchange-rate">로딩중...</span>
+              </a>
+            </div>
+            <div class="exchange-row">
+              <div class="exchange-cell">건설지수(12월)</div>
+              <div class="exchange-cell">건설지수(1월)</div>
+            </div>
+            <div class="exchange-row">
+              <div class="exchange-cell" title="철강가격 기본단가를 알수 있도록 관련웹사이트를 통해 항시 업데이트 합니다. 이패널은 지난 12월 가격을 알려줍니다.">
+                철강가격 (12월)
+                <div class="exchange-description">기본단가 업데이트</div>
+              </div>
+              <div class="exchange-cell">철강가격 (1월)</div>
+            </div>
+            <div class="exchange-row">
+              <div class="exchange-cell">판재가격(12월)</div>
+              <div class="exchange-cell">판재가격(1월)</div>
+            </div>
+            <div class="exchange-row">
+              <div class="exchange-cell">철근가격(12월)</div>
+              <div class="exchange-cell">철근가격(1월)</div>
+            </div>
+            <div class="exchange-row">
+              <div class="exchange-cell">레미콘가격(12월)</div>
+              <div class="exchange-cell">레미콘가격(1월)</div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -259,5 +277,44 @@
   <script src="js/login.js"></script>
   <script src="js/clocks.js"></script>
   <script src="js/modal.js"></script>
+  
+  <!-- Exchange Rate Script -->
+  <script>
+    // 환율 정보 가져오기
+    async function fetchExchangeRate() {
+      const rateElement = document.getElementById('exchange-rate');
+      if (!rateElement) return;
+
+      try {
+        // ExchangeRate-API 사용 (무료)
+        // 실제 사용 시 API 키가 필요할 수 있음
+        const response = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
+        const data = await response.json();
+        
+        if (data && data.rates && data.rates.KRW) {
+          const krwRate = data.rates.KRW;
+          rateElement.textContent = Math.round(krwRate).toLocaleString() + '원';
+          rateElement.title = '업데이트: ' + new Date().toLocaleString('ko-KR');
+        } else {
+          throw new Error('환율 데이터를 찾을 수 없습니다.');
+        }
+      } catch (error) {
+        console.error('환율 정보를 가져오는 중 오류 발생:', error);
+        // 오류 발생 시 한국은행 링크만 표시
+        rateElement.textContent = '확인하기';
+        rateElement.parentElement.href = 'https://www.bok.or.kr/portal/singl/baseRate/list.do?dataSeCd=01&menuNo=200643';
+      }
+    }
+
+    // 페이지 로드 시 환율 정보 가져오기
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', fetchExchangeRate);
+    } else {
+      fetchExchangeRate();
+    }
+
+    // 1시간마다 환율 정보 업데이트
+    setInterval(fetchExchangeRate, 3600000);
+  </script>
 </body>
 </html>

@@ -10,6 +10,7 @@
   // Timezone offsets from UTC (hours)
   var ZONES = [
     { id: 'indonesia', offset: 7 },
+    { id: 'seoul', offset: 9 },
     { id: 'newyork', offset: -5 },
     { id: 'sanfrancisco', offset: -8 }
   ];
@@ -27,8 +28,14 @@
     };
   });
 
-  // Bail if clocks not found
-  if (!clocks.indonesia.hour) return;
+  // Bail if clocks not found - check at least one clock exists
+  var hasClocks = false;
+  Object.keys(clocks).forEach(function(id) {
+    if (clocks[id] && clocks[id].hour) {
+      hasClocks = true;
+    }
+  });
+  if (!hasClocks) return;
 
   // Is night time? (6pm - 6am)
   function isNight(h) { return h >= 18 || h < 6; }

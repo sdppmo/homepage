@@ -826,7 +826,7 @@
 <body>
     <div class="guide-container">
         <div class="guide-wrapper">
-            <div class="guide-header">
+            <div class="guide-header" id="kcol-guide-header">
                 <h1>📘 K-COL 기능 설명서</h1>
                 <p class="subtitle">Cross H형 강재 기둥 설계 및 제작 관리 시스템</p>
                 <a href="../../index.html" class="home-link">🏠 홈으로 돌아가기</a>
@@ -841,13 +841,14 @@
                         <li><a href="#structure-calculation">2. 구조 계산</a></li>
                         <li><a href="#auto-find-section">3. Auto Find Section</a></li>
                         <li><a href="#boq">4. BOQ 계산</a></li>
-                        <li><a href="#process-system">5. 공정관리시스템(제작+현장설치)</a></li>
-                        <li><a href="#mapping">6. 현장기둥설치 Mapping</a></li>
-                        <li><a href="#case-studies">7. Cross H 건물 사례</a></li>
-                        <li><a href="#highrise-case">8. 초고층 건물 사례</a></li>
-                        <li><a href="#factory-photos">9. 공장 사진</a></li>
-                        <li><a href="#temporary-construction">10. 가설건축공사</a></li>
-                        <li><a href="#cross-h-structural-features">11. Cross H 구조적 특징 및 장점과 CFT 비교</a></li>
+                        <li><a href="#column-plan">5. 기둥 면적배분 자동산정 알고리즘</a></li>
+                        <li><a href="#process-system">6. 공정관리시스템(제작+현장설치)</a></li>
+                        <li><a href="#mapping">7. 현장기둥설치 Mapping</a></li>
+                        <li><a href="#case-studies">8. Cross H 건물 사례</a></li>
+                        <li><a href="#highrise-case">9. 초고층 건물 사례</a></li>
+                        <li><a href="#factory-photos">10. 공장 사진</a></li>
+                        <li><a href="#temporary-construction">11. 가설건축공사</a></li>
+                        <li><a href="#cross-h-structural-features">12. Cross H 구조적 특징 및 장점과 CFT 비교</a></li>
                     </ul>
                 </div>
 
@@ -985,10 +986,42 @@
                     </div>
                 </section>
 
-                <!-- 5. 공정관리시스템(제작+현장설치) -->
+                <!-- 5. 기둥 면적배분 자동산정 알고리즘 -->
+                <section id="column-plan">
+                    <div class="feature-header">
+                        <h2 class="section-title">5. 기둥 면적배분 자동산정 알고리즘</h2>
+                    </div>
+
+                    <div class="feature-details">
+                        <p>기둥평면도와 기둥번호를 입력하여 프로젝트의 구조 정보를 관리합니다.</p>
+                        <p>기둥당 면적분배를 자동으로 계산하고 면적분배의 적정성을 검토하여 불필요한 기둥을 삭제 또는 기둥간격을 조정할 수 있도록 합니다.</p>
+                        <p>이기능은 특히 탑다운 기둥 Naming 및 Grouping에 유효한 기능입니다.</p>
+                    </div>
+
+                    <div class="feature-details">
+                        <h3>주요 기능</h3>
+                        <ul>
+                            <li>기둥평면도 업로드 및 관리</li>
+                            <li>기둥번호 입력 및 수정</li>
+                            <li>평면도와 기둥 정보 연동</li>
+                            <li>기둥 분배면적의 최적화</li>
+                        </ul>
+                    </div>
+
+                    <div class="feature-details">
+                        <h3>사용 방법</h3>
+                        <ol>
+                            <li>기둥평면도 파일을 업로드합니다.</li>
+                            <li>각 기둥의 번호를 입력합니다.</li>
+                            <li>평면도와 기둥 정보를 연동하여 확인합니다.</li>
+                        </ol>
+                    </div>
+                </section>
+
+                <!-- 6. 공정관리시스템(제작+현장설치) -->
                 <section id="process-system">
                     <div class="feature-header">
-                        <h2 class="section-title">5. 공정관리시스템(제작+현장설치)</h2>
+                        <h2 class="section-title">6. 공정관리시스템(제작+현장설치)</h2>
                     </div>
 
                     <div class="feature-details">
@@ -1021,7 +1054,7 @@
                 <!-- 6. Mapping 기능 -->
                 <section id="mapping">
                     <div class="feature-header">
-                        <h2 class="section-title">6. 현장기둥설치 Mapping</h2>
+                        <h2 class="section-title">7. 현장기둥설치 Mapping</h2>
                     </div>
 
                     <div style="display: flex; gap: 30px; align-items: flex-start;">
@@ -1053,7 +1086,7 @@
                 <!-- 7. Cross H 건물 사례 -->
                 <section id="case-studies">
                     <div class="feature-header">
-                        <h2 class="section-title">7. Cross H 건물 사례</h2>
+                        <h2 class="section-title">8. Cross H 건물 사례</h2>
                     </div>
 
                     <div class="feature-details">
@@ -1079,7 +1112,7 @@
                 <!-- 8. 초고층 건물 사례 -->
                 <section id="highrise-case">
                     <div class="feature-header">
-                        <h2 class="section-title">8. 초고층 건물 사례</h2>
+                        <h2 class="section-title">9. 초고층 건물 사례</h2>
                     </div>
 
                     <div class="feature-details">
@@ -1183,7 +1216,7 @@
                 <!-- 9. 공장 사진 -->
                 <section id="factory-photos">
                     <div class="feature-header">
-                        <h2 class="section-title">9. 공장 사진</h2>
+                        <h2 class="section-title">10. 공장 사진</h2>
                     </div>
 
                     <div class="feature-details">
@@ -1224,7 +1257,7 @@
                 <!-- 10. 가설건축공사 -->
                 <section id="temporary-construction">
                     <div class="feature-header">
-                        <h2 class="section-title">10. 가설건축공사</h2>
+                        <h2 class="section-title">11. 가설건축공사</h2>
                     </div>
 
                     <div class="feature-details">
@@ -1252,7 +1285,7 @@
                 <!-- 11. Cross H 구조적 특징 및 장점 -->
                 <section id="cross-h-structural-features">
                     <div class="feature-header">
-                        <h2 class="section-title">11. Cross H 구조적 특징 및 장점과 CFT 비교</h2>
+                        <h2 class="section-title">12. Cross H 구조적 특징 및 장점과 CFT 비교</h2>
                     </div>
 
                     <div class="feature-details">

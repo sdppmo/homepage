@@ -336,9 +336,44 @@ a.nav-item {
   background: #000;
 }
 
+/* div nav-item도 동일한 색상 적용 */
+div.nav-item {
+  color: #fff;
+  background: #000;
+}
+
 a.nav-item:hover {
   color: #fff;
   background: #222;
+}
+
+div.nav-item:hover {
+  background: #222;
+}
+
+/* 작은 글씨 네비게이션 항목 */
+.nav-item.small-text {
+  font-size: 14px;
+}
+
+/* 회색 텍스트 */
+.nav-item.gray-text,
+a.nav-item.gray-text,
+div.nav-item.gray-text {
+  color: #999 !important;
+}
+
+.nav-item.gray-text:hover,
+a.nav-item.gray-text:hover {
+  color: #bbb !important;
+}
+
+.brochure-btn.gray-text {
+  color: #999 !important;
+}
+
+.brochure-btn.gray-text:hover {
+  color: #bbb !important;
 }
 
 /* 황금색 네비게이션 항목 */
@@ -350,6 +385,11 @@ a.nav-item.gold {
 a.nav-item.gold:hover {
   color: #ffcc00;
   background: linear-gradient(180deg, #252a60 0%, #1a1f45 100%);
+}
+
+/* active와 gold가 함께 있을 때 gold 색상 우선 */
+a.nav-item.active.gold {
+  color: #ffcc00;
 }
 
 /* Brochure Grid */
@@ -366,6 +406,10 @@ a.nav-item.gold:hover {
   border: 1px solid #444;
   padding: 10px 8px;
   color: #ffcc00;
+}
+
+button.brochure-btn {
+  color: #fff;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
@@ -381,11 +425,12 @@ a.brochure-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #fff;
+  color: #ffcc00;
+  text-decoration: none;
 }
 
 a.brochure-btn:hover {
-  color: #fff;
+  color: #ffcc00;
 }
 
 .brochure-btn:nth-child(odd) {
@@ -404,13 +449,21 @@ a.brochure-btn:hover {
 
 .brochure-btn.white {
   background: linear-gradient(180deg, #1a1a2a 0%, #0a0a1a 100%);
-  color: #fff;
+  color: #ffcc00;
   border: 1px solid #444;
   font-weight: 600;
 }
 
 .brochure-btn.white:hover {
   background: linear-gradient(180deg, #2a2a3a 0%, #1a1a2a 100%);
+}
+
+a.brochure-btn.white {
+  color: #ffcc00;
+}
+
+a.brochure-btn.white:hover {
+  color: #ffcc00;
 }
 
 /* Product Logos - In bottom row, matches footer height */
@@ -520,6 +573,22 @@ a.brochure-btn:hover {
   font-weight: bold;
 }
 
+.exchange-link {
+  color: #fff;
+  text-decoration: none;
+  transition: opacity 0.3s;
+}
+
+.exchange-link:hover {
+  opacity: 0.8;
+  text-decoration: underline;
+}
+
+#exchange-rate {
+  font-weight: bold;
+  color: #ffcc00;
+}
+
 .exchange-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -543,6 +612,22 @@ a.brochure-btn:hover {
 
 .exchange-cell.highlight {
   background: #fffacd;
+}
+
+.exchange-description {
+  font-size: 9px;
+  color: #666;
+  margin-top: 2px;
+  font-style: italic;
+  line-height: 1.2;
+}
+
+/* Exchange Table - 좌측 하단 배치 */
+.exchange-table-bottom-left {
+  position: absolute;
+  bottom: 0;
+  left: 20px;
+  z-index: 10;
 }
 
 /* News Section - Semi-transparent */
