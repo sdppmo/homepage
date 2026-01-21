@@ -22,6 +22,8 @@ html, body {
   margin: 0;
   padding: 0;
   overflow: hidden;
+  -webkit-text-size-adjust: 100%; /* Prevent font scaling in landscape on iOS */
+  -webkit-tap-highlight-color: transparent; /* Remove tap highlight on mobile */
 }
 
 /* ==========================================================================
@@ -32,7 +34,8 @@ html, body {
   display: flex;
   flex-direction: column;
   width: 100vw;
-  height: 100dvh;
+  height: 100vh; /* Fallback for older browsers */
+  height: 100dvh; /* Dynamic viewport height for modern browsers */
   margin: 0;
   overflow: hidden;
 }
@@ -873,6 +876,7 @@ a.brochure-btn:hover {
   
   .page-wrapper {
     height: auto;
+    min-height: 100vh; /* Fallback */
     min-height: 100dvh;
     overflow: visible;
   }
@@ -1166,6 +1170,7 @@ a.brochure-btn:hover {
 @media screen and (max-height: 500px) and (orientation: landscape) {
   .page-wrapper {
     height: auto;
+    min-height: 100vh; /* Fallback */
     min-height: 100dvh;
   }
   

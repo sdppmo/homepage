@@ -309,7 +309,7 @@
 
     var style = document.createElement('style');
     style.textContent = '\
-      .settings-modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center; z-index: 9999; backdrop-filter: blur(4px); }\
+      .settings-modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center; z-index: 9999; -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); }\
       .settings-modal-overlay.show { display: flex; }\
       .settings-modal { background: #1a1a2e; border-radius: 16px; padding: 32px; width: 100%; max-width: 420px; position: relative; box-shadow: 0 25px 50px rgba(0,0,0,0.5); }\
       .settings-modal-close { position: absolute; top: 16px; right: 16px; background: none; border: none; color: #888; font-size: 24px; cursor: pointer; line-height: 1; padding: 4px; }\
