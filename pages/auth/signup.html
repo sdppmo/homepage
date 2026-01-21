@@ -357,6 +357,20 @@
             color: #22c55e;
         }
 
+        .password-match {
+            font-size: 13px;
+            margin-top: 8px;
+            font-weight: 500;
+        }
+
+        .password-match.match {
+            color: #4ade80;
+        }
+
+        .password-match.no-match {
+            color: #f87171;
+        }
+
         /* Decorative elements */
         .decoration {
             position: fixed;
@@ -444,6 +458,12 @@
             </div>
 
             <div class="form-group">
+                <label for="passwordConfirm">비밀번호 확인 <span class="required">*</span></label>
+                <input type="password" id="passwordConfirm" name="passwordConfirm" placeholder="비밀번호 재입력" required autocomplete="new-password">
+                <div class="password-match" id="passwordMatch"></div>
+            </div>
+
+            <div class="form-group">
                 <label for="business">회사명 <span class="optional">(선택)</span></label>
                 <input type="text" id="business" name="business" placeholder="회사명을 입력하세요" autocomplete="organization">
             </div>
@@ -504,6 +524,8 @@
             var form = document.getElementById('signupForm');
             var emailInput = document.getElementById('email');
             var passwordInput = document.getElementById('password');
+            var passwordConfirmInput = document.getElementById('passwordConfirm');
+            var passwordMatch = document.getElementById('passwordMatch');
             var businessInput = document.getElementById('business');
             var bizNumInput = document.getElementById('bizNum');
             var phoneInput = document.getElementById('phone');
@@ -549,6 +571,31 @@
             }
 
             passwordInput.addEventListener('input', checkPasswordRequirements);
+            passwordInput.addEventListener('input', checkPasswordMatch);
+            passwordConfirmInput.addEventListener('input', checkPasswordMatch);
+
+            function checkPasswordMatch() {
+                var password = passwordInput.value;
+                var confirm = passwordConfirmInput.value;
+                
+                if (confirm.length === 0) {
+                    passwordMatch.textContent = '';
+                    passwordMatch.className = 'password-match';
+                    return;
+                }
+                
+                if (password === confirm) {
+                    passwordMatch.textContent = '✓ 비밀번호 일치';
+                    passwordMatch.className = 'password-match match';
+                } else {
+                    passwordMatch.textContent = '✗ 비밀번호 불일치';
+                    passwordMatch.className = 'password-match no-match';
+                }
+            }
+
+            function passwordsMatch() {
+                return passwordInput.value === passwordConfirmInput.value;
+            }
 
             function showError(message) {
                 errorMessage.textContent = message;
@@ -603,6 +650,12 @@
                 // Password complexity check
                 if (!allRequirementsMet()) {
                     showError('비밀번호 요구사항을 모두 충족해주세요.');
+                    return;
+                }
+
+                // Password match check
+                if (!passwordsMatch()) {
+                    showError('비밀번호가 일치하지 않습니다.');
                     return;
                 }
 
