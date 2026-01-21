@@ -3,6 +3,22 @@
 > This document provides context for AI agents working on this project.
 > Last updated: 2026-01-21
 
+## ⚠️ SECURITY FIRST
+
+**Before implementing ANY feature involving authentication, authorization, or database access:**
+
+1. **READ `/SECURITY.md`** - Contains mandatory security checklist
+2. **Verify RLS is enabled** on all tables (especially `user_profiles`)
+3. **Never expose `SERVICE_ROLE_KEY`** in client-side code
+4. **Run `./deploy.sh --test-security`** before deployment
+
+**Critical Tables:**
+- `user_profiles` - Controls admin access, approval status, permissions
+- `usage_logs` - Analytics data
+- `feature_definitions` - Feature registry
+
+---
+
 ## Project Overview
 
 **Project**: SongDoPartners (SDP) Corporate Homepage
@@ -418,7 +434,7 @@ After deploying:
 
 | Task | Command |
 |------|---------|
-| Local test | `./deploy.sh --local` |
+| Local test (rebuild) | `./deploy.sh --stop && ./deploy.sh --local --quick` |
 | Stop local | `./deploy.sh --stop` |
 | Full deploy | `./deploy.sh` |
 | Quick deploy | `./deploy.sh --quick` |
@@ -427,6 +443,33 @@ After deploying:
 | Deploy Edge Functions | `./deploy.sh --deploy-functions` |
 | Check status | `aws lightsail get-container-services --service-name sdppmo-container-service-1 --region ap-northeast-2` |
 | View logs | `aws lightsail get-container-log --service-name sdppmo-container-service-1 --container-name homepage --region ap-northeast-2` |
+
+### Local Development Workflow
+
+**IMPORTANT**: 로컬 서버 재시작 시 반드시 다음 순서로 실행:
+
+```bash
+./deploy.sh --stop && ./deploy.sh --local --quick
+```
+
+- `--stop`: 기존 컨테이너 중지 및 정리
+- `--local`: 로컬에서 Docker 컨테이너 실행
+- `--quick`: Trivy 보안 스캔 생략 (개발 시 빠른 반복용)
+
+**Supabase 변경 시 (Edge Functions, Protected Pages)**:
+
+```bash
+# Edge Functions 변경 시
+./deploy.sh --deploy-functions
+
+# Protected Pages 변경 시  
+./deploy.sh --upload-protected
+
+# 전체 (로컬 + Supabase)
+./deploy.sh --stop && ./deploy.sh --local --quick && ./deploy.sh --deploy-functions
+```
+
+**절대 사용하지 말 것**: `docker` 명령어 직접 사용 (항상 deploy.sh 스크립트 사용)
 
 ---
 
