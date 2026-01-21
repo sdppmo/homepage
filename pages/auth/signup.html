@@ -628,6 +628,14 @@
                     });
                 }).then(function(result) {
                     if (result.error) throw result.error;
+                    
+                    // Check if user already exists (Supabase returns empty identities for existing users)
+                    if (result.data && result.data.user && result.data.user.identities && result.data.user.identities.length === 0) {
+                        showAlreadyRegistered();
+                        setLoading(false);
+                        return;
+                    }
+                    
                     showSuccess();
                     setLoading(false);
                 }).catch(function(err) {
