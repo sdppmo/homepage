@@ -217,3 +217,7 @@ assets/images/*_original.*
 
 # Supabase CLI temp files
 supabase/.temp/
+
+# Supabase local
+supabase/.branches/
+supabase/.temp/

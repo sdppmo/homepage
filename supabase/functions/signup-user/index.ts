@@ -1,7 +1,11 @@
 // Supabase Edge Function: signup-user
-// Validates required fields before creating user account
+// Validates required fields, creates user, creates profile, and notifies admins
+// Security: Users are created with is_approved=false (Pending state)
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
+const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -18,13 +22,11 @@ interface SignupRequest {
 }
 
 function validateBusinessNumber(bizNum: string): boolean {
-  // Remove hyphens and check format (000-00-00000 = 10 digits)
   const digits = bizNum.replace(/-/g, "");
   return /^\d{10}$/.test(digits);
 }
 
 function validatePhone(phone: string): boolean {
-  // Remove hyphens and check format (010-0000-0000 = 10-11 digits)
   const digits = phone.replace(/-/g, "");
   return /^\d{10,11}$/.test(digits);
 }
@@ -48,6 +50,11 @@ function validatePassword(password: string): { valid: boolean; message: string }
   return { valid: true, message: "" };
 }
 
+function validateEmail(email: string): boolean {
+  // Basic email validation
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
 Deno.serve(async (req) => {
   // Handle CORS preflight
   if (req.method === "OPTIONS") {
@@ -61,6 +68,21 @@ Deno.serve(async (req) => {
     });
   }
 
+  if (!SUPABASE_URL || !SERVICE_ROLE_KEY) {
+    console.error("Missing Supabase configuration");
+    return new Response(JSON.stringify({ error: "Server configuration error" }), {
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
+  const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+    },
+  });
+
   try {
     const body: SignupRequest = await req.json();
     const { email, password, business_name, business_number, phone } = body;
@@ -68,7 +90,7 @@ Deno.serve(async (req) => {
     // Validate required fields
     const errors: string[] = [];
 
-    if (!email || !email.includes("@")) {
+    if (!email || !validateEmail(email)) {
       errors.push("유효한 이메일 주소를 입력해주세요");
     }
 
@@ -100,17 +122,13 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Create Supabase client with service role key
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    const normalizedEmail = email.toLowerCase().trim();
 
-    // Check if user already exists
-    const { data: existingUser } = await supabase
-      .from("user_profiles")
-      .select("id")
-      .eq("email", email.toLowerCase())
-      .single();
+    // Check if user already exists in auth
+    const { data: existingUsers } = await supabase.auth.admin.listUsers();
+    const existingUser = existingUsers?.users?.find(
+      (u) => u.email?.toLowerCase() === normalizedEmail
+    );
 
     if (existingUser) {
       return new Response(JSON.stringify({ 
@@ -124,7 +142,7 @@ Deno.serve(async (req) => {
 
     // Create user with Supabase Auth
     const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-      email: email.toLowerCase(),
+      email: normalizedEmail,
       password: password,
       email_confirm: false, // Require email verification
       user_metadata: {
@@ -134,11 +152,10 @@ Deno.serve(async (req) => {
       },
     });
 
-    if (authError) {
+    if (authError || !authData.user) {
       console.error("Auth error:", authError);
       
-      // Handle specific errors
-      if (authError.message.includes("already registered")) {
+      if (authError?.message?.includes("already registered")) {
         return new Response(JSON.stringify({ 
           error: "user_exists", 
           message: "이미 가입된 이메일입니다" 
@@ -157,28 +174,71 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Send verification email
-    if (authData.user) {
-      const { error: emailError } = await supabase.auth.admin.generateLink({
-        type: "signup",
-        email: email.toLowerCase(),
-        options: {
-          redirectTo: req.headers.get("origin") || "https://kcol.kr",
-        },
+    const userId = authData.user.id;
+    const now = new Date().toISOString();
+
+    // Create user_profiles entry with is_approved=false (Pending state)
+    const { error: profileError } = await supabase
+      .from("user_profiles")
+      .insert({
+        id: userId,
+        email: normalizedEmail,
+        business_name: business_name.trim(),
+        business_number: business_number,
+        phone: phone,
+        role: "viewer",           // Default role
+        is_approved: false,       // PENDING STATE - requires admin approval
+        access_beam: false,       // No access by default
+        access_column: false,     // No access by default
+        created_at: now,
       });
 
-      if (emailError) {
-        console.error("Email error:", emailError);
-        // Don't fail the signup, just log the error
-      }
+    if (profileError) {
+      console.error("Profile creation error:", profileError);
+      // Try to clean up the auth user if profile creation failed
+      await supabase.auth.admin.deleteUser(userId);
+      
+      return new Response(JSON.stringify({ 
+        error: "signup_error", 
+        message: "프로필 생성 중 오류가 발생했습니다" 
+      }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
+
+    // Send verification email
+    try {
+      await supabase.auth.admin.generateLink({
+        type: "signup",
+        email: normalizedEmail,
+        options: {
+          redirectTo: "https://kcol.kr/pages/auth/pending.html",
+        },
+      });
+    } catch (emailError) {
+      console.error("Email verification error:", emailError);
+      // Don't fail the signup, just log the error
+    }
+
+    // Notify admins about new user signup (async, don't wait)
+    notifyAdmins(supabase, {
+      id: userId,
+      email: normalizedEmail,
+      business_name: business_name.trim(),
+      business_number: business_number,
+      phone: phone,
+      created_at: now,
+    }).catch((err) => {
+      console.error("Admin notification error:", err);
+    });
 
     return new Response(JSON.stringify({ 
       success: true, 
-      message: "회원가입이 완료되었습니다. 이메일 인증을 진행해주세요.",
+      message: "회원가입이 완료되었습니다. 이메일 인증 후 관리자 승인을 기다려주세요.",
       user: {
-        id: authData.user?.id,
-        email: authData.user?.email,
+        id: userId,
+        email: normalizedEmail,
       }
     }), {
       status: 201,
@@ -196,3 +256,25 @@ Deno.serve(async (req) => {
     });
   }
 });
+
+// Notify admins about new user signup
+async function notifyAdmins(
+  supabase: ReturnType<typeof createClient>,
+  record: {
+    id: string;
+    email: string;
+    business_name: string;
+    business_number: string;
+    phone: string;
+    created_at: string;
+  }
+) {
+  // Call send-admin-alert function
+  const { error } = await supabase.functions.invoke("send-admin-alert", {
+    body: { record },
+  });
+
+  if (error) {
+    throw error;
+  }
+}

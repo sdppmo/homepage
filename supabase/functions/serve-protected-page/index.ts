@@ -131,6 +131,20 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Log usage for analytics (async, don't wait for it)
+    supabase
+      .from("usage_logs")
+      .insert({
+        user_id: user.id,
+        feature_name: pageId,
+        metadata: { page_file: pageConfig.file },
+      })
+      .then(({ error }) => {
+        if (error) {
+          console.error("Failed to log usage:", error);
+        }
+      });
+
     // User is authorized - get page from cache or Storage
     const cacheKey = pageConfig.file;
     const cached = pageCache.get(cacheKey);

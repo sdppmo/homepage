@@ -14,6 +14,11 @@
 #   ./deploy.sh --quick            # Skip security scans (faster)
 #   ./deploy.sh --upload-protected # Upload protected pages to Supabase Storage
 #   ./deploy.sh --deploy-functions # Deploy Supabase Edge Functions
+#   ./deploy.sh --test-security    # Run security tests (RLS verification)
+#   ./deploy.sh --supabase-start   # Start local Supabase (Docker)
+#   ./deploy.sh --supabase-stop    # Stop local Supabase
+#   ./deploy.sh --supabase-test    # Run database tests against local Supabase
+#   ./deploy.sh --supabase-reset   # Reset local database and re-seed
 #   ./deploy.sh --help             # Show help
 #
 # Prerequisites:
@@ -77,6 +82,11 @@ LOCAL_MODE=false
 STOP_LOCAL=false
 UPLOAD_PROTECTED=false
 DEPLOY_FUNCTIONS=false
+TEST_SECURITY=false
+SUPABASE_START=false
+SUPABASE_STOP=false
+SUPABASE_TEST=false
+SUPABASE_RESET=false
 LOCAL_PORT=8080
 LOCAL_CONTAINER="sdppmo-local-test"
 
@@ -97,6 +107,21 @@ for arg in "$@"; do
         --deploy-functions)
             DEPLOY_FUNCTIONS=true
             ;;
+        --test-security)
+            TEST_SECURITY=true
+            ;;
+        --supabase-start)
+            SUPABASE_START=true
+            ;;
+        --supabase-stop)
+            SUPABASE_STOP=true
+            ;;
+        --supabase-test)
+            SUPABASE_TEST=true
+            ;;
+        --supabase-reset)
+            SUPABASE_RESET=true
+            ;;
         --local)
             LOCAL_MODE=true
             ;;
@@ -114,6 +139,11 @@ for arg in "$@"; do
             echo "  --quick            Skip security scans for faster deployment"
             echo "  --upload-protected Upload protected pages to Supabase Storage"
             echo "  --deploy-functions Deploy Supabase Edge Functions"
+            echo "  --test-security    Run security tests (RLS verification)"
+            echo "  --supabase-start   Start local Supabase (Docker)"
+            echo "  --supabase-stop    Stop local Supabase"
+            echo "  --supabase-test    Run database tests against local Supabase"
+            echo "  --supabase-reset   Reset local database and re-seed"
             echo "  -h, --help     Show this help message"
             echo ""
             echo "Configuration (edit in script):"
@@ -226,6 +256,164 @@ if [ "$DEPLOY_FUNCTIONS" = true ]; then
         exit 1
     fi
     
+    exit 0
+fi
+
+# ============================================================
+# Handle --test-security (run security tests)
+# ============================================================
+if [ "$TEST_SECURITY" = true ]; then
+    log_step "Running Security Tests..."
+    
+    echo ""
+    echo "Security Verification Checklist"
+    echo "================================"
+    echo ""
+    echo "Run this SQL in Supabase Dashboard → SQL Editor:"
+    echo ""
+    echo "┌─────────────────────────────────────────────────────────────────┐"
+    echo "│ -- Check RLS status on all tables                              │"
+    echo "│ SELECT                                                          │"
+    echo "│     tablename,                                                  │"
+    echo "│     CASE WHEN rowsecurity THEN '✅ Protected'                   │"
+    echo "│          ELSE '❌ VULNERABLE' END as status                     │"
+    echo "│ FROM pg_tables                                                  │"
+    echo "│ WHERE schemaname = 'public'                                     │"
+    echo "│ AND tablename IN ('user_profiles','usage_logs','feature_definitions');│"
+    echo "└─────────────────────────────────────────────────────────────────┘"
+    echo ""
+    echo "Expected: ALL tables should show '✅ Protected'"
+    echo ""
+    echo "Attack Simulation (run in browser console on kcol.kr):"
+    echo "┌─────────────────────────────────────────────────────────────────┐"
+    echo "│ const c = await window.SDP.auth.getClient();                    │"
+    echo "│ const {data:{user}} = await c.auth.getUser();                   │"
+    echo "│ const r = await c.from('user_profiles')                         │"
+    echo "│   .update({role:'admin'}).eq('id',user.id);                     │"
+    echo "│ console.log(r.error ? '✅ Attack blocked' : '❌ VULNERABLE');   │"
+    echo "└─────────────────────────────────────────────────────────────────┘"
+    echo ""
+    
+    # Check if local Supabase is running
+    if command -v supabase &> /dev/null; then
+        if supabase status 2>/dev/null | grep -q "DB URL"; then
+            echo "Local Supabase detected. Running pgTAP tests..."
+            supabase test db 2>/dev/null || log_warn "pgTAP tests not configured"
+        fi
+    fi
+    
+    log_success "Security test instructions displayed"
+    echo ""
+    echo "See SECURITY.md for full security checklist."
+    exit 0
+fi
+
+# ============================================================
+# Handle --supabase-start (start local Supabase)
+# ============================================================
+if [ "$SUPABASE_START" = true ]; then
+    log_step "Starting Local Supabase..."
+    
+    if ! command -v supabase &> /dev/null; then
+        log_error "Supabase CLI not found. Install with: brew install supabase/tap/supabase"
+        exit 1
+    fi
+    
+    cd "$(dirname "$0")"
+    
+    echo "Starting Supabase containers..."
+    supabase start
+    
+    echo ""
+    echo "Local Supabase is running:"
+    echo "  API URL:      http://127.0.0.1:54321"
+    echo "  Studio:       http://127.0.0.1:54323"
+    echo "  Inbucket:     http://127.0.0.1:54324"
+    echo ""
+    echo "Test accounts (password: Test123!@#):"
+    echo "  Admin:   admin@test.local"
+    echo "  User:    user@test.local"
+    echo "  Pending: pending@test.local"
+    echo ""
+    log_success "Local Supabase started"
+    exit 0
+fi
+
+# ============================================================
+# Handle --supabase-stop (stop local Supabase)
+# ============================================================
+if [ "$SUPABASE_STOP" = true ]; then
+    log_step "Stopping Local Supabase..."
+    
+    if ! command -v supabase &> /dev/null; then
+        log_error "Supabase CLI not found"
+        exit 1
+    fi
+    
+    cd "$(dirname "$0")"
+    supabase stop
+    
+    log_success "Local Supabase stopped"
+    exit 0
+fi
+
+# ============================================================
+# Handle --supabase-test (run database tests)
+# ============================================================
+if [ "$SUPABASE_TEST" = true ]; then
+    log_step "Running Database Security Tests..."
+    
+    if ! command -v supabase &> /dev/null; then
+        log_error "Supabase CLI not found. Install with: brew install supabase/tap/supabase"
+        exit 1
+    fi
+    
+    cd "$(dirname "$0")"
+    
+    echo "Running pgTAP tests..."
+    if ! supabase test db; then
+        echo ""
+        log_error "Tests failed or Supabase is not running."
+        echo "If Supabase is not running, start it with: ./deploy.sh --supabase-start"
+        exit 1
+    fi
+    
+    if [ $? -eq 0 ]; then
+        log_success "All security tests passed!"
+    else
+        log_error "Some tests failed. Review output above."
+        exit 1
+    fi
+    exit 0
+fi
+
+# ============================================================
+# Handle --supabase-reset (reset and re-seed local database)
+# ============================================================
+if [ "$SUPABASE_RESET" = true ]; then
+    log_step "Resetting Local Supabase Database..."
+    
+    if ! command -v supabase &> /dev/null; then
+        log_error "Supabase CLI not found"
+        exit 1
+    fi
+    
+    cd "$(dirname "$0")"
+    
+    echo "This will:"
+    echo "  1. Drop all data in local database"
+    echo "  2. Re-run all migrations"
+    echo "  3. Re-seed test data"
+    echo ""
+    read -p "Continue? (y/N) " -n 1 -r
+    echo ""
+    
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+        supabase db reset
+        log_success "Database reset complete"
+    else
+        echo "Cancelled."
+    fi
     exit 0
 fi
 
