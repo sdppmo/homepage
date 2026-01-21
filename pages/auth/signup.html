@@ -17,7 +17,9 @@
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #1a1a2e 100%);
-            min-height: 100vh;
+            height: 100vh;
+            max-height: 100vh;
+            overflow: hidden;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -28,7 +30,11 @@
         .signup-container {
             width: 100%;
             max-width: 420px;
-            background: rgba(30, 41, 59, 0.7);
+            max-height: calc(100vh - 32px);
+            overflow-y: auto;
+            overflow-x: hidden;
+            background: rgba(30, 41, 59, 0.85);
+            -webkit-backdrop-filter: blur(20px);
             backdrop-filter: blur(20px);
             border: 1px solid rgba(148, 163, 184, 0.1);
             border-radius: 20px;
@@ -36,9 +42,28 @@
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
         }
 
+        /* 스크롤바 스타일링 (선택사항) */
+        .signup-container::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .signup-container::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.3);
+            border-radius: 3px;
+        }
+
+        .signup-container::-webkit-scrollbar-thumb {
+            background: rgba(148, 163, 184, 0.3);
+            border-radius: 3px;
+        }
+
+        .signup-container::-webkit-scrollbar-thumb:hover {
+            background: rgba(148, 163, 184, 0.5);
+        }
+
         .logo {
             text-align: center;
-            margin-bottom: 16px;
+            margin-bottom: 12px;
         }
 
         .logo-text {
@@ -46,14 +71,15 @@
             font-weight: 700;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
             background-clip: text;
+            -webkit-text-fill-color: transparent;
+            color: transparent;
             letter-spacing: -0.5px;
         }
 
         .signup-header {
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 16px;
         }
 
         .signup-header h1 {
@@ -73,7 +99,7 @@
         .signup-form {
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 10px;
         }
 
         .form-group {
@@ -158,7 +184,7 @@
             align-items: center;
             justify-content: center;
             gap: 8px;
-            margin-top: 8px;
+            margin-top: 4px;
         }
 
         .signup-btn:hover {
@@ -252,8 +278,8 @@
 
         .login-link {
             text-align: center;
-            margin-top: 16px;
-            padding-top: 16px;
+            margin-top: 12px;
+            padding-top: 12px;
             border-top: 1px solid rgba(148, 163, 184, 0.1);
             font-size: 13px;
             color: #94a3b8;
@@ -282,7 +308,8 @@
             color: #94a3b8;
             text-decoration: none;
             padding: 8px 12px;
-            background: rgba(30, 41, 59, 0.6);
+            background: rgba(30, 41, 59, 0.8);
+            -webkit-backdrop-filter: blur(10px);
             backdrop-filter: blur(10px);
             border: 1px solid rgba(148, 163, 184, 0.1);
             border-radius: 8px;
@@ -327,9 +354,9 @@
         .password-requirements {
             display: grid;
             grid-template-columns: 1fr 1fr 1fr;
-            gap: 4px 8px;
-            margin-top: 6px;
-            padding: 8px 10px;
+            gap: 3px 6px;
+            margin-top: 4px;
+            padding: 6px 8px;
             background: rgba(15, 23, 42, 0.4);
             border-radius: 6px;
             border: 1px solid rgba(148, 163, 184, 0.1);
@@ -427,9 +454,14 @@
         }
 
         @media (max-width: 520px) {
+            body {
+                padding: 12px;
+            }
+
             .signup-container {
-                padding: 32px 24px;
-                border-radius: 20px;
+                padding: 24px 20px;
+                border-radius: 16px;
+                max-height: calc(100vh - 24px);
             }
 
             .form-row {
@@ -444,8 +476,22 @@
                 font-size: 20px;
             }
 
+            .signup-header {
+                margin-bottom: 12px;
+            }
+
+            .logo {
+                margin-bottom: 8px;
+            }
+
             .password-requirements {
                 grid-template-columns: 1fr 1fr;
+                gap: 2px 4px;
+                padding: 5px 6px;
+            }
+
+            .signup-form {
+                gap: 8px;
             }
         }
     </style>
