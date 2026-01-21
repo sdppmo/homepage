@@ -14,6 +14,7 @@
         body {
             font-family: 'Segoe UI', Arial, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh; /* Fallback */
             min-height: 100dvh;
             padding: 5px;
         }
@@ -842,7 +843,7 @@
                 <div id="section-area-display" style="margin-bottom: 8px; font-size: 14px; color: #4a5568; text-align: center;">단면적 :  mm²  |  단중 :  kg/m</div>
                 
                 <!-- 간편 계산 버튼 -->
-                <button class="quick-calc-btn" data-requires="column" data-onclick="quickCalculate()">
+                <button class="quick-calc-btn" onclick="quickCalculate()">
                     ⚡ 간편계산(1-Column)
                 </button>
                 
@@ -852,8 +853,8 @@
                         📄 계산서(1-Column)
                     </a>
                     <div class="beam-type-btns">
-                        <button class="beam-type-btn" id="auto-find-section-btn" onclick="window.location.href='protected/auto-find-section.html'">Auto Find Section<br>RH / Built-Up<br>(Included BOQ)</button>
-                        <button class="beam-type-btn">SRC(Cross H)</button>
+                        <button class="beam-type-btn" id="auto-find-section-btn" data-requires="column" data-onclick="window.location.href='protected/auto-find-section.html'">Auto Find Section<br>RH / Built-Up<br>(Included BOQ)</button>
+                        <button class="beam-type-btn" data-requires="column" data-onclick="alert('SRC(Cross H) 기능은 준비 중입니다.');">SRC(Cross H)</button>
                     </div>
                     <button class="action-btn secondary" id="rolled-cross-h-btn" onclick="openColumnPlanInput();">
                         기둥 면적배분<br>자동산정 일고리즘

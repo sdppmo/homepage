@@ -1,7 +1,7 @@
 # AI Agent Context - SongDoPartners Homepage
 
 > This document provides context for AI agents working on this project.
-> Last updated: 2026-01-20
+> Last updated: 2026-01-21
 
 ## Project Overview
 
@@ -187,6 +187,10 @@ homepage/
 │   ├── pdf/                # Downloadable brochures
 │   └── powerpoint/         # Source slide decks
 ├── pages/
+│   ├── auth/               # Authentication pages
+│   │   ├── login.html      # Dedicated login page
+│   │   ├── signup.html     # Dedicated signup page
+│   │   └── pending.html    # Pending approval page
 │   ├── k-col web software/ # K-COL calculator pages
 │   │   └── protected/      # Loader shells for protected pages
 │   └── K-product/          # Product pages
@@ -198,10 +202,6 @@ homepage/
 │       ├── admin-users/           # Admin user management API
 │       └── send-admin-alert/      # New user notification emails
 │
-├── # Deployment Scripts
-├── scripts/
-│   ├── upload-protected-pages.py  # Upload HTML to Supabase Storage
-│   └── deploy-edge-functions.py   # Deploy Edge Functions via CLI
 │
 ├── # Docker & Deployment
 ├── Dockerfile              # Security-hardened nginx:alpine image
@@ -211,10 +211,12 @@ homepage/
 ├── bugcheck.sh             # Pre-deployment verification script
 ├── .dockerignore           # Excludes sensitive/protected files from Docker
 │
-├── # Local Development
-├── start-server.sh         # Local Python server (Mac/Linux)
-├── start-server.bat        # Local Python server (Windows)
-├── start-server.ps1        # Local Python server (PowerShell)
+├── scripts/                    # Build/deploy/dev scripts
+│   ├── start-server.sh         # Local Python server (Mac/Linux)
+│   ├── start-server.bat        # Local Python server (Windows)
+│   ├── start-server.ps1        # Local Python server (PowerShell)
+│   ├── deploy-edge-functions.py  # Deploy Edge Functions via CLI
+│   └── upload-protected-pages.py # Upload HTML to Supabase Storage
 │
 ├── # Documentation
 ├── README.md               # User documentation
@@ -428,7 +430,28 @@ After deploying:
 
 ---
 
-## Recent Changes (2026-01-20)
+## Recent Changes (2026-01-21)
+
+### Dedicated Auth Pages
+- ✅ Added `/pages/auth/login.html` - standalone login page with modern dark theme
+- ✅ Added `/pages/auth/signup.html` - standalone signup page with password requirements checklist
+- ✅ Real-time password strength validation (8+ chars, upper/lower, number, special char)
+- ✅ Removed modal-based authentication from main page
+- ✅ Login redirects to dedicated page instead of showing modal
+
+### Login Session Improvements
+- ✅ Fixed login UI flickering on page load
+- ✅ Proper token refresh handling - if expired, redirect to login
+- ✅ Cached session check for instant UI display
+
+### UI/UX Updates
+- ✅ Auth section buttons fill container width
+- ✅ Removed promotional text from auth section
+- ✅ Clean, minimal button design
+
+---
+
+## Previous Changes (2026-01-20)
 
 ### Server-Side Protected Pages
 - ✅ Added `serve-protected-page` Edge Function for secure page access
@@ -452,6 +475,131 @@ After deploying:
 - ✅ Korean localization for auth UI
 - ✅ Password complexity requirements
 - ✅ User profile management (business name, phone, etc.)
+
+---
+
+## Authentication Flow
+
+### Login Flow
+1. User clicks "로그인" button on main page
+2. Redirects to `/pages/auth/login.html`
+3. User enters email/password
+4. On success, redirects back to original page (or homepage)
+
+### Signup Flow
+1. User clicks "회원가입" button on main page
+2. Redirects to `/pages/auth/signup.html`
+3. User enters email, password (with real-time validation), company info
+4. On success, shows confirmation to check email
+5. User verifies email and can then login
+
+### Session Management
+- Sessions stored in `localStorage` by Supabase client
+- `login.js` checks for cached session on page load
+- If valid token exists → show logged-in state immediately
+- If token expired but refresh token exists → wait for SDK refresh
+- If refresh fails → redirect to login page
+
+### Protected Pages
+- Protected pages use `/pages/k-col web software/protected/*.html` loader shells
+- Loader calls Supabase Edge Function `serve-protected-page`
+- Edge Function validates JWT and checks user permissions
+- If authorized, returns actual page content from Supabase Storage
+
+---
+
+## Email Configuration (Supabase + Resend)
+
+### Overview
+- **Email Provider**: Resend (https://resend.com)
+- **Sender Email**: `sdppmo@kcol.kr`
+- **Integration**: Supabase Custom SMTP
+
+### Supabase Dashboard Settings
+
+#### 1. URL Configuration (중요!)
+**Location**: Project Settings → Authentication → URL Configuration
+
+| Setting | Value |
+|---------|-------|
+| Site URL | `https://kcol.kr` |
+| Redirect URLs | `https://kcol.kr/**`, `https://www.kcol.kr/**` |
+
+> ⚠️ **Site URL은 `{{ .ConfirmationURL }}`의 base URL로 사용됨**
+> Site URL이 설정되지 않으면 이메일의 인증 링크가 작동하지 않음
+
+#### 2. Custom SMTP Configuration
+**Location**: Project Settings → Authentication → SMTP Settings
+
+| Setting | Value |
+|---------|-------|
+| Enable Custom SMTP | ✅ On |
+| Sender email | `sdppmo@kcol.kr` |
+| Sender name | `송도파트너스피엠오` |
+| Host | `smtp.resend.com` |
+| Port | `465` |
+| Username | `resend` |
+| Password | Resend API Key (`re_xxxxxxxx`) |
+
+#### 3. Email Templates
+**Location**: Authentication → Email Templates
+
+**Confirm Signup (회원가입 인증)**:
+```html
+<h2>송도파트너스피엠오 회원가입을 환영합니다</h2>
+
+<p>안녕하세요,</p>
+
+<p>송도파트너스피엠오 서비스에 가입해 주셔서 감사합니다.<br>
+아래 버튼을 클릭하여 이메일 인증을 완료해 주세요.</p>
+
+<p style="margin: 32px 0;">
+  <a href="{{ .ConfirmationURL }}" style="background-color: #667eea; color: #ffffff; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: 600;">이메일 인증하기</a>
+</p>
+
+<p>버튼이 작동하지 않는 경우, 아래 링크를 브라우저에 직접 붙여넣어 주세요:<br>
+<a href="{{ .ConfirmationURL }}">{{ .ConfirmationURL }}</a></p>
+
+<hr style="border: none; border-top: 1px solid #e5e5e5; margin: 32px 0;">
+
+<p style="font-size: 12px; color: #999999;">
+※ 본 메일은 발신 전용이며, 회신하셔도 답변을 받으실 수 없습니다.
+</p>
+
+<p style="font-size: 13px; color: #666666;">
+본 메일은 송도파트너스피엠오 회원가입 요청에 의해 자동 발송되었습니다.<br>
+회원가입을 요청하지 않으셨다면 이 메일을 무시하셔도 됩니다.
+</p>
+
+<p style="font-size: 13px; color: #666666;">
+주식회사 송도파트너스피엠오<br>
+<a href="https://kcol.kr">https://kcol.kr</a> | sdppmo@kcol.kr
+</p>
+```
+
+### Resend Dashboard Settings
+
+#### Domain Configuration
+**Location**: Resend Dashboard → Domains
+
+1. Add domain: `kcol.kr`
+2. Add DNS records to Gabia:
+   - SPF record (TXT)
+   - DKIM records (CNAME × 3)
+   - Optional: DMARC record (TXT)
+
+#### API Key
+- Create API key with "Sending access" permission
+- Use this key as SMTP password in Supabase
+
+### Troubleshooting
+
+| Issue | Solution |
+|-------|----------|
+| `{{ .ConfirmationURL }}` 빈 값 | Site URL 설정 확인 (Project Settings → Auth → URL Configuration) |
+| 이메일 발송 안됨 | Resend 도메인 인증 상태 확인, DNS 레코드 전파 대기 (최대 48시간) |
+| 인증 링크 클릭 시 404 | Redirect URLs에 도메인 추가 여부 확인 |
+| 스팸함으로 이동 | DKIM, SPF, DMARC 레코드 모두 설정 권장 |
 
 ---
 

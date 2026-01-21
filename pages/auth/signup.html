@@ -2,8 +2,8 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>회원가입 - K-COL</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+    <title>회원가입 - 송도파트너스피엠오</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -17,49 +17,75 @@
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #1a1a2e 100%);
-            min-height: 100vh;
+            height: 100vh;
+            max-height: 100vh;
+            overflow: hidden;
             display: flex;
             align-items: center;
             justify-content: center;
             color: #e2e8f0;
-            padding: 24px;
+            padding: 16px;
         }
 
         .signup-container {
             width: 100%;
-            max-width: 480px;
-            background: rgba(30, 41, 59, 0.7);
+            max-width: 420px;
+            max-height: calc(100vh - 32px);
+            overflow-y: auto;
+            overflow-x: hidden;
+            background: rgba(30, 41, 59, 0.85);
+            -webkit-backdrop-filter: blur(20px);
             backdrop-filter: blur(20px);
             border: 1px solid rgba(148, 163, 184, 0.1);
-            border-radius: 24px;
-            padding: 48px 40px;
+            border-radius: 20px;
+            padding: 28px 32px;
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        /* 스크롤바 스타일링 (선택사항) */
+        .signup-container::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .signup-container::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.3);
+            border-radius: 3px;
+        }
+
+        .signup-container::-webkit-scrollbar-thumb {
+            background: rgba(148, 163, 184, 0.3);
+            border-radius: 3px;
+        }
+
+        .signup-container::-webkit-scrollbar-thumb:hover {
+            background: rgba(148, 163, 184, 0.5);
         }
 
         .logo {
             text-align: center;
-            margin-bottom: 32px;
+            margin-bottom: 12px;
         }
 
         .logo-text {
-            font-size: 28px;
+            font-size: 20px;
             font-weight: 700;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
             background-clip: text;
+            -webkit-text-fill-color: transparent;
+            color: transparent;
             letter-spacing: -0.5px;
         }
 
         .signup-header {
             text-align: center;
-            margin-bottom: 32px;
+            margin-bottom: 16px;
         }
 
         .signup-header h1 {
-            font-size: 28px;
+            font-size: 22px;
             font-weight: 700;
-            margin-bottom: 12px;
+            margin-bottom: 0;
             color: #f8fafc;
             letter-spacing: -0.5px;
         }
@@ -73,23 +99,23 @@
         .signup-form {
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 10px;
         }
 
         .form-group {
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 4px;
         }
 
         .form-row {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 16px;
+            gap: 12px;
         }
 
         .form-group label {
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 600;
             color: #cbd5e1;
             letter-spacing: 0.01em;
@@ -102,19 +128,14 @@
             color: #f87171;
         }
 
-        .form-group label .optional {
-            color: #64748b;
-            font-weight: 400;
-            font-size: 12px;
-        }
 
         .form-group input {
             width: 100%;
-            padding: 14px 16px;
-            font-size: 15px;
+            padding: 10px 14px;
+            font-size: 14px;
             font-family: inherit;
-            border: 2px solid rgba(148, 163, 184, 0.2);
-            border-radius: 12px;
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            border-radius: 8px;
             background: rgba(15, 23, 42, 0.6);
             color: #f1f5f9;
             outline: none;
@@ -144,21 +165,21 @@
 
         .signup-btn {
             width: 100%;
-            padding: 16px 24px;
-            font-size: 16px;
+            padding: 12px 20px;
+            font-size: 14px;
             font-weight: 600;
             font-family: inherit;
             color: #ffffff;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             border: none;
-            border-radius: 12px;
+            border-radius: 8px;
             cursor: pointer;
             transition: all 0.2s ease;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
-            margin-top: 8px;
+            margin-top: 4px;
         }
 
         .signup-btn:hover {
@@ -252,10 +273,10 @@
 
         .login-link {
             text-align: center;
-            margin-top: 32px;
-            padding-top: 24px;
+            margin-top: 12px;
+            padding-top: 12px;
             border-top: 1px solid rgba(148, 163, 184, 0.1);
-            font-size: 15px;
+            font-size: 13px;
             color: #94a3b8;
         }
 
@@ -272,20 +293,21 @@
 
         .back-link {
             position: fixed;
-            top: 32px;
-            left: 32px;
+            top: 16px;
+            left: 16px;
             display: flex;
             align-items: center;
-            gap: 10px;
-            font-size: 15px;
+            gap: 6px;
+            font-size: 13px;
             font-weight: 500;
             color: #94a3b8;
             text-decoration: none;
-            padding: 12px 20px;
-            background: rgba(30, 41, 59, 0.6);
+            padding: 8px 12px;
+            background: rgba(30, 41, 59, 0.8);
+            -webkit-backdrop-filter: blur(10px);
             backdrop-filter: blur(10px);
             border: 1px solid rgba(148, 163, 184, 0.1);
-            border-radius: 12px;
+            border-radius: 8px;
             transition: all 0.2s;
         }
 
@@ -326,20 +348,20 @@
         /* Password requirements checklist */
         .password-requirements {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 6px 16px;
-            margin-top: 12px;
-            padding: 14px 16px;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 3px 6px;
+            margin-top: 4px;
+            padding: 6px 8px;
             background: rgba(15, 23, 42, 0.4);
-            border-radius: 10px;
+            border-radius: 6px;
             border: 1px solid rgba(148, 163, 184, 0.1);
         }
 
         .req-item {
             display: flex;
             align-items: center;
-            gap: 8px;
-            font-size: 13px;
+            gap: 4px;
+            font-size: 11px;
             color: #64748b;
             transition: color 0.2s;
         }
@@ -355,6 +377,50 @@
 
         .req-item.met .req-icon {
             color: #22c55e;
+        }
+
+        .password-input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .password-input-wrapper input {
+            padding-right: 48px;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 12px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 4px;
+            color: #64748b;
+            transition: color 0.2s;
+        }
+
+        .password-toggle:hover {
+            color: #94a3b8;
+        }
+
+        .password-toggle svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .password-match {
+            font-size: 13px;
+            margin-top: 8px;
+            font-weight: 500;
+        }
+
+        .password-match.match {
+            color: #4ade80;
+        }
+
+        .password-match.no-match {
+            color: #f87171;
         }
 
         /* Decorative elements */
@@ -383,9 +449,14 @@
         }
 
         @media (max-width: 520px) {
+            body {
+                padding: 12px;
+            }
+
             .signup-container {
-                padding: 32px 24px;
-                border-radius: 20px;
+                padding: 24px 20px;
+                border-radius: 16px;
+                max-height: calc(100vh - 24px);
             }
 
             .form-row {
@@ -393,14 +464,29 @@
             }
 
             .back-link {
-                top: 16px;
-                left: 16px;
-                padding: 10px 16px;
-                font-size: 14px;
+                display: none;
             }
 
             .signup-header h1 {
-                font-size: 24px;
+                font-size: 20px;
+            }
+
+            .signup-header {
+                margin-bottom: 12px;
+            }
+
+            .logo {
+                margin-bottom: 8px;
+            }
+
+            .password-requirements {
+                grid-template-columns: 1fr 1fr;
+                gap: 2px 4px;
+                padding: 5px 6px;
+            }
+
+            .signup-form {
+                gap: 8px;
             }
         }
     </style>
@@ -418,7 +504,7 @@
 
     <div class="signup-container">
         <div class="logo">
-            <span class="logo-text">K-COL</span>
+            <span class="logo-text">송도파트너스피엠오</span>
         </div>
 
         <div class="signup-header">
@@ -433,7 +519,19 @@
 
             <div class="form-group">
                 <label for="password">비밀번호 <span class="required">*</span></label>
-                <input type="password" id="password" name="password" placeholder="비밀번호 입력" required autocomplete="new-password">
+                <div class="password-input-wrapper">
+                    <input type="password" id="password" name="password" placeholder="비밀번호 입력" required autocomplete="new-password">
+                    <button type="button" class="password-toggle" id="passwordToggle" aria-label="비밀번호 보기">
+                        <svg class="eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                            <circle cx="12" cy="12" r="3"/>
+                        </svg>
+                        <svg class="eye-off-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none;">
+                            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                            <line x1="1" y1="1" x2="23" y2="23"/>
+                        </svg>
+                    </button>
+                </div>
                 <div class="password-requirements" id="passwordRequirements">
                     <div class="req-item" id="reqLength"><span class="req-icon">○</span> 8자 이상</div>
                     <div class="req-item" id="reqLower"><span class="req-icon">○</span> 소문자 (a-z)</div>
@@ -444,18 +542,36 @@
             </div>
 
             <div class="form-group">
-                <label for="business">회사명 <span class="optional">(선택)</span></label>
-                <input type="text" id="business" name="business" placeholder="회사명을 입력하세요" autocomplete="organization">
+                <label for="passwordConfirm">비밀번호 확인 <span class="required">*</span></label>
+                <div class="password-input-wrapper">
+                    <input type="password" id="passwordConfirm" name="passwordConfirm" placeholder="비밀번호 재입력" required autocomplete="new-password">
+                    <button type="button" class="password-toggle" id="passwordConfirmToggle" aria-label="비밀번호 보기">
+                        <svg class="eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                            <circle cx="12" cy="12" r="3"/>
+                        </svg>
+                        <svg class="eye-off-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none;">
+                            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                            <line x1="1" y1="1" x2="23" y2="23"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="password-match" id="passwordMatch"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="business">회사명</label>
+                <input type="text" id="business" name="business" placeholder="회사명을 입력하세요" required autocomplete="organization">
             </div>
 
             <div class="form-row">
                 <div class="form-group">
-                    <label for="bizNum">사업자등록번호 <span class="optional">(선택)</span></label>
-                    <input type="text" id="bizNum" name="bizNum" placeholder="000-00-00000" maxlength="12">
+                    <label for="bizNum">사업자등록번호</label>
+                    <input type="text" id="bizNum" name="bizNum" placeholder="000-00-00000" maxlength="12" required>
                 </div>
                 <div class="form-group">
-                    <label for="phone">전화번호 <span class="optional">(선택)</span></label>
-                    <input type="tel" id="phone" name="phone" placeholder="010-0000-0000" autocomplete="tel">
+                    <label for="phone">전화번호</label>
+                    <input type="tel" id="phone" name="phone" placeholder="010-0000-0000" maxlength="13" required autocomplete="tel">
                 </div>
             </div>
 
@@ -478,6 +594,18 @@
             <a href="login.html" class="login-link-btn">로그인</a>
         </div>
 
+        <div class="success-message" id="alreadyRegistered">
+            <div class="success-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                    <circle cx="12" cy="7" r="4"/>
+                </svg>
+            </div>
+            <h2>이미 가입된 이메일입니다</h2>
+            <p>해당 이메일로 이미 회원가입이 되어있습니다.<br>로그인 페이지에서 로그인해주세요.</p>
+            <a href="login.html" class="login-link-btn">로그인 페이지로 이동</a>
+        </div>
+
         <div class="login-link" id="loginLink">
             이미 계정이 있으신가요? <a href="login.html">로그인</a>
         </div>
@@ -492,6 +620,10 @@
             var form = document.getElementById('signupForm');
             var emailInput = document.getElementById('email');
             var passwordInput = document.getElementById('password');
+            var passwordConfirmInput = document.getElementById('passwordConfirm');
+            var passwordMatch = document.getElementById('passwordMatch');
+            var passwordToggle = document.getElementById('passwordToggle');
+            var passwordConfirmToggle = document.getElementById('passwordConfirmToggle');
             var businessInput = document.getElementById('business');
             var bizNumInput = document.getElementById('bizNum');
             var phoneInput = document.getElementById('phone');
@@ -537,6 +669,84 @@
             }
 
             passwordInput.addEventListener('input', checkPasswordRequirements);
+            passwordInput.addEventListener('input', checkPasswordMatch);
+            passwordConfirmInput.addEventListener('input', checkPasswordMatch);
+
+            // Password visibility toggle
+            function setupPasswordToggle(input, toggleBtn) {
+                toggleBtn.addEventListener('click', function() {
+                    var eyeIcon = toggleBtn.querySelector('.eye-icon');
+                    var eyeOffIcon = toggleBtn.querySelector('.eye-off-icon');
+                    
+                    if (input.type === 'password') {
+                        input.type = 'text';
+                        eyeIcon.style.display = 'none';
+                        eyeOffIcon.style.display = 'block';
+                    } else {
+                        input.type = 'password';
+                        eyeIcon.style.display = 'block';
+                        eyeOffIcon.style.display = 'none';
+                    }
+                });
+            }
+
+            setupPasswordToggle(passwordInput, passwordToggle);
+            setupPasswordToggle(passwordConfirmInput, passwordConfirmToggle);
+
+            // Auto-format phone number (010-0000-0000)
+            phoneInput.addEventListener('input', function(e) {
+                var value = e.target.value.replace(/[^0-9]/g, '');
+                var formatted = '';
+                
+                if (value.length <= 3) {
+                    formatted = value;
+                } else if (value.length <= 7) {
+                    formatted = value.slice(0, 3) + '-' + value.slice(3);
+                } else {
+                    formatted = value.slice(0, 3) + '-' + value.slice(3, 7) + '-' + value.slice(7, 11);
+                }
+                
+                e.target.value = formatted;
+            });
+
+            // Auto-format business number (000-00-00000)
+            bizNumInput.addEventListener('input', function(e) {
+                var value = e.target.value.replace(/[^0-9]/g, '');
+                var formatted = '';
+                
+                if (value.length <= 3) {
+                    formatted = value;
+                } else if (value.length <= 5) {
+                    formatted = value.slice(0, 3) + '-' + value.slice(3);
+                } else {
+                    formatted = value.slice(0, 3) + '-' + value.slice(3, 5) + '-' + value.slice(5, 10);
+                }
+                
+                e.target.value = formatted;
+            });
+
+            function checkPasswordMatch() {
+                var password = passwordInput.value;
+                var confirm = passwordConfirmInput.value;
+                
+                if (confirm.length === 0) {
+                    passwordMatch.textContent = '';
+                    passwordMatch.className = 'password-match';
+                    return;
+                }
+                
+                if (password === confirm) {
+                    passwordMatch.textContent = '✓ 비밀번호 일치';
+                    passwordMatch.className = 'password-match match';
+                } else {
+                    passwordMatch.textContent = '✗ 비밀번호 불일치';
+                    passwordMatch.className = 'password-match no-match';
+                }
+            }
+
+            function passwordsMatch() {
+                return passwordInput.value === passwordConfirmInput.value;
+            }
 
             function showError(message) {
                 errorMessage.textContent = message;
@@ -546,6 +756,13 @@
 
             function showSuccess() {
                 successMessage.classList.add('show');
+                errorMessage.classList.remove('show');
+                form.style.display = 'none';
+                loginLink.style.display = 'none';
+            }
+
+            function showAlreadyRegistered() {
+                document.getElementById('alreadyRegistered').classList.add('show');
                 errorMessage.classList.remove('show');
                 form.style.display = 'none';
                 loginLink.style.display = 'none';
@@ -581,9 +798,30 @@
                     return;
                 }
 
+                if (!business) {
+                    showError('회사명을 입력해주세요.');
+                    return;
+                }
+
+                if (!bizNum || bizNum.length < 12) {
+                    showError('사업자등록번호를 정확히 입력해주세요. (000-00-00000)');
+                    return;
+                }
+
+                if (!phone || phone.length < 12) {
+                    showError('전화번호를 정확히 입력해주세요. (010-0000-0000)');
+                    return;
+                }
+
                 // Password complexity check
                 if (!allRequirementsMet()) {
                     showError('비밀번호 요구사항을 모두 충족해주세요.');
+                    return;
+                }
+
+                // Password match check
+                if (!passwordsMatch()) {
+                    showError('비밀번호가 일치하지 않습니다.');
                     return;
                 }
 
@@ -596,26 +834,55 @@
                 }
 
                 window.SDP.auth.getClient().then(function(client) {
-                    return client.auth.signUp({
-                        email: email,
-                        password: password,
-                        options: {
-                            data: {
-                                business_name: business,
-                                business_number: bizNum,
-                                phone: phone
-                            }
+                    // Call backend Edge Function for validation and signup
+                    return client.functions.invoke('signup-user', {
+                        body: {
+                            email: email,
+                            password: password,
+                            business_name: business,
+                            business_number: bizNum,
+                            phone: phone
                         }
                     });
-                }).then(function(result) {
-                    if (result.error) throw result.error;
+                }).then(function(response) {
+                    // Check for Edge Function errors
+                    if (response.error) {
+                        throw new Error(response.error.message || '회원가입에 실패했습니다.');
+                    }
+                    
+                    var result = response.data;
+                    
+                    // Handle validation errors from backend
+                    if (result.error === 'validation_error') {
+                        showError(result.message);
+                        setLoading(false);
+                        return;
+                    }
+                    
+                    // Handle user already exists
+                    if (result.error === 'user_exists') {
+                        showAlreadyRegistered();
+                        setLoading(false);
+                        return;
+                    }
+                    
+                    // Handle other errors
+                    if (result.error) {
+                        showError(result.message || '회원가입에 실패했습니다.');
+                        setLoading(false);
+                        return;
+                    }
+                    
+                    // Success
                     showSuccess();
                     setLoading(false);
                 }).catch(function(err) {
                     var message = err.message || '회원가입에 실패했습니다.';
                     // Translate common Supabase errors
                     if (message.includes('already registered')) {
-                        message = '이미 가입된 이메일입니다. 로그인 페이지로 이동하시겠어요?';
+                        showAlreadyRegistered();
+                        setLoading(false);
+                        return;
                     } else if (message.includes('Password should be at least')) {
                         message = '비밀번호가 너무 짧습니다. 8자 이상으로 설정해주세요.';
                     }

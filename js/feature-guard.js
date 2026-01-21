@@ -81,7 +81,7 @@
 
       var style = document.createElement('style');
       style.textContent = '\
-        .fg-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 99999; backdrop-filter: blur(4px); }\
+        .fg-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 99999; -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); }\
         .fg-modal { background: #1e2642; border-radius: 12px; padding: 28px 32px; max-width: 380px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }\
         .fg-modal h3 { color: #fff; font-size: 20px; margin: 0 0 12px; }\
         .fg-modal p { color: #9ca3af; font-size: 14px; line-height: 1.6; margin: 0 0 24px; }\
