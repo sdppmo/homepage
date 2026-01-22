@@ -625,7 +625,6 @@
         document.addEventListener('DOMContentLoaded', function() {
             updateLoadTable();
             updateThicknessRanges(); // 두께 범위 초기 표시
-            addLoginModal();
             addBOQLengthModal();
             addSubMaterialModal();
             addUnitPriceModal();
@@ -697,10 +696,6 @@
             
             // 모달 외부 클릭 시 닫기
             document.addEventListener('click', function(e) {
-                const loginModal = document.getElementById('loginModal');
-                if (loginModal && e.target === loginModal) {
-                    closeLoginModal();
-                }
                 const boqLengthModal = document.getElementById('boqLengthModal');
                 if (boqLengthModal && e.target === boqLengthModal) {
                     closeBOQLengthModal();
@@ -3644,7 +3639,7 @@
                 // window.open 대신 화면에 링크 표시 또는 새 탭으로 열기
                 const openBOQ = function() {
                     // 먼저 window.open 시도
-                    boqWindowRef = window.open('boq-report.html', '_blank', 'width=1400,height=900');
+                    boqWindowRef = window.open('/pages/k-col web software/protected/boq-report.html', '_blank', 'width=1400,height=900');
                     
                     // 잠시 후 팝업이 열렸는지 확인
                     setTimeout(() => {
@@ -3656,7 +3651,7 @@
                             linkDiv.innerHTML = `
                                 <h3 style="margin:0 0 15px 0;color:#1e3a5f;font-size:20px;">BOQ 리포트 열기</h3>
                                 <p style="margin:0 0 20px 0;color:#666;font-size:14px;line-height:1.6;">팝업이 차단되었습니다.<br>아래 링크를 클릭하여 BOQ 리포트를 열어주세요:</p>
-                                <a href="boq-report.html" target="_blank" style="display:inline-block;padding:12px 30px;background:#667eea;color:white;text-decoration:none;border-radius:6px;font-size:16px;font-weight:600;margin-bottom:15px;margin-right:10px;">BOQ 리포트 열기</a>
+                                <a href="/pages/k-col web software/protected/boq-report.html" target="_blank" style="display:inline-block;padding:12px 30px;background:#667eea;color:white;text-decoration:none;border-radius:6px;font-size:16px;font-weight:600;margin-bottom:15px;margin-right:10px;">BOQ 리포트 열기</a>
                                 <button onclick="document.getElementById('boqPopupBlockedModal')?.remove();" style="padding:12px 20px;background:#999;color:white;border:none;border-radius:6px;cursor:pointer;font-size:14px;font-weight:600;">닫기</button>
                             `;
                             
@@ -3693,7 +3688,7 @@
                 linkDiv.innerHTML = `
                     <h3 style="margin:0 0 15px 0;color:#1e3a5f;font-size:20px;">BOQ 리포트 열기</h3>
                     <p style="margin:0 0 20px 0;color:#666;font-size:14px;line-height:1.6;">오류가 발생했습니다.<br>아래 링크를 클릭하여 BOQ 리포트를 열어주세요:</p>
-                    <a href="boq-report.html" target="_blank" style="display:inline-block;padding:12px 30px;background:#667eea;color:white;text-decoration:none;border-radius:6px;font-size:16px;font-weight:600;margin-bottom:15px;">BOQ 리포트 열기</a>
+                    <a href="/pages/k-col web software/protected/boq-report.html" target="_blank" style="display:inline-block;padding:12px 30px;background:#667eea;color:white;text-decoration:none;border-radius:6px;font-size:16px;font-weight:600;margin-bottom:15px;">BOQ 리포트 열기</a>
                     <br>
                     <button onclick="this.parentElement.remove();" style="padding:8px 20px;background:#999;color:white;border:none;border-radius:4px;cursor:pointer;font-size:14px;">닫기</button>
                 `;
@@ -3856,75 +3851,8 @@
             document.body.removeChild(link);
         }
 
-        // 계산서 출력 함수 (로그인 체크 포함)
+        // 계산서 출력 함수 (페이지 자체가 로그인 필수이므로 바로 진행)
         function printCalculationSheet() {
-            // 로그인 상태 확인
-            if (!checkLoginStatus()) {
-                showLoginModal();
-                return;
-            }
-
-            // 로그인된 경우 계산서 출력 진행
-            proceedWithPrintCalculationSheet();
-        }
-
-        // 로그인 상태 확인
-        function checkLoginStatus() {
-            const loginData = JSON.parse(localStorage.getItem('kcolLoginData')) || null;
-            if (loginData && loginData.isLoggedIn) {
-                // 로그인 만료 시간 확인 (24시간)
-                const now = new Date().getTime();
-                if (now - loginData.loginTime < 24 * 60 * 60 * 1000) {
-                    return true;
-                } else {
-                    // 만료된 경우 로그인 정보 제거
-                    localStorage.removeItem('kcolLoginData');
-                }
-            }
-            return false;
-        }
-
-        // 로그인 모달 표시
-        function showLoginModal() {
-            const modal = document.getElementById('loginModal');
-            if (modal) {
-                modal.style.display = 'flex';
-                document.getElementById('loginUserId').focus();
-            }
-        }
-
-        // 로그인 모달 닫기
-        function closeLoginModal() {
-            const modal = document.getElementById('loginModal');
-            if (modal) {
-                modal.style.display = 'none';
-                document.getElementById('loginUserId').value = '';
-                document.getElementById('loginPassword').value = '';
-                document.getElementById('loginError').textContent = '';
-            }
-        }
-
-        // 로그인 처리
-        function handleLogin() {
-            const userId = document.getElementById('loginUserId').value.trim();
-            const password = document.getElementById('loginPassword').value;
-
-            if (!userId || !password) {
-                document.getElementById('loginError').textContent = 'ID와 비밀번호를 입력해주세요.';
-                return;
-            }
-
-            // 간단한 인증 (실제로는 서버 API 호출 필요)
-            // 테스트용: userId와 password가 모두 입력되면 로그인 성공
-            const loginData = {
-                isLoggedIn: true,
-                userId: userId,
-                loginTime: new Date().getTime()
-            };
-            localStorage.setItem('kcolLoginData', JSON.stringify(loginData));
-
-            closeLoginModal();
-            // 로그인 후 계산서 출력 계속 진행
             proceedWithPrintCalculationSheet();
         }
 
@@ -4086,7 +4014,7 @@
 
             // 계산서 페이지를 오른쪽 창에 열기 (기존 창이 있으면 재사용, 없으면 새로 생성)
             const windowName = `calcSheet_${columnNo}`;
-            let calcWindow = window.open('Cross-H-Column-Calculation-Data1.html', windowName, 'width=1200,height=800,left=' + (window.screen.width - 1200) + ',top=0');
+            let calcWindow = window.open('/pages/k-col web software/Cross-H-Column-Calculation-Data1.html', windowName, 'width=1200,height=800,left=' + (window.screen.width - 1200) + ',top=0');
             
             if (calcWindow) {
                 // 창이 이미 열려있으면 포커스
@@ -4164,7 +4092,7 @@
             localStorage.setItem('kcolInputData', JSON.stringify(inputData));
 
             // 계산서 페이지를 새 창에서 열기
-            const calcWindow = window.open('Cross-H-Column-Calculation-Data1.html', '_blank');
+            const calcWindow = window.open('/pages/k-col web software/Cross-H-Column-Calculation-Data1.html', '_blank');
             
             if (calcWindow) {
                 console.log('계산서 출력: 첫 번째 기둥 데이터 사용');
@@ -4276,51 +4204,6 @@
                                     style="padding: 12px 24px; background: #cbd5e0; color: #4a5568; border: none; border-radius: 6px; font-size: 16px; font-weight: 600; cursor: pointer;">
                                 취소
                             </button>
-                        </div>
-                    </div>
-                </div>
-            `;
-            document.body.insertAdjacentHTML('beforeend', modalHTML);
-        }
-
-        // 로그인 모달 HTML 추가
-        function addLoginModal() {
-            // 이미 모달이 있으면 추가하지 않음
-            if (document.getElementById('loginModal')) {
-                return;
-            }
-
-            const modalHTML = `
-                <div id="loginModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; align-items: center; justify-content: center;">
-                    <div style="background: white; border-radius: 12px; padding: 30px; max-width: 400px; width: 90%; box-shadow: 0 10px 40px rgba(0,0,0,0.3);">
-                        <h2 style="margin-bottom: 20px; color: #1e3a5f; font-size: 24px; text-align: center;">로그인</h2>
-                        <p style="margin-bottom: 20px; color: #718096; font-size: 14px; text-align: center;">계산서 출력을 위해 로그인이 필요합니다.</p>
-                        <div style="margin-bottom: 15px;">
-                            <label style="display: block; margin-bottom: 5px; color: #4a5568; font-weight: 600; font-size: 14px;">ID (사업자번호)</label>
-                            <input type="text" id="loginUserId" placeholder="사업자번호를 입력하세요" 
-                                   style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 6px; font-size: 14px;"
-                                   onkeypress="if(event.key==='Enter') handleLogin()">
-                        </div>
-                        <div style="margin-bottom: 20px;">
-                            <label style="display: block; margin-bottom: 5px; color: #4a5568; font-weight: 600; font-size: 14px;">비밀번호</label>
-                            <input type="password" id="loginPassword" placeholder="비밀번호를 입력하세요" 
-                                   style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 6px; font-size: 14px;"
-                                   onkeypress="if(event.key==='Enter') handleLogin()">
-                        </div>
-                        <div id="loginError" style="color: #e53e3e; font-size: 13px; margin-bottom: 15px; min-height: 20px; text-align: center;"></div>
-                        <div style="display: flex; gap: 10px;">
-                            <button onclick="handleLogin()" 
-                                    style="flex: 1; padding: 12px; background: #667eea; color: white; border: none; border-radius: 6px; font-size: 16px; font-weight: 600; cursor: pointer;">
-                                로그인
-                            </button>
-                            <button onclick="closeLoginModal()" 
-                                    style="flex: 1; padding: 12px; background: #cbd5e0; color: #4a5568; border: none; border-radius: 6px; font-size: 16px; font-weight: 600; cursor: pointer;">
-                                취소
-                            </button>
-                        </div>
-                        <div style="margin-top: 15px; text-align: center; font-size: 12px; color: #718096;">
-                            <a href="#" style="color: #667eea; text-decoration: none;">회원가입</a> | 
-                            <a href="#" style="color: #667eea; text-decoration: none;">비밀번호 찾기</a>
                         </div>
                     </div>
                 </div>

@@ -134,17 +134,30 @@
   // Full session check with profile (updates UI after SDK loads)
   var sdkCheckComplete = false;
   
+  // Transition from logged-in to guest state smoothly (for session invalidation)
+  function transitionToGuestState() {
+    if (shownInstantLogin && authSection) {
+      // Fade out, switch state, fade in
+      authSection.style.transition = 'opacity 0.15s ease-out';
+      authSection.style.opacity = '0';
+      setTimeout(function() {
+        if (authGuest) authGuest.style.display = 'block';
+        if (authUser) authUser.style.display = 'none';
+        authSection.style.transition = 'opacity 0.2s ease-in';
+        authSection.style.opacity = '1';
+      }, 150);
+    } else {
+      showGuestState();
+    }
+  }
+
   if (SUPABASE_MODE) {
     window.SDP.auth.getSession().then(function(session) {
       sdkCheckComplete = true;
       if (!session) {
         // No valid session - refresh failed or no session
-        if (waitingForRefresh) {
-          // Was waiting for refresh but it failed - redirect to login page
-          redirectToLogin();
-        } else if (!shownInstantLogin) {
-          showGuestState();
-        }
+        // Show guest state (login/signup buttons) with smooth transition
+        transitionToGuestState();
         return;
       }
       return window.SDP.auth.getProfile().then(function(profile) {
@@ -154,24 +167,16 @@
       });
     }).catch(function() {
       sdkCheckComplete = true;
-      if (waitingForRefresh) {
-        // Refresh failed - redirect to login page
-        redirectToLogin();
-      } else if (!shownInstantLogin) {
-        showGuestState();
-      }
+      // Session expired or refresh failed - show guest state
+      transitionToGuestState();
     });
     
     // Fallback timeout: if waiting for refresh and SDK takes too long
     if (waitingForRefresh || !shownInstantLogin) {
       setTimeout(function() {
         if (!sdkCheckComplete) {
-          if (waitingForRefresh) {
-            // Refresh taking too long - redirect to login
-            redirectToLogin();
-          } else {
-            showGuestState();
-          }
+          // SDK taking too long - show guest state with smooth transition
+          transitionToGuestState();
         }
       }, 3000); // 3 second timeout for refresh
     }
@@ -203,17 +208,28 @@
     });
   }
 
-  // Show/hide states
+  // Show/hide states with fade-in to prevent flash
+  function showAuthSection() {
+    if (authSection) {
+      authSection.style.transition = 'opacity 0.2s ease-in';
+      authSection.style.opacity = '0';
+      authSection.style.visibility = 'visible';
+      // Force reflow to ensure transition works
+      authSection.offsetHeight;
+      authSection.style.opacity = '1';
+    }
+  }
+
   function showGuestState() {
     if (authGuest) authGuest.style.display = 'block';
     if (authUser) authUser.style.display = 'none';
-    if (authSection) authSection.style.visibility = 'visible';
+    showAuthSection();
   }
 
   function showLoggedInState(email, profile) {
     if (authGuest) authGuest.style.display = 'none';
     if (authUser) authUser.style.display = 'block';
-    if (authSection) authSection.style.visibility = 'visible';
+    showAuthSection();
 
     // Set avatar with unique color based on email
     var displayName = (profile && profile.business_name) || email || 'User';

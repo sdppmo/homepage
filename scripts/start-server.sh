@@ -7,7 +7,8 @@
 set -e
 
 PORT=8080
-PROJECT_DIR="$(cd "$(dirname "$0")" && pwd)"
+# Go to the project root (parent of scripts directory)
+PROJECT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 
 # Colors
 GREEN='\033[0;32m'
