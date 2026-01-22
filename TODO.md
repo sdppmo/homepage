@@ -51,21 +51,9 @@ Client-side JavaScript guards can be bypassed by:
 
 ---
 
-## Email Verification Issue
-
-### Problem
-Verification emails are not being sent after signup.
-
-### Debugging Steps
-- [ ] Check Supabase Dashboard → Project Settings → Authentication → SMTP Settings
-- [ ] Verify Resend API key is correct
-- [ ] Check Resend Dashboard (https://resend.com/emails) for failed/sent emails
-- [ ] Verify domain DNS records (SPF, DKIM) in Gabia
-
----
-
 ## Completed Items
 
+- [x] Email verification working (Supabase SMTP + Resend)
 - [x] Login guard modal for K-COL Web Software / Product Schedule (client-side UX)
 - [x] Pending page with email verification countdown
 - [x] Admin user list split (pending vs active)

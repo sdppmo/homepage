@@ -145,7 +145,11 @@
     }
     @keyframes spin { to { transform: rotate(360deg); } }
     
-    .hidden { display: none; }
+    .hidden { display: none !important; }
+    
+    /* Prevent flash of content on load */
+    .card { opacity: 0; transition: opacity 0.3s ease; }
+    .card.ready { opacity: 1; }
     
     /* Countdown timer */
     .countdown-container {
@@ -232,15 +236,40 @@
   <script src="../../js/auth.js"></script>
   <script>
     var COOLDOWN_SECONDS = 60;
+    var CREDENTIAL_TIMEOUT_MS = 10 * 60 * 1000; // 10 minutes
     var countdownValue = COOLDOWN_SECONDS;
     var countdownInterval = null;
     var statusCheckInterval = null;
+    var isNavigatingToHome = false;
+    
+    // Security: Clear stored credentials after timeout (10 minutes)
+    var credentialTimeout = setTimeout(function() {
+      console.log('[Security] Clearing stored credentials due to timeout');
+      sessionStorage.removeItem('pending_email');
+      sessionStorage.removeItem('pending_password');
+    }, CREDENTIAL_TIMEOUT_MS);
+    
+    // Security: Clear credentials when leaving page (except when navigating to home after success)
+    window.addEventListener('beforeunload', function() {
+      if (!isNavigatingToHome) {
+        sessionStorage.removeItem('pending_email');
+        sessionStorage.removeItem('pending_password');
+      }
+    });
+    
+    function clearCredentials() {
+      clearTimeout(credentialTimeout);
+      sessionStorage.removeItem('pending_email');
+      sessionStorage.removeItem('pending_password');
+    }
     
     function showState(stateId) {
       ['loadingState', 'emailState', 'successState'].forEach(function(id) {
         document.getElementById(id).classList.add('hidden');
       });
       document.getElementById(stateId).classList.remove('hidden');
+      // Show card after state is determined
+      document.querySelector('.card').classList.add('ready');
     }
     
     function showMessage(type, text) {
@@ -367,6 +396,30 @@
       });
     }
     
+    // Get email from URL params (passed from signup)
+    function getEmailFromUrl() {
+      var params = new URLSearchParams(window.location.search);
+      return params.get('email');
+    }
+    
+    // Check email verification status via Edge Function (database check)
+    function checkEmailVerified(email) {
+      return window.SDP.auth.getClient().then(function(client) {
+        return client.functions.invoke('check-email-verified', {
+          body: { email: email }
+        });
+      }).then(function(result) {
+        if (result.error) {
+          console.error('[Pending] Check error:', result.error);
+          return { verified: false };
+        }
+        return result.data;
+      }).catch(function(err) {
+        console.error('[Pending] Check failed:', err);
+        return { verified: false };
+      });
+    }
+    
     // Check user status
     function checkStatus() {
       if (!window.SDP || !window.SDP.auth) {
@@ -374,55 +427,113 @@
         return;
       }
       
+      var urlEmail = getEmailFromUrl();
+      
+      // First check if we already have a session (user clicked verify link)
       window.SDP.auth.getClient().then(function(client) {
         return client.auth.getSession();
       }).then(function(result) {
         var session = result.data.session;
         
-        if (!session || !session.user) {
-          // Not logged in - redirect to signup
+        if (session && session.user && session.user.email_confirmed_at) {
+          // Already verified and has session
+          handleVerified(session.user);
+          return;
+        }
+        
+        // Get email from session or URL
+        var email = (session && session.user) ? session.user.email : urlEmail;
+        
+        if (!email) {
+          // No email available - redirect to signup
           window.location.assign('/pages/auth/signup.html');
           return;
         }
         
-        var user = session.user;
-        var emailVerified = !!user.email_confirmed_at;
+        // Show pending state
+        document.getElementById('userEmail').textContent = email;
+        showState('emailState');
+        startCountdown();
         
-        document.getElementById('userEmail').textContent = user.email;
-        
-        if (!emailVerified) {
-          // Email not verified - show waiting state with countdown
-          showState('emailState');
-          startCountdown();
-          
-          // Poll for verification every 3 seconds
-          statusCheckInterval = setInterval(function() {
-            window.SDP.auth.getClient().then(function(client) {
-              return client.auth.getUser();
-            }).then(function(userResult) {
-              if (userResult.data.user && userResult.data.user.email_confirmed_at) {
-                // Email just got verified!
-                clearInterval(statusCheckInterval);
-                handleVerified(userResult.data.user);
-              }
-            });
-          }, 3000);
-          
-          return;
-        }
-        
-        // Email already verified
-        handleVerified(user);
+        // Poll database for verification status every 3 seconds
+        statusCheckInterval = setInterval(function() {
+          checkEmailVerified(email).then(function(result) {
+            console.log('[Pending] Verification check:', result);
+            if (result.verified) {
+              clearInterval(statusCheckInterval);
+              // Try to get session, or redirect with user_id
+              window.SDP.auth.getClient().then(function(client) {
+                return client.auth.getSession();
+              }).then(function(sessionResult) {
+                if (sessionResult.data.session && sessionResult.data.session.user) {
+                  clearCredentials();
+                  handleVerified(sessionResult.data.session.user);
+                } else {
+                  // No session but verified - try auto-login with stored credentials
+                  var storedEmail = sessionStorage.getItem('pending_email');
+                  var storedPassword = sessionStorage.getItem('pending_password');
+                  
+                  if (storedEmail && storedPassword) {
+                    console.log('[Pending] Attempting auto-login...');
+                    window.SDP.auth.getClient().then(function(client) {
+                      return client.auth.signInWithPassword({
+                        email: storedEmail,
+                        password: storedPassword
+                      });
+                    }).then(function(loginResult) {
+                      clearCredentials();
+                      
+                      if (loginResult.error) {
+                        console.error('[Pending] Auto-login failed:', loginResult.error);
+                        showState('successState');
+                        isNavigatingToHome = true;
+                        setTimeout(function() {
+                          window.location.assign('/');
+                        }, 1500);
+                      } else {
+                        console.log('[Pending] Auto-login successful');
+                        handleVerified(loginResult.data.user);
+                      }
+                    }).catch(function(err) {
+                      console.error('[Pending] Auto-login error:', err);
+                      clearCredentials();
+                      showState('successState');
+                      isNavigatingToHome = true;
+                      setTimeout(function() {
+                        window.location.assign('/');
+                      }, 1500);
+                    });
+                  } else {
+                    // No stored credentials - just redirect
+                    showState('successState');
+                    isNavigatingToHome = true;
+                    setTimeout(function() {
+                      window.location.assign('/');
+                    }, 1500);
+                  }
+                }
+              });
+            }
+          });
+        }, 3000);
         
       }).catch(function(err) {
         console.error('Status check error:', err);
-        window.location.assign('/pages/auth/signup.html');
+        if (urlEmail) {
+          document.getElementById('userEmail').textContent = urlEmail;
+          showState('emailState');
+          startCountdown();
+        } else {
+          window.location.assign('/pages/auth/signup.html');
+        }
       });
     }
     
     function handleVerified(user) {
       // Create profile if needed, then redirect to home
+      clearCredentials();
       showState('successState');
+      isNavigatingToHome = true;
       
       createProfile(user).finally(function() {
         setTimeout(function() {

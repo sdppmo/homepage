@@ -13,7 +13,6 @@
     var phoneInput = document.getElementById('phone');
     var signupBtn = document.getElementById('signupBtn');
     var errorMessage = document.getElementById('errorMessage');
-    var successMessage = document.getElementById('successMessage');
     var loginLink = document.getElementById('loginLink');
 
     // Password requirements checker
@@ -135,14 +134,6 @@
     function showError(message) {
         errorMessage.textContent = message;
         errorMessage.classList.add('show');
-        successMessage.classList.remove('show');
-    }
-
-    function showSuccess() {
-        successMessage.classList.add('show');
-        errorMessage.classList.remove('show');
-        form.style.display = 'none';
-        loginLink.style.display = 'none';
     }
 
     function showAlreadyRegistered() {
@@ -154,7 +145,6 @@
 
     function hideMessages() {
         errorMessage.classList.remove('show');
-        successMessage.classList.remove('show');
     }
 
     function setLoading(loading) {
@@ -219,9 +209,6 @@
 
         window.SDP.auth.getClient().then(function(client) {
             // Call Supabase Auth signUp directly
-            // - Triggers confirmation email via configured SMTP template
-            // - Stores business info in user_metadata
-            // - Profile is created on pending.html AFTER email verification
             return client.auth.signUp({
                 email: email,
                 password: password,
@@ -246,16 +233,12 @@
             console.log('[Signup] User created:', result.data.user.id);
             console.log('[Signup] Verification email sent to:', email);
             
-            // Show transitional message and redirect to pending page
-            setLoading(false);
-            successMessage.classList.add('show');
-            form.style.display = 'none';
-            loginLink.style.display = 'none';
+            // Store credentials temporarily for auto-login after verification
+            sessionStorage.setItem('pending_email', email);
+            sessionStorage.setItem('pending_password', password);
             
-            // Redirect to pending page after brief delay
-            setTimeout(function() {
-                window.location.assign('/pages/auth/pending.html');
-            }, 800);
+            // Redirect immediately to pending page
+            window.location.replace('/pages/auth/pending.html?email=' + encodeURIComponent(email));
         }).catch(function(err) {
             var message = err.message || '회원가입에 실패했습니다.';
             console.error('[Signup] Error:', message);

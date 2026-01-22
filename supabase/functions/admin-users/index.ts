@@ -153,45 +153,60 @@ Deno.serve(async (req) => {
   }
 
   // ============================================
-  // List all users
+  // List all users (from auth.users, with profile permissions)
   // ============================================
   if (action === "list") {
-    // Get profiles from database
-    const { data: profiles, error: profileError } = await supabase
-      .from("user_profiles")
-      .select("id,email,business_name,business_number,phone,is_approved,role,access_beam,access_column,created_at")
-      .order("created_at", { ascending: false });
+    // Primary source: auth.users (includes unverified users)
+    const { data: authData, error: authError } = await supabase.auth.admin.listUsers();
     
-    if (profileError) {
-      return new Response(profileError.message, {
+    if (authError) {
+      return new Response(authError.message, {
         status: 400,
         headers: corsHeaders,
       });
     }
 
-    // Get auth users to check email verification status
-    const { data: authData, error: authError } = await supabase.auth.admin.listUsers();
+    // Get profiles for permission data
+    const { data: profiles, error: profileError } = await supabase
+      .from("user_profiles")
+      .select("id,business_name,business_number,phone,is_approved,role,access_beam,access_column");
     
-    if (authError) {
-      console.error("Failed to fetch auth users:", authError);
-      // Continue without email verification data if auth fails
+    if (profileError) {
+      console.error("Failed to fetch profiles:", profileError);
     }
 
-    // Create a map of user id -> email_confirmed_at
-    const emailVerifiedMap = new Map<string, boolean>();
-    if (authData?.users) {
-      for (const authUser of authData.users) {
-        emailVerifiedMap.set(authUser.id, !!authUser.email_confirmed_at);
+    // Create a map of user id -> profile
+    const profileMap = new Map<string, typeof profiles[0]>();
+    if (profiles) {
+      for (const profile of profiles) {
+        profileMap.set(profile.id, profile);
       }
     }
 
-    // Merge profiles with email verification status
-    const usersWithVerification = (profiles ?? []).map((profile) => ({
-      ...profile,
-      email_verified: emailVerifiedMap.get(profile.id) ?? false,
-    }));
+    // Merge auth users with profile data
+    const users = (authData?.users ?? []).map((authUser) => {
+      const profile = profileMap.get(authUser.id);
+      const metadata = authUser.user_metadata || {};
+      
+      return {
+        id: authUser.id,
+        email: authUser.email,
+        email_verified: !!authUser.email_confirmed_at,
+        created_at: authUser.created_at,
+        // Profile data (if exists) or metadata fallback
+        business_name: profile?.business_name ?? metadata.business_name ?? null,
+        business_number: profile?.business_number ?? metadata.business_number ?? null,
+        phone: profile?.phone ?? metadata.phone ?? null,
+        // Permission data (only from profile)
+        has_profile: !!profile,
+        is_approved: profile?.is_approved ?? false,
+        role: profile?.role ?? "viewer",
+        access_beam: profile?.access_beam ?? false,
+        access_column: profile?.access_column ?? false,
+      };
+    }).sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
-    return new Response(JSON.stringify({ users: usersWithVerification }), {
+    return new Response(JSON.stringify({ users }), {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
@@ -540,7 +555,7 @@ Deno.serve(async (req) => {
   }
 
   // ============================================
-  // Update user
+  // Update user (creates profile if doesn't exist)
   // ============================================
   if (action === "update") {
     const userId = String(payload.user_id ?? "").trim();
@@ -563,16 +578,60 @@ Deno.serve(async (req) => {
       }
     }
 
-    const { error } = await supabase
+    // Check if profile exists
+    const { data: existingProfile } = await supabase
       .from("user_profiles")
-      .update(updates)
-      .eq("id", userId);
+      .select("id")
+      .eq("id", userId)
+      .maybeSingle();
 
-    if (error) {
-      return new Response(error.message, {
-        status: 400,
-        headers: corsHeaders,
-      });
+    if (existingProfile) {
+      // Update existing profile
+      const { error } = await supabase
+        .from("user_profiles")
+        .update(updates)
+        .eq("id", userId);
+
+      if (error) {
+        return new Response(error.message, {
+          status: 400,
+          headers: corsHeaders,
+        });
+      }
+    } else {
+      // Create new profile - get user email from auth
+      const { data: authUser } = await supabase.auth.admin.getUserById(userId);
+      
+      if (!authUser?.user) {
+        return new Response("User not found in auth", {
+          status: 404,
+          headers: corsHeaders,
+        });
+      }
+
+      const metadata = authUser.user.user_metadata || {};
+      
+      const { error } = await supabase
+        .from("user_profiles")
+        .insert({
+          id: userId,
+          email: authUser.user.email,
+          business_name: metadata.business_name ?? null,
+          business_number: metadata.business_number ?? null,
+          phone: metadata.phone ?? null,
+          role: "viewer",
+          is_approved: false,
+          access_beam: false,
+          access_column: false,
+          ...updates,
+        });
+
+      if (error) {
+        return new Response(error.message, {
+          status: 400,
+          headers: corsHeaders,
+        });
+      }
     }
 
     return new Response(JSON.stringify({ ok: true }), {

@@ -199,9 +199,7 @@
   };
 
   // Initialize on load
-  getClient().then(function() {
-    console.log('[Auth] Initialized. Use SDP.auth.debug() to inspect state.');
-  }).catch(function(err) {
-    console.warn('[Auth] Init failed:', err.message);
+  getClient().catch(function() {
+    // Silent init failure
   });
 })();
