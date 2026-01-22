@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Slim-Box Web Support - SongDoPartners</title>
+    <title>D. M. I. S. (K-COL / Slim-BOX) - SongDoPartners</title>
     <link rel="stylesheet" href="../css/styles.css">
     <style>
         /* Override global styles for this page */
@@ -14,43 +14,43 @@
             min-height: 100vh;
         }
 
-        /* Slim-Box Web Support Page Styles */
-        .support-container {
-            max-width: 1400px;
+        /* D.M.I.S. Page Styles */
+        .dmis-container {
+            max-width: 1600px;
             margin: 0 auto;
             padding: 40px 20px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
         }
 
-        .support-wrapper {
+        .dmis-wrapper {
             background: white;
             border-radius: 20px;
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
             overflow: visible;
         }
 
-        .support-header {
+        .dmis-header {
             background: linear-gradient(135deg, #1e3a5f, #2d5a87);
             color: white;
             padding: 40px;
             text-align: center;
         }
 
-        .support-header h1 {
+        .dmis-header h1 {
             font-size: 46.8px;
             font-weight: 700;
             margin-bottom: 10px;
             letter-spacing: -0.5px;
         }
 
-        .support-header .subtitle {
+        .dmis-header .subtitle {
             font-size: 23.4px;
             opacity: 0.9;
             font-weight: 300;
         }
 
-        .support-header .home-link {
+        .dmis-header .home-link {
             display: inline-block;
             margin-top: 20px;
             padding: 10px 20px;
@@ -62,58 +62,522 @@
             border: 1px solid rgba(255,255,255,0.3);
         }
 
-        .support-header .home-link:hover {
+        .dmis-header .home-link:hover {
             background: rgba(255,255,255,0.3);
             transform: translateY(-2px);
         }
 
-        .support-content {
-            padding: 100px 40px;
-            text-align: center;
+        .dmis-content {
+            padding: 60px 40px;
         }
 
-        .coming-soon-message {
+        /* System Section */
+        .system-section {
+            margin-bottom: 60px;
+        }
+
+        .system-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .system-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px 40px;
+            border-radius: 16px 16px 0 0;
+            margin-bottom: 0;
+        }
+
+        .system-header h2 {
+            font-size: 36px;
+            font-weight: 700;
+            margin: 0;
+            letter-spacing: -0.5px;
+        }
+
+        .system-header .system-subtitle {
+            font-size: 18px;
+            opacity: 0.9;
+            margin-top: 8px;
+            font-weight: 300;
+        }
+
+        /* Project Grid */
+        .project-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 30px;
+            padding: 40px;
+            background: #f8fafc;
+            border-radius: 0 0 16px 16px;
+        }
+
+        .project-panel {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 2px solid #e2e8f0;
+            cursor: pointer;
+        }
+
+        .project-panel:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 16px 40px rgba(0,0,0,0.15);
+            border-color: #667eea;
+        }
+
+        .project-panel.empty {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            border: 2px dashed #cbd5e0;
+            cursor: default;
+        }
+
+        .project-panel.empty:hover {
+            transform: none;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+            border-color: #cbd5e0;
+        }
+
+        .project-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .project-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .project-panel.empty .project-icon {
+            background: linear-gradient(135deg, #cbd5e0 0%, #a0aec0 100%);
+        }
+
+        .project-title-area {
+            flex: 1;
+        }
+
+        .project-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1e3a5f;
+            margin: 0 0 5px 0;
+        }
+
+        .project-panel.empty .project-title {
+            color: #a0aec0;
+        }
+
+        .project-subtitle {
+            font-size: 14px;
             color: #718096;
-            font-size: 28.6px;
-            font-weight: 500;
-            margin-bottom: 30px;
+            margin: 0;
         }
 
-        .icon-large {
-            font-size: 120px;
-            margin-bottom: 30px;
-            opacity: 0.6;
+        .project-content {
+            margin-top: 20px;
+        }
+
+        .project-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .info-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .info-label {
+            font-size: 12px;
+            color: #718096;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        .info-value {
+            font-size: 16px;
+            color: #1e3a5f;
+            font-weight: 600;
+        }
+
+        .project-panel.empty .info-value {
+            color: #a0aec0;
+        }
+
+        .project-description {
+            font-size: 14px;
+            color: #4a5568;
+            line-height: 1.6;
+            margin-top: 15px;
+        }
+
+        .project-panel.empty .project-description {
+            color: #a0aec0;
+            font-style: italic;
+        }
+
+        .empty-placeholder {
+            text-align: center;
+            padding: 40px 20px;
+            color: #a0aec0;
+        }
+
+        .empty-placeholder-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+
+        .empty-placeholder-text {
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1200px) {
+            .project-grid {
+                grid-template-columns: 1fr;
+            }
         }
 
         @media (max-width: 768px) {
-            .support-header h1 {
+            .dmis-header h1 {
                 font-size: 36px;
             }
 
-            .coming-soon-message {
-                font-size: 24px;
+            .system-header h2 {
+                font-size: 28px;
             }
 
-            .icon-large {
-                font-size: 80px;
+            .dmis-content {
+                padding: 40px 20px;
+            }
+
+            .project-grid {
+                padding: 20px;
+                gap: 20px;
+            }
+
+            .project-panel {
+                padding: 20px;
             }
         }
     </style>
 </head>
 <body>
-    <div class="support-container">
-        <div class="support-wrapper">
-            <div class="support-header">
-                <h1>📦 Slim-Box Web Support</h1>
-                <p class="subtitle">Slim-Box 웹 지원 시스템</p>
+    <div class="dmis-container">
+        <div class="dmis-wrapper">
+            <div class="dmis-header">
+                <h1>🏗️ D. M. I. S.</h1>
+                <p class="subtitle">Design Management Information System (K-COL / Slim-BOX)</p>
                 <a href="../index.html" class="home-link">🏠 홈으로 돌아가기</a>
             </div>
 
-            <div class="support-content">
-                <div class="icon-large">🚧</div>
-                <p class="coming-soon-message">Slim-Box Web Support는 준비중입니다.</p>
+            <div class="dmis-content">
+                <!-- K-COL Design Management System -->
+                <div class="system-section">
+                    <div class="system-header">
+                        <h2>1. K-COL Design Management System</h2>
+                        <p class="system-subtitle">Cross H형 강재 기둥 설계 및 제작 관리 시스템</p>
+                    </div>
+                    <div class="project-grid">
+                        <!-- Project 1 -->
+                        <div class="project-panel" data-project="kcol-1">
+                            <div class="project-header">
+                                <div class="project-icon">🏢</div>
+                                <div class="project-title-area">
+                                    <h3 class="project-title">프로젝트 1</h3>
+                                    <p class="project-subtitle">K-COL 프로젝트</p>
+                                </div>
+                            </div>
+                            <div class="project-content">
+                                <div class="project-info">
+                                    <div class="info-item">
+                                        <span class="info-label">프로젝트명</span>
+                                        <span class="info-value">-</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <span class="info-label">상태</span>
+                                        <span class="info-value">-</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <span class="info-label">시작일</span>
+                                        <span class="info-value">-</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <span class="info-label">완료율</span>
+                                        <span class="info-value">-</span>
+                                    </div>
+                                </div>
+                                <p class="project-description">프로젝트 정보를 입력하세요.</p>
+                            </div>
+                        </div>
+
+                        <!-- Project 2 -->
+                        <div class="project-panel" data-project="kcol-2">
+                            <div class="project-header">
+                                <div class="project-icon">🏗️</div>
+                                <div class="project-title-area">
+                                    <h3 class="project-title">프로젝트 2</h3>
+                                    <p class="project-subtitle">K-COL 프로젝트</p>
+                                </div>
+                            </div>
+                            <div class="project-content">
+                                <div class="project-info">
+                                    <div class="info-item">
+                                        <span class="info-label">프로젝트명</span>
+                                        <span class="info-value">-</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <span class="info-label">상태</span>
+                                        <span class="info-value">-</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <span class="info-label">시작일</span>
+                                        <span class="info-value">-</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <span class="info-label">완료율</span>
+                                        <span class="info-value">-</span>
+                                    </div>
+                                </div>
+                                <p class="project-description">프로젝트 정보를 입력하세요.</p>
+                            </div>
+                        </div>
+
+                        <!-- Project 3 -->
+                        <div class="project-panel" data-project="kcol-3">
+                            <div class="project-header">
+                                <div class="project-icon">🏛️</div>
+                                <div class="project-title-area">
+                                    <h3 class="project-title">프로젝트 3</h3>
+                                    <p class="project-subtitle">K-COL 프로젝트</p>
+                                </div>
+                            </div>
+                            <div class="project-content">
+                                <div class="project-info">
+                                    <div class="info-item">
+                                        <span class="info-label">프로젝트명</span>
+                                        <span class="info-value">-</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <span class="info-label">상태</span>
+                                        <span class="info-value">-</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <span class="info-label">시작일</span>
+                                        <span class="info-value">-</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <span class="info-label">완료율</span>
+                                        <span class="info-value">-</span>
+                                    </div>
+                                </div>
+                                <p class="project-description">프로젝트 정보를 입력하세요.</p>
+                            </div>
+                        </div>
+
+                        <!-- Project 4 -->
+                        <div class="project-panel" data-project="kcol-4">
+                            <div class="project-header">
+                                <div class="project-icon">🏭</div>
+                                <div class="project-title-area">
+                                    <h3 class="project-title">프로젝트 4</h3>
+                                    <p class="project-subtitle">K-COL 프로젝트</p>
+                                </div>
+                            </div>
+                            <div class="project-content">
+                                <div class="project-info">
+                                    <div class="info-item">
+                                        <span class="info-label">프로젝트명</span>
+                                        <span class="info-value">-</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <span class="info-label">상태</span>
+                                        <span class="info-value">-</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <span class="info-label">시작일</span>
+                                        <span class="info-value">-</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <span class="info-label">완료율</span>
+                                        <span class="info-value">-</span>
+                                    </div>
+                                </div>
+                                <p class="project-description">프로젝트 정보를 입력하세요.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Slim-Box Design Management System -->
+                <div class="system-section">
+                    <div class="system-header">
+                        <h2>2. Slim-Box Design Management System</h2>
+                        <p class="system-subtitle">Slim-Box 설계 및 제작 관리 시스템</p>
+                    </div>
+                    <div class="project-grid">
+                        <!-- Project 1 -->
+                        <div class="project-panel" data-project="slimbox-1">
+                            <div class="project-header">
+                                <div class="project-icon">📦</div>
+                                <div class="project-title-area">
+                                    <h3 class="project-title">프로젝트 1</h3>
+                                    <p class="project-subtitle">Slim-Box 프로젝트</p>
+                                </div>
+                            </div>
+                            <div class="project-content">
+                                <div class="project-info">
+                                    <div class="info-item">
+                                        <span class="info-label">프로젝트명</span>
+                                        <span class="info-value">-</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <span class="info-label">상태</span>
+                                        <span class="info-value">-</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <span class="info-label">시작일</span>
+                                        <span class="info-value">-</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <span class="info-label">완료율</span>
+                                        <span class="info-value">-</span>
+                                    </div>
+                                </div>
+                                <p class="project-description">프로젝트 정보를 입력하세요.</p>
+                            </div>
+                        </div>
+
+                        <!-- Project 2 -->
+                        <div class="project-panel" data-project="slimbox-2">
+                            <div class="project-header">
+                                <div class="project-icon">🏢</div>
+                                <div class="project-title-area">
+                                    <h3 class="project-title">프로젝트 2</h3>
+                                    <p class="project-subtitle">Slim-Box 프로젝트</p>
+                                </div>
+                            </div>
+                            <div class="project-content">
+                                <div class="project-info">
+                                    <div class="info-item">
+                                        <span class="info-label">프로젝트명</span>
+                                        <span class="info-value">-</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <span class="info-label">상태</span>
+                                        <span class="info-value">-</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <span class="info-label">시작일</span>
+                                        <span class="info-value">-</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <span class="info-label">완료율</span>
+                                        <span class="info-value">-</span>
+                                    </div>
+                                </div>
+                                <p class="project-description">프로젝트 정보를 입력하세요.</p>
+                            </div>
+                        </div>
+
+                        <!-- Project 3 -->
+                        <div class="project-panel" data-project="slimbox-3">
+                            <div class="project-header">
+                                <div class="project-icon">🏗️</div>
+                                <div class="project-title-area">
+                                    <h3 class="project-title">프로젝트 3</h3>
+                                    <p class="project-subtitle">Slim-Box 프로젝트</p>
+                                </div>
+                            </div>
+                            <div class="project-content">
+                                <div class="project-info">
+                                    <div class="info-item">
+                                        <span class="info-label">프로젝트명</span>
+                                        <span class="info-value">-</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <span class="info-label">상태</span>
+                                        <span class="info-value">-</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <span class="info-label">시작일</span>
+                                        <span class="info-value">-</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <span class="info-label">완료율</span>
+                                        <span class="info-value">-</span>
+                                    </div>
+                                </div>
+                                <p class="project-description">프로젝트 정보를 입력하세요.</p>
+                            </div>
+                        </div>
+
+                        <!-- Project 4 -->
+                        <div class="project-panel" data-project="slimbox-4">
+                            <div class="project-header">
+                                <div class="project-icon">🏛️</div>
+                                <div class="project-title-area">
+                                    <h3 class="project-title">프로젝트 4</h3>
+                                    <p class="project-subtitle">Slim-Box 프로젝트</p>
+                                </div>
+                            </div>
+                            <div class="project-content">
+                                <div class="project-info">
+                                    <div class="info-item">
+                                        <span class="info-label">프로젝트명</span>
+                                        <span class="info-value">-</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <span class="info-label">상태</span>
+                                        <span class="info-value">-</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <span class="info-label">시작일</span>
+                                        <span class="info-value">-</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <span class="info-label">완료율</span>
+                                        <span class="info-value">-</span>
+                                    </div>
+                                </div>
+                                <p class="project-description">프로젝트 정보를 입력하세요.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
+
+    <script>
+        // 프로젝트 패널 클릭 이벤트 (추후 프로젝트 상세 페이지로 이동하도록 구현 가능)
+        document.querySelectorAll('.project-panel').forEach(panel => {
+            panel.addEventListener('click', function() {
+                const projectId = this.getAttribute('data-project');
+                console.log('프로젝트 클릭:', projectId);
+                // TODO: 프로젝트 상세 페이지로 이동하는 로직 추가
+            });
+        });
+    </script>
 </body>
 </html>

@@ -99,6 +99,53 @@
             height: 250px;
             object-fit: cover;
             display: block;
+            position: relative;
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            -webkit-user-drag: none;
+            -khtml-user-drag: none;
+            -moz-user-drag: none;
+            -o-user-drag: none;
+            pointer-events: auto;
+        }
+
+        .gallery-item {
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+        }
+
+        /* K-COL 워터마크 - 이미지 안에 표시 (세로 배치) */
+        .gallery-item::after {
+            content: 'K-\A COL';
+            white-space: pre;
+            text-align: center;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-45deg);
+            background: rgba(0, 0, 0, 0.4);
+            color: rgba(255, 255, 255, 0.9);
+            padding: 15px 20px;
+            border-radius: 8px;
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: 3px;
+            line-height: 1.2;
+            pointer-events: none;
+            z-index: 20;
+            opacity: 0.7;
+            transition: opacity 0.3s;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .gallery-item:hover::after {
+            opacity: 0.85;
+            background: rgba(0, 0, 0, 0.5);
         }
 
         .gallery-item-caption {
@@ -137,6 +184,15 @@
             width: 100%;
             height: auto;
             border-radius: 8px;
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            -webkit-user-drag: none;
+            -khtml-user-drag: none;
+            -moz-user-drag: none;
+            -o-user-drag: none;
+            pointer-events: auto;
         }
 
         .close {
@@ -185,7 +241,7 @@
                 <h2 class="gallery-section-title">기중제작 커팅(유석철강)</h2>
                 <div class="gallery-grid">
                     <div class="gallery-item" onclick="openModal(this)">
-                        <img src="../assets/images/K-COL 제작/P-0.webp" alt="기둥제작 커팅" onerror="this.parentElement.style.display='none';">
+                        <img src="../assets/images/K-COL 제작/P-0.webp" alt="기둥제작 커팅" onerror="this.parentElement.style.display='none';" draggable="false" oncontextmenu="return false;" onselectstart="return false;">
                         <div class="gallery-item-caption">기둥제작 커팅</div>
                     </div>
                 </div>
@@ -196,11 +252,11 @@
                 <h2 class="gallery-section-title">기둥조립(유석철강)</h2>
                 <div class="gallery-grid">
                     <div class="gallery-item" onclick="openModal(this)">
-                        <img src="../assets/images/K-COL 제작/p-1.webp" alt="기둥조립" onerror="this.parentElement.style.display='none';">
+                        <img src="../assets/images/K-COL 제작/p-1.webp" alt="기둥조립" onerror="this.parentElement.style.display='none';" draggable="false" oncontextmenu="return false;" onselectstart="return false;">
                         <div class="gallery-item-caption">기둥조립</div>
                     </div>
                     <div class="gallery-item" onclick="openModal(this)">
-                        <img src="../assets/images/K-COL 제작/p-2.webp" alt="기둥조립" onerror="this.parentElement.style.display='none';">
+                        <img src="../assets/images/K-COL 제작/p-2.webp" alt="기둥조립" onerror="this.parentElement.style.display='none';" draggable="false" oncontextmenu="return false;" onselectstart="return false;">
                         <div class="gallery-item-caption">기둥조립</div>
                     </div>
                 </div>
@@ -228,7 +284,7 @@
     <div id="imageModal" class="modal">
         <span class="close" onclick="closeModal()">&times;</span>
         <div class="modal-content">
-            <img id="modalImage" src="" alt="Full size image">
+            <img id="modalImage" src="" alt="Full size image" draggable="false" oncontextmenu="return false;" onselectstart="return false;">
         </div>
     </div>
 

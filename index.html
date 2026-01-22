@@ -7,14 +7,14 @@
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
-  <div class="page-wrapper">
+  <div class="page-wrapper" id="page-wrapper" data-selectable="true">
     <!-- TOP ROW: Left Column + Main Content -->
-    <div class="top-row">
+    <div class="top-row" id="top-row" data-selectable="true">
       <!-- LEFT COLUMN -->
-      <aside class="left-column">
+      <aside class="left-column" id="left-column" data-selectable="true">
         <!-- Logo Section -->
-        <div class="logo-section">
-          <div class="logo-container">
+        <div class="logo-section" id="logo-section" data-selectable="true">
+          <div class="logo-container" id="logo-container" data-selectable="true">
             <img src="assets/images/sdppmo_logo.png" alt="SongDoPartners">
           </div>
           <div class="welcome-text">Welcome to SongDoPartners !!</div>
@@ -89,7 +89,7 @@
         <nav class="nav-menu">
           <a href="pages/consulting.html" class="nav-item gold">Consulting</a>
           <a href="pages/products.html" class="nav-item gold">Products</a>
-          <a href="pages/slim-box-web-support.html" class="nav-item gray-text">Slim-box Web Support (soon)</a>
+          <a href="pages/slim-box-web-support.html" class="nav-item gold">D. M. I. S. (K-COL / Slim-Box)</a>
           <a href="pages/k-col web software/crossHcolumnCalculator.html" class="nav-item active gold" data-requires-auth="true" data-required-groups="kcol-user">K-COL Web Software</a>
           <a href="pages/K-product/2H_steel_product.html" class="nav-item gold" id="kcol-product-schedule-link" data-requires-auth="true" data-required-groups="kcol-admin">K-COL Product Schedule</a>
           <div class="nav-item small-text gray-text">EX-Slim-Box(Not in Service)</div>
@@ -110,12 +110,12 @@
       </aside>
 
       <!-- MAIN CONTENT AREA (Right pane) -->
-      <div class="main-area">
+      <div class="main-area" id="main-area" data-selectable="true">
         <!-- Background Image - Covers entire right pane -->
-        <div class="bg-image"></div>
+        <div class="bg-image" id="bg-image" data-selectable="true"></div>
 
         <!-- Content Layer - On top of background -->
-        <div class="content-layer">
+        <div class="content-layer" id="content-layer" data-selectable="true">
           <!-- World Clocks -->
           <div class="world-clocks">
             <div class="clock-container">
@@ -209,28 +209,99 @@
               환율(won/$): <span id="exchange-rate">로딩중...</span>
             </div>
             <div class="exchange-row">
-              <div class="exchange-cell kosis-clickable" data-price-type="construction" data-month="12" style="cursor: pointer;">건설지수(12월)</div>
-              <div class="exchange-cell kosis-clickable" data-price-type="construction" data-month="1" style="cursor: pointer;">건설지수(1월)</div>
-            </div>
-            <div class="exchange-row">
-              <div class="exchange-cell kosis-clickable" title="KOSIS (국가통계포털)에서 받아봅니다. 지난 12월 가격을 알려줍니다." data-price-type="steel" data-month="12" style="cursor: pointer;">
-                철강가격 (12월)
+              <div class="exchange-cell">
+                <span>건설지수</span>
+                <select class="month-select" data-price-type="construction">
+                  <option value="1">1월</option>
+                  <option value="2">2월</option>
+                  <option value="3">3월</option>
+                  <option value="4">4월</option>
+                  <option value="5">5월</option>
+                  <option value="6">6월</option>
+                  <option value="7">7월</option>
+                  <option value="8">8월</option>
+                  <option value="9">9월</option>
+                  <option value="10">10월</option>
+                  <option value="11">11월</option>
+                  <option value="12" selected>12월</option>
+                </select>
               </div>
-              <div class="exchange-cell kosis-clickable" data-price-type="steel" data-month="1" style="cursor: pointer;">철강가격 (1월)</div>
             </div>
             <div class="exchange-row">
-              <div class="exchange-cell kosis-clickable" data-price-type="plate" data-month="12" style="cursor: pointer;">판재가격(12월)</div>
-              <div class="exchange-cell kosis-clickable" data-price-type="plate" data-month="1" style="cursor: pointer;">판재가격(1월)</div>
-            </div>
-            <div class="exchange-row">
-              <div class="exchange-cell kosis-clickable" title="철근가격을 알수 있는 사이트에서 받아서 올립니다. 지난 12월가격" data-price-type="rebar" data-month="12" style="cursor: pointer;">
-                철근가격(12월)
+              <div class="exchange-cell" title="KOSIS (국가통계포털)에서 받아봅니다.">
+                <span>철강가격</span>
+                <select class="month-select" data-price-type="steel">
+                  <option value="1">1월</option>
+                  <option value="2">2월</option>
+                  <option value="3">3월</option>
+                  <option value="4">4월</option>
+                  <option value="5">5월</option>
+                  <option value="6">6월</option>
+                  <option value="7">7월</option>
+                  <option value="8">8월</option>
+                  <option value="9">9월</option>
+                  <option value="10">10월</option>
+                  <option value="11">11월</option>
+                  <option value="12" selected>12월</option>
+                </select>
               </div>
-              <div class="exchange-cell kosis-clickable" data-price-type="rebar" data-month="1" style="cursor: pointer;">철근가격(1월)</div>
             </div>
             <div class="exchange-row">
-              <div class="exchange-cell kosis-clickable" data-price-type="concrete" data-month="12" style="cursor: pointer;">레미콘가격(12월)</div>
-              <div class="exchange-cell kosis-clickable" data-price-type="concrete" data-month="1" style="cursor: pointer;">레미콘가격(1월)</div>
+              <div class="exchange-cell">
+                <span>판재가격</span>
+                <select class="month-select" data-price-type="plate">
+                  <option value="1">1월</option>
+                  <option value="2">2월</option>
+                  <option value="3">3월</option>
+                  <option value="4">4월</option>
+                  <option value="5">5월</option>
+                  <option value="6">6월</option>
+                  <option value="7">7월</option>
+                  <option value="8">8월</option>
+                  <option value="9">9월</option>
+                  <option value="10">10월</option>
+                  <option value="11">11월</option>
+                  <option value="12" selected>12월</option>
+                </select>
+              </div>
+            </div>
+            <div class="exchange-row">
+              <div class="exchange-cell">
+                <span>철근가격</span>
+                <select class="month-select" data-price-type="rebar">
+                  <option value="1">1월</option>
+                  <option value="2">2월</option>
+                  <option value="3">3월</option>
+                  <option value="4">4월</option>
+                  <option value="5">5월</option>
+                  <option value="6">6월</option>
+                  <option value="7">7월</option>
+                  <option value="8">8월</option>
+                  <option value="9">9월</option>
+                  <option value="10">10월</option>
+                  <option value="11">11월</option>
+                  <option value="12" selected>12월</option>
+                </select>
+              </div>
+            </div>
+            <div class="exchange-row">
+              <div class="exchange-cell">
+                <span>레미콘가격</span>
+                <select class="month-select" data-price-type="concrete">
+                  <option value="1">1월</option>
+                  <option value="2">2월</option>
+                  <option value="3">3월</option>
+                  <option value="4">4월</option>
+                  <option value="5">5월</option>
+                  <option value="6">6월</option>
+                  <option value="7">7월</option>
+                  <option value="8">8월</option>
+                  <option value="9">9월</option>
+                  <option value="10">10월</option>
+                  <option value="11">11월</option>
+                  <option value="12" selected>12월</option>
+                </select>
+              </div>
             </div>
           </div>
         </div>
@@ -515,52 +586,34 @@
       fetchKosisPriceData(priceType, month, info);
     };
     
-    // 가격 항목 클릭 이벤트 리스너 설정
-    function setupKosisClickListeners() {
-      const clickableCells = document.querySelectorAll('.kosis-clickable');
-      clickableCells.forEach(cell => {
-        // 기존 onclick 제거하고 이벤트 리스너 추가
-        cell.removeAttribute('onclick');
-        cell.addEventListener('click', function(e) {
+    // 월 선택 select 이벤트 리스너 설정
+    function setupMonthSelectListeners() {
+      const monthSelects = document.querySelectorAll('.month-select');
+      monthSelects.forEach(select => {
+        select.addEventListener('change', function(e) {
           e.preventDefault();
           e.stopPropagation();
           
           const priceType = this.getAttribute('data-price-type');
-          const month = parseInt(this.getAttribute('data-month'));
+          const month = parseInt(this.value);
           
-          console.log('가격 항목 클릭됨:', priceType, month);
+          console.log('월 선택 변경됨:', priceType, month);
           
           if (priceType && month) {
             window.showKosisPrice(priceType, month);
           }
         });
       });
+      
+      console.log('월 선택 select 개수:', monthSelects.length);
     }
     
     // DOM 로드 후 이벤트 리스너 설정
     if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', setupKosisClickListeners);
+      document.addEventListener('DOMContentLoaded', setupMonthSelectListeners);
     } else {
-      setupKosisClickListeners();
+      setupMonthSelectListeners();
     }
-
-    // 클릭이 씹히는 경우를 대비한 이벤트 위임 (capture phase)
-    document.addEventListener('click', function(e) {
-      const cell = e.target && e.target.closest ? e.target.closest('.kosis-clickable') : null;
-      if (!cell) return;
-
-      e.preventDefault();
-      e.stopPropagation();
-
-      const priceType = cell.getAttribute('data-price-type');
-      const month = parseInt(cell.getAttribute('data-month'), 10);
-
-      console.log('가격 항목 클릭(위임)됨:', priceType, month);
-
-      if (priceType && month) {
-        window.showKosisPrice(priceType, month);
-      }
-    }, true);
 
     // 철강 가격 섹션 토글 및 데이터 로드 (기존 함수 유지)
     window.togglePriceSection = function() {
@@ -724,6 +777,266 @@
     async function fetchSteelPrice() {
       fetchKosisPriceData('steel', 12, priceTypeInfo['steel']);
     }
+
+    // ============================================
+    // 요소 선택 기능 (Element Inspector)
+    // ============================================
+    (function() {
+      'use strict';
+      
+      let elementSelectMode = false;
+      let selectedElement = null;
+      let highlightOverlay = null;
+
+      // 하이라이트 오버레이 생성
+      function createHighlightOverlay() {
+        if (highlightOverlay) return highlightOverlay;
+        
+        highlightOverlay = document.createElement('div');
+        highlightOverlay.id = 'element-selector-overlay';
+        highlightOverlay.style.cssText = `
+          position: fixed;
+          border: 2px solid #667eea;
+          background: rgba(102, 126, 234, 0.1);
+          pointer-events: none;
+          z-index: 99999;
+          display: none;
+          box-sizing: border-box;
+        `;
+        document.body.appendChild(highlightOverlay);
+        return highlightOverlay;
+      }
+
+      // 요소 위치 업데이트
+      function updateHighlight(element) {
+        if (!highlightOverlay) return;
+        if (!element || element === document.body || element === document.documentElement || element === highlightOverlay) {
+          highlightOverlay.style.display = 'none';
+          return;
+        }
+
+        const rect = element.getBoundingClientRect();
+        const scrollX = window.pageXOffset || document.documentElement.scrollLeft;
+        const scrollY = window.pageYOffset || document.documentElement.scrollTop;
+
+        highlightOverlay.style.display = 'block';
+        highlightOverlay.style.left = (rect.left + scrollX) + 'px';
+        highlightOverlay.style.top = (rect.top + scrollY) + 'px';
+        highlightOverlay.style.width = rect.width + 'px';
+        highlightOverlay.style.height = rect.height + 'px';
+      }
+
+      // 마우스 오버 시 하이라이트
+      function handleMouseOver(e) {
+        if (!elementSelectMode) return;
+        
+        const target = e.target;
+        if (!target || target === highlightOverlay || target === document.body || target === document.documentElement) {
+          if (highlightOverlay) highlightOverlay.style.display = 'none';
+          return;
+        }
+        
+        updateHighlight(target);
+      }
+
+      // 클릭 시 요소 선택
+      function handleClick(e) {
+        if (!elementSelectMode) return;
+        
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+        
+        const target = e.target;
+        if (!target || target === highlightOverlay || target === document.body || target === document.documentElement) {
+          return;
+        }
+
+        // 이전 선택 제거
+        if (selectedElement) {
+          selectedElement.classList.remove('element-selected');
+        }
+
+        // 새 요소 선택
+        selectedElement = target;
+        selectedElement.classList.add('element-selected');
+        
+        // 선택된 요소 정보 출력
+        const tagName = selectedElement.tagName.toLowerCase();
+        const id = selectedElement.id ? `#${selectedElement.id}` : '';
+        const classes = selectedElement.className ? `.${selectedElement.className.split(' ').filter(c => c).join('.')}` : '';
+        const selector = `${tagName}${id}${classes}`;
+        
+        console.log('✅ 요소 선택됨:', {
+          element: selectedElement,
+          tagName: tagName,
+          id: selectedElement.id || '(없음)',
+          classes: selectedElement.className || '(없음)',
+          selector: selector,
+          textContent: selectedElement.textContent ? selectedElement.textContent.substring(0, 50).trim() + '...' : '(없음)'
+        });
+
+        alert(`요소가 선택되었습니다!\n\n태그: ${tagName}\nID: ${selectedElement.id || '(없음)'}\n클래스: ${selectedElement.className || '(없음)'}\n\n콘솔(F12)에서 자세한 정보를 확인하세요.`);
+      }
+
+      // 요소 선택 모드 토글
+      function toggleElementSelectMode() {
+        elementSelectMode = !elementSelectMode;
+        
+        if (elementSelectMode) {
+          // 모드 활성화
+          document.body.style.cursor = 'crosshair';
+          createHighlightOverlay();
+          
+          // 이벤트 리스너 추가 (capture phase로 모든 이벤트 캡처)
+          document.addEventListener('mouseover', handleMouseOver, true);
+          document.addEventListener('click', handleClick, true);
+          
+          console.log('🔍 요소 선택 모드 활성화');
+          console.log('페이지의 요소를 클릭하면 선택됩니다.');
+          console.log('다시 Ctrl+Shift+E를 눌러 비활성화하세요.');
+          
+          alert('✅ 요소 선택 모드가 활성화되었습니다!\n\n페이지의 요소를 클릭하면 선택됩니다.\n\n다시 Ctrl+Shift+E를 눌러 비활성화하세요.');
+        } else {
+          // 모드 비활성화
+          document.body.style.cursor = '';
+          
+          // 이벤트 리스너 제거
+          document.removeEventListener('mouseover', handleMouseOver, true);
+          document.removeEventListener('click', handleClick, true);
+          
+          if (highlightOverlay) {
+            highlightOverlay.style.display = 'none';
+          }
+          if (selectedElement) {
+            selectedElement.classList.remove('element-selected');
+            selectedElement = null;
+          }
+          
+          console.log('요소 선택 모드 비활성화');
+        }
+      }
+
+      // 키보드 단축키 (Ctrl+Shift+E)
+      document.addEventListener('keydown', function(e) {
+        // Ctrl+Shift+E 또는 Ctrl+Shift+S
+        if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'E' || e.key === 'e' || e.key === 'S' || e.key === 's')) {
+          e.preventDefault();
+          e.stopPropagation();
+          toggleElementSelectMode();
+        }
+      }, true);
+
+      // 전역 함수로 등록 (외부에서 호출 가능)
+      window.toggleElementSelectMode = toggleElementSelectMode;
+      window.enableElementSelectMode = function() {
+        if (!elementSelectMode) {
+          toggleElementSelectMode();
+        }
+      };
+      window.disableElementSelectMode = function() {
+        if (elementSelectMode) {
+          toggleElementSelectMode();
+        }
+      };
+
+      // 초기화 - 오버레이 미리 생성
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function() {
+          createHighlightOverlay();
+          console.log('요소 선택 기능 준비 완료. Ctrl+Shift+E를 눌러 활성화하세요.');
+        });
+      } else {
+        createHighlightOverlay();
+        console.log('요소 선택 기능 준비 완료. Ctrl+Shift+E를 눌러 활성화하세요.');
+      }
+    })();
+
+    // ============================================
+    // Cursor IDE 요소 선택 지원
+    // 모든 div 요소에 선택 가능 속성 추가
+    // ============================================
+    (function() {
+      'use strict';
+      
+      function makeElementsSelectable() {
+        // 모든 div, section, article, aside, header, footer, main 요소에 선택 가능 속성 추가
+        const selectableTags = ['div', 'section', 'article', 'aside', 'header', 'footer', 'main', 'nav'];
+        
+        selectableTags.forEach(function(tagName) {
+          const elements = document.querySelectorAll(tagName + ':not([data-selectable])');
+          elements.forEach(function(el) {
+            // 이미 ID가 있으면 그대로 사용, 없으면 자동 생성
+            if (!el.id) {
+              const className = el.className ? el.className.split(' ')[0] : tagName;
+              const randomId = className + '-' + Math.random().toString(36).substr(2, 9);
+              el.id = randomId;
+            }
+            el.setAttribute('data-selectable', 'true');
+            el.setAttribute('data-cursor-selectable', 'true');
+          });
+        });
+        
+        console.log('✅ 모든 요소에 선택 가능 속성이 추가되었습니다.');
+      }
+      
+      // DOM 로드 후 실행
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', makeElementsSelectable);
+      } else {
+        makeElementsSelectable();
+      }
+      
+      // 동적으로 추가되는 요소도 처리
+      const observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+          mutation.addedNodes.forEach(function(node) {
+            if (node.nodeType === 1 && (node.tagName === 'DIV' || node.tagName === 'SECTION' || 
+                node.tagName === 'ARTICLE' || node.tagName === 'ASIDE' || 
+                node.tagName === 'HEADER' || node.tagName === 'FOOTER' || 
+                node.tagName === 'MAIN' || node.tagName === 'NAV')) {
+              if (!node.id) {
+                const className = node.className ? node.className.split(' ')[0] : node.tagName.toLowerCase();
+                const randomId = className + '-' + Math.random().toString(36).substr(2, 9);
+                node.id = randomId;
+              }
+              node.setAttribute('data-selectable', 'true');
+              node.setAttribute('data-cursor-selectable', 'true');
+            }
+          });
+        });
+      });
+      
+      observer.observe(document.body, {
+        childList: true,
+        subtree: true
+      });
+    })();
   </script>
+  
+  <style>
+    /* 선택된 요소 스타일 */
+    .element-selected {
+      outline: 3px solid #667eea !important;
+      outline-offset: 2px !important;
+      background-color: rgba(102, 126, 234, 0.1) !important;
+      position: relative !important;
+    }
+    
+    .element-selected::before {
+      content: '✓ 선택됨';
+      position: absolute;
+      top: -25px;
+      left: 0;
+      background: #667eea;
+      color: white;
+      padding: 2px 8px;
+      font-size: 11px;
+      font-weight: bold;
+      z-index: 100000;
+      border-radius: 3px;
+      white-space: nowrap;
+    }
+  </style>
 </body>
 </html>

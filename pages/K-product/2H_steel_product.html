@@ -1129,9 +1129,14 @@
         <div class="panel" id="panel-gantt">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
                 <h3 style="margin:0;color:#2c4a7c;">📅 전체 공정표 (Gantt Chart)</h3>
-                <button class="action-btn" onclick="enableDeleteMode()" id="delete-mode-btn" style="background:#f44336;color:white;padding:8px 16px;border:none;border-radius:6px;cursor:pointer;font-weight:600;">
-                    🗑️ 데이터 삭제
-                </button>
+                <div style="display:flex;gap:10px;">
+                    <button class="action-btn" onclick="exportGanttToExcel()" style="background:#4caf50;color:white;padding:8px 16px;border:none;border-radius:6px;cursor:pointer;font-weight:600;">
+                        📥 엑셀 출력
+                    </button>
+                    <button class="action-btn" onclick="enableDeleteMode()" id="delete-mode-btn" style="background:#f44336;color:white;padding:8px 16px;border:none;border-radius:6px;cursor:pointer;font-weight:600;">
+                        🗑️ 데이터 삭제
+                    </button>
+                </div>
             </div>
             
             <div style="margin-bottom:15px;padding:10px 12px;background:#fff3e0;border-left:4px solid #ff9800;border-radius:4px;font-size:13px;color:#e65100;">
@@ -3479,6 +3484,7 @@
                         
                         // 운송차수일정이 있는 경우 현장배송(p5)으로 마크 (실제 배송일이 아닌 경우만)
                         // dailyData에 기록이 없고 실제 배송일도 아닐 때만 운송계획 확인
+                        let tripNumber = null; // 차수번호 저장 변수
                         if (!cellClass) {
                             // transportPlan에서 해당 기둥의 운송날짜 확인
                             if (transportPlan && typeof transportPlan === 'object' && Object.keys(transportPlan).length > 0) {
@@ -3511,10 +3517,37 @@
                                             if (columnIndex !== -1) {
                                                 // 실제 배송 날짜가 아니면 옅은 마젠타로 표시 (운송계획일)
                                                 cellClass = 'gantt-cell p5'; // 옅은 마젠타 - 운송계획일
+                                                tripNumber = tripNum; // 차수번호 저장
                                                 if (c <= 5) { // 처음 5개 기둥만 로그
-                                                    console.log(`기둥 ${colId}가 transportPlan에서 날짜 ${dateStr}에 발견됨`);
+                                                    console.log(`기둥 ${colId}가 transportPlan에서 날짜 ${dateStr}에 발견됨, 차수: ${tripNum}`);
                                                 }
                                                 break;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        
+                        // dailyData에 process 5가 있는 경우에도 차수번호 확인
+                        if (cellClass && cellClass.includes('p5') && !tripNumber) {
+                            // dailyData에서 process 5가 있는 경우 transportPlan에서 차수번호 찾기
+                            const dayData = dailyData[dateStr]?.[5];
+                            if (dayData && Array.isArray(dayData) && (dayData.includes(c) || dayData.includes(colId) || dayData.includes(String(c)))) {
+                                if (transportPlan && typeof transportPlan === 'object' && Object.keys(transportPlan).length > 0) {
+                                    for (let tripNum in transportPlan) {
+                                        const tripData = transportPlan[tripNum];
+                                        if (tripData && typeof tripData === 'object') {
+                                            const columns = tripData.columns;
+                                            if (columns && Array.isArray(columns)) {
+                                                const columnIndex = columns.findIndex(col => {
+                                                    const colNum = typeof col === 'number' ? col : parseInt(String(col).replace(/[^0-9]/g, ''));
+                                                    return colNum === c;
+                                                });
+                                                if (columnIndex !== -1) {
+                                                    tripNumber = tripNum;
+                                                    break;
+                                                }
                                             }
                                         }
                                     }
@@ -3537,10 +3570,25 @@
                                 bodyHtml += `<div class="gantt-cell p2" style="flex:1;height:20px;min-width:0;"></div>`;
                                 bodyHtml += `</div>`;
                             } else {
-                                // 실제 배송 날짜인 경우 "O" 텍스트 표시
+                                // process 5 (현장배송)인 경우 차수번호 또는 "O" 표시
+                                const isP5 = cellClass.includes('p5');
                                 const isActualDelivery = cellClass === 'gantt-cell p5 confirmed';
-                                const cellText = isActualDelivery ? 'O' : '';
-                                bodyHtml += `<div class="${cellClass}" style="${isActualDelivery ? 'display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:bold;color:#fff;' : ''}">${cellText}</div>`;
+                                let cellText = '';
+                                let cellStyle = '';
+                                
+                                if (isP5) {
+                                    if (isActualDelivery) {
+                                        // 실제 배송 날짜인 경우 "O" 표시
+                                        cellText = 'O';
+                                        cellStyle = 'display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:bold;color:#fff;';
+                                    } else if (tripNumber) {
+                                        // 운송계획일인 경우 차수번호 표시
+                                        cellText = tripNumber;
+                                        cellStyle = 'display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:bold;color:#000;';
+                                    }
+                                }
+                                
+                                bodyHtml += `<div class="${cellClass}" style="${cellStyle}">${cellText}</div>`;
                             }
                         }
                         bodyHtml += '</td>';
@@ -3551,7 +3599,27 @@
             }
             bodyHtml += '</tbody>';
             
-            table.innerHTML = headerHtml + bodyHtml;
+            // Build footer with dates (same as header)
+            let footerHtml = '<tfoot><tr><th class="col-header">기둥번호</th>';
+            dates.forEach(date => {
+                const dayOfWeek = date.getDay();
+                const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+                const dateStrFull = date.toISOString().split('T')[0];
+                const isHolidayDate = isHoliday(dateStrFull);
+                const dateStr = `${date.getMonth()+1}/${date.getDate()}`;
+                
+                let footerClass = 'date-header';
+                if (isHolidayDate) {
+                    footerClass += ' holiday-header';
+                } else if (isWeekend) {
+                    footerClass += ' weekend';
+                }
+                
+                footerHtml += `<th class="${footerClass}" title="${isHolidayDate ? getHolidayName(dateStrFull) : ''}">${dateStr}</th>`;
+            });
+            footerHtml += '</tr></tfoot>';
+            
+            table.innerHTML = headerHtml + bodyHtml + footerHtml;
         }
 
         // Render Charts
@@ -3624,6 +3692,189 @@
                     }
                 }
             });
+        }
+
+        // 공정표 엑셀 출력 함수
+        async function exportGanttToExcel() {
+            try {
+                // XLSX 라이브러리 확인
+                let XLSXLib;
+                try {
+                    XLSXLib = await ensureXLSXLoaded();
+                } catch (error) {
+                    alert('엑셀 라이브러리를 로드할 수 없습니다. 잠시 후 다시 시도해주세요.');
+                    console.error('XLSX 로드 실패:', error);
+                    return;
+                }
+
+                // 날짜 범위 생성
+                const dates = [];
+                let currentDate = new Date(START_DATE);
+                while (currentDate <= END_DATE) {
+                    dates.push(new Date(currentDate));
+                    currentDate.setDate(currentDate.getDate() + 1);
+                }
+
+                // 공정명 매핑
+                const processNames = {
+                    1: '주기둥커팅',
+                    2: '소부재가공',
+                    3: '주기둥조립',
+                    4: '소부재조립',
+                    5: '현장배송',
+                    6: '현장설치'
+                };
+
+                // 엑셀 데이터 배열 생성
+                const wsData = [];
+
+                // 요일 배열
+                const weekdays = ['일', '월', '화', '수', '목', '금', '토'];
+
+                // 헤더 행 생성 (날짜와 요일)
+                const headerRow = ['기둥번호'];
+                dates.forEach(date => {
+                    const dateStr = date.toISOString().split('T')[0];
+                    const month = date.getMonth() + 1;
+                    const day = date.getDate();
+                    const dayOfWeek = date.getDay(); // 0=일요일, 6=토요일
+                    const weekday = weekdays[dayOfWeek];
+                    // 날짜 형식: "12/26 (목)"
+                    const dateDisplay = `${month}/${day} (${weekday})`;
+                    headerRow.push(dateDisplay);
+                });
+                wsData.push(headerRow);
+                
+                // 디버깅: 첫 번째 날짜 헤더 확인
+                console.log('엑셀 헤더 첫 번째 날짜:', headerRow[1]);
+
+                // 각 기둥별 데이터 행 생성
+                for (let c = 1; c <= TOTAL_COLUMNS; c++) {
+                    const colId = c + 'C';
+                    const row = [colId];
+
+                    dates.forEach(date => {
+                        const dateStr = date.toISOString().split('T')[0];
+                        
+                        // 해당 날짜에 완료된 공정 찾기
+                        const completedProcesses = [];
+                        for (let p = 1; p <= 6; p++) {
+                            const dayData = dailyData[dateStr]?.[p];
+                            if (dayData && Array.isArray(dayData)) {
+                                const found = dayData.includes(c) || dayData.includes(colId) || dayData.includes(String(c));
+                                if (found) {
+                                    completedProcesses.push(p);
+                                }
+                            }
+                        }
+
+                        // 운송계획 확인 (process 5)
+                        if (transportPlan && Object.keys(transportPlan).length > 0) {
+                            for (let tripNum in transportPlan) {
+                                const tripData = transportPlan[tripNum];
+                                if (tripData && tripData.columns && tripData.date) {
+                                    let tripDate = tripData.date;
+                                    if (typeof tripDate === 'string') {
+                                        const dateObj = new Date(tripDate);
+                                        if (!isNaN(dateObj.getTime())) {
+                                            const year = dateObj.getFullYear();
+                                            const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+                                            const day = String(dateObj.getDate()).padStart(2, '0');
+                                            tripDate = `${year}-${month}-${day}`;
+                                        }
+                                    }
+                                    
+                                    if (tripDate === dateStr) {
+                                        const columns = tripData.columns;
+                                        const columnIndex = columns.findIndex(col => {
+                                            const colNum = typeof col === 'number' ? col : parseInt(String(col).replace(/[^0-9]/g, ''));
+                                            return colNum === c;
+                                        });
+                                        if (columnIndex !== -1 && !completedProcesses.includes(5)) {
+                                            completedProcesses.push(5);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        // 공정 표시 (여러 공정이 있으면 모두 표시)
+                        if (completedProcesses.length > 0) {
+                            // 주기둥커팅(1)과 소부재가공(2)이 모두 있는 경우
+                            if (completedProcesses.includes(1) && completedProcesses.includes(2)) {
+                                row.push('1+2');
+                            } else {
+                                // 공정 번호를 쉼표로 구분하여 표시
+                                const processText = completedProcesses.map(p => processNames[p] || `P${p}`).join(', ');
+                                row.push(processText);
+                            }
+                        } else {
+                            row.push('');
+                        }
+                    });
+
+                    wsData.push(row);
+                }
+
+                // 워크시트 생성
+                const ws = XLSXLib.utils.aoa_to_sheet(wsData);
+
+                // 열 너비 설정
+                const colWidths = [{ wch: 12 }]; // 기둥번호 열
+                dates.forEach(() => {
+                    colWidths.push({ wch: 15 }); // 날짜 열
+                });
+                ws['!cols'] = colWidths;
+
+                // 워크북 생성
+                const wb = XLSXLib.utils.book_new();
+                XLSXLib.utils.book_append_sheet(wb, ws, '공정표');
+
+                // 파일명 생성 (프로젝트명과 현재 날짜 포함)
+                const dateStr = new Date().toISOString().split('T')[0].replace(/-/g, '');
+                const projectName = PROJECT_NAMES[PROJECT_ID] || PROJECT_ID;
+                const fileName = `공정표_${projectName}_${dateStr}.xlsx`;
+
+                // Blob 방식으로 엑셀 파일 다운로드
+                try {
+                    const wbout = XLSXLib.write(wb, { bookType: 'xlsx', type: 'array', cellStyles: false });
+                    const blob = new Blob([wbout], { 
+                        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
+                    });
+                    
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = fileName;
+                    a.style.display = 'none';
+                    document.body.appendChild(a);
+                    a.click();
+                    
+                    setTimeout(() => {
+                        try {
+                            document.body.removeChild(a);
+                            URL.revokeObjectURL(url);
+                        } catch (e) {
+                            console.warn('정리 중 오류:', e);
+                        }
+                    }, 100);
+
+                    alert('공정표가 엑셀 파일로 저장되었습니다.');
+                } catch (error) {
+                    console.error('엑셀 파일 생성 실패:', error);
+                    // XLSX.writeFile로 폴백 시도
+                    try {
+                        XLSXLib.writeFile(wb, fileName);
+                        alert('공정표가 엑셀 파일로 저장되었습니다.');
+                    } catch (fallbackError) {
+                        console.error('폴백 엑셀 저장 실패:', fallbackError);
+                        alert('엑셀 파일 저장에 실패했습니다. 브라우저 콘솔을 확인해주세요.');
+                    }
+                }
+            } catch (error) {
+                console.error('공정표 엑셀 출력 오류:', error);
+                alert('공정표 엑셀 출력 중 오류가 발생했습니다: ' + error.message);
+            }
         }
 
         function renderCompanyChart() {

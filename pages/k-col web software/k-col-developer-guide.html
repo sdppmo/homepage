@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>K-COL 기능 설명서 - SongDoPartners</title>
+    <title>K-COL 개발자 안내서 - SongDoPartners</title>
     <link rel="stylesheet" href="../../css/styles.css">
     <style>
         /* Override global styles for this page */
@@ -14,7 +14,7 @@
             min-height: 100vh;
         }
 
-        /* K-COL User Guide Styles */
+        /* K-COL Developer Guide Styles */
         .guide-container {
             max-width: 1400px;
             margin: 0 auto;
@@ -210,27 +210,6 @@
             border-radius: 4px;
         }
 
-        .feature-image {
-            text-align: center;
-            margin: 40px 0;
-            padding: 20px;
-            background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
-            border-radius: 16px;
-            border: 2px solid #e2e8f0;
-        }
-
-        .feature-image img {
-            max-width: 450px;
-            height: auto;
-            border-radius: 12px;
-            box-shadow: 0 12px 32px rgba(0,0,0,0.15);
-            transition: transform 0.3s;
-        }
-
-        .feature-image img:hover {
-            transform: scale(1.02);
-        }
-
         .highlight-box {
             background: linear-gradient(135deg, #f0f4ff 0%, #e8f0fe 100%);
             border-left: 6px solid #667eea;
@@ -329,13 +308,11 @@
             margin-top: 30px;
         }
 
-        /* 가설건축공사 섹션: 한 열에 배치 */
         #temporary-construction .factory-photos-grid {
             grid-template-columns: 1fr !important;
             max-width: 100%;
         }
 
-        /* 가설건축공사 섹션 이미지 크기 확대 */
         #temporary-construction .factory-photo-card img {
             height: 800px !important;
         }
@@ -372,7 +349,6 @@
             color: #2d3748;
         }
 
-        /* 라흐타 타워 갤러리 전용 스타일 */
         .image-gallery {
             padding: 40px 16px;
             text-align: center;
@@ -392,7 +368,6 @@
             margin-top: 20px;
         }
 
-        /* 라흐타 갤러리 전용: 두 이미지를 같은 row에 배치 */
         #lakhta-gallery .gallery-grid {
             grid-template-columns: repeat(2, 1fr);
             gap: 20px;
@@ -425,17 +400,6 @@
             box-shadow: 0 8px 30px rgba(0,0,0,0.15);
         }
 
-        @media (max-width: 600px) {
-            #lakhta-gallery .gallery-grid {
-                grid-template-columns: 1fr;
-            }
-
-            #lakhta-gallery .gallery-grid img {
-                height: auto;
-                min-height: 300px;
-            }
-        }
-
         .gallery-grid img {
             width: 100%;
             height: auto;
@@ -451,7 +415,6 @@
             box-shadow: 0px 4px 20px rgba(0,0,0,0.15);
         }
 
-        /* 기술 섹션 스타일 */
         .tech-section {
             padding: 56px 16px;
         }
@@ -497,69 +460,6 @@
             opacity: 0.9;
         }
 
-        .card ul {
-            margin: 0;
-            padding-left: 18px;
-            line-height: 1.7;
-            opacity: 0.9;
-        }
-
-        .card li {
-            margin: 6px 0;
-        }
-
-        .highlight {
-            border-color: rgba(0,0,0,0.22);
-        }
-
-        .note {
-            margin-top: 16px;
-            opacity: 0.85;
-            line-height: 1.7;
-        }
-
-        /* 아주 간단한 십자 단면 "설명용 도식" */
-        .diagram {
-            margin-top: 14px;
-        }
-
-        .shape {
-            width: 120px;
-            height: 120px;
-            border-radius: 14px;
-            background: rgba(0,0,0,0.03);
-            display: grid;
-            place-items: center;
-            margin: 0 auto 8px;
-            position: relative;
-        }
-
-        .web {
-            width: 84px;
-            height: 18px;
-            background: rgba(0,0,0,0.55);
-            border-radius: 6px;
-            position: absolute;
-        }
-
-        .web.v {
-            width: 18px;
-            height: 84px;
-        }
-
-        .caption {
-            text-align: center;
-            font-size: 13px;
-            opacity: 0.75;
-        }
-
-        @media (max-width: 820px) {
-            .tech-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        /* Cross H 강조 스타일 */
         .highlight-crossh {
             color: #92400e;
             font-weight: 700;
@@ -568,6 +468,26 @@
             border-radius: 4px;
             display: inline-block;
             box-shadow: 0 2px 4px rgba(251, 191, 36, 0.3);
+        }
+
+        .comparison-table-wrapper {
+            margin: 30px 0;
+            padding: 30px;
+            background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+            border: 2px solid #e2e8f0;
+        }
+
+        .comparison-table-wrapper h3 {
+            margin-bottom: 25px;
+            padding: 20px;
+            background: linear-gradient(135deg, #1e3a5f, #2d5a87);
+            color: white;
+            border-radius: 12px;
+            text-align: center;
+            font-size: 26px;
+            box-shadow: 0 4px 12px rgba(30, 58, 95, 0.3);
         }
 
         table {
@@ -672,56 +592,6 @@
             border-radius: 6px;
         }
 
-        /* 비교 테이블 특별 스타일 */
-        .comparison-table-wrapper {
-            margin: 30px 0;
-            padding: 30px;
-            background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
-            border-radius: 16px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
-            border: 2px solid #e2e8f0;
-        }
-
-        .comparison-table-wrapper h3 {
-            margin-bottom: 25px;
-            padding: 20px;
-            background: linear-gradient(135deg, #1e3a5f, #2d5a87);
-            color: white;
-            border-radius: 12px;
-            text-align: center;
-            font-size: 26px;
-            box-shadow: 0 4px 12px rgba(30, 58, 95, 0.3);
-        }
-
-        /* 애니메이션 효과 */
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        section {
-            animation: fadeInUp 0.6s ease-out;
-        }
-
-        /* 스크롤 인디케이터 */
-        .guide-content::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 4px;
-            height: 100vh;
-            background: linear-gradient(to bottom, #667eea, #764ba2);
-            z-index: 1000;
-            opacity: 0.3;
-        }
-
         /* 목차 스타일 */
         .table-of-contents {
             background: linear-gradient(135deg, #f0f4ff 0%, #ffffff 100%);
@@ -784,14 +654,6 @@
         }
 
         @media (max-width: 768px) {
-            .case-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .factory-photos-grid {
-                grid-template-columns: 1fr;
-            }
-
             .guide-content {
                 padding: 30px 20px;
             }
@@ -808,8 +670,25 @@
                 font-size: 24px;
             }
 
-            .guide-content::before {
-                display: none;
+            .case-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .factory-photos-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .tech-grid {
+                grid-template-columns: 1fr;
+            }
+
+            #lakhta-gallery .gallery-grid {
+                grid-template-columns: 1fr;
+            }
+
+            #lakhta-gallery .gallery-grid img {
+                height: auto;
+                min-height: 300px;
             }
 
             .table-of-contents {
@@ -826,9 +705,9 @@
 <body>
     <div class="guide-container">
         <div class="guide-wrapper">
-            <div class="guide-header" id="kcol-guide-header">
-                <h1>📘 K-COL 기능 설명서</h1>
-                <p class="subtitle">Cross H형 강재 기둥 설계 및 제작 관리 시스템</p>
+            <div class="guide-header" id="developer-guide-header">
+                <h1>📘 K-COL 개발자 안내서</h1>
+                <p class="subtitle">운영자 전용 개발자 메뉴얼</p>
                 <a href="../../index.html" class="home-link">🏠 홈으로 돌아가기</a>
             </div>
 
@@ -839,8 +718,11 @@
                     <ul class="toc-list">
                         <li><a href="#top-method">1. TOP-DOWN 공법 (탑다운공법)</a></li>
                         <li><a href="#structure-calculation">2. 구조 계산</a></li>
-                        <li><a href="#process-system">3. 공정관리시스템(제작+현장설치)</a></li>
-                        <li><a href="#mapping">4. 현장기둥설치 Mapping</a></li>
+                        <li><a href="#auto-find-section">3. A.F.S (Auto Find Section)</a></li>
+                        <li><a href="#boq">4. BOQ 계산</a></li>
+                        <li><a href="#column-plan">5. A.D.C Function</a></li>
+                        <li><a href="#process-system">6. 공정관리시스템(제작+현장설치)</a></li>
+                        <li><a href="#mapping">7. 현장기둥설치 Mapping</a></li>
                         <li><a href="#case-studies">5. Cross H 건물 사례</a></li>
                         <li><a href="#highrise-case">6. 초고층 건물 사례</a></li>
                         <li><a href="#factory-photos">7. 공장 사진</a></li>
@@ -940,10 +822,108 @@
                     </div>
                 </section>
 
-                <!-- 6. 공정관리시스템(제작+현장설치) -->
+                <!-- 3. Auto Find Section -->
+                <section id="auto-find-section">
+                    <div class="feature-header">
+                        <h2 class="section-title">3. A.F.S (Auto Find Section)</h2>
+                    </div>
+
+                    <div class="feature-details">
+                        <p>Auto Find Section 기능은 입력된 하중 조건에 맞는 최적의 <span class="highlight-crossh">Cross H</span>형 단면을 자동으로 찾아줍니다.</p>
+                    </div>
+
+                    <div class="feature-details">
+                        <h3>사용 방법</h3>
+                        <ol>
+                            <li>구조 계산 페이지에서 <strong>"Auto Find Section"</strong> 메뉴로 이동합니다.</li>
+                            <li>하중 조건을 입력합니다 (축력, 휨모멘트, 전단력 등).</li>
+                            <li>강재 등급 및 좌굴 조건을 설정합니다.</li>
+                            <li>제약 조건을 입력합니다 (최소/최대 높이, 폭 등).</li>
+                            <li><strong>"단면 찾기"</strong> 버튼을 클릭합니다.</li>
+                            <li>시스템이 데이터베이스에서 조건에 맞는 최적 단면을 검색합니다.</li>
+                            <li>검색된 단면 목록을 확인하고 적절한 단면을 선택합니다.</li>
+                            <li>선택한 단면으로 구조 계산을 수행하여 검증합니다.</li>
+                        </ol>
+                    </div>
+
+                    <div class="feature-image" style="margin: 40px 0; text-align: center;">
+                        <img src="../../assets/images/AFS.png" alt="Auto Find Section 결과" style="max-width: 100%; height: auto; border-radius: 12px; box-shadow: 0 12px 32px rgba(0,0,0,0.15); border: 2px solid #e2e8f0;" onerror="this.parentElement.innerHTML='<div style=\'padding:40px;text-align:center;color:#718096;font-size:19.2px;\'>Auto Find Section 결과 이미지<br>(추가 예정)</div>'">
+                        <p style="margin-top: 15px; font-size: 16px; color: #666; font-style: italic;">Auto Find Section 결과 화면</p>
+                    </div>
+                </section>
+
+                <!-- 4. BOQ 계산 -->
+                <section id="boq">
+                    <div class="feature-header">
+                        <h2 class="section-title">4. BOQ 계산</h2>
+                    </div>
+
+                    <div class="feature-details">
+                        <p>BOQ(Bill of Quantities) 계산 기능은 프로젝트에 필요한 <span class="highlight-crossh">Cross H</span>형 기둥의 물량을 자동으로 산출합니다.</p>
+                    </div>
+
+                    <div class="feature-details">
+                        <h3>사용 방법</h3>
+                        <ol>
+                            <li>메인 페이지에서 <strong>"K-COL Web Software"</strong> 메뉴를 클릭합니다.</li>
+                            <li><strong>Auto Find Section</strong>을 수행합니다.</li>
+                            <li><strong>"BOQ Report"</strong> 메뉴로 이동합니다.</li>
+                            <li>프로젝트 정보를 입력합니다 (프로젝트명, 건물 정보 등).</li>
+                            <li>각 층별 기둥 정보를 입력합니다 (기둥 번호, 단면 치수, 높이 등).</li>
+                            <li>강재 등급 및 단가 정보를 입력합니다.</li>
+                            <li><strong>"물량 산출"</strong> 버튼을 클릭합니다.</li>
+                            <li>계산된 물량을 확인하고, 필요시 수정합니다.</li>
+                            <li><strong>"보고서 출력"</strong> 버튼을 클릭하여 BOQ 보고서를 생성합니다.</li>
+                        </ol>
+                    </div>
+
+                    <div class="feature-image" style="margin: 40px 0; text-align: center;">
+                        <img src="../../assets/images/BOQ-1.png" alt="BOQ 계산 예시 1" style="max-width: 100%; height: auto; border-radius: 12px; box-shadow: 0 12px 32px rgba(0,0,0,0.15); border: 2px solid #e2e8f0; margin-bottom: 20px;" onerror="this.parentElement.innerHTML='<div style=\'padding:40px;text-align:center;color:#718096;font-size:19.2px;\'>BOQ 계산 이미지<br>(추가 예정)</div>'">
+                        <img src="../../assets/images/BOQ-2.png" alt="BOQ 계산 예시 2" style="max-width: 100%; height: auto; border-radius: 12px; box-shadow: 0 12px 32px rgba(0,0,0,0.15); border: 2px solid #e2e8f0;" onerror="this.parentElement.innerHTML='<div style=\'padding:40px;text-align:center;color:#718096;font-size:19.2px;\'>BOQ 계산 이미지<br>(추가 예정)</div>'">
+                    </div>
+                </section>
+
+                <!-- 5. A.D.C Function -->
+                <section id="column-plan">
+                    <div class="feature-header">
+                        <h2 class="section-title">5. A.D.C Function</h2>
+                    </div>
+
+                    <div class="feature-details">
+                        <p>기둥평면도와 기둥번호를 입력하여 프로젝트의 구조 정보를 관리합니다.</p>
+                        <p>기둥당 면적분배를 자동으로 계산하고 면적분배의 적정성을 검토하여 불필요한 기둥을 삭제 또는 기둥간격을 조정할 수 있도록 합니다.</p>
+                        <p>이기능은 특히 탑다운 기둥 Naming 및 Grouping에 유효한 기능입니다.</p>
+                    </div>
+
+                    <div class="feature-details">
+                        <h3>주요 기능</h3>
+                        <ul>
+                            <li>기둥평면도 업로드 및 관리</li>
+                            <li>기둥번호 입력 및 수정</li>
+                            <li>평면도와 기둥 정보 연동</li>
+                            <li>기둥 분배면적의 최적화</li>
+                        </ul>
+                    </div>
+
+                    <div class="feature-details">
+                        <h3>사용 방법</h3>
+                        <ol>
+                            <li>기둥평면도 파일을 업로드합니다.</li>
+                            <li>각 기둥의 번호를 입력합니다.</li>
+                            <li>평면도와 기둥 정보를 연동하여 확인합니다.</li>
+                        </ol>
+                    </div>
+
+                    <div class="feature-image" style="margin: 40px 0; text-align: center;">
+                        <img src="../../assets/images/ADC-1.png" alt="A.D.C Function 예시 1" style="max-width: 100%; height: auto; border-radius: 12px; box-shadow: 0 12px 32px rgba(0,0,0,0.15); border: 2px solid #e2e8f0; margin-bottom: 20px;" onerror="this.parentElement.innerHTML='<div style=\'padding:40px;text-align:center;color:#718096;font-size:19.2px;\'>A.D.C Function 이미지<br>(추가 예정)</div>'">
+                        <img src="../../assets/images/ADC-2.png" alt="A.D.C Function 예시 2" style="max-width: 100%; height: auto; border-radius: 12px; box-shadow: 0 12px 32px rgba(0,0,0,0.15); border: 2px solid #e2e8f0;" onerror="this.parentElement.innerHTML='<div style=\'padding:40px;text-align:center;color:#718096;font-size:19.2px;\'>A.D.C Function 이미지<br>(추가 예정)</div>'">
+                    </div>
+                </section>
+
+                <!-- 6. 공정관리시스템 -->
                 <section id="process-system">
                     <div class="feature-header">
-                        <h2 class="section-title">3. 공정관리시스템(제작+현장설치)</h2>
+                        <h2 class="section-title">6. 공정관리시스템(제작+현장설치)</h2>
                     </div>
 
                     <div class="feature-details">
@@ -960,56 +940,40 @@
                         </ul>
                     </div>
 
+                    <div class="feature-image" style="margin: 40px 0; text-align: center;">
+                        <img src="../../assets/images/schedule.png" alt="공정관리시스템 예시" style="max-width: 100%; height: auto; border-radius: 12px; box-shadow: 0 12px 32px rgba(0,0,0,0.15); border: 2px solid #e2e8f0;" onerror="this.parentElement.innerHTML='<div style=\'padding:40px;text-align:center;color:#718096;font-size:19.2px;\'>공정관리시스템 이미지<br>(추가 예정)</div>'">
+                    </div>
+                </section>
+
+                <!-- 7. 현장기둥설치 Mapping -->
+                <section id="mapping">
+                    <div class="feature-header">
+                        <h2 class="section-title">7. 현장기둥설치 Mapping</h2>
+                    </div>
+
+                    <div class="feature-details">
+                        <p>현장 Mapping 기능은 현장에서 기둥 설치 위치를 시각적으로 관리하고 추적할 수 있는 기능입니다. 설치가 완료된 기둥과 미완료된 기둥의 설치완료율을 확인하고 완료된 기둥을 Web Page상에서 시각적으로 확인할 수 있는 기능을 제공한다.</p>
+                    </div>
+
                     <div class="feature-details">
                         <h3>사용 방법</h3>
                         <ol>
-                            <li>메인 페이지에서 <strong>"K-COL Product Schedule"</strong> 메뉴를 클릭합니다.</li>
-                            <li>프로젝트를 선택합니다.</li>
-                            <li><strong>"일일 입력"</strong> 메뉴에서 일일 제작 현황을 입력합니다.</li>
-                            <li><strong>"공정표"</strong> 메뉴에서 전체 공정을 확인하고 선후단계를 파악합니다.</li>
-                            <li><strong>"운송 차수"</strong> 메뉴에서 운송 일정을 관리합니다.</li>
-                            <li>실시간으로 업데이트되는 공정 현황을 모니터링합니다.</li>
+                            <li>메인 페이지에서 <strong>"K-COL Web Software"</strong> 메뉴를 클릭합니다.</li>
+                            <li><strong>"Mapping"</strong> 메뉴로 이동합니다.</li>
+                            <li>건물 평면도를 업로드하거나 직접 그립니다.</li>
+                            <li>각 기둥의 위치를 평면도에 표시합니다.</li>
+                            <li>기둥 번호 및 단면 정보를 입력합니다.</li>
+                            <li>설치 상태를 업데이트합니다 (미설치, 설치 중, 설치 완료 등).</li>
+                            <li>설치 일정 및 현황을 실시간으로 확인합니다.</li>
                         </ol>
                     </div>
 
                     <div class="feature-image" style="margin: 40px 0; text-align: center;">
-                        <img src="../../assets/images/schedule-o.png" alt="공정관리시스템 예시" style="max-width: 100%; height: auto; border-radius: 12px; box-shadow: 0 12px 32px rgba(0,0,0,0.15); border: 2px solid #e2e8f0;" onerror="this.parentElement.innerHTML='<div style=\'padding:40px;text-align:center;color:#718096;font-size:19.2px;\'>공정관리시스템 이미지<br>(추가 예정)</div>'">
+                        <img src="../../assets/images/mapping.png" alt="현장기둥설치 Mapping 예시" style="max-width: 100%; height: auto; border-radius: 12px; box-shadow: 0 12px 32px rgba(0,0,0,0.15); border: 2px solid #e2e8f0;" onerror="this.parentElement.innerHTML='<div style=\'padding:40px;text-align:center;color:#718096;font-size:19.2px;\'>현장기둥설치 Mapping 이미지<br>(추가 예정)</div>'">
                     </div>
                 </section>
 
-                <!-- 6. Mapping 기능 -->
-                <section id="mapping">
-                    <div class="feature-header">
-                        <h2 class="section-title">4. 현장기둥설치 Mapping</h2>
-                    </div>
-
-                    <div style="display: flex; gap: 30px; align-items: flex-start;">
-                        <div style="flex: 1;">
-                            <div class="feature-details">
-                                <p>현장 Mapping 기능은 현장에서 기둥 설치 위치를 시각적으로 관리하고 추적할 수 있는 기능입니다. 설치가 완료된 기둥과 미완료된 기둥의 설치완료율을 확인하고 완료된 기둥을 Web Page상에서 시각적으로 확인할 수 있는 기능을 제공한다.</p>
-                            </div>
-
-                            <div class="feature-details">
-                                <h3>사용 방법</h3>
-                                <ol>
-                                    <li>메인 페이지에서 <strong>"K-COL Web Software"</strong> 메뉴를 클릭합니다.</li>
-                                    <li><strong>"Mapping"</strong> 메뉴로 이동합니다.</li>
-                                    <li>건물 평면도를 업로드하거나 직접 그립니다.</li>
-                                    <li>각 기둥의 위치를 평면도에 표시합니다.</li>
-                                    <li>기둥 번호 및 단면 정보를 입력합니다.</li>
-                                    <li>설치 상태를 업데이트합니다 (미설치, 설치 중, 설치 완료 등).</li>
-                                    <li>설치 일정 및 현황을 실시간으로 확인합니다.</li>
-                                </ol>
-                            </div>
-                        </div>
-
-                        <div class="feature-image" style="flex: 0 0 400px; align-self: flex-end; margin-top: 200px;">
-                            <img src="../../assets/images/floor-plan.png" alt="Mapping 기능" style="max-width: 100%; height: auto; border-radius: 12px; box-shadow: 0 12px 32px rgba(0,0,0,0.15); border: 2px solid #e2e8f0;" onerror="this.parentElement.innerHTML='<div style=\'padding:40px;text-align:center;color:#718096;font-size:19.2px;\'>Mapping 기능 이미지<br>(추가 예정)</div>'">
-                        </div>
-                    </div>
-                </section>
-
-                <!-- 7. Cross H 건물 사례 -->
+                <!-- 5. Cross H 건물 사례 -->
                 <section id="case-studies">
                     <div class="feature-header">
                         <h2 class="section-title">5. Cross H 건물 사례</h2>
@@ -1035,7 +999,7 @@
                     </div>
                 </section>
 
-                <!-- 8. 초고층 건물 사례 -->
+                <!-- 6. 초고층 건물 사례 -->
                 <section id="highrise-case">
                     <div class="feature-header">
                         <h2 class="section-title">6. 초고층 건물 사례</h2>
@@ -1139,7 +1103,7 @@
                     </div>
                 </section>
 
-                <!-- 9. 공장 사진 -->
+                <!-- 7. 공장 사진 -->
                 <section id="factory-photos">
                     <div class="feature-header">
                         <h2 class="section-title">7. 공장 사진</h2>
@@ -1180,7 +1144,7 @@
                     </div>
                 </section>
 
-                <!-- 10. 가설건축공사 -->
+                <!-- 8. 가설건축공사 -->
                 <section id="temporary-construction">
                     <div class="feature-header">
                         <h2 class="section-title">8. 가설건축공사</h2>
@@ -1208,7 +1172,7 @@
                     </div>
                 </section>
 
-                <!-- 11. Cross H 구조적 특징 및 장점 -->
+                <!-- 9. Cross H 구조적 특징 및 장점 -->
                 <section id="cross-h-structural-features">
                     <div class="feature-header">
                         <h2 class="section-title">9. Cross H 구조적 특징 및 장점과 CFT 비교</h2>
@@ -1318,6 +1282,5 @@
             });
         });
     </script>
-    <!-- Auth scripts removed - user guide is public -->
 </body>
 </html>

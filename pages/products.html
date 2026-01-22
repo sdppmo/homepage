@@ -487,9 +487,9 @@
             </div>
 
             <div class="products-grid">
-                <!-- Panel 1: K-COL -->
+                <!-- Panel 1: K-COL (공개) -->
                 <a href="k-col web software/k-col-user-guide.html" style="text-decoration: none; color: inherit;" id="kcol-panel">
-                    <div class="product-panel" style="cursor: pointer;">
+                    <div class="product-panel" style="cursor: pointer;" id="kcol-user-panel">
                         <div class="product-icon">
                             <img src="../assets/images/K-COL.jpg" alt="K-COL" style="width: 100%; height: 100%; object-fit: contain;">
                         </div>
@@ -503,7 +503,6 @@
                                 <li>Cross H형 단면 설계</li>
                                 <li>TOP-DOWN 공법 지원</li>
                                 <li>구조 계산 자동화</li>
-                                <li>BOQ 산출 및 물량 관리</li>
                                 <li>공정 관리 시스템</li>
                                 <li>현장 Mapping 기능</li>
                             </ul>
@@ -554,7 +553,20 @@
 
                 <!-- Small Panels Container (사진, 논문, 동영상) -->
                 <div class="small-panels-container">
-                    <!-- Panel 4: 사진 -->
+                    <!-- Panel 4: 개발자용 설명서 (운영자 전용) -->
+                    <a href="k-col web software/k-col-developer-guide.html" style="text-decoration: none; color: inherit;" id="developer-guide-link" data-requires-auth="true" data-required-role="admin">
+                        <div class="product-panel" id="developer-guide-panel" style="display: none; cursor: pointer;">
+                            <div style="display: flex; align-items: center; justify-content: flex-start; gap: 20px;">
+                                <div class="product-icon" style="width: 60px; height: 60px; min-width: 60px; min-height: 60px; margin: 0;">
+                                    <img src="../assets/images/K-COL.jpg" alt="K-COL" style="width: 100%; height: 100%; object-fit: contain;">
+                                </div>
+                                <div style="display: flex; flex-direction: column; gap: 4px;">
+                                    <h2 class="product-title" style="margin: 0; font-size: 18px;">K-COL 개발자 안내서</h2>
+                                    <p style="margin: 0; font-size: 13px; color: #666;">운영자 전용 개발자 메뉴얼입니다.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
                     <a href="photo-gallery.html" style="text-decoration: none; color: inherit;">
                         <div class="product-panel small-panel" style="cursor: pointer;">
                             <div style="display: flex; align-items: flex-start; gap: 10px;">
@@ -660,5 +672,50 @@
             </div>
         </div>
     </div>
+    <script src="../js/auth-config.js"></script>
+    <script src="../js/auth.js"></script>
+    <script src="../js/feature-guard.js"></script>
+    <script>
+        // 페이지 로드 시 권한 체크
+        document.addEventListener('DOMContentLoaded', function() {
+            // K-COL 패널 (공개 - 로그인 불필요)
+            const kcolPanel = document.getElementById('kcol-user-panel');
+            if (kcolPanel) {
+                // 로그인 없이도 항상 표시
+                kcolPanel.style.display = 'block';
+            }
+
+            // 개발자 안내서 패널 (운영자 전용)
+            const developerPanel = document.getElementById('developer-guide-panel');
+            const developerLink = document.getElementById('developer-guide-link');
+            if (developerPanel && developerLink) {
+                if (window.SDP && window.SDP.auth) {
+                    window.SDP.auth.getSession().then(function(session) {
+                        if (!session) {
+                            developerPanel.style.display = 'none';
+                            developerLink.style.display = 'none';
+                            return;
+                        }
+                        return window.SDP.auth.getProfile().then(function(profile) {
+                            if (profile && window.SDP.auth.isAdmin()) {
+                                developerPanel.style.display = 'block';
+                                developerLink.style.display = 'block';
+                            } else {
+                                developerPanel.style.display = 'none';
+                                developerLink.style.display = 'none';
+                            }
+                        });
+                    }).catch(function(err) {
+                        console.error('권한 확인 오류:', err);
+                        developerPanel.style.display = 'none';
+                        developerLink.style.display = 'none';
+                    });
+                } else {
+                    developerPanel.style.display = 'none';
+                    developerLink.style.display = 'none';
+                }
+            }
+        });
+    </script>
 </body>
 </html>

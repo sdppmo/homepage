@@ -13,6 +13,19 @@
   box-sizing: border-box;
 }
 
+/* Cursor IDE 요소 선택 지원 - 선택 가능한 요소 표시 */
+[data-selectable="true"],
+[data-cursor-selectable="true"] {
+  position: relative;
+  cursor: default;
+  /* pointer-events는 기본값(auto) 유지 */
+}
+
+/* 배경 이미지는 pointer-events를 none으로 유지 (클릭이 뒤로 전달되도록) */
+.bg-image {
+  pointer-events: none !important;
+}
+
 html, body {
   font-family: Arial, sans-serif;
   background: #000;
@@ -607,10 +620,41 @@ a.brochure-btn.white:hover {
   font-size: 12px;
   color: #333;
   border-right: 1px solid #ddd;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .exchange-cell:last-child {
   border-right: none;
+}
+
+.exchange-cell span {
+  flex-shrink: 0;
+  font-weight: 500;
+}
+
+.exchange-cell .month-select {
+  flex: 1;
+  padding: 3px 6px;
+  font-size: 11px;
+  border: 1px solid #999;
+  border-radius: 3px;
+  background: #fff;
+  color: #333;
+  cursor: pointer;
+  min-width: 60px;
+}
+
+.exchange-cell .month-select:hover {
+  border-color: #667eea;
+  background-color: #f0f4ff;
+}
+
+.exchange-cell .month-select:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
 }
 
 .exchange-cell[onclick] {
@@ -621,7 +665,7 @@ a.brochure-btn.white:hover {
   background-color: #f0f4ff;
 }
 
-/* KOSIS 클릭 가능한 셀 */
+/* KOSIS 클릭 가능한 셀 (레거시 - 호환성 유지) */
 .exchange-cell.kosis-clickable {
   transition: all 0.2s;
 }

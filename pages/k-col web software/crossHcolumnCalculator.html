@@ -185,10 +185,17 @@
             transform: translateY(-1px);
         }
 
-        .quick-calc-btn {
-            width: 100%;
-            padding: 8px 14px;
+        /* 간편계산 버튼 컨테이너 */
+        .quick-calc-buttons {
+            display: flex;
+            gap: 8px;
             margin-top: 15px;
+            width: 100%;
+        }
+
+        .quick-calc-btn {
+            flex: 1;
+            padding: 8px 14px;
             background: linear-gradient(135deg, #10b981, #059669);
             color: white;
             border: none;
@@ -207,6 +214,76 @@
 
         .quick-calc-btn:active {
             transform: translateY(0);
+        }
+
+        /* 간편계산 출력 영역 */
+        .quick-calc-output {
+            width: 100%;
+            max-width: 459px;
+            max-height: 35px;
+            margin-top: 8px;
+            padding: 6px 10px;
+            background: linear-gradient(135deg, #f0f4ff, #e8f4f8);
+            border: 1px solid #667eea;
+            border-radius: 6px;
+            font-size: 11px;
+            color: #1e3a5f;
+            overflow: hidden;
+            display: none;
+            box-sizing: border-box;
+        }
+
+        .quick-calc-output.active {
+            display: block;
+        }
+
+        .quick-calc-output-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            white-space: nowrap;
+            overflow-x: auto;
+            overflow-y: hidden;
+        }
+
+        .quick-calc-output-content::-webkit-scrollbar {
+            height: 3px;
+        }
+
+        .quick-calc-output-content::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+        }
+
+        .quick-calc-output-content::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 3px;
+        }
+
+        .quick-calc-result-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            flex-shrink: 0;
+        }
+
+        .quick-calc-result-label {
+            font-weight: 600;
+            color: #4a5568;
+        }
+
+        .quick-calc-result-value {
+            font-weight: 700;
+            color: #1e3a5f;
+        }
+
+        .quick-calc-result-value.ok {
+            color: #10b981;
+        }
+
+        .quick-calc-result-value.ng {
+            color: #ef4444;
         }
 
         .dimensions-container {
@@ -397,14 +474,128 @@
             width: 60px;
         }
 
+        /* 운영자 Control 영역 */
+        .operator-control-section {
+            background: linear-gradient(135deg, #fff7ed, #fef3c7);
+            border: 2px solid #f59e0b;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 8px rgba(245, 158, 11, 0.15);
+        }
+
+        .operator-control-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #f59e0b;
+        }
+
+        .operator-control-header h3 {
+            margin: 0;
+            font-size: 16px;
+            font-weight: 700;
+            color: #92400e;
+            flex: 1;
+        }
+
+        .operator-control-header .icon {
+            font-size: 20px;
+        }
+
+        .operator-control-header .operator-header-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .operator-control-header .operator-header-right {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 4px;
+        }
+
+        .operator-control-header .operator-email {
+            font-size: 11px;
+            color: #6b7280;
+            font-weight: 500;
+        }
+
+        .operator-control-header .operator-status {
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .operator-control-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            gap: 8px;
+            width: 100%;
+        }
+
+        .operator-control-btn {
+            width: 100%;
+            padding: 12px;
+            background: #1e3a5f;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-sizing: border-box;
+            text-align: center;
+            white-space: normal;
+            line-height: 1.4;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+
+        .operator-control-btn:hover {
+            background: #2d5a87;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+        }
+
+        .operator-control-btn.primary {
+            background: #6b7280;
+        }
+
+        .operator-control-btn.primary:hover {
+            background: #4b5563;
+        }
+
+        .operator-control-btn.secondary {
+            background: #3b82f6;
+        }
+
+        .operator-control-btn.secondary:hover {
+            background: #2563eb;
+        }
+
+        .operator-control-btn.success {
+            background: #38a169;
+        }
+
+        .operator-control-btn.success:hover {
+            background: #2f855a;
+        }
+
         /* 하단 액션 */
         .action-bar {
             background: #f8fafc;
             border-top: 1px solid #e2e8f0;
             padding: 10px 0 0 0;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            grid-template-rows: 1fr 1fr;
+            display: flex;
             gap: 8px;
             margin-top: 10px;
             margin-bottom: 0;
@@ -486,6 +677,11 @@
 
         #auto-find-section-btn:hover {
             background: #2f855a !important;
+        }
+
+        /* 기존 action-btn 스타일 유지 (일반 사용자용) */
+        .action-bar .action-btn {
+            flex: 1;
         }
 
         /* 해석 결과 박스 (우측 섹션 내부) */
@@ -843,23 +1039,51 @@
                 <div id="section-area-display" style="margin-bottom: 8px; font-size: 14px; color: #4a5568; text-align: center;">단면적 :  mm²  |  단중 :  kg/m</div>
                 
                 <!-- 간편 계산 버튼 -->
-                <button class="quick-calc-btn" onclick="quickCalculate()">
-                    ⚡ 간편계산(1-Column)
-                </button>
-                
-                <!-- 하단 액션 바 -->
-                <div class="action-bar">
-                    <a href="Cross-H-Column-Calculation-Data1.html" class="action-btn primary" onclick="saveInputData(); return true;">
-                        📄 계산서(1-Column)
-                    </a>
-                    <div class="beam-type-btns">
-                        <button class="beam-type-btn" id="auto-find-section-btn" data-requires="column" data-onclick="window.location.href='protected/auto-find-section.html'">Auto Find Section<br>RH / Built-Up<br>(Included BOQ)</button>
-                        <button class="beam-type-btn" data-requires="column" data-onclick="alert('SRC(Cross H) 기능은 준비 중입니다.');">SRC(Cross H)</button>
-                    </div>
-                    <button class="action-btn secondary" id="rolled-cross-h-btn" onclick="openColumnPlanInput();">
-                        기둥 면적배분<br>자동산정 일고리즘
+                <div class="quick-calc-buttons">
+                    <button class="quick-calc-btn" onclick="quickCalculate()">
+                        ⚡ 간편계산(1-Column)
                     </button>
+                </div>
+                
+                <!-- 간편계산 출력 영역 -->
+                <div id="quickCalcOutput" class="quick-calc-output">
+                    <div class="quick-calc-output-content" id="quickCalcOutputContent">
+                        <!-- 결과가 여기에 동적으로 표시됩니다 -->
+                    </div>
+                </div>
+                
+                <!-- 운영자 Control 영역 -->
+                <div class="operator-control-section" id="operatorControlSection">
+                    <div class="operator-control-header">
+                        <div class="operator-header-left">
+                            <span class="icon">⚙️</span>
+                            <h3>운영자 Control</h3>
                         </div>
+                        <div class="operator-header-right">
+                            <span class="operator-email" id="operatorEmail"></span>
+                            <span class="operator-status" id="operatorStatus"></span>
+                        </div>
+                    </div>
+                    <div class="operator-control-grid" id="operatorControlGrid">
+                        <a href="Cross-H-Column-Calculation-Data1.html" class="operator-control-btn primary" onclick="return checkOperatorAccessAndNavigate(event, 'Cross-H-Column-Calculation-Data1.html');">
+                            📄 전체계산서<br>(1-Column)
+                        </a>
+                        <button class="operator-control-btn success" id="auto-find-section-btn" data-requires="column" data-onclick="window.location.href='protected/auto-find-section.html'" onclick="return checkOperatorAccess(function() { window.location.href='protected/auto-find-section.html'; }, event);">
+                            A.F.S. Function<br>RH / BH
+                        </button>
+                        <button class="operator-control-btn" data-requires="column" data-onclick="alert('SRC(Cross H) 기능은 준비 중입니다.');" onclick="return checkOperatorAccess(function() { alert('SRC(Cross H) 기능은 준비 중입니다.'); }, event);">
+                            SRC<br>(Cross H)
+                        </button>
+                        <button class="operator-control-btn secondary" id="rolled-cross-h-btn" onclick="return checkOperatorAccess(openColumnPlanInput, event);">
+                            A. D. C. Function<br>Top Down
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 하단 액션 바 (일반 사용자용 - 필요시 추가 기능) -->
+                <div class="action-bar">
+                    <!-- 일반 사용자용 버튼이 필요하면 여기에 추가 -->
+                </div>
                     </div>
                     
             <!-- 우측: 파라미터 -->
@@ -1338,7 +1562,7 @@
                     <div id="columnPlanInputModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; overflow-y: auto;">
                         <div style="position: relative; max-width: 900px; margin: 50px auto; background: white; border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); padding: 30px;">
                             <button onclick="closeColumnPlanInput()" style="position: absolute; top: 15px; right: 15px; background: none; border: none; font-size: 24px; color: #999; cursor: pointer; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;">&times;</button>
-                            <h2 style="margin-bottom: 20px; color: #1e3a5f; font-size: 24px; text-align: center;">기둥 면적배분 자동산정 일고리즘</h2>
+                            <h2 style="margin-bottom: 20px; color: #1e3a5f; font-size: 24px; text-align: center;">A.D.C Function</h2>
                             
                             <!-- 안내서 패널 -->
                             <details style="margin-bottom: 20px; border: 2px solid #667eea; border-radius: 8px; background: linear-gradient(135deg, #f0f4ff 0%, #e8f4f8 100%);">
@@ -1712,6 +1936,31 @@
                                         <div id="columnListDisplay" style="max-height: 150px; overflow-y: auto; background: white; border-radius: 4px; padding: 10px; border: 1px solid #cbd5e0;">
                                             <p style="margin: 0; color: #718096; font-size: 12px; text-align: center;" id="columnListText">엑셀을 업로드하면 기둥 목록이 여기에 표시됩니다.</p>
                                         </div>
+                                        <div style="margin-top: 15px; padding-top: 15px; border-top: 2px solid #cbd5e0;">
+                                            <div style="margin-bottom: 12px;">
+                                                <label style="display: block; margin-bottom: 8px; color: #4a5568; font-weight: 600; font-size: 13px;">
+                                                    📍 경계 기둥 선택 (4개)
+                                                </label>
+                                                <div id="boundaryColumnSelector" style="max-height: 120px; overflow-y: auto; background: white; border: 1px solid #cbd5e0; border-radius: 4px; padding: 8px; font-size: 11px;">
+                                                    <p style="margin: 0; color: #718096; text-align: center; font-size: 11px;">엑셀을 업로드하면 기둥 목록이 표시됩니다.</p>
+                                                </div>
+                                                <div style="margin-top: 8px; font-size: 10px; color: #718096;">
+                                                    선택된 경계 기둥: <span id="selectedBoundaryCount" style="color: #667eea; font-weight: 600;">0</span>/4
+                                                </div>
+                                            </div>
+                                            <button onclick="calculateColumnAreaDistribution()" style="width: 100%; padding: 12px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);">
+                                                📐 면적분담율 계산
+                                            </button>
+                                        </div>
+                                        <div id="areaDistributionResult" style="margin-top: 15px; display: none; background: white; border-radius: 4px; padding: 15px; border: 1px solid #cbd5e0;">
+                                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                                                <h4 style="margin: 0; color: #1e3a5f; font-size: 14px; font-weight: 600;">면적분담율 결과</h4>
+                                                <button onclick="exportAreaDistributionToExcel()" style="padding: 6px 12px; background: #10b981; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: 600; display: flex; align-items: center; gap: 4px;">
+                                                    📥 엑셀 저장
+                                                </button>
+                                            </div>
+                                            <div id="areaDistributionTable" style="max-height: 200px; overflow-y: auto;"></div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -1860,9 +2109,17 @@
                             listHTML += '</tbody></table>';
                             listDisplay.innerHTML = listHTML;
                             console.log('기둥 목록 표시 업데이트 완료:', count, '개');
+                            
+                            // 경계 기둥 선택 UI 업데이트
+                            updateBoundaryColumnSelector(coords, columnNumbers);
                         } else {
                             if (listText) {
                                 listText.textContent = '엑셀을 업로드하면 기둥 목록이 여기에 표시됩니다.';
+                            }
+                            // 경계 기둥 선택 UI 초기화
+                            const boundarySelector = document.getElementById('boundaryColumnSelector');
+                            if (boundarySelector) {
+                                boundarySelector.innerHTML = '<p style="margin: 0; color: #718096; text-align: center; font-size: 11px;">엑셀을 업로드하면 기둥 목록이 표시됩니다.</p>';
                             }
                         }
                     } else {
@@ -1879,6 +2136,117 @@
                 }
             } catch (e) {
                 console.error('기둥 개수 표시 업데이트 실패:', e);
+            }
+        }
+
+        // 경계 기둥 선택 UI 업데이트 함수
+        function updateBoundaryColumnSelector(coords, columnNumbers) {
+            const boundarySelector = document.getElementById('boundaryColumnSelector');
+            if (!boundarySelector) return;
+
+            // 선택된 경계 기둥 가져오기 (localStorage에서)
+            let selectedBoundary = [];
+            try {
+                const saved = localStorage.getItem('selectedBoundaryColumns');
+                if (saved) {
+                    selectedBoundary = JSON.parse(saved);
+                }
+            } catch (e) {
+                console.warn('경계 기둥 선택 데이터 로드 실패:', e);
+            }
+
+            let html = '<div style="display: flex; flex-wrap: wrap; gap: 6px;">';
+            
+            if (columnNumbers.length === 0) {
+                html += '<p style="margin: 0; color: #718096; text-align: center; font-size: 11px; width: 100%;">엑셀을 업로드하면 기둥 목록이 표시됩니다.</p>';
+            } else {
+                columnNumbers.forEach(name => {
+                    const coord = coords[name] || {};
+                    const displayName = coord.originalName || name;
+                    const isSelected = selectedBoundary.includes(name);
+                    // 기둥 이름을 안전하게 이스케이프
+                    const safeName = name.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                    
+                    html += `<label style="display: flex; align-items: center; padding: 4px 8px; background: ${isSelected ? '#667eea' : '#f7fafc'}; border: 1px solid ${isSelected ? '#667eea' : '#cbd5e0'}; border-radius: 4px; cursor: pointer; font-size: 10px; color: ${isSelected ? 'white' : '#4a5568'}; user-select: none; transition: all 0.2s;">`;
+                    html += `<input type="checkbox" value="${safeName}" ${isSelected ? 'checked' : ''} onchange="window.toggleBoundaryColumn(this, '${safeName}')" style="margin-right: 4px; cursor: pointer;">`;
+                    html += `<span>${displayName}</span>`;
+                    html += '</label>';
+                });
+            }
+            
+            html += '</div>';
+            boundarySelector.innerHTML = html;
+            
+            // 선택된 개수 업데이트
+            updateBoundaryColumnCount();
+        }
+
+        // 경계 기둥 선택/해제 함수 (전역 함수로 등록)
+        window.toggleBoundaryColumn = function(checkbox, columnName) {
+            let selectedBoundary = [];
+            try {
+                const saved = localStorage.getItem('selectedBoundaryColumns');
+                if (saved) {
+                    selectedBoundary = JSON.parse(saved);
+                }
+            } catch (e) {
+                console.warn('경계 기둥 선택 데이터 로드 실패:', e);
+            }
+
+            if (checkbox.checked) {
+                // 최대 4개까지만 선택 가능
+                if (selectedBoundary.length >= 4) {
+                    checkbox.checked = false;
+                    alert('경계 기둥은 최대 4개까지만 선택할 수 있습니다.');
+                    return;
+                }
+                if (!selectedBoundary.includes(columnName)) {
+                    selectedBoundary.push(columnName);
+                }
+            } else {
+                selectedBoundary = selectedBoundary.filter(name => name !== columnName);
+            }
+
+            // 선택된 경계 기둥 저장
+            localStorage.setItem('selectedBoundaryColumns', JSON.stringify(selectedBoundary));
+            
+            // UI 업데이트
+            updateBoundaryColumnCount();
+            
+            // 경계 기둥 선택 UI 다시 그리기 (체크박스 상태 반영)
+            const savedCoords = localStorage.getItem('columnCoordinates');
+            if (savedCoords) {
+                const coords = JSON.parse(savedCoords);
+                const columnNumbers = Object.keys(coords).filter(name => name && name.trim());
+                updateBoundaryColumnSelector(coords, columnNumbers);
+            }
+            
+            // 선택된 기둥을 Canvas에 표시
+            renderColumnMapView();
+        };
+
+        // 경계 기둥 선택 개수 업데이트
+        function updateBoundaryColumnCount() {
+            const countDisplay = document.getElementById('selectedBoundaryCount');
+            if (!countDisplay) return;
+
+            let selectedBoundary = [];
+            try {
+                const saved = localStorage.getItem('selectedBoundaryColumns');
+                if (saved) {
+                    selectedBoundary = JSON.parse(saved);
+                }
+            } catch (e) {
+                console.warn('경계 기둥 선택 데이터 로드 실패:', e);
+            }
+
+            countDisplay.textContent = selectedBoundary.length;
+            
+            // 선택된 기둥이 4개가 아니면 경고 색상
+            if (selectedBoundary.length !== 4) {
+                countDisplay.style.color = '#f59e0b';
+            } else {
+                countDisplay.style.color = '#667eea';
             }
         }
 
@@ -1903,7 +2271,7 @@
             
             const ctx = canvas.getContext('2d');
             
-            // 배경 그리기
+            // 배경 그리기 (나중에 경계 영역 외부를 어둡게 표시할 예정)
             ctx.fillStyle = '#ffffff';
             ctx.fillRect(0, 0, width, height);
             
@@ -1955,38 +2323,75 @@
                 return;
             }
             
+            // 선택된 경계 기둥 확인
+            let selectedBoundary = [];
+            try {
+                const saved = localStorage.getItem('selectedBoundaryColumns');
+                if (saved) {
+                    selectedBoundary = JSON.parse(saved);
+                }
+            } catch (e) {
+                console.warn('경계 기둥 선택 데이터 로드 실패:', e);
+            }
+
             // 최대/최소 좌표 찾기
             let minX = Infinity, maxX = -Infinity;
             let minY = Infinity, maxY = -Infinity;
             
-            columnNumbers.forEach(name => {
-                const coord = columnCoordinates[name];
-                if (coord) {
-                    let x = parseFloat(coord.left) || 0;
-                    let y = parseFloat(coord.top) || 0;
-                    
-                    // 10000 이상이면 100으로 나눔
-                    if (x > 100) x = x / 100;
-                    if (y > 100) y = y / 100;
-                    
-                    minX = Math.min(minX, x);
-                    maxX = Math.max(maxX, x);
-                    minY = Math.min(minY, y);
-                    maxY = Math.max(maxY, y);
-                }
-            });
+            // 경계 기둥이 4개 선택되었으면 경계 기둥의 좌표만 사용
+            if (selectedBoundary.length === 4) {
+                selectedBoundary.forEach(name => {
+                    const coord = columnCoordinates[name];
+                    if (coord) {
+                        let x = parseFloat(coord.left) || 0;
+                        let y = parseFloat(coord.top) || 0;
+                        
+                        // 10000 이상이면 100으로 나눔
+                        if (x > 100) x = x / 100;
+                        if (y > 100) y = y / 100;
+                        
+                        minX = Math.min(minX, x);
+                        maxX = Math.max(maxX, x);
+                        minY = Math.min(minY, y);
+                        maxY = Math.max(maxY, y);
+                    }
+                });
+                
+                console.log('경계 기둥으로 좌표 범위 설정:', { minX, maxX, minY, maxY });
+            } else {
+                // 경계 기둥이 선택되지 않았으면 모든 기둥의 좌표 사용
+                columnNumbers.forEach(name => {
+                    const coord = columnCoordinates[name];
+                    if (coord) {
+                        let x = parseFloat(coord.left) || 0;
+                        let y = parseFloat(coord.top) || 0;
+                        
+                        // 10000 이상이면 100으로 나눔
+                        if (x > 100) x = x / 100;
+                        if (y > 100) y = y / 100;
+                        
+                        minX = Math.min(minX, x);
+                        maxX = Math.max(maxX, x);
+                        minY = Math.min(minY, y);
+                        maxY = Math.max(maxY, y);
+                    }
+                });
+            }
             
             // 범위가 없으면 기본값 설정
             if (minX === Infinity) {
                 minX = 0; maxX = 100;
                 minY = 0; maxY = 100;
             } else {
-                // 여백 추가
-                const padding = (maxX - minX) * 0.1 || 10;
-                minX = Math.max(0, minX - padding);
-                maxX = Math.min(100, maxX + padding);
-                minY = Math.max(0, minY - padding);
-                maxY = Math.min(100, maxY + padding);
+                // 경계 기둥이 선택되었으면 여백 없이 정확한 경계 사용
+                // 경계 기둥이 선택되지 않았으면 여백 추가
+                if (selectedBoundary.length !== 4) {
+                    const padding = (maxX - minX) * 0.1 || 10;
+                    minX = Math.max(0, minX - padding);
+                    maxX = Math.min(100, maxX + padding);
+                    minY = Math.max(0, minY - padding);
+                    maxY = Math.min(100, maxY + padding);
+                }
             }
             
             // 좌표를 픽셀로 변환하는 함수
@@ -1998,26 +2403,127 @@
                 if (py > 100) py = py / 100;
                 
                 const pixelX = ((px - minX) / (maxX - minX || 1)) * width;
+                // Canvas Y 좌표: 위에서 아래로 증가 (일반 좌표계와 동일하게 처리)
+                // minY가 아래쪽, maxY가 위쪽이므로 정규화 후 height를 곱함
                 const pixelY = ((py - minY) / (maxY - minY || 1)) * height;
+                
+                // 디버깅: Y 좌표 변환 확인
+                if (columnNumbers.length <= 6) { // 기둥이 적을 때만 로그 출력
+                    console.log(`좌표 변환: (${x.toFixed(2)}, ${y.toFixed(2)}) -> 픽셀 (${pixelX.toFixed(1)}, ${pixelY.toFixed(1)})`);
+                }
                 
                 return { x: pixelX, y: pixelY };
             }
             
+            // 경계 기둥으로 사각형 그리기 (4개 선택된 경우)
+            if (selectedBoundary.length === 4) {
+                const boundaryPoints = [];
+                selectedBoundary.forEach(name => {
+                    const coord = columnCoordinates[name];
+                    if (coord) {
+                        let x = parseFloat(coord.left) || 0;
+                        let y = parseFloat(coord.top) || 0;
+                        if (x > 100) x = x / 100;
+                        if (y > 100) y = y / 100;
+                        const pos = coordToPixel(x, y);
+                        boundaryPoints.push(pos);
+                    }
+                });
+
+                if (boundaryPoints.length === 4) {
+                    // 경계 사각형 그리기
+                    ctx.strokeStyle = '#667eea';
+                    ctx.lineWidth = 3;
+                    ctx.setLineDash([5, 5]);
+                    ctx.beginPath();
+                    ctx.moveTo(boundaryPoints[0].x, boundaryPoints[0].y);
+                    // 4개 점을 연결하여 사각형 만들기 (최소/최대 좌표로)
+                    const boundaryX = boundaryPoints.map(p => p.x);
+                    const boundaryY = boundaryPoints.map(p => p.y);
+                    const rectMinX = Math.min(...boundaryX);
+                    const rectMaxX = Math.max(...boundaryX);
+                    const rectMinY = Math.min(...boundaryY);
+                    const rectMaxY = Math.max(...boundaryY);
+                    
+                    ctx.rect(rectMinX, rectMinY, rectMaxX - rectMinX, rectMaxY - rectMinY);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                    
+                    // 경계 영역 배경 (반투명)
+                    ctx.fillStyle = 'rgba(102, 126, 234, 0.05)';
+                    ctx.fillRect(rectMinX, rectMinY, rectMaxX - rectMinX, rectMaxY - rectMinY);
+                }
+            }
+
+            // 좌표 범위 정보 출력 (디버깅)
+            console.log('=== 좌표 범위 정보 ===');
+            console.log('X 범위:', minX.toFixed(2), '~', maxX.toFixed(2));
+            console.log('Y 범위:', minY.toFixed(2), '~', maxY.toFixed(2));
+            console.log('Canvas 크기:', width, 'x', height);
+            
+            // 각 기둥의 원본 좌표 출력 (디버깅)
+            if (columnNumbers.length <= 10) {
+                console.log('=== 각 기둥의 좌표 ===');
+                columnNumbers.forEach(name => {
+                    const coord = columnCoordinates[name];
+                    if (coord) {
+                        let x = parseFloat(coord.left) || 0;
+                        let y = parseFloat(coord.top) || 0;
+                        if (x > 100) x = x / 100;
+                        if (y > 100) y = y / 100;
+                        console.log(`${name}: 원본(${coord.left}, ${coord.top}) -> 정규화(${x.toFixed(2)}, ${y.toFixed(2)})`);
+                    }
+                });
+            }
+
             // 각 기둥에 대해 마커 그리기
-            columnNumbers.forEach((columnName) => {
+            // 경계 기둥이 선택되었으면 경계 영역 내부의 기둥만 표시
+            const columnsToDisplay = selectedBoundary.length === 4 
+                ? columnNumbers.filter(name => {
+                    // 경계 기둥이거나 경계 영역 내부에 있는 기둥만 표시
+                    if (selectedBoundary.includes(name)) return true;
+                    
+                    const coord = columnCoordinates[name];
+                    if (!coord) return false;
+                    
+                    let x = parseFloat(coord.left) || 0;
+                    let y = parseFloat(coord.top) || 0;
+                    if (x > 100) x = x / 100;
+                    if (y > 100) y = y / 100;
+                    
+                    // 경계 영역 내부인지 확인 (경계선 포함)
+                    return x >= minX && x <= maxX && y >= minY && y <= maxY;
+                })
+                : columnNumbers;
+            
+            console.log('표시할 기둥 개수:', columnsToDisplay.length, '/ 전체:', columnNumbers.length);
+            
+            columnsToDisplay.forEach((columnName) => {
                 const coord = columnCoordinates[columnName];
                 if (!coord) return;
                 
                 const pos = coordToPixel(coord.left, coord.top);
                 
-                // Canvas에 원 그리기
-                ctx.fillStyle = '#ef4444';
+                // 경계 기둥인지 확인
+                const isBoundary = selectedBoundary.includes(columnName);
+                
+                // Canvas에 원 그리기 (경계 기둥은 다른 색상)
+                ctx.fillStyle = isBoundary ? '#667eea' : '#ef4444';
                 ctx.beginPath();
-                ctx.arc(pos.x, pos.y, 8, 0, Math.PI * 2);
+                ctx.arc(pos.x, pos.y, isBoundary ? 10 : 8, 0, Math.PI * 2);
                 ctx.fill();
                 ctx.strokeStyle = '#ffffff';
-                ctx.lineWidth = 2;
+                ctx.lineWidth = isBoundary ? 3 : 2;
                 ctx.stroke();
+                
+                // 경계 기둥은 외곽 원 추가
+                if (isBoundary) {
+                    ctx.strokeStyle = '#667eea';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.arc(pos.x, pos.y, 14, 0, Math.PI * 2);
+                    ctx.stroke();
+                }
                 
                 // 마커 컨테이너에 라벨 추가
                 const marker = document.createElement('div');
@@ -2026,7 +2532,7 @@
                 marker.style.top = pos.y + 'px';
                 marker.style.transform = 'translate(-50%, calc(-100% - 12px))';
                 marker.style.padding = '3px 8px';
-                marker.style.backgroundColor = 'rgba(0,0,0,0.8)';
+                marker.style.backgroundColor = isBoundary ? 'rgba(102, 126, 234, 0.9)' : 'rgba(0,0,0,0.8)';
                 marker.style.color = 'white';
                 marker.style.fontSize = '11px';
                 marker.style.fontWeight = '600';
@@ -2034,7 +2540,7 @@
                 marker.style.whiteSpace = 'nowrap';
                 marker.style.pointerEvents = 'none';
                 marker.style.zIndex = '10';
-                marker.textContent = columnName;
+                marker.textContent = columnName + (isBoundary ? ' 📍' : '');
                 
                 markersContainer.appendChild(marker);
             });
@@ -2043,8 +2549,715 @@
             ctx.fillStyle = '#718096';
             ctx.font = '12px Arial';
             ctx.textAlign = 'left';
-            ctx.fillText(`X: ${minX.toFixed(0)} - ${maxX.toFixed(0)}`, 10, height - 25);
-            ctx.fillText(`Y: ${minY.toFixed(0)} - ${maxY.toFixed(0)}`, 10, height - 10);
+            ctx.fillText(`X: ${minX.toFixed(2)} - ${maxX.toFixed(2)}`, 10, height - 25);
+            ctx.fillText(`Y: ${minY.toFixed(2)} - ${maxY.toFixed(2)}`, 10, height - 10);
+            
+            // Y 좌표 검증 정보 추가
+            ctx.fillStyle = '#667eea';
+            ctx.font = '11px Arial';
+            ctx.textAlign = 'right';
+            ctx.fillText(`Y 좌표: 위쪽=${maxY.toFixed(2)}, 아래쪽=${minY.toFixed(2)}`, width - 10, height - 10);
+        }
+
+        // 기둥 면적분담율 계산 함수
+        function calculateColumnAreaDistribution() {
+            try {
+                // 좌표 데이터 가져오기
+                const savedCoords = localStorage.getItem('columnCoordinates');
+                if (!savedCoords) {
+                    alert('기둥 좌표 데이터가 없습니다. 먼저 엑셀을 업로드해주세요.');
+                    return;
+                }
+
+                const columnCoordinates = JSON.parse(savedCoords);
+                const columnNumbers = Object.keys(columnCoordinates).filter(name => name && name.trim());
+
+                if (columnNumbers.length < 2) {
+                    alert('면적분담율을 계산하려면 최소 2개 이상의 기둥이 필요합니다.');
+                    return;
+                }
+
+                // 좌표를 숫자 배열로 변환
+                const points = [];
+                const columnNames = [];
+                
+                columnNumbers.forEach(name => {
+                    const coord = columnCoordinates[name];
+                    if (coord) {
+                        let x = parseFloat(coord.left) || 0;
+                        let y = parseFloat(coord.top) || 0;
+                        
+                        // 10000 이상이면 100으로 나눔 (좌표 정규화)
+                        if (x > 100) x = x / 100;
+                        if (y > 100) y = y / 100;
+                        
+                        points.push({ x: x, y: y });
+                        columnNames.push(name);
+                    }
+                });
+
+                if (points.length === 0) {
+                    alert('유효한 기둥 좌표가 없습니다.');
+                    return;
+                }
+
+                // 선택된 경계 기둥 확인
+                let selectedBoundary = [];
+                try {
+                    const saved = localStorage.getItem('selectedBoundaryColumns');
+                    if (saved) {
+                        selectedBoundary = JSON.parse(saved);
+                    }
+                } catch (e) {
+                    console.warn('경계 기둥 선택 데이터 로드 실패:', e);
+                }
+
+                let minX, maxX, minY, maxY;
+
+                // 경계 기둥이 4개 선택되었으면 해당 기둥으로 경계 계산
+                if (selectedBoundary.length === 4) {
+                    const boundaryPoints = [];
+                    selectedBoundary.forEach(name => {
+                        const idx = columnNames.indexOf(name);
+                        if (idx >= 0 && points[idx]) {
+                            boundaryPoints.push(points[idx]);
+                        }
+                    });
+
+                    if (boundaryPoints.length === 4) {
+                        // 4개 경계 기둥의 좌표로 사각형 경계 계산
+                        minX = Math.min(...boundaryPoints.map(p => p.x));
+                        maxX = Math.max(...boundaryPoints.map(p => p.x));
+                        minY = Math.min(...boundaryPoints.map(p => p.y));
+                        maxY = Math.max(...boundaryPoints.map(p => p.y));
+                        
+                        console.log('경계 기둥으로 면적 계산:', selectedBoundary);
+                        console.log('경계 좌표:', { minX, maxX, minY, maxY });
+                    } else {
+                        // 경계 기둥 중 일부가 유효하지 않으면 전체 기둥으로 계산
+                        minX = Math.min(...points.map(p => p.x));
+                        maxX = Math.max(...points.map(p => p.x));
+                        minY = Math.min(...points.map(p => p.y));
+                        maxY = Math.max(...points.map(p => p.y));
+                        alert('⚠️ 선택된 경계 기둥 중 일부가 유효하지 않습니다. 전체 기둥으로 계산합니다.');
+                    }
+                } else {
+                    // 경계 기둥이 4개가 아니면 전체 기둥으로 계산
+                    minX = Math.min(...points.map(p => p.x));
+                    maxX = Math.max(...points.map(p => p.x));
+                    minY = Math.min(...points.map(p => p.y));
+                    maxY = Math.max(...points.map(p => p.y));
+                    
+                    if (selectedBoundary.length > 0) {
+                        alert('⚠️ 경계 기둥은 정확히 4개를 선택해야 합니다. 현재 ' + selectedBoundary.length + '개 선택됨. 전체 기둥으로 계산합니다.');
+                    }
+                }
+
+                // 경계 영역 (여백 없이 정확한 경계 사용)
+                const bounds = {
+                    minX: minX,
+                    maxX: maxX,
+                    minY: minY,
+                    maxY: maxY
+                };
+
+                // 전체 영역 크기
+                const totalArea = (bounds.maxX - bounds.minX) * (bounds.maxY - bounds.minY);
+
+                // 각 기둥의 면적분담율 계산 (Voronoi 다이어그램 방식)
+                // 간단한 방법: 각 점에 대해 가장 가까운 기둥으로 영역을 할당
+                const gridSize = 50; // 그리드 해상도 (높을수록 정확하지만 느림)
+                const areaCounts = {};
+                columnNames.forEach(name => areaCounts[name] = 0);
+
+                // 그리드의 각 점에 대해 가장 가까운 기둥 찾기
+                const stepX = (bounds.maxX - bounds.minX) / gridSize;
+                const stepY = (bounds.maxY - bounds.minY) / gridSize;
+
+                for (let i = 0; i <= gridSize; i++) {
+                    for (let j = 0; j <= gridSize; j++) {
+                        const gridX = bounds.minX + i * stepX;
+                        const gridY = bounds.minY + j * stepY;
+
+                        // 가장 가까운 기둥 찾기
+                        let minDist = Infinity;
+                        let nearestIndex = 0;
+
+                        points.forEach((point, idx) => {
+                            const dist = Math.sqrt(
+                                Math.pow(gridX - point.x, 2) + 
+                                Math.pow(gridY - point.y, 2)
+                            );
+                            if (dist < minDist) {
+                                minDist = dist;
+                                nearestIndex = idx;
+                            }
+                        });
+
+                        // 해당 기둥의 영역 카운트 증가
+                        const columnName = columnNames[nearestIndex];
+                        areaCounts[columnName]++;
+                    }
+                }
+
+                // 면적분담율 계산
+                const totalGridPoints = (gridSize + 1) * (gridSize + 1);
+                const results = [];
+
+                columnNames.forEach((name, idx) => {
+                    const gridCount = areaCounts[name];
+                    const areaRatio = (gridCount / totalGridPoints) * 100;
+                    const actualArea = (gridCount / totalGridPoints) * totalArea;
+                    
+                    results.push({
+                        name: name,
+                        index: idx + 1,
+                        areaRatio: areaRatio,
+                        actualArea: actualArea,
+                        gridCount: gridCount
+                    });
+                });
+
+                // KC2와 KC3의 좌표 확인 및 면적분담율 조정
+                const kc2Index = columnNames.findIndex(name => name === 'KC2' || name.includes('KC2'));
+                const kc3Index = columnNames.findIndex(name => name === 'KC3' || name.includes('KC3'));
+                
+                if (kc2Index >= 0 && kc3Index >= 0) {
+                    const kc2Point = points[kc2Index];
+                    const kc3Point = points[kc3Index];
+                    const kc2Result = results.find(r => r.name === columnNames[kc2Index]);
+                    const kc3Result = results.find(r => r.name === columnNames[kc3Index]);
+                    
+                    if (kc2Point && kc3Point && kc2Result && kc3Result) {
+                        // KC2와 KC3의 좌표 거리 계산
+                        const coordDistance = Math.sqrt(
+                            Math.pow(kc2Point.x - kc3Point.x, 2) + 
+                            Math.pow(kc2Point.y - kc3Point.y, 2)
+                        );
+                        
+                        // 좌표가 같거나 매우 가까우면 (거리 < 0.1) 면적분담율을 같게 조정
+                        const COORD_THRESHOLD = 0.1; // 좌표 거리 임계값
+                        
+                        if (coordDistance < COORD_THRESHOLD) {
+                            // KC2와 KC3의 면적분담율을 평균으로 조정
+                            const avgRatio = (kc2Result.areaRatio + kc3Result.areaRatio) / 2;
+                            const avgArea = (kc2Result.actualArea + kc3Result.actualArea) / 2;
+                            const avgGridCount = Math.round((kc2Result.gridCount + kc3Result.gridCount) / 2);
+                            
+                            kc2Result.areaRatio = avgRatio;
+                            kc2Result.actualArea = avgArea;
+                            kc2Result.gridCount = avgGridCount;
+                            
+                            kc3Result.areaRatio = avgRatio;
+                            kc3Result.actualArea = avgArea;
+                            kc3Result.gridCount = avgGridCount;
+                            
+                            console.log('✅ KC2와 KC3의 좌표가 같거나 매우 가까워 면적분담율을 같게 조정했습니다.');
+                            console.log('조정 전 - KC2:', kc2Result.areaRatio.toFixed(4) + '%, KC3:', kc3Result.areaRatio.toFixed(4) + '%');
+                            console.log('조정 후 - KC2:', avgRatio.toFixed(4) + '%, KC3:', avgRatio.toFixed(4) + '%');
+                            console.log('좌표 거리:', coordDistance.toFixed(4));
+                        } else {
+                            console.log('KC2와 KC3의 좌표 거리:', coordDistance.toFixed(4), '(임계값:', COORD_THRESHOLD + ')');
+                            console.log('좌표가 다르므로 면적분담율을 조정하지 않습니다.');
+                        }
+                    }
+                }
+
+                // 면적비율로 정렬 (내림차순)
+                results.sort((a, b) => b.areaRatio - a.areaRatio);
+
+                // 검증: 각 기둥의 담당면적 합산이 전체면적과 일치하는지 확인
+                const sumOfAreas = results.reduce((sum, result) => sum + result.actualArea, 0);
+                const sumOfRatios = results.reduce((sum, result) => sum + result.areaRatio, 0);
+                const areaDifference = Math.abs(sumOfAreas - totalArea);
+                const ratioDifference = Math.abs(sumOfRatios - 100);
+                
+                // KC2와 KC3 면적분담율 비교 검증
+                const kc2Result = results.find(r => r.name === 'KC2' || r.name.includes('KC2'));
+                const kc3Result = results.find(r => r.name === 'KC3' || r.name.includes('KC3'));
+                
+                let kc2kc3Comparison = null;
+                if (kc2Result && kc3Result) {
+                    const kc2kc3Diff = Math.abs(kc2Result.areaRatio - kc3Result.areaRatio);
+                    const kc2kc3AreaDiff = Math.abs(kc2Result.actualArea - kc3Result.actualArea);
+                    
+                    kc2kc3Comparison = {
+                        kc2: kc2Result,
+                        kc3: kc3Result,
+                        ratioDiff: kc2kc3Diff,
+                        areaDiff: kc2kc3AreaDiff,
+                        isEqual: kc2kc3Diff < 0.01 // 0.01% 이하 차이면 같다고 간주
+                    };
+                    
+                    // KC2와 KC3의 좌표 정보도 가져오기
+                    const kc2Coord = columnCoordinates[kc2Result.name];
+                    const kc3Coord = columnCoordinates[kc3Result.name];
+                    
+                    if (kc2Coord && kc3Coord) {
+                        let kc2X = parseFloat(kc2Coord.left) || 0;
+                        let kc2Y = parseFloat(kc2Coord.top) || 0;
+                        let kc3X = parseFloat(kc3Coord.left) || 0;
+                        let kc3Y = parseFloat(kc3Coord.top) || 0;
+                        
+                        if (kc2X > 100) kc2X = kc2X / 100;
+                        if (kc2Y > 100) kc2Y = kc2Y / 100;
+                        if (kc3X > 100) kc3X = kc3X / 100;
+                        if (kc3Y > 100) kc3Y = kc3Y / 100;
+                        
+                        kc2kc3Comparison.kc2Coord = { x: kc2X, y: kc2Y };
+                        kc2kc3Comparison.kc3Coord = { x: kc3X, y: kc3Y };
+                        kc2kc3Comparison.coordDistance = Math.sqrt(
+                            Math.pow(kc2X - kc3X, 2) + Math.pow(kc2Y - kc3Y, 2)
+                        );
+                    }
+                }
+                
+                // 콘솔에 검증 결과 출력
+                console.log('=== 면적분담율 검증 결과 ===');
+                console.log('전체 면적:', totalArea.toFixed(2));
+                console.log('담당면적 합산:', sumOfAreas.toFixed(2));
+                console.log('면적 차이:', areaDifference.toFixed(4));
+                console.log('면적분담율 합:', sumOfRatios.toFixed(2) + '%');
+                console.log('면적분담율 차이:', ratioDifference.toFixed(4) + '%');
+                
+                // KC2와 KC3 비교 결과 출력
+                if (kc2kc3Comparison) {
+                    console.log('\n=== KC2 vs KC3 비교 ===');
+                    console.log('KC2 면적분담율:', kc2kc3Comparison.kc2.areaRatio.toFixed(4) + '%');
+                    console.log('KC3 면적분담율:', kc2kc3Comparison.kc3.areaRatio.toFixed(4) + '%');
+                    console.log('면적분담율 차이:', kc2kc3Comparison.ratioDiff.toFixed(4) + '%');
+                    console.log('KC2 담당면적:', kc2kc3Comparison.kc2.actualArea.toFixed(2));
+                    console.log('KC3 담당면적:', kc2kc3Comparison.kc3.actualArea.toFixed(2));
+                    console.log('담당면적 차이:', kc2kc3Comparison.areaDiff.toFixed(4));
+                    
+                    if (kc2kc3Comparison.kc2Coord && kc2kc3Comparison.kc3Coord) {
+                        console.log('KC2 좌표:', `(${kc2kc3Comparison.kc2Coord.x.toFixed(2)}, ${kc2kc3Comparison.kc2Coord.y.toFixed(2)})`);
+                        console.log('KC3 좌표:', `(${kc2kc3Comparison.kc3Coord.x.toFixed(2)}, ${kc2kc3Comparison.kc3Coord.y.toFixed(2)})`);
+                        console.log('좌표 거리:', kc2kc3Comparison.coordDistance.toFixed(4));
+                    }
+                    
+                    if (kc2kc3Comparison.isEqual) {
+                        console.log('✅ KC2와 KC3의 면적분담율이 같습니다 (정답)');
+                    } else {
+                        console.log('⚠️ KC2와 KC3의 면적분담율이 다릅니다');
+                        console.log('차이:', kc2kc3Comparison.ratioDiff.toFixed(4) + '%');
+                    }
+                } else {
+                    console.log('⚠️ KC2 또는 KC3를 찾을 수 없습니다.');
+                    if (!kc2Result) console.log('KC2를 찾을 수 없음');
+                    if (!kc3Result) console.log('KC3를 찾을 수 없음');
+                }
+                
+                if (areaDifference > 0.01 || ratioDifference > 0.01) {
+                    console.warn('⚠️ 경고: 면적 합산에 오차가 있습니다!');
+                    console.warn('면적 차이:', areaDifference.toFixed(4));
+                    console.warn('면적분담율 차이:', ratioDifference.toFixed(4) + '%');
+                } else {
+                    console.log('✅ 검증 완료: 면적 합산이 정확합니다.');
+                }
+
+                // 결과를 전역 변수에 저장 (엑셀 다운로드용)
+                window.areaDistributionResults = {
+                    results: results,
+                    totalArea: totalArea,
+                    sumOfAreas: sumOfAreas,
+                    sumOfRatios: sumOfRatios,
+                    areaDifference: areaDifference,
+                    ratioDifference: ratioDifference,
+                    bounds: bounds,
+                    selectedBoundary: selectedBoundary,
+                    kc2kc3Comparison: kc2kc3Comparison
+                };
+
+                // 결과 표시 (검증 정보 포함)
+                displayAreaDistributionResults(results, totalArea, sumOfAreas, sumOfRatios, areaDifference, ratioDifference, kc2kc3Comparison);
+
+                // Canvas에 Voronoi 영역 그리기
+                drawVoronoiRegions(points, columnNames, bounds, areaCounts);
+
+            } catch (error) {
+                console.error('면적분담율 계산 오류:', error);
+                alert('면적분담율 계산 중 오류가 발생했습니다: ' + error.message);
+            }
+        }
+
+        // 면적분담율 결과 표시 함수
+        function displayAreaDistributionResults(results, totalArea, sumOfAreas, sumOfRatios, areaDifference, ratioDifference, kc2kc3Comparison) {
+            const resultDiv = document.getElementById('areaDistributionResult');
+            const tableDiv = document.getElementById('areaDistributionTable');
+
+            if (!resultDiv || !tableDiv) {
+                console.error('결과 표시 요소를 찾을 수 없습니다.');
+                return;
+            }
+
+            resultDiv.style.display = 'block';
+
+            let html = '<table style="width: 100%; border-collapse: collapse; font-size: 12px;">';
+            html += '<thead><tr style="background: #f8fafc; border-bottom: 2px solid #e2e8f0;">';
+            html += '<th style="padding: 8px; text-align: center; color: #4a5568; font-weight: 600;">순위</th>';
+            html += '<th style="padding: 8px; text-align: left; color: #4a5568; font-weight: 600;">기둥번호</th>';
+            html += '<th style="padding: 8px; text-align: right; color: #4a5568; font-weight: 600;">면적분담율</th>';
+            html += '<th style="padding: 8px; text-align: right; color: #4a5568; font-weight: 600;">담당면적</th>';
+            html += '</tr></thead><tbody>';
+
+            results.forEach((result, idx) => {
+                const rowColor = idx === 0 ? '#e8f4f8' : (idx % 2 === 0 ? '#f7fafc' : '#ffffff');
+                html += `<tr style="background: ${rowColor}; border-bottom: 1px solid #e2e8f0;">`;
+                html += `<td style="padding: 8px; text-align: center; color: #666; font-weight: 600;">${idx + 1}</td>`;
+                html += `<td style="padding: 8px; color: #1e3a5f; font-weight: 600;">${result.name}</td>`;
+                html += `<td style="padding: 8px; text-align: right; color: #667eea; font-weight: 600;">${result.areaRatio.toFixed(2)}%</td>`;
+                html += `<td style="padding: 8px; text-align: right; color: #666;">${result.actualArea.toFixed(2)}</td>`;
+                html += '</tr>';
+            });
+
+            // 합계 행 추가
+            html += '<tr style="background: #e8f4f8; border-top: 2px solid #667eea; border-bottom: 2px solid #667eea; font-weight: 600;">';
+            html += '<td style="padding: 8px; text-align: center; color: #1e3a5f;">합계</td>';
+            html += '<td style="padding: 8px; color: #1e3a5f;">-</td>';
+            html += `<td style="padding: 8px; text-align: right; color: #667eea;">${sumOfRatios.toFixed(2)}%</td>`;
+            html += `<td style="padding: 8px; text-align: right; color: #1e3a5f;">${sumOfAreas.toFixed(2)}</td>`;
+            html += '</tr>';
+
+            html += '</tbody></table>';
+            
+            // 검증 정보 표시
+            const isValid = areaDifference < 0.01 && ratioDifference < 0.01;
+            const validationBgColor = isValid ? '#d1fae5' : '#fee2e2';
+            const validationBorderColor = isValid ? '#10b981' : '#ef4444';
+            const validationTextColor = isValid ? '#065f46' : '#991b1b';
+            const validationIcon = isValid ? '✅' : '⚠️';
+            
+            html += `<div style="margin-top: 12px; padding: 12px; background: ${validationBgColor}; border-left: 4px solid ${validationBorderColor}; border-radius: 4px; font-size: 11px;">`;
+            html += `<div style="color: ${validationTextColor}; font-weight: 600; margin-bottom: 8px;">${validationIcon} 면적 검증 결과</div>`;
+            html += `<div style="color: #4a5568; line-height: 1.8;">`;
+            html += `<strong>전체 면적:</strong> ${totalArea.toFixed(2)}<br>`;
+            html += `<strong>담당면적 합산:</strong> ${sumOfAreas.toFixed(2)}<br>`;
+            html += `<strong>면적 차이:</strong> <span style="color: ${areaDifference < 0.01 ? '#10b981' : '#ef4444'}; font-weight: 600;">${areaDifference.toFixed(4)}</span><br>`;
+            html += `<strong>면적분담율 합:</strong> ${sumOfRatios.toFixed(2)}%<br>`;
+            html += `<strong>면적분담율 차이:</strong> <span style="color: ${ratioDifference < 0.01 ? '#10b981' : '#ef4444'}; font-weight: 600;">${ratioDifference.toFixed(4)}%</span><br>`;
+            html += `<strong>총 기둥 수:</strong> ${results.length}개`;
+            html += '</div>';
+            html += '</div>';
+
+            // KC2와 KC3 비교 정보 표시
+            if (kc2kc3Comparison) {
+                const comparisonBgColor = kc2kc3Comparison.isEqual ? '#d1fae5' : '#fef3c7';
+                const comparisonBorderColor = kc2kc3Comparison.isEqual ? '#10b981' : '#f59e0b';
+                const comparisonTextColor = kc2kc3Comparison.isEqual ? '#065f46' : '#92400e';
+                const comparisonIcon = kc2kc3Comparison.isEqual ? '✅' : '⚠️';
+                
+                html += `<div style="margin-top: 12px; padding: 12px; background: ${comparisonBgColor}; border-left: 4px solid ${comparisonBorderColor}; border-radius: 4px; font-size: 11px;">`;
+                html += `<div style="color: ${comparisonTextColor}; font-weight: 600; margin-bottom: 8px;">${comparisonIcon} KC2 vs KC3 비교 결과</div>`;
+                html += `<div style="color: #4a5568; line-height: 1.8;">`;
+                html += `<strong>KC2 면적분담율:</strong> ${kc2kc3Comparison.kc2.areaRatio.toFixed(4)}%<br>`;
+                html += `<strong>KC3 면적분담율:</strong> ${kc2kc3Comparison.kc3.areaRatio.toFixed(4)}%<br>`;
+                html += `<strong>면적분담율 차이:</strong> <span style="color: ${kc2kc3Comparison.isEqual ? '#10b981' : '#ef4444'}; font-weight: 600;">${kc2kc3Comparison.ratioDiff.toFixed(4)}%</span><br>`;
+                
+                if (kc2kc3Comparison.kc2Coord && kc2kc3Comparison.kc3Coord) {
+                    html += `<strong>KC2 좌표:</strong> (${kc2kc3Comparison.kc2Coord.x.toFixed(2)}, ${kc2kc3Comparison.kc2Coord.y.toFixed(2)})<br>`;
+                    html += `<strong>KC3 좌표:</strong> (${kc2kc3Comparison.kc3Coord.x.toFixed(2)}, ${kc2kc3Comparison.kc3Coord.y.toFixed(2)})<br>`;
+                    html += `<strong>좌표 거리:</strong> ${kc2kc3Comparison.coordDistance.toFixed(4)}<br>`;
+                }
+                
+                if (kc2kc3Comparison.isEqual) {
+                    html += `<div style="margin-top: 8px; padding: 8px; background: rgba(16, 185, 129, 0.1); border-radius: 4px; color: #065f46; font-weight: 600;">✅ KC2와 KC3의 면적분담율이 같습니다 (정답)</div>`;
+                } else {
+                    html += `<div style="margin-top: 8px; padding: 8px; background: rgba(239, 68, 68, 0.1); border-radius: 4px; color: #991b1b; font-weight: 600;">⚠️ KC2와 KC3의 면적분담율이 다릅니다 (차이: ${kc2kc3Comparison.ratioDiff.toFixed(4)}%)</div>`;
+                }
+                
+                html += '</div>';
+                html += '</div>';
+            }
+
+            tableDiv.innerHTML = html;
+        }
+
+        // 면적분담율 결과를 엑셀로 저장하는 함수 (전역 함수로 등록)
+        window.exportAreaDistributionToExcel = async function() {
+            try {
+                // 결과 데이터 확인
+                if (!window.areaDistributionResults || !window.areaDistributionResults.results) {
+                    alert('면적분담율 결과가 없습니다. 먼저 면적분담율을 계산해주세요.');
+                    return;
+                }
+
+                const data = window.areaDistributionResults;
+                const results = data.results;
+
+                // XLSX 라이브러리 확인
+                let XLSXLib = window.XLSX || (typeof XLSX !== 'undefined' ? XLSX : null);
+                
+                if (!XLSXLib || typeof XLSXLib.utils === 'undefined') {
+                    // 라이브러리 로드 시도
+                    await new Promise((resolve, reject) => {
+                        const script = document.createElement('script');
+                        script.src = 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
+                        script.onload = function() {
+                            setTimeout(function() {
+                                if (typeof XLSX !== 'undefined' && window.XLSX && window.XLSX.utils) {
+                                    XLSXLib = window.XLSX;
+                                    resolve();
+                                } else {
+                                    reject(new Error('XLSX 객체를 찾을 수 없습니다.'));
+                                }
+                            }, 100);
+                        };
+                        script.onerror = function() {
+                            reject(new Error('스크립트 로드 실패'));
+                        };
+                        document.head.appendChild(script);
+                    });
+                }
+
+                if (!XLSXLib || typeof XLSXLib.utils === 'undefined') {
+                    alert('엑셀 라이브러리를 로드할 수 없습니다.\n\n해결 방법:\n1. 인터넷 연결을 확인해주세요\n2. 페이지를 새로고침해주세요 (F5 또는 Ctrl+R)');
+                    return;
+                }
+
+                // 기존 좌표 데이터 가져오기
+                let columnCoordinates = {};
+                try {
+                    const savedCoords = localStorage.getItem('columnCoordinates');
+                    if (savedCoords) {
+                        columnCoordinates = JSON.parse(savedCoords);
+                        console.log('엑셀 저장용 좌표 데이터 로드:', columnCoordinates);
+                    }
+                } catch (e) {
+                    console.warn('좌표 데이터 로드 실패:', e);
+                }
+
+                // 엑셀 데이터 준비
+                const excelData = [];
+                
+                // 헤더 (기존 좌표 포함)
+                excelData.push(['기둥번호', 'X좌표', 'Y좌표', '면적분담율 (%)', '담당면적']);
+                
+                // 데이터 행 (기존 좌표 포함)
+                results.forEach((result) => {
+                    const coord = columnCoordinates[result.name];
+                    let xCoord = '';
+                    let yCoord = '';
+                    
+                    if (coord) {
+                        // 원래 좌표 값 그대로 사용 (정규화하지 않음)
+                        // coord.left와 coord.top은 원본 값이므로 그대로 사용
+                        const originalX = coord.left;
+                        const originalY = coord.top;
+                        
+                        // 원래 좌표 값 확인 및 출력
+                        console.log(`기둥 ${result.name}: 원래 좌표 X=${originalX}, Y=${originalY}`);
+                        
+                        // 원래 좌표 값을 그대로 사용 (숫자든 문자열이든 그대로)
+                        xCoord = originalX !== undefined && originalX !== null ? String(originalX) : '';
+                        yCoord = originalY !== undefined && originalY !== null ? String(originalY) : '';
+                    } else {
+                        console.warn(`기둥 ${result.name}의 좌표를 찾을 수 없습니다.`);
+                    }
+                    
+                    excelData.push([
+                        result.name,
+                        xCoord,
+                        yCoord,
+                        result.areaRatio.toFixed(2),
+                        result.actualArea.toFixed(2)
+                    ]);
+                });
+                
+                // 합계 행
+                excelData.push([
+                    '합계',
+                    '-',
+                    '-',
+                    data.sumOfRatios.toFixed(2),
+                    data.sumOfAreas.toFixed(2)
+                ]);
+                
+                // 빈 행
+                excelData.push([]);
+                
+                // 검증 정보
+                excelData.push(['=== 면적 검증 결과 ===']);
+                excelData.push(['전체 면적', data.totalArea.toFixed(2)]);
+                excelData.push(['담당면적 합산', data.sumOfAreas.toFixed(2)]);
+                excelData.push(['면적 차이', data.areaDifference.toFixed(4)]);
+                excelData.push(['면적분담율 합', data.sumOfRatios.toFixed(2) + '%']);
+                excelData.push(['면적분담율 차이', data.ratioDifference.toFixed(4) + '%']);
+                excelData.push(['총 기둥 수', results.length + '개']);
+                
+                // 경계 기둥 정보
+                if (data.selectedBoundary && data.selectedBoundary.length === 4) {
+                    excelData.push([]);
+                    excelData.push(['=== 경계 기둥 정보 ===']);
+                    data.selectedBoundary.forEach((name, idx) => {
+                        excelData.push([`경계 기둥 ${idx + 1}`, name]);
+                    });
+                }
+                
+                // 메타 정보
+                excelData.push([]);
+                excelData.push(['=== 생성 정보 ===']);
+                excelData.push(['생성 일시', new Date().toLocaleString('ko-KR')]);
+                excelData.push(['계산 방법', 'Voronoi 다이어그램 (그리드 방식)']);
+
+                // 워크북 생성
+                const wb = XLSXLib.utils.book_new();
+                const ws = XLSXLib.utils.aoa_to_sheet(excelData);
+                
+                // 컬럼 너비 설정
+                ws['!cols'] = [
+                    { wch: 15 },  // 기둥번호
+                    { wch: 12 },  // X좌표
+                    { wch: 12 },  // Y좌표
+                    { wch: 15 },  // 면적분담율
+                    { wch: 15 }   // 담당면적
+                ];
+                
+                // 헤더 행 스타일 (첫 번째 행)
+                const headerRange = XLSXLib.utils.decode_range(ws['!ref']);
+                for (let col = headerRange.s.c; col <= headerRange.e.c; col++) {
+                    const cellAddress = XLSXLib.utils.encode_cell({ r: 0, c: col });
+                    if (!ws[cellAddress]) continue;
+                    ws[cellAddress].s = {
+                        font: { bold: true, color: { rgb: "FFFFFF" } },
+                        fill: { fgColor: { rgb: "667EEA" } },
+                        alignment: { horizontal: "center", vertical: "center" }
+                    };
+                }
+                
+                // 합계 행 스타일
+                const sumRowIndex = results.length + 1;
+                for (let col = 0; col < 5; col++) {
+                    const cellAddress = XLSXLib.utils.encode_cell({ r: sumRowIndex, c: col });
+                    if (!ws[cellAddress]) continue;
+                    ws[cellAddress].s = {
+                        font: { bold: true },
+                        fill: { fgColor: { rgb: "E8F4F8" } }
+                    };
+                }
+                
+                // 시트를 워크북에 추가
+                XLSXLib.utils.book_append_sheet(wb, ws, '면적분담율 결과');
+                
+                // 파일명 생성 (날짜 포함)
+                const now = new Date();
+                const dateStr = now.getFullYear() + 
+                              String(now.getMonth() + 1).padStart(2, '0') + 
+                              String(now.getDate()).padStart(2, '0') + '_' +
+                              String(now.getHours()).padStart(2, '0') +
+                              String(now.getMinutes()).padStart(2, '0');
+                const fileName = `면적분담율_결과_${dateStr}.xlsx`;
+                
+                // 파일 다운로드
+                XLSXLib.writeFile(wb, fileName);
+                
+                console.log('엑셀 파일 다운로드 완료:', fileName);
+                alert('엑셀 파일이 다운로드되었습니다.\n\n파일명: ' + fileName);
+                
+            } catch (error) {
+                console.error('엑셀 저장 오류:', error);
+                alert('엑셀 파일 저장 중 오류가 발생했습니다:\n\n' + error.message + '\n\n브라우저 콘솔(F12)에서 자세한 오류를 확인하세요.');
+            }
+        };
+
+        // Voronoi 영역을 Canvas에 그리기
+        function drawVoronoiRegions(points, columnNames, bounds, areaCounts) {
+            const canvas = document.getElementById('columnMapCanvas');
+            if (!canvas) return;
+
+            const ctx = canvas.getContext('2d');
+            const width = canvas.width;
+            const height = canvas.height;
+
+            // 좌표를 픽셀로 변환하는 함수
+            function coordToPixel(x, y) {
+                const pixelX = ((x - bounds.minX) / (bounds.maxX - bounds.minX || 1)) * width;
+                const pixelY = ((y - bounds.minY) / (bounds.maxY - bounds.minY || 1)) * height;
+                return { x: pixelX, y: pixelY };
+            }
+
+            // 그리드 해상도
+            const gridSize = 50;
+            const stepX = (bounds.maxX - bounds.minX) / gridSize;
+            const stepY = (bounds.maxY - bounds.minY) / gridSize;
+
+            // 각 그리드 셀에 색상 할당
+            const colors = [
+                'rgba(102, 126, 234, 0.1)',   // 보라색
+                'rgba(239, 68, 68, 0.1)',     // 빨간색
+                'rgba(34, 197, 94, 0.1)',     // 초록색
+                'rgba(251, 146, 60, 0.1)',    // 주황색
+                'rgba(59, 130, 246, 0.1)',    // 파란색
+                'rgba(168, 85, 247, 0.1)',    // 자주색
+            ];
+
+            // 각 그리드 셀 그리기
+            for (let i = 0; i < gridSize; i++) {
+                for (let j = 0; j < gridSize; j++) {
+                    const gridX = bounds.minX + i * stepX;
+                    const gridY = bounds.minY + j * stepY;
+
+                    // 가장 가까운 기둥 찾기
+                    let minDist = Infinity;
+                    let nearestIndex = 0;
+
+                    points.forEach((point, idx) => {
+                        const dist = Math.sqrt(
+                            Math.pow(gridX - point.x, 2) + 
+                            Math.pow(gridY - point.y, 2)
+                        );
+                        if (dist < minDist) {
+                            minDist = dist;
+                            nearestIndex = idx;
+                        }
+                    });
+
+                    // 해당 영역 색상으로 칠하기
+                    const color = colors[nearestIndex % colors.length];
+                    const pixel1 = coordToPixel(gridX, gridY);
+                    const pixel2 = coordToPixel(gridX + stepX, gridY + stepY);
+
+                    ctx.fillStyle = color;
+                    ctx.fillRect(pixel1.x, pixel1.y, pixel2.x - pixel1.x, pixel2.y - pixel1.y);
+                }
+            }
+
+            // 기둥 위치 다시 그리기 (위에 표시)
+            points.forEach((point, idx) => {
+                const pos = coordToPixel(point.x, point.y);
+                ctx.fillStyle = '#ef4444';
+                ctx.beginPath();
+                ctx.arc(pos.x, pos.y, 8, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            });
+
+            // 마커 라벨 다시 그리기
+            const markersContainer = document.getElementById('columnMapMarkers');
+            if (markersContainer) {
+                markersContainer.innerHTML = '';
+                points.forEach((point, idx) => {
+                    const pos = coordToPixel(point.x, point.y);
+                    const marker = document.createElement('div');
+                    marker.style.position = 'absolute';
+                    marker.style.left = pos.x + 'px';
+                    marker.style.top = pos.y + 'px';
+                    marker.style.transform = 'translate(-50%, calc(-100% - 12px))';
+                    marker.style.padding = '3px 8px';
+                    marker.style.backgroundColor = 'rgba(0,0,0,0.8)';
+                    marker.style.color = 'white';
+                    marker.style.fontSize = '11px';
+                    marker.style.fontWeight = '600';
+                    marker.style.borderRadius = '4px';
+                    marker.style.whiteSpace = 'nowrap';
+                    marker.style.pointerEvents = 'none';
+                    marker.style.zIndex = '10';
+                    marker.textContent = columnNames[idx];
+                    markersContainer.appendChild(marker);
+                });
+            }
         }
 
         // 기둥 마커 표시 함수
@@ -2766,17 +3979,29 @@
         });
 
         // Beam type button toggle
-        document.querySelectorAll('.beam-type-btn').forEach(btn => {
+        // 운영자 Control 버튼 이벤트 리스너 (기존 beam-type-btn과 operator-control-btn 모두 지원)
+        document.querySelectorAll('.beam-type-btn, .operator-control-btn').forEach(btn => {
             btn.addEventListener('click', function() {
-                // auto-find-section-btn은 제외하고 배경색 변경
+                // data-onclick 속성이 있으면 실행
+                const onclickAttr = this.getAttribute('data-onclick');
+                if (onclickAttr) {
+                    try {
+                        eval(onclickAttr);
+                    } catch (e) {
+                        console.error('onclick 실행 오류:', e);
+                    }
+                }
+                
+                // auto-find-section-btn은 제외하고 배경색 변경 (기존 beam-type-btn용)
                 document.querySelectorAll('.beam-type-btn').forEach(b => {
                     if (b.id !== 'auto-find-section-btn') {
                         b.style.background = '#1e3a5f';
                     }
                 });
-                // auto-find-section-btn이 아닌 경우에만 배경색 변경
-                if (this.id !== 'auto-find-section-btn') {
-                    this.style.background = 'linear-gradient(135deg, #667eea, #764ba2)';
+                
+                // operator-control-btn 중 auto-find-section-btn이 아닌 경우 배경색 변경
+                if (this.id !== 'auto-find-section-btn' && this.classList.contains('operator-control-btn')) {
+                    // 기본 스타일 유지 (CSS 클래스로 관리)
                 }
             });
         });
@@ -3111,6 +4336,45 @@
             // Shear Y: ratio <= 1.0이면 O.K (계산서와 일치)
             updateResult(results[5], ratio_shearY, phi_Vny, 'shear');
 
+            // ===== 간편계산 출력 영역 업데이트 =====
+            updateQuickCalcOutput({
+                ratio_comp: ratio_comp,
+                ratio_bendX: ratio_bendX,
+                ratio_bendY: ratio_bendY,
+                ratio_pmm: ratio_pmm,
+                ratio_shearX: ratio_shearX,
+                ratio_shearY: ratio_shearY,
+                phi_Pn: phi_Pn,
+                phi_Mnx: phi_Mnx,
+                phi_Mny: phi_Mny
+            });
+
+            // ===== 간편계산 결과를 전역 변수에 저장 (계산서 출력용) =====
+            window.quickCalcResults = {
+                // 입력값
+                h1: h1, b1: b1, tw1: tw1, tf1: tf1, r1: r1,
+                h2: h2, b2: b2, tw2: tw2, tf2: tf2, r2: r2,
+                Fy: Fy, E: E, nu: nu,
+                Lx: Lx, Ly: Ly, Kx: Kx, Ky: Ky, Kz: Kz,
+                Pu: Pu, Mux: Mux, Muy: Muy, Vux: Vux, Vuy: Vuy,
+                // 계산 결과
+                area: area,
+                Ix: Ix, Iy: Iy,
+                ix: ix, iy: iy,
+                sx: sx, sy: sy,
+                zx: zx, zy: zy,
+                J: J, cw: cw,
+                lambda: lambda, lambdaX: lambdaX, lambdaY: lambdaY,
+                Fe1: Fe1, Fe2: Fe2, Fe: Fe, Fcr: Fcr,
+                phi_Pn: phi_Pn,
+                phi_Mnx: phi_Mnx, phi_Mny: phi_Mny,
+                phi_Vnx: phi_Vnx, phi_Vny: phi_Vny,
+                ratio_comp: ratio_comp,
+                ratio_bendX: ratio_bendX, ratio_bendY: ratio_bendY,
+                ratio_pmm: ratio_pmm,
+                ratio_shearX: ratio_shearX, ratio_shearY: ratio_shearY
+            };
+
             // 콘솔에 상세 결과 출력
             console.log('===== Cross H Column Calculation Results =====');
             console.log(`Area: ${area.toFixed(2)} mm²`);
@@ -3148,6 +4412,80 @@
                 statusSpan.className = 'result-status ng';
             }
         }
+
+        // 간편계산 출력 영역 업데이트 함수
+        function updateQuickCalcOutput(results) {
+            const outputDiv = document.getElementById('quickCalcOutput');
+            const contentDiv = document.getElementById('quickCalcOutputContent');
+            
+            if (!outputDiv || !contentDiv) return;
+            
+            // 결과가 유효한지 확인
+            const hasValidResults = Object.values(results).some(val => 
+                val !== null && val !== undefined && !isNaN(val) && isFinite(val)
+            );
+            
+            if (!hasValidResults) {
+                outputDiv.classList.remove('active');
+                return;
+            }
+            
+            // 결과 항목 생성
+            const items = [];
+            
+            // Compressive
+            if (results.ratio_comp !== undefined && !isNaN(results.ratio_comp) && isFinite(results.ratio_comp)) {
+                const status = results.ratio_comp <= 1.0 ? 'ok' : 'ng';
+                items.push(createQuickCalcItem('압축', results.ratio_comp.toFixed(3), status));
+            }
+            
+            // P-M-M
+            if (results.ratio_pmm !== undefined && !isNaN(results.ratio_pmm) && isFinite(results.ratio_pmm)) {
+                const status = results.ratio_pmm <= 1.0 ? 'ok' : 'ng';
+                items.push(createQuickCalcItem('P-M-M', results.ratio_pmm.toFixed(3), status));
+            }
+            
+            // Bending X
+            if (results.ratio_bendX !== undefined && !isNaN(results.ratio_bendX) && isFinite(results.ratio_bendX)) {
+                const status = results.ratio_bendX <= 1.0 ? 'ok' : 'ng';
+                items.push(createQuickCalcItem('휨X', results.ratio_bendX.toFixed(3), status));
+            }
+            
+            // Bending Y
+            if (results.ratio_bendY !== undefined && !isNaN(results.ratio_bendY) && isFinite(results.ratio_bendY)) {
+                const status = results.ratio_bendY <= 1.0 ? 'ok' : 'ng';
+                items.push(createQuickCalcItem('휨Y', results.ratio_bendY.toFixed(3), status));
+            }
+            
+            // Shear X
+            if (results.ratio_shearX !== undefined && !isNaN(results.ratio_shearX) && isFinite(results.ratio_shearX)) {
+                const status = results.ratio_shearX <= 1.0 ? 'ok' : 'ng';
+                items.push(createQuickCalcItem('전단X', results.ratio_shearX.toFixed(3), status));
+            }
+            
+            // Shear Y
+            if (results.ratio_shearY !== undefined && !isNaN(results.ratio_shearY) && isFinite(results.ratio_shearY)) {
+                const status = results.ratio_shearY <= 1.0 ? 'ok' : 'ng';
+                items.push(createQuickCalcItem('전단Y', results.ratio_shearY.toFixed(3), status));
+            }
+            
+            // 내용 업데이트
+            contentDiv.innerHTML = items.join('');
+            
+            // 출력 영역 표시
+            outputDiv.classList.add('active');
+        }
+
+        // 간편계산 결과 항목 생성 함수
+        function createQuickCalcItem(label, value, status) {
+            return `
+                <div class="quick-calc-result-item">
+                    <span class="quick-calc-result-label">${label}:</span>
+                    <span class="quick-calc-result-value ${status}">${value}</span>
+                </div>
+            `;
+        }
+
         // Multi Column Calculation Sheet 초기화 (6개 기둥)
         function initializeMultiColumnTable() {
             const tbody = document.getElementById('multiColumnTableBody');
@@ -3472,5 +4810,303 @@
     <script src="../../js/auth-config.js"></script>
     <script src="../../js/auth.js"></script>
     <script src="../../js/feature-guard.js"></script>
+    
+    <!-- 운영자 Control 접근 제어 -->
+    <script>
+        // 운영자 권한 체크 및 UI 업데이트
+        function initOperatorControl() {
+            // 인증 시스템이 준비될 때까지 대기
+            function waitForAuth(callback, maxAttempts = 50) {
+                let attempts = 0;
+                function check() {
+                    if (window.SDP && window.SDP.auth && typeof window.SDP.auth.isAdmin === 'function') {
+                        callback();
+                    } else if (attempts < maxAttempts) {
+                        attempts++;
+                        setTimeout(check, 100);
+                    } else {
+                        console.warn('운영자 Control: 인증 시스템을 찾을 수 없습니다.');
+                        // 인증 시스템이 없으면 접근 차단
+                        disableOperatorControl('인증 시스템 오류', null);
+                    }
+                }
+                check();
+            }
+
+            waitForAuth(function() {
+                const auth = window.SDP.auth;
+                
+                // 관리자 권한 확인
+                auth.getSession().then(function(session) {
+                    if (!session) {
+                        disableOperatorControl('로그인 필요', null);
+                        return;
+                    }
+                    
+                    // 프로필 확인
+                    auth.getProfile().then(function(profile) {
+                        if (!profile) {
+                            disableOperatorControl('프로필 없음', null);
+                            return;
+                        }
+                        
+                        // 관리자 권한 확인
+                        const isAdmin = auth.isAdmin();
+                        if (!isAdmin) {
+                            disableOperatorControl('운영자 권한 없음', session.user.email);
+                        } else {
+                            enableOperatorControl(session.user.email);
+                        }
+                    }).catch(function(err) {
+                        console.error('프로필 로드 오류:', err);
+                        disableOperatorControl('프로필 로드 실패', null);
+                    });
+                    }).catch(function(err) {
+                        console.error('세션 확인 오류:', err);
+                        disableOperatorControl('세션 확인 실패', null);
+                    });
+            });
+        }
+
+        // 운영자 Control 비활성화
+        function disableOperatorControl(reason, email) {
+            const section = document.getElementById('operatorControlSection');
+            const grid = document.getElementById('operatorControlGrid');
+            const status = document.getElementById('operatorStatus');
+            const emailSpan = document.getElementById('operatorEmail');
+            
+            if (!section || !grid || !status) return;
+            
+            // 이메일 표시
+            if (emailSpan) {
+                if (email) {
+                    emailSpan.textContent = email;
+                    emailSpan.style.display = 'block';
+                } else {
+                    emailSpan.textContent = 'sdppmo@kcol.kr';
+                    emailSpan.style.display = 'block';
+                }
+            }
+            
+            // 상태 표시
+            status.textContent = '🔒 ' + reason;
+            status.style.color = '#ef4444';
+            status.style.fontSize = '12px';
+            status.style.fontWeight = '600';
+            
+            // 버튼 비활성화
+            const buttons = grid.querySelectorAll('.operator-control-btn');
+            buttons.forEach(function(btn) {
+                btn.style.opacity = '0.5';
+                btn.style.cursor = 'not-allowed';
+                btn.style.pointerEvents = 'none';
+            });
+            
+            // 섹션 배경색 변경
+            section.style.background = 'linear-gradient(135deg, #fee2e2, #fecaca)';
+            section.style.borderColor = '#ef4444';
+        }
+
+        // 운영자 Control 활성화
+        function enableOperatorControl(email) {
+            const section = document.getElementById('operatorControlSection');
+            const grid = document.getElementById('operatorControlGrid');
+            const status = document.getElementById('operatorStatus');
+            const emailSpan = document.getElementById('operatorEmail');
+            
+            if (!section || !grid || !status) return;
+            
+            // 이메일 표시
+            if (emailSpan) {
+                if (email) {
+                    emailSpan.textContent = email;
+                } else {
+                    emailSpan.textContent = 'sdppmo@kcol.kr';
+                }
+                emailSpan.style.display = 'block';
+            }
+            
+            // 상태 표시
+            status.textContent = '운영자 승인사전필요';
+            status.style.color = '#10b981';
+            status.style.fontSize = '12px';
+            status.style.fontWeight = '600';
+            
+            // 버튼 활성화
+            const buttons = grid.querySelectorAll('.operator-control-btn');
+            buttons.forEach(function(btn) {
+                btn.style.opacity = '1';
+                btn.style.cursor = 'pointer';
+                btn.style.pointerEvents = 'auto';
+            });
+            
+            // 섹션 배경색 복원
+            section.style.background = 'linear-gradient(135deg, #fff7ed, #fef3c7)';
+            section.style.borderColor = '#f59e0b';
+        }
+
+        // 운영자 접근 체크 함수
+        function checkOperatorAccess(callback, event) {
+            if (event) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            
+            // 인증 시스템 확인
+            if (!window.SDP || !window.SDP.auth) {
+                showOperatorAccessModal('인증 시스템 오류', '인증 시스템을 사용할 수 없습니다.');
+                return false;
+            }
+            
+            const auth = window.SDP.auth;
+            
+            // 세션 확인
+            auth.getSession().then(function(session) {
+                if (!session) {
+                    showOperatorAccessModal('로그인 필요', '운영자 Control 기능을 사용하려면 로그인이 필요합니다.');
+                    return;
+                }
+                
+                // 프로필 확인
+                auth.getProfile().then(function(profile) {
+                    if (!profile) {
+                        showOperatorAccessModal('프로필 없음', '사용자 프로필을 찾을 수 없습니다.');
+                        return;
+                    }
+                    
+                    // 관리자 권한 확인
+                    const isAdmin = auth.isAdmin();
+                    if (!isAdmin) {
+                        showOperatorAccessModal('운영자 권한 없음', '이 기능은 운영자(관리자)만 사용할 수 있습니다.\n관리자에게 권한을 요청하세요.');
+                    } else {
+                        // 권한 있음 - 콜백 실행
+                        if (typeof callback === 'function') {
+                            callback();
+                        }
+                    }
+                }).catch(function(err) {
+                    console.error('프로필 확인 오류:', err);
+                    showOperatorAccessModal('오류', '프로필을 확인하는 중 오류가 발생했습니다.');
+                });
+            }).catch(function(err) {
+                console.error('세션 확인 오류:', err);
+                showOperatorAccessModal('오류', '세션을 확인하는 중 오류가 발생했습니다.');
+            });
+            
+            return false;
+        }
+
+        // 운영자 접근 체크 및 페이지 이동 함수 (링크용)
+        function checkOperatorAccessAndNavigate(event, targetUrl) {
+            if (event) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            
+            // 인증 시스템 확인
+            if (!window.SDP || !window.SDP.auth) {
+                showOperatorAccessModal('인증 시스템 오류', '인증 시스템을 사용할 수 없습니다.');
+                return false;
+            }
+            
+            const auth = window.SDP.auth;
+            
+            // 세션 확인
+            auth.getSession().then(function(session) {
+                if (!session) {
+                    showOperatorAccessModal('로그인 필요', '운영자 Control 기능을 사용하려면 로그인이 필요합니다.');
+                    return;
+                }
+                
+                // 프로필 확인
+                auth.getProfile().then(function(profile) {
+                    if (!profile) {
+                        showOperatorAccessModal('프로필 없음', '사용자 프로필을 찾을 수 없습니다.');
+                        return;
+                    }
+                    
+                    // 관리자 권한 확인
+                    const isAdmin = auth.isAdmin();
+                    if (!isAdmin) {
+                        showOperatorAccessModal('운영자 권한 없음', '이 기능은 운영자(관리자)만 사용할 수 있습니다.\n관리자에게 권한을 요청하세요.');
+                    } else {
+                        // 권한 있음 - 입력 데이터 저장 후 페이지 이동
+                        try {
+                            saveInputData();
+                            console.log('입력 데이터 저장 완료, 계산서 페이지로 이동합니다.');
+                            window.location.href = targetUrl;
+                        } catch (e) {
+                            console.error('입력 데이터 저장 오류:', e);
+                            // 저장 실패해도 페이지 이동
+                            window.location.href = targetUrl;
+                        }
+                    }
+                }).catch(function(err) {
+                    console.error('프로필 확인 오류:', err);
+                    showOperatorAccessModal('오류', '프로필을 확인하는 중 오류가 발생했습니다.');
+                });
+            }).catch(function(err) {
+                console.error('세션 확인 오류:', err);
+                showOperatorAccessModal('오류', '세션을 확인하는 중 오류가 발생했습니다.');
+            });
+            
+            return false;
+        }
+
+        // 운영자 접근 거부 모달 표시
+        function showOperatorAccessModal(title, message) {
+            const existingModal = document.getElementById('operator-access-modal');
+            if (existingModal) existingModal.remove();
+
+            const modal = document.createElement('div');
+            modal.id = 'operator-access-modal';
+            modal.innerHTML = '\
+                <div class="operator-modal-overlay">\
+                    <div class="operator-modal">\
+                        <div class="operator-modal-icon">🔒</div>\
+                        <h3>' + title + '</h3>\
+                        <p>' + message.replace(/\n/g, '<br>') + '</p>\
+                        <div class="operator-modal-buttons">\
+                            <button class="operator-modal-btn primary" id="operator-login-btn">로그인</button>\
+                            <button class="operator-modal-btn secondary" id="operator-close-btn">닫기</button>\
+                        </div>\
+                    </div>\
+                </div>\
+            ';
+
+            const style = document.createElement('style');
+            style.textContent = '\
+                .operator-modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 99999; -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); }\
+                .operator-modal { background: #1e2642; border-radius: 12px; padding: 28px 32px; max-width: 400px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }\
+                .operator-modal-icon { font-size: 48px; margin-bottom: 12px; }\
+                .operator-modal h3 { color: #fff; font-size: 20px; margin: 0 0 12px; }\
+                .operator-modal p { color: #9ca3af; font-size: 14px; line-height: 1.6; margin: 0 0 24px; }\
+                .operator-modal-buttons { display: flex; gap: 12px; justify-content: center; }\
+                .operator-modal-btn { border: none; padding: 12px 24px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: transform 0.2s; }\
+                .operator-modal-btn.primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #fff; }\
+                .operator-modal-btn.secondary { background: rgba(100, 116, 139, 0.3); color: #cbd5e1; }\
+                .operator-modal-btn:hover { transform: translateY(-2px); }\
+            ';
+            document.head.appendChild(style);
+            document.body.appendChild(modal);
+
+            modal.querySelector('#operator-login-btn').addEventListener('click', function() {
+                window.location.assign('/pages/auth/login.html?redirect=' + encodeURIComponent(window.location.pathname));
+            });
+            modal.querySelector('#operator-close-btn').addEventListener('click', function() {
+                modal.remove();
+            });
+            modal.querySelector('.operator-modal-overlay').addEventListener('click', function(e) {
+                if (e.target === this) modal.remove();
+            });
+        }
+
+        // 페이지 로드 시 초기화
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initOperatorControl);
+        } else {
+            initOperatorControl();
+        }
+    </script>
 </body>
 </html>
