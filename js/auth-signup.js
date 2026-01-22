@@ -218,57 +218,57 @@
         }
 
         window.SDP.auth.getClient().then(function(client) {
-            // Call backend Edge Function for validation and signup
-            return client.functions.invoke('signup-user', {
-                body: {
-                    email: email,
-                    password: password,
-                    business_name: business,
-                    business_number: bizNum,
-                    phone: phone
+            // Call Supabase Auth signUp directly
+            // - Triggers confirmation email via configured SMTP template
+            // - Stores business info in user_metadata
+            // - Profile is created on pending.html AFTER email verification
+            return client.auth.signUp({
+                email: email,
+                password: password,
+                options: {
+                    emailRedirectTo: 'https://kcol.kr/pages/auth/pending.html',
+                    data: {
+                        business_name: business,
+                        business_number: bizNum,
+                        phone: phone
+                    }
                 }
             });
-        }).then(function(response) {
-            // Check for Edge Function errors
-            if (response.error) {
-                throw new Error(response.error.message || '회원가입에 실패했습니다.');
-            }
-            
-            var result = response.data;
-            
-            // Handle validation errors from backend
-            if (result.error === 'validation_error') {
-                showError(result.message);
-                setLoading(false);
-                return;
-            }
-            
-            // Handle user already exists
-            if (result.error === 'user_exists') {
-                showAlreadyRegistered();
-                setLoading(false);
-                return;
-            }
-            
-            // Handle other errors
+        }).then(function(result) {
             if (result.error) {
-                showError(result.message || '회원가입에 실패했습니다.');
-                setLoading(false);
-                return;
+                throw result.error;
             }
             
-            // Success
-            showSuccess();
+            if (!result.data.user) {
+                throw new Error('회원가입에 실패했습니다.');
+            }
+            
+            console.log('[Signup] User created:', result.data.user.id);
+            console.log('[Signup] Verification email sent to:', email);
+            
+            // Show transitional message and redirect to pending page
             setLoading(false);
+            successMessage.classList.add('show');
+            form.style.display = 'none';
+            loginLink.style.display = 'none';
+            
+            // Redirect to pending page after brief delay
+            setTimeout(function() {
+                window.location.assign('/pages/auth/pending.html');
+            }, 800);
         }).catch(function(err) {
             var message = err.message || '회원가입에 실패했습니다.';
+            console.error('[Signup] Error:', message);
+            
             // Translate common Supabase errors
-            if (message.includes('already registered')) {
+            if (message.includes('already registered') || message.includes('User already registered')) {
                 showAlreadyRegistered();
                 setLoading(false);
                 return;
             } else if (message.includes('Password should be at least')) {
                 message = '비밀번호가 너무 짧습니다. 8자 이상으로 설정해주세요.';
+            } else if (message.includes('Invalid email')) {
+                message = '유효하지 않은 이메일 주소입니다.';
             }
             showError(message);
             setLoading(false);

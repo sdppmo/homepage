@@ -156,17 +156,42 @@ Deno.serve(async (req) => {
   // List all users
   // ============================================
   if (action === "list") {
-    const { data, error } = await supabase
+    // Get profiles from database
+    const { data: profiles, error: profileError } = await supabase
       .from("user_profiles")
       .select("id,email,business_name,business_number,phone,is_approved,role,access_beam,access_column,created_at")
       .order("created_at", { ascending: false });
-    if (error) {
-      return new Response(error.message, {
+    
+    if (profileError) {
+      return new Response(profileError.message, {
         status: 400,
         headers: corsHeaders,
       });
     }
-    return new Response(JSON.stringify({ users: data ?? [] }), {
+
+    // Get auth users to check email verification status
+    const { data: authData, error: authError } = await supabase.auth.admin.listUsers();
+    
+    if (authError) {
+      console.error("Failed to fetch auth users:", authError);
+      // Continue without email verification data if auth fails
+    }
+
+    // Create a map of user id -> email_confirmed_at
+    const emailVerifiedMap = new Map<string, boolean>();
+    if (authData?.users) {
+      for (const authUser of authData.users) {
+        emailVerifiedMap.set(authUser.id, !!authUser.email_confirmed_at);
+      }
+    }
+
+    // Merge profiles with email verification status
+    const usersWithVerification = (profiles ?? []).map((profile) => ({
+      ...profile,
+      email_verified: emailVerifiedMap.get(profile.id) ?? false,
+    }));
+
+    return new Response(JSON.stringify({ users: usersWithVerification }), {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
@@ -519,12 +544,23 @@ Deno.serve(async (req) => {
   // ============================================
   if (action === "update") {
     const userId = String(payload.user_id ?? "").trim();
-    const updates = payload.updates ?? {};
+    const updates = payload.updates as Record<string, unknown> ?? {};
     if (!userId || typeof updates !== "object") {
       return new Response("Invalid update payload", {
         status: 400,
         headers: corsHeaders,
       });
+    }
+
+    // If approving user, also verify their email automatically
+    if (updates.is_approved === true) {
+      const { error: authUpdateError } = await supabase.auth.admin.updateUserById(userId, {
+        email_confirm: true,
+      });
+      if (authUpdateError) {
+        console.error("Failed to verify email for user:", userId, authUpdateError);
+        // Continue with profile update even if email verification fails
+      }
     }
 
     const { error } = await supabase

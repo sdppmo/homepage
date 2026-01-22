@@ -390,6 +390,72 @@ body.loaded {
     color: #60a5fa;
 }
 
+.badge.email-verified {
+    background: rgba(34, 197, 94, 0.1);
+    color: #4ade80;
+}
+
+.badge.email-unverified {
+    background: rgba(251, 146, 60, 0.1);
+    color: #fb923c;
+}
+
+/* User Sections (Pending/Active) */
+.user-section {
+    margin-bottom: 32px;
+}
+
+.user-section:last-child {
+    margin-bottom: 0;
+}
+
+.section-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+.section-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #f8fafc;
+    margin: 0;
+}
+
+.section-count {
+    font-size: 12px;
+    font-weight: 500;
+    color: #64748b;
+    background: rgba(100, 116, 139, 0.2);
+    padding: 4px 10px;
+    border-radius: 999px;
+}
+
+.pending-section .section-title {
+    color: #fb923c;
+}
+
+.pending-section .section-count {
+    background: rgba(251, 146, 60, 0.1);
+    color: #fb923c;
+}
+
+.active-section .section-title {
+    color: #4ade80;
+}
+
+.active-section .section-count {
+    background: rgba(34, 197, 94, 0.1);
+    color: #4ade80;
+}
+
+.user-list-card {
+    padding: 24px;
+}
+
 /* Toggle Switch */
 .toggle-wrapper {
     display: flex;

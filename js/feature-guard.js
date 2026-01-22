@@ -224,8 +224,89 @@
       return false;
     }
 
+    // Check if user is logged in (no specific permission needed)
+    function isLoggedIn() {
+      return auth.getSession().then(function(session) {
+        return !!session;
+      });
+    }
+
+    // Show login required modal
+    function showLoginModal() {
+      var existingModal = document.getElementById('feature-guard-modal');
+      if (existingModal) existingModal.remove();
+
+      var modal = document.createElement('div');
+      modal.id = 'feature-guard-modal';
+      modal.innerHTML = '\
+        <div class="fg-overlay">\
+          <div class="fg-modal">\
+            <div class="fg-icon">🔒</div>\
+            <h3>로그인 필요</h3>\
+            <p>이 기능을 사용하려면 로그인이 필요합니다.</p>\
+            <div class="fg-btn-group">\
+              <button class="fg-btn primary" id="fg-login-btn">로그인</button>\
+              <button class="fg-btn secondary" id="fg-signup-btn">회원가입</button>\
+            </div>\
+          </div>\
+        </div>\
+      ';
+
+      var style = document.createElement('style');
+      style.textContent = '\
+        .fg-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 99999; -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); }\
+        .fg-modal { background: #1e2642; border-radius: 12px; padding: 28px 32px; max-width: 380px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }\
+        .fg-icon { font-size: 48px; margin-bottom: 12px; }\
+        .fg-modal h3 { color: #fff; font-size: 20px; margin: 0 0 12px; }\
+        .fg-modal p { color: #9ca3af; font-size: 14px; line-height: 1.6; margin: 0 0 24px; }\
+        .fg-btn-group { display: flex; gap: 12px; justify-content: center; }\
+        .fg-btn { border: none; padding: 12px 24px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: transform 0.2s; }\
+        .fg-btn.primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #fff; }\
+        .fg-btn.secondary { background: rgba(100, 116, 139, 0.3); color: #cbd5e1; }\
+        .fg-btn:hover { transform: translateY(-2px); }\
+      ';
+      document.head.appendChild(style);
+      document.body.appendChild(modal);
+
+      modal.querySelector('#fg-login-btn').addEventListener('click', function() {
+        window.location.assign('/pages/auth/login.html?redirect=' + encodeURIComponent(window.location.pathname));
+      });
+      modal.querySelector('#fg-signup-btn').addEventListener('click', function() {
+        window.location.assign('/pages/auth/signup.html');
+      });
+      modal.querySelector('.fg-overlay').addEventListener('click', function(e) {
+        if (e.target === this) modal.remove();
+      });
+    }
+
     // Attach guards to protected elements
     function attachGuards() {
+      // Handle login-only guards (data-requires-auth="true")
+      var authElements = document.querySelectorAll('[data-requires-auth="true"]');
+      
+      authElements.forEach(function(el) {
+        el.addEventListener('click', function(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          
+          isLoggedIn().then(function(logged) {
+            if (logged) {
+              // Logged in - proceed with original action
+              var href = el.getAttribute('href');
+              if (href && href !== '#') {
+                window.location.href = href;
+              }
+            } else {
+              showLoginModal();
+            }
+          }).catch(function(err) {
+            console.error('Auth guard error:', err);
+            showLoginModal();
+          });
+        }, true);
+      });
+
+      // Handle permission-based guards (data-requires="column" etc.)
       var protectedElements = document.querySelectorAll('[data-requires]');
       
       protectedElements.forEach(function(el) {

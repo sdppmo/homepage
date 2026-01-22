@@ -84,7 +84,11 @@ Deno.serve(async (req) => {
   });
 
   try {
+    console.log("[signup-user] Starting request processing");
+    
     const body: SignupRequest = await req.json();
+    console.log("[signup-user] Parsed body, email:", body.email);
+    
     const { email, password, business_name, business_number, phone } = body;
 
     // Validate required fields
@@ -123,14 +127,17 @@ Deno.serve(async (req) => {
     }
 
     const normalizedEmail = email.toLowerCase().trim();
+    console.log("[signup-user] Validation passed, checking existing user:", normalizedEmail);
 
-    // Check if user already exists in auth
-    const { data: existingUsers } = await supabase.auth.admin.listUsers();
-    const existingUser = existingUsers?.users?.find(
-      (u) => u.email?.toLowerCase() === normalizedEmail
-    );
-
-    if (existingUser) {
+    // Check if user already exists in user_profiles (more reliable than auth API)
+    const { data: existingProfile } = await supabase
+      .from("user_profiles")
+      .select("id")
+      .eq("email", normalizedEmail)
+      .maybeSingle();
+    
+    if (existingProfile) {
+      console.log("[signup-user] User already exists in profiles:", existingProfile.id);
       return new Response(JSON.stringify({ 
         error: "user_exists", 
         message: "이미 가입된 이메일입니다" 
@@ -140,6 +147,7 @@ Deno.serve(async (req) => {
       });
     }
 
+    console.log("[signup-user] No existing profile, creating auth user");
     // Create user with Supabase Auth
     const { data: authData, error: authError } = await supabase.auth.admin.createUser({
       email: normalizedEmail,
@@ -152,10 +160,19 @@ Deno.serve(async (req) => {
       },
     });
 
+    console.log("[signup-user] createUser result - error:", authError, "user:", authData?.user?.id);
+    
     if (authError || !authData.user) {
-      console.error("Auth error:", authError);
+      console.error("[signup-user] Auth error:", JSON.stringify(authError));
       
-      if (authError?.message?.includes("already registered")) {
+      // Check for duplicate user (various error message formats)
+      const errorMsg = authError?.message?.toLowerCase() || "";
+      if (
+        errorMsg.includes("already registered") ||
+        errorMsg.includes("already been registered") ||
+        errorMsg.includes("user already exists") ||
+        errorMsg.includes("duplicate")
+      ) {
         return new Response(JSON.stringify({ 
           error: "user_exists", 
           message: "이미 가입된 이메일입니다" 
@@ -167,7 +184,7 @@ Deno.serve(async (req) => {
 
       return new Response(JSON.stringify({ 
         error: "signup_error", 
-        message: "회원가입 중 오류가 발생했습니다" 
+        message: authError?.message || "회원가입 중 오류가 발생했습니다" 
       }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -176,26 +193,51 @@ Deno.serve(async (req) => {
 
     const userId = authData.user.id;
     const now = new Date().toISOString();
+    console.log("[signup-user] User created successfully, userId:", userId);
 
-    // Create user_profiles entry with is_approved=false (Pending state)
-    const { error: profileError } = await supabase
-      .from("user_profiles")
-      .insert({
-        id: userId,
-        email: normalizedEmail,
-        business_name: business_name.trim(),
-        business_number: business_number,
-        phone: phone,
-        role: "viewer",           // Default role
-        is_approved: false,       // PENDING STATE - requires admin approval
-        access_beam: false,       // No access by default
-        access_column: false,     // No access by default
-        created_at: now,
-      });
-
+    // Update user_profiles entry (trigger may have already created basic profile)
+    // Use upsert to handle both cases: trigger created it or not
+    console.log("[signup-user] About to upsert profile for userId:", userId);
+    
+    let profileError = null;
+    try {
+      const result = await supabase
+        .from("user_profiles")
+        .upsert({
+          id: userId,
+          email: normalizedEmail,
+          business_name: business_name.trim(),
+          business_number: business_number,
+          phone: phone,
+          role: "viewer",           // Default role
+          is_approved: false,       // PENDING STATE - requires admin approval
+          access_beam: false,       // No access by default
+          access_column: false,     // No access by default
+          created_at: now,
+        }, { onConflict: "id" });
+      profileError = result.error;
+      console.log("[signup-user] Profile upsert completed - error:", profileError);
+    } catch (insertException) {
+      console.error("[signup-user] Profile upsert THREW:", insertException);
+      profileError = { message: String(insertException) };
+    }
+    
     if (profileError) {
-      console.error("Profile creation error:", profileError);
-      // Try to clean up the auth user if profile creation failed
+      console.error("[signup-user] Profile creation error:", JSON.stringify(profileError));
+      
+      // Check if it's a duplicate key error (user already exists)
+      if (profileError.code === "23505" || profileError.message?.includes("duplicate")) {
+        // Don't delete the auth user - they already exist
+        return new Response(JSON.stringify({ 
+          error: "user_exists", 
+          message: "이미 가입된 이메일입니다" 
+        }), {
+          status: 409,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      
+      // For other errors, try to clean up the auth user
       await supabase.auth.admin.deleteUser(userId);
       
       return new Response(JSON.stringify({ 
@@ -207,20 +249,12 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Send verification email
-    try {
-      await supabase.auth.admin.generateLink({
-        type: "signup",
-        email: normalizedEmail,
-        options: {
-          redirectTo: "https://kcol.kr/pages/auth/pending.html",
-        },
-      });
-    } catch (emailError) {
-      console.error("Email verification error:", emailError);
-      // Don't fail the signup, just log the error
-    }
+    // Note: This Edge Function is primarily for admin-created users.
+    // For user-initiated signups, the frontend uses supabase.auth.signUp() directly,
+    // which triggers the email via Supabase's configured SMTP template.
+    console.log("[signup-user] User created via admin API (email verification handled separately)");
 
+    console.log("[signup-user] About to notify admins");
     // Notify admins about new user signup (async, don't wait)
     notifyAdmins(supabase, {
       id: userId,
@@ -230,9 +264,10 @@ Deno.serve(async (req) => {
       phone: phone,
       created_at: now,
     }).catch((err) => {
-      console.error("Admin notification error:", err);
+      console.error("[signup-user] Admin notification error:", err);
     });
 
+    console.log("[signup-user] Returning success response");
     return new Response(JSON.stringify({ 
       success: true, 
       message: "회원가입이 완료되었습니다. 이메일 인증 후 관리자 승인을 기다려주세요.",
@@ -246,10 +281,11 @@ Deno.serve(async (req) => {
     });
 
   } catch (error) {
-    console.error("Error:", error);
+    console.error("[signup-user] UNCAUGHT ERROR:", error);
+    console.error("[signup-user] Error stack:", error instanceof Error ? error.stack : "no stack");
     return new Response(JSON.stringify({ 
       error: "server_error", 
-      message: "서버 오류가 발생했습니다" 
+      message: error instanceof Error ? error.message : "서버 오류가 발생했습니다" 
     }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },

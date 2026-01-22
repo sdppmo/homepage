@@ -104,77 +104,140 @@
         return date.toLocaleDateString('ko-KR', { year: 'numeric', month: 'short', day: 'numeric' });
     }
 
-    // Render user list
+    // Check if user is pending (not email verified OR not approved)
+    function isUserPending(user) {
+        return !user.email_verified || !user.is_approved;
+    }
+
+    // Check if user is active (email verified AND approved)
+    function isUserActive(user) {
+        return user.email_verified && user.is_approved;
+    }
+
+    // Render a single user row
+    function renderUserRow(user) {
+        var html = '<tr data-user-id="' + user.id + '">';
+        html += '<td><div class="user-info">';
+        html += '<span class="user-name">' + (user.business_name || '사용자') + '</span>';
+        html += '<span class="user-email">' + (user.email || '-') + '</span>';
+        if (user.business_number) {
+            html += '<span class="user-email">' + user.business_number + '</span>';
+        }
+        html += '</div></td>';
+        html += '<td>' + formatDate(user.created_at) + '</td>';
+        html += '<td>';
+        
+        // Email verification badge
+        if (user.email_verified) {
+            html += '<span class="badge email-verified">이메일 인증됨</span>';
+        } else {
+            html += '<span class="badge email-unverified">이메일 미인증</span>';
+        }
+        
+        // Approval badge
+        html += '<span class="badge ' + (user.is_approved ? 'approved' : 'pending') + '">';
+        html += user.is_approved ? '승인됨' : '대기중';
+        html += '</span>';
+        
+        if (user.role === 'admin') {
+            html += '<span class="badge admin">관리자</span>';
+        }
+        html += '</td>';
+        html += '<td>';
+        
+        // Permission toggles
+        html += '<div style="display: flex; flex-wrap: wrap; gap: 8px;">';
+        
+        // Approved toggle (승인 button - also verifies email)
+        html += '<label class="toggle-wrapper">';
+        html += '<label class="toggle"><input type="checkbox" class="perm-toggle" data-field="is_approved" ' + (user.is_approved ? 'checked' : '') + '>';
+        html += '<span class="toggle-slider"></span></label>';
+        html += '<span class="toggle-label">승인</span></label>';
+        
+        // Column toggle
+        html += '<label class="toggle-wrapper">';
+        html += '<label class="toggle"><input type="checkbox" class="perm-toggle" data-field="access_column" ' + (user.access_column ? 'checked' : '') + '>';
+        html += '<span class="toggle-slider"></span></label>';
+        html += '<span class="toggle-label">Column</span></label>';
+        
+        // Beam toggle
+        html += '<label class="toggle-wrapper">';
+        html += '<label class="toggle"><input type="checkbox" class="perm-toggle" data-field="access_beam" ' + (user.access_beam ? 'checked' : '') + '>';
+        html += '<span class="toggle-slider"></span></label>';
+        html += '<span class="toggle-label">Beam</span></label>';
+        
+        // Admin toggle
+        html += '<label class="toggle-wrapper">';
+        html += '<label class="toggle"><input type="checkbox" class="perm-toggle" data-field="role" data-role-toggle="true" ' + (user.role === 'admin' ? 'checked' : '') + '>';
+        html += '<span class="toggle-slider"></span></label>';
+        html += '<span class="toggle-label" style="color: #a78bfa;">관리자</span></label>';
+        
+        html += '</div>';
+        html += '</td>';
+        html += '<td>';
+        html += '<button class="action-btn primary edit-btn">수정</button>';
+        html += '<button class="action-btn danger delete-btn">삭제</button>';
+        html += '</td>';
+        html += '</tr>';
+        return html;
+    }
+
+    // Render user list with separate pending and active sections
     function renderUsers(users) {
         if (!users || !users.length) {
             userListContainer.innerHTML = '<div class="empty-state"><p>사용자가 없습니다</p></div>';
             return;
         }
 
-        var html = '<table class="user-table"><thead><tr>' +
-            '<th>사용자</th><th>가입일</th><th>상태</th><th>권한</th><th>작업</th>' +
-            '</tr></thead><tbody>';
+        // Split users into pending and active
+        var pendingUsers = users.filter(isUserPending);
+        var activeUsers = users.filter(isUserActive);
 
-        users.forEach(function(user) {
-            html += '<tr data-user-id="' + user.id + '">';
-            html += '<td><div class="user-info">';
-            html += '<span class="user-name">' + (user.business_name || '사용자') + '</span>';
-            html += '<span class="user-email">' + (user.email || '-') + '</span>';
-            if (user.business_number) {
-                html += '<span class="user-email">' + user.business_number + '</span>';
-            }
-            html += '</div></td>';
-            html += '<td>' + formatDate(user.created_at) + '</td>';
-            html += '<td>';
-            html += '<span class="badge ' + (user.is_approved ? 'approved' : 'pending') + '">';
-            html += user.is_approved ? '승인됨' : '대기중';
-            html += '</span>';
-            if (user.role === 'admin') {
-                html += '<span class="badge admin">관리자</span>';
-            }
-            html += '</td>';
-            html += '<td>';
-            
-            // Permission toggles
-            html += '<div style="display: flex; flex-wrap: wrap; gap: 8px;">';
-            
-            // Approved toggle
-            html += '<label class="toggle-wrapper">';
-            html += '<label class="toggle"><input type="checkbox" class="perm-toggle" data-field="is_approved" ' + (user.is_approved ? 'checked' : '') + '>';
-            html += '<span class="toggle-slider"></span></label>';
-            html += '<span class="toggle-label">승인</span></label>';
-            
-            // Column toggle
-            html += '<label class="toggle-wrapper">';
-            html += '<label class="toggle"><input type="checkbox" class="perm-toggle" data-field="access_column" ' + (user.access_column ? 'checked' : '') + '>';
-            html += '<span class="toggle-slider"></span></label>';
-            html += '<span class="toggle-label">Column</span></label>';
-            
-            // Beam toggle
-            html += '<label class="toggle-wrapper">';
-            html += '<label class="toggle"><input type="checkbox" class="perm-toggle" data-field="access_beam" ' + (user.access_beam ? 'checked' : '') + '>';
-            html += '<span class="toggle-slider"></span></label>';
-            html += '<span class="toggle-label">Beam</span></label>';
-            
-            // Admin toggle
-            html += '<label class="toggle-wrapper">';
-            html += '<label class="toggle"><input type="checkbox" class="perm-toggle" data-field="role" data-role-toggle="true" ' + (user.role === 'admin' ? 'checked' : '') + '>';
-            html += '<span class="toggle-slider"></span></label>';
-            html += '<span class="toggle-label" style="color: #a78bfa;">관리자</span></label>';
-            
-            html += '</div>';
-            html += '</td>';
-            html += '<td>';
-            html += '<button class="action-btn primary edit-btn">수정</button>';
-            html += '<button class="action-btn danger delete-btn">삭제</button>';
-            html += '</td>';
-            html += '</tr>';
-        });
+        var html = '';
 
-        html += '</tbody></table>';
+        // Pending Users Section
+        html += '<div class="user-section pending-section">';
+        html += '<div class="section-header">';
+        html += '<h3 class="section-title">대기 중인 사용자</h3>';
+        html += '<span class="section-count">' + pendingUsers.length + '명</span>';
+        html += '</div>';
+        
+        if (pendingUsers.length === 0) {
+            html += '<div class="empty-state"><p>대기 중인 사용자가 없습니다</p></div>';
+        } else {
+            html += '<table class="user-table"><thead><tr>' +
+                '<th>사용자</th><th>가입일</th><th>상태</th><th>권한</th><th>작업</th>' +
+                '</tr></thead><tbody>';
+            pendingUsers.forEach(function(user) {
+                html += renderUserRow(user);
+            });
+            html += '</tbody></table>';
+        }
+        html += '</div>';
+
+        // Active Users Section
+        html += '<div class="user-section active-section">';
+        html += '<div class="section-header">';
+        html += '<h3 class="section-title">활성 사용자</h3>';
+        html += '<span class="section-count">' + activeUsers.length + '명</span>';
+        html += '</div>';
+        
+        if (activeUsers.length === 0) {
+            html += '<div class="empty-state"><p>활성 사용자가 없습니다</p></div>';
+        } else {
+            html += '<table class="user-table"><thead><tr>' +
+                '<th>사용자</th><th>가입일</th><th>상태</th><th>권한</th><th>작업</th>' +
+                '</tr></thead><tbody>';
+            activeUsers.forEach(function(user) {
+                html += renderUserRow(user);
+            });
+            html += '</tbody></table>';
+        }
+        html += '</div>';
+
         userListContainer.innerHTML = html;
 
-        // Add event listeners
+        // Add event listeners for permission toggles
         userListContainer.querySelectorAll('.perm-toggle').forEach(function(toggle) {
             toggle.addEventListener('change', function() {
                 var row = this.closest('tr');
@@ -188,7 +251,13 @@
                 var toggleRef = this;
                 callAdmin('update', { user_id: userId, updates: updates })
                     .then(function() {
-                        // Update local data
+                        // For approval changes, reload the list since user moves between sections
+                        if (field === 'is_approved') {
+                            loadUsers();
+                            return;
+                        }
+                        
+                        // Update local data for non-approval changes
                         var user = allUsers.find(function(u) { return u.id === userId; });
                         if (user) {
                             user[field] = value;
@@ -196,10 +265,18 @@
                         
                         // Update status badges in the row
                         var statusCell = row.querySelectorAll('td')[2]; // 3rd column is status
-                        if (statusCell && (field === 'is_approved' || field === 'role')) {
+                        if (statusCell && field === 'role') {
                             var badgeHtml = '';
-                            var isApproved = field === 'is_approved' ? value : (user ? user.is_approved : false);
-                            var role = field === 'role' ? value : (user ? user.role : 'viewer');
+                            var role = value;
+                            var isApproved = user ? user.is_approved : false;
+                            var emailVerified = user ? user.email_verified : false;
+                            
+                            // Email verification badge
+                            if (emailVerified) {
+                                badgeHtml += '<span class="badge email-verified">이메일 인증됨</span>';
+                            } else {
+                                badgeHtml += '<span class="badge email-unverified">이메일 미인증</span>';
+                            }
                             
                             badgeHtml += '<span class="badge ' + (isApproved ? 'approved' : 'pending') + '">';
                             badgeHtml += isApproved ? '승인됨' : '대기중';
