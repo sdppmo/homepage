@@ -118,6 +118,52 @@
     return sessionCache ? sessionCache.access_token : null;
   }
 
+  // Clear cached profile (forces re-fetch on next getProfile call)
+  function clearProfileCache() {
+    profileCache = null;
+    console.log('[Auth] Profile cache cleared');
+  }
+
+  // Force refresh session from Supabase
+  function refreshSession() {
+    return getClient().then(function(client) {
+      profileCache = null; // Clear profile cache too
+      return client.auth.getSession().then(function(result) {
+        sessionCache = result.data ? result.data.session : null;
+        console.log('[Auth] Session refreshed:', sessionCache ? 'valid' : 'none');
+        return sessionCache;
+      });
+    });
+  }
+
+  // Debug: show current auth state in console
+  function debug() {
+    console.group('[Auth Debug]');
+    console.log('Session:', sessionCache);
+    console.log('Profile:', profileCache);
+    console.log('Token expires:', sessionCache ? new Date(sessionCache.expires_at * 1000).toLocaleString() : 'N/A');
+    console.log('User ID:', sessionCache?.user?.id || 'N/A');
+    console.log('Email:', sessionCache?.user?.email || 'N/A');
+    console.log('Is Admin:', isAdmin());
+    console.log('localStorage keys:', Object.keys(localStorage).filter(function(k) { return k.includes('supabase'); }));
+    console.groupEnd();
+    return { session: sessionCache, profile: profileCache };
+  }
+
+  // Clear all auth data (nuclear option for debugging)
+  function clearAll() {
+    sessionCache = null;
+    profileCache = null;
+    // Clear Supabase localStorage entries
+    Object.keys(localStorage).forEach(function(key) {
+      if (key.includes('supabase') || key.includes('sb-')) {
+        localStorage.removeItem(key);
+        console.log('[Auth] Removed:', key);
+      }
+    });
+    console.log('[Auth] All auth data cleared. Reload the page.');
+  }
+
   // Expose API
   window.SDP = window.SDP || {};
   window.SDP.auth = {
@@ -128,11 +174,18 @@
     logout: logout,
     isAdmin: isAdmin,
     getUserLabel: getUserLabel,
-    getAccessToken: getAccessToken
+    getAccessToken: getAccessToken,
+    // Debug & cache management
+    clearProfileCache: clearProfileCache,
+    refreshSession: refreshSession,
+    debug: debug,
+    clearAll: clearAll
   };
 
   // Initialize on load
-  getClient().catch(function(err) {
-    console.warn('Auth init failed:', err.message);
+  getClient().then(function() {
+    console.log('[Auth] Initialized. Use SDP.auth.debug() to inspect state.');
+  }).catch(function(err) {
+    console.warn('[Auth] Init failed:', err.message);
   });
 })();

@@ -41,16 +41,24 @@
     // Permission check
     function hasPermission(type) {
       return auth.getSession().then(function(session) {
-        if (!session) return { logged: false, permitted: false };
+        if (!session) {
+          console.log('[FeatureGuard] No session');
+          return { logged: false, permitted: false };
+        }
         return auth.getProfile().then(function(profile) {
-          if (!profile) return { logged: true, permitted: false };
+          if (!profile) {
+            console.log('[FeatureGuard] No profile');
+            return { logged: true, permitted: false };
+          }
           if (!profile.is_approved && !auth.isAdmin()) {
+            console.log('[FeatureGuard] Not approved');
             return { logged: true, approved: false, permitted: false };
           }
           var permitted = false;
           if (type === 'column') permitted = profile.access_column === true;
           if (type === 'beam') permitted = profile.access_beam === true;
           if (auth.isAdmin()) permitted = true; // Admins have all access
+          console.log('[FeatureGuard] Check "' + type + '":', permitted ? 'GRANTED' : 'DENIED', profile);
           return { logged: true, approved: true, permitted: permitted };
         });
       });
@@ -175,6 +183,41 @@
       if (alertMatch) {
         showInfoModal(alertMatch[1]);
         return true;
+      }
+      
+      // Handle global function calls like functionName() or functionName(args)
+      var funcMatch = onclickStr.match(/^([a-zA-Z_][a-zA-Z0-9_]*)\s*\((.*)\)\s*;?\s*$/);
+      if (funcMatch) {
+        var funcName = funcMatch[1];
+        var funcArgs = funcMatch[2].trim();
+        if (typeof window[funcName] === 'function') {
+          console.log('[FeatureGuard] Calling function:', funcName);
+          if (funcArgs === '') {
+            window[funcName]();
+          } else {
+            // For simple string/number args, try to parse
+            try {
+              var args = funcArgs.split(',').map(function(arg) {
+                arg = arg.trim();
+                // Remove quotes for string args
+                if ((arg.startsWith("'") && arg.endsWith("'")) || (arg.startsWith('"') && arg.endsWith('"'))) {
+                  return arg.slice(1, -1);
+                }
+                // Try to parse as number
+                var num = parseFloat(arg);
+                if (!isNaN(num)) return num;
+                // Return as-is (might be a variable reference, won't work)
+                return arg;
+              });
+              window[funcName].apply(window, args);
+            } catch (e) {
+              console.warn('[FeatureGuard] Failed to parse args, calling without:', e);
+              window[funcName]();
+            }
+          }
+          return true;
+        }
+        console.warn('[FeatureGuard] Function not found:', funcName);
       }
       
       console.warn('Feature guard: Unhandled onclick action:', onclickStr);

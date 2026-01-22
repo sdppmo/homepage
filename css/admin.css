@@ -60,6 +60,29 @@ body.loaded {
     border-radius: 4px;
 }
 
+.home-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    background: rgba(100, 116, 139, 0.2);
+    border-radius: 8px;
+    color: #94a3b8;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+.home-btn:hover {
+    background: rgba(100, 116, 139, 0.3);
+    color: #f8fafc;
+}
+
+.home-btn svg {
+    width: 18px;
+    height: 18px;
+}
+
 .header-right {
     display: flex;
     align-items: center;
