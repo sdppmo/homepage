@@ -92,11 +92,27 @@
 
   // Sign out
   function logout() {
+    // Helper to clear all auth storage (ensures logout even if server fails)
+    function clearAuthStorage() {
+      sessionCache = null;
+      profileCache = null;
+      // Clear Supabase localStorage entries
+      Object.keys(localStorage).forEach(function(key) {
+        if (key.includes('sb-') || key.includes('supabase')) {
+          localStorage.removeItem(key);
+        }
+      });
+    }
+    
     return getClient().then(function(client) {
       return client.auth.signOut();
     }).then(function() {
-      sessionCache = null;
-      profileCache = null;
+      clearAuthStorage();
+      window.location.assign('/');
+    }).catch(function(err) {
+      console.warn('SignOut server error, clearing local storage:', err.message);
+      // Even if server signOut fails, clear local storage and redirect
+      clearAuthStorage();
       window.location.assign('/');
     });
   }
