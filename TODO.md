@@ -53,6 +53,16 @@ Client-side JavaScript guards can be bypassed by:
 
 ## Completed Items
 
+### 2026-01-22
+- [x] Auto-login after email verification using stored credentials
+- [x] Security measures for stored credentials (10min timeout, beforeunload cleanup)
+- [x] `check-email-verified` Edge Function for robust verification polling
+- [x] Redirect to home page (not login page) after verification
+- [x] Clean signup.html - removed pending-related elements
+- [x] Admin-users Edge Function fetches from auth.users directly
+- [x] Increased rate limits (20r/s, burst 40) to prevent 429 errors
+
+### 2026-01-21
 - [x] Email verification working (Supabase SMTP + Resend)
 - [x] Login guard modal for K-COL Web Software / Product Schedule (client-side UX)
 - [x] Pending page with email verification countdown

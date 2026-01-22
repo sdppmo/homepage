@@ -1,7 +1,7 @@
 # AI Agent Context - SongDoPartners Homepage
 
 > This document provides context for AI agents working on this project.
-> Last updated: 2026-01-21
+> Last updated: 2026-01-22
 
 ## ⚠️ SECURITY FIRST
 
@@ -473,7 +473,34 @@ After deploying:
 
 ---
 
-## Recent Changes (2026-01-21)
+## Recent Changes (2026-01-22)
+
+### Improved Signup Flow with Auto-Login
+- ✅ Credentials stored in `sessionStorage` after signup for auto-login
+- ✅ `pending.html` polls `check-email-verified` Edge Function (3 second interval)
+- ✅ Auto-login after email verification using stored credentials
+- ✅ Profile creation happens after email verification, before redirect
+- ✅ Clean `signup.html` - removed all pending-related elements
+- ✅ Redirect to home page (`/`) after successful verification
+
+### Security Improvements
+- ✅ Stored credentials auto-cleared after 10 minutes
+- ✅ `beforeunload` event clears credentials (except on success redirect)
+- ✅ Credentials cleared immediately after login attempt (success or fail)
+- ✅ `isNavigatingToHome` flag prevents premature cleanup
+
+### New Edge Functions
+- ✅ `check-email-verified` - Queries `auth.users` directly for verification status
+- ✅ `admin-users` updated - Fetches users from `auth.users`, left-joins `user_profiles`
+
+### Rate Limit Adjustments
+- ✅ Rate: 10r/s → 20r/s (prevents 429 on page load)
+- ✅ Burst: 20 → 40
+- ✅ Connections: 20 → 30
+
+---
+
+## Previous Changes (2026-01-21)
 
 ### Dedicated Auth Pages
 - ✅ Added `/pages/auth/login.html` - standalone login page with modern dark theme
@@ -533,8 +560,18 @@ After deploying:
 1. User clicks "회원가입" button on main page
 2. Redirects to `/pages/auth/signup.html`
 3. User enters email, password (with real-time validation), company info
-4. On success, shows confirmation to check email
-5. User verifies email and can then login
+4. On submit, credentials stored in `sessionStorage` (for auto-login)
+5. Redirects to `/pages/auth/pending.html` with email verification waiting UI
+6. `pending.html` polls `check-email-verified` Edge Function every 3 seconds
+7. When verified, auto-login using stored credentials
+8. Profile created in `user_profiles` table
+9. Redirects to home page with logged-in session
+
+**Security for stored credentials:**
+- `sessionStorage` (cleared when tab closes)
+- 10 minute timeout auto-clear
+- `beforeunload` cleanup (except on success redirect)
+- Immediately cleared after login attempt
 
 ### Session Management
 - Sessions stored in `localStorage` by Supabase client

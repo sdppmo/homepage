@@ -73,8 +73,8 @@ homepage/
 
 nginx에 적용된 보호:
 
-- **Rate Limiting:** IP당 10 req/s, burst 20
-- **연결 제한:** IP당 동시 20개
+- **Rate Limiting:** IP당 20 req/s, burst 40
+- **연결 제한:** IP당 동시 30개
 - **차단 패턴:** path traversal, .php/.git/.env, WordPress 공격, 악성 봇
 - **보안 헤더:** X-Frame-Options, CSP, X-Content-Type-Options 등
 
