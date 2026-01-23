@@ -28,5 +28,6 @@ Write-Host "   종료하려면 Ctrl+C 를 누르세요" -ForegroundColor Green
 Write-Host "========================================" -ForegroundColor Green
 Write-Host ""
 
-Set-Location $PSScriptRoot
+# Go to project root (parent of scripts directory)
+Set-Location (Split-Path $PSScriptRoot -Parent)
 python -m http.server 8080
