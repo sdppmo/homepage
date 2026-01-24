@@ -1921,6 +1921,9 @@
                                         <button onclick="exportColumnNumbersToExcel()" style="padding: 12px 24px; background: #38a169; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; transition: background 0.2s;">
                                             📥 엑셀 다운로드
                                         </button>
+                                        <button onclick="exportColumnNumbersToCSV()" style="padding: 12px 24px; background: #10b981; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; transition: background 0.2s;">
+                                            📄 CSV 다운로드
+                                        </button>
                                         <label for="columnNumberExcelInput" style="padding: 12px 24px; background: #f59e0b; color: white; border-radius: 6px; cursor: pointer; font-size: 14px; display: inline-block; font-weight: 600; transition: background 0.2s;">
                                             🏗️ 엑셀 업로드 (기둥번호 + 좌표)
                                         </label>
@@ -3888,6 +3891,73 @@
             } catch (error) {
                 console.error('엑셀 다운로드 오류:', error);
                 alert('엑셀 다운로드 중 오류가 발생했습니다: ' + (error.message || String(error)));
+            }
+        }
+
+        // 기둥번호 CSV 다운로드
+        function exportColumnNumbersToCSV() {
+            try {
+                // 기본값 가져오기 (저장된 기본값 또는 하드코딩된 기본값)
+                const defaultCoordinates = getDefaultCoordinates();
+                
+                // CSV 헤더
+                let csvContent = 'No.,기둥번호,X 좌표(%),Y 좌표(%)\n';
+                
+                // 기본값을 배열로 변환하여 CSV에 추가 (no 순서대로 정렬)
+                const columnsArray = Object.keys(defaultCoordinates).map(key => {
+                    const col = defaultCoordinates[key];
+                    return {
+                        no: col.no || 0,
+                        name: col.originalName || key,
+                        x: col.left || 0,
+                        y: col.top || 0
+                    };
+                }).sort((a, b) => a.no - b.no);
+                
+                // 정렬된 순서대로 CSV 데이터에 추가
+                columnsArray.forEach(col => {
+                    // CSV 형식: 값에 쉼표나 따옴표가 있으면 따옴표로 감싸고 내부 따옴표는 두 개로
+                    const escapeCSV = (value) => {
+                        const str = String(value || '');
+                        if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+                            return '"' + str.replace(/"/g, '""') + '"';
+                        }
+                        return str;
+                    };
+                    csvContent += `${col.no},${escapeCSV(col.name)},${col.x},${col.y}\n`;
+                });
+                
+                // BOM 추가 (한글 깨짐 방지)
+                const BOM = '\uFEFF';
+                const blob = new Blob([BOM + csvContent], { 
+                    type: 'text/csv;charset=utf-8;' 
+                });
+                
+                // 파일명 생성
+                const now = new Date();
+                const dateStr = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}`;
+                const fileName = `기둥번호_${dateStr}.csv`;
+                
+                // 다운로드
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = fileName;
+                a.style.display = 'none';
+                document.body.appendChild(a);
+                a.click();
+                
+                setTimeout(() => {
+                    try {
+                        document.body.removeChild(a);
+                    } catch (e) {}
+                    setTimeout(() => URL.revokeObjectURL(url), 1000);
+                }, 100);
+                
+                alert(`기둥번호 데이터가 "${fileName}" 파일로 다운로드되었습니다.\n\n파일 크기: ${(blob.size / 1024).toFixed(2)} KB\n\nCSV 파일은 Excel, Google Sheets 등에서 열 수 있습니다.`);
+            } catch (error) {
+                console.error('CSV 다운로드 오류:', error);
+                alert('CSV 다운로드 중 오류가 발생했습니다: ' + (error.message || String(error)));
             }
         }
 

@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>Auto Find Section : Cross H 기둥 자동구조계산 및 철골기둥 BOQ 산출</title>
     <style>
         * {
@@ -131,42 +134,6 @@
             box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
         }
 
-        /* 하중 입력 테이블 스타일 */
-        .load-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 15px;
-        }
-
-        .load-table th,
-        .load-table td {
-            padding: 10px;
-            text-align: center;
-            border: 1px solid #e2e8f0;
-        }
-
-        .load-table th {
-            background: #1e3a5f;
-            color: white;
-            font-weight: 600;
-            font-size: 12px;
-        }
-
-        .load-table td input {
-            width: 100%;
-            padding: 6px;
-            border: 1px solid #cbd5e0;
-            border-radius: 4px;
-            font-size: 13px;
-        }
-
-        .load-table tbody tr:nth-child(even) {
-            background: #f8fafc;
-        }
-
-        .load-table tbody tr:hover {
-            background: #e8f4f8;
-        }
 
         /* 결과 테이블 스타일 (계산서 서식에 맞춤) */
         .result-table {
@@ -269,6 +236,54 @@
         .btn-secondary:hover {
             background: #5568d3;
         }
+
+        /* 하중 입력 테이블 스타일 */
+        .load-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            font-size: 13px;
+            background: white;
+        }
+
+        .load-table th,
+        .load-table td {
+            padding: 8px;
+            text-align: center;
+            border: 1px solid #cbd5e0;
+        }
+
+        .load-table th {
+            background: linear-gradient(135deg, #2c4a7c, #4a6fa5);
+            color: white;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .load-table td input {
+            width: 100%;
+            padding: 6px;
+            border: 1px solid #cbd5e0;
+            border-radius: 4px;
+            font-size: 13px;
+            text-align: center;
+        }
+
+        .load-table td input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .load-table tbody tr:nth-child(even) {
+            background: #f8fafc;
+        }
+
+        .load-table tbody tr:hover {
+            background: #e8f4f8;
+        }
     </style>
     <!-- SheetJS for Excel file handling -->
     <script>
@@ -356,7 +371,7 @@
                 <div class="input-row">
                     <div class="input-group">
                         <label>기둥 개수</label>
-                        <input type="number" id="columnCount" value="3" min="1" max="20" onchange="updateLoadTable()" oninput="updateLoadTable()">
+                        <input type="number" id="columnCount" value="3" min="1" max="20">
                     </div>
                     <div class="input-group">
                         <label>Kx</label>
@@ -438,35 +453,63 @@
                 </div>
             </div>
 
-
             <!-- 하중 입력 -->
             <div class="section">
-                <div class="section-title" style="display: flex; justify-content: space-between; align-items: center;">
-                    <span>하중 입력</span>
-                    <div style="display: flex; gap: 8px;">
-                        <button onclick="exportLoadToExcel()" style="padding: 6px 12px; background: #38a169; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 13px;">
-                            📥 엑셀 다운로드
-                        </button>
-                        <label for="excelFileInput" style="padding: 6px 12px; background: #667eea; color: white; border-radius: 4px; cursor: pointer; font-size: 13px; display: inline-block;">
-                            📤 하중 엑셀 업로드
-                        </label>
-                        <input type="file" id="excelFileInput" accept=".xlsx,.xls" style="display: none;" onchange="importLoadFromExcel(event)">
-                    </div>
+                <div class="section-title">하중 입력</div>
+                <div style="overflow-x: auto; margin-top: 15px;">
+                    <table class="load-table" style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                        <thead>
+                            <tr style="background: linear-gradient(135deg, #2c4a7c, #4a6fa5); color: white;">
+                                <th style="padding: 10px; border: 1px solid #ccc; text-align: center; min-width: 50px;">Nos.</th>
+                                <th style="padding: 10px; border: 1px solid #ccc; text-align: center; min-width: 120px;">기둥이름</th>
+                                <th style="padding: 10px; border: 1px solid #ccc; text-align: center; min-width: 100px;">Pu (kN)</th>
+                                <th style="padding: 10px; border: 1px solid #ccc; text-align: center; min-width: 100px;">Mux (kN-m)</th>
+                                <th style="padding: 10px; border: 1px solid #ccc; text-align: center; min-width: 100px;">Muy (kN-m)</th>
+                                <th style="padding: 10px; border: 1px solid #ccc; text-align: center; min-width: 100px;">Lx (m)</th>
+                                <th style="padding: 10px; border: 1px solid #ccc; text-align: center; min-width: 100px;">Ly (m)</th>
+                                <th style="padding: 10px; border: 1px solid #ccc; text-align: center; min-width: 80px;">Kx</th>
+                                <th style="padding: 10px; border: 1px solid #ccc; text-align: center; min-width: 80px;">Ky</th>
+                            </tr>
+                        </thead>
+                        <tbody id="loadTableBody">
+                            <!-- 하중 입력 데이터가 여기에 표시됩니다 -->
+                            <!-- 기본 예시 행 (9개 컬럼) - JavaScript가 실행되지 않아도 보이도록 -->
+                            <tr>
+                                <td style="font-weight: 600; color: #667eea; text-align: center; padding: 8px; border: 1px solid #e2e8f0;">1</td>
+                                <td style="padding: 8px; border: 1px solid #e2e8f0;"><input type="text" id="col1_name" value="KC1" placeholder="기둥이름" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px; font-size: 13px;" onchange="if(typeof updateColumnData === 'function') updateColumnData(1, 'name', this.value)"></td>
+                                <td style="padding: 8px; border: 1px solid #e2e8f0;"><input type="number" id="col1_Pu" value="0" step="0.1" placeholder="Pu" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px; font-size: 13px;" onchange="if(typeof updateColumnData === 'function') updateColumnData(1, 'pu', this.value)"></td>
+                                <td style="padding: 8px; border: 1px solid #e2e8f0;"><input type="number" id="col1_Mux" value="0" step="0.1" placeholder="Mux" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px; font-size: 13px;" onchange="if(typeof updateColumnData === 'function') updateColumnData(1, 'mux', this.value)"></td>
+                                <td style="padding: 8px; border: 1px solid #e2e8f0;"><input type="number" id="col1_Muy" value="0" step="0.1" placeholder="Muy" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px; font-size: 13px;" onchange="if(typeof updateColumnData === 'function') updateColumnData(1, 'muy', this.value)"></td>
+                                <td style="padding: 8px; border: 1px solid #e2e8f0;"><input type="number" id="col1_Lx" value="4.5" step="0.001" placeholder="Lx (m)" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px; font-size: 13px;" onchange="if(typeof updateColumnData === 'function') updateColumnData(1, 'lx', this.value)"></td>
+                                <td style="padding: 8px; border: 1px solid #e2e8f0;"><input type="number" id="col1_Ly" value="4.5" step="0.001" placeholder="Ly (m)" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px; font-size: 13px;" onchange="if(typeof updateColumnData === 'function') updateColumnData(1, 'ly', this.value)"></td>
+                                <td style="padding: 8px; border: 1px solid #e2e8f0;"><input type="number" id="col1_Kx" value="0.8" step="0.1" placeholder="Kx" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px; font-size: 13px;" onchange="if(typeof updateColumnData === 'function') updateColumnData(1, 'kx', this.value)"></td>
+                                <td style="padding: 8px; border: 1px solid #e2e8f0;"><input type="number" id="col1_Ky" value="0.8" step="0.1" placeholder="Ky" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px; font-size: 13px;" onchange="if(typeof updateColumnData === 'function') updateColumnData(1, 'ky', this.value)"></td>
+                            </tr>
+                            <tr>
+                                <td style="font-weight: 600; color: #667eea; text-align: center; padding: 8px; border: 1px solid #e2e8f0;">2</td>
+                                <td style="padding: 8px; border: 1px solid #e2e8f0;"><input type="text" id="col2_name" value="KC2" placeholder="기둥이름" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px; font-size: 13px;" onchange="if(typeof updateColumnData === 'function') updateColumnData(2, 'name', this.value)"></td>
+                                <td style="padding: 8px; border: 1px solid #e2e8f0;"><input type="number" id="col2_Pu" value="0" step="0.1" placeholder="Pu" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px; font-size: 13px;" onchange="if(typeof updateColumnData === 'function') updateColumnData(2, 'pu', this.value)"></td>
+                                <td style="padding: 8px; border: 1px solid #e2e8f0;"><input type="number" id="col2_Mux" value="0" step="0.1" placeholder="Mux" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px; font-size: 13px;" onchange="if(typeof updateColumnData === 'function') updateColumnData(2, 'mux', this.value)"></td>
+                                <td style="padding: 8px; border: 1px solid #e2e8f0;"><input type="number" id="col2_Muy" value="0" step="0.1" placeholder="Muy" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px; font-size: 13px;" onchange="if(typeof updateColumnData === 'function') updateColumnData(2, 'muy', this.value)"></td>
+                                <td style="padding: 8px; border: 1px solid #e2e8f0;"><input type="number" id="col2_Lx" value="4.5" step="0.001" placeholder="Lx (m)" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px; font-size: 13px;" onchange="if(typeof updateColumnData === 'function') updateColumnData(2, 'lx', this.value)"></td>
+                                <td style="padding: 8px; border: 1px solid #e2e8f0;"><input type="number" id="col2_Ly" value="4.5" step="0.001" placeholder="Ly (m)" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px; font-size: 13px;" onchange="if(typeof updateColumnData === 'function') updateColumnData(2, 'ly', this.value)"></td>
+                                <td style="padding: 8px; border: 1px solid #e2e8f0;"><input type="number" id="col2_Kx" value="0.8" step="0.1" placeholder="Kx" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px; font-size: 13px;" onchange="if(typeof updateColumnData === 'function') updateColumnData(2, 'kx', this.value)"></td>
+                                <td style="padding: 8px; border: 1px solid #e2e8f0;"><input type="number" id="col2_Ky" value="0.8" step="0.1" placeholder="Ky" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px; font-size: 13px;" onchange="if(typeof updateColumnData === 'function') updateColumnData(2, 'ky', this.value)"></td>
+                            </tr>
+                            <tr>
+                                <td style="font-weight: 600; color: #667eea; text-align: center; padding: 8px; border: 1px solid #e2e8f0;">3</td>
+                                <td style="padding: 8px; border: 1px solid #e2e8f0;"><input type="text" id="col3_name" value="KC3" placeholder="기둥이름" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px; font-size: 13px;" onchange="if(typeof updateColumnData === 'function') updateColumnData(3, 'name', this.value)"></td>
+                                <td style="padding: 8px; border: 1px solid #e2e8f0;"><input type="number" id="col3_Pu" value="0" step="0.1" placeholder="Pu" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px; font-size: 13px;" onchange="if(typeof updateColumnData === 'function') updateColumnData(3, 'pu', this.value)"></td>
+                                <td style="padding: 8px; border: 1px solid #e2e8f0;"><input type="number" id="col3_Mux" value="0" step="0.1" placeholder="Mux" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px; font-size: 13px;" onchange="if(typeof updateColumnData === 'function') updateColumnData(3, 'mux', this.value)"></td>
+                                <td style="padding: 8px; border: 1px solid #e2e8f0;"><input type="number" id="col3_Muy" value="0" step="0.1" placeholder="Muy" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px; font-size: 13px;" onchange="if(typeof updateColumnData === 'function') updateColumnData(3, 'muy', this.value)"></td>
+                                <td style="padding: 8px; border: 1px solid #e2e8f0;"><input type="number" id="col3_Lx" value="4.5" step="0.001" placeholder="Lx (m)" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px; font-size: 13px;" onchange="if(typeof updateColumnData === 'function') updateColumnData(3, 'lx', this.value)"></td>
+                                <td style="padding: 8px; border: 1px solid #e2e8f0;"><input type="number" id="col3_Ly" value="4.5" step="0.001" placeholder="Ly (m)" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px; font-size: 13px;" onchange="if(typeof updateColumnData === 'function') updateColumnData(3, 'ly', this.value)"></td>
+                                <td style="padding: 8px; border: 1px solid #e2e8f0;"><input type="number" id="col3_Kx" value="0.8" step="0.1" placeholder="Kx" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px; font-size: 13px;" onchange="if(typeof updateColumnData === 'function') updateColumnData(3, 'kx', this.value)"></td>
+                                <td style="padding: 8px; border: 1px solid #e2e8f0;"><input type="number" id="col3_Ky" value="0.8" step="0.1" placeholder="Ky" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px; font-size: 13px;" onchange="if(typeof updateColumnData === 'function') updateColumnData(3, 'ky', this.value)"></td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
-                <table class="load-table">
-                    <thead>
-                        <tr>
-                            <th>No.</th>
-                            <th>기둥 이름</th>
-                            <th>Pu (kN)</th>
-                            <th>Mux (kN·m)</th>
-                            <th>Muy (kN·m)</th>
-                        </tr>
-                    </thead>
-                    <tbody id="loadTableBody">
-                        <!-- JavaScript로 동적 생성 -->
-                    </tbody>
-                </table>
             </div>
 
             <!-- 계산 및 결과 -->
@@ -616,22 +659,32 @@
         
         const steelDensity = 7850; // kg/m³
 
-        // 하중 데이터 배열
-        let columnData = [];
         // 계산 결과 배열 (전역)
         let currentResults = [];
 
         // 페이지 로드 시 초기화
         document.addEventListener('DOMContentLoaded', function() {
+            // 하중 입력 테이블 초기화
             updateLoadTable();
+            
             updateThicknessRanges(); // 두께 범위 초기 표시
             addBOQLengthModal();
             addSubMaterialModal();
             addUnitPriceModal();
             
+            // 기둥 개수 변경 시 테이블 업데이트
+            const columnCountInput = document.getElementById('columnCount');
+            if (columnCountInput) {
+                columnCountInput.addEventListener('change', function() {
+                    updateLoadTable();
+                });
+            }
+            
             // 저장된 입력값 복원
             setTimeout(() => {
                 restoreInputValues();
+                // 복원 후 테이블 다시 업데이트
+                updateLoadTable();
             }, 100); // DOM이 완전히 로드된 후 복원
             
             // 페이지 포커스 시 입력값 복원 (계산서에서 돌아올 때)
@@ -664,36 +717,6 @@
                 }
             });
             
-            // 기둥 데이터 입력 필드에도 이벤트 리스너 추가 (동적으로 생성되는 필드)
-            const observer = new MutationObserver(function(mutations) {
-                mutations.forEach(function(mutation) {
-                    if (mutation.addedNodes.length) {
-                        // 새로 추가된 입력 필드에 이벤트 리스너 추가
-                        mutation.addedNodes.forEach(function(node) {
-                            if (node.nodeType === 1) { // Element node
-                                const inputs = node.querySelectorAll ? node.querySelectorAll('input[type="text"], input[type="number"]') : [];
-                                inputs.forEach(function(input) {
-                                    if (input.id && (input.id.startsWith('col') && (input.id.includes('_name') || input.id.includes('_Pu') || input.id.includes('_Mux') || input.id.includes('_Muy')))) {
-                                        input.addEventListener('change', function() {
-                                            saveInputValues();
-                                        });
-                                        input.addEventListener('blur', function() {
-                                            saveInputValues();
-                                        });
-                                    }
-                                });
-                            }
-                        });
-                    }
-                });
-            });
-            
-            // loadTableBody를 관찰하여 동적으로 추가되는 입력 필드에도 이벤트 리스너 추가
-            const loadTableBody = document.getElementById('loadTableBody');
-            if (loadTableBody) {
-                observer.observe(loadTableBody, { childList: true, subtree: true });
-            }
-            
             // 모달 외부 클릭 시 닫기
             document.addEventListener('click', function(e) {
                 const boqLengthModal = document.getElementById('boqLengthModal');
@@ -711,60 +734,279 @@
             });
         });
 
-        // 하중 입력 테이블 업데이트 (기둥 개수에 따라 동적 생성)
+        // 하중 데이터 배열
+        let columnData = [];
+
+        // 하중 입력 테이블 업데이트 함수
         function updateLoadTable() {
+            console.log('🔄 updateLoadTable 함수 호출됨');
             const tbody = document.getElementById('loadTableBody');
-            if (!tbody) return;
+            if (!tbody) {
+                console.error('❌ loadTableBody를 찾을 수 없습니다!');
+                return;
+            }
+            console.log('✅ loadTableBody 찾음');
             
+            // 강제로 9개 컬럼 보장: 기존 행이 9개 컬럼이 아니면 무조건 재생성
+            const existingRows = tbody.querySelectorAll('tr');
+            if (existingRows.length > 0) {
+                const firstRow = existingRows[0];
+                const cells = firstRow.querySelectorAll('td');
+                console.log(`📊 기존 테이블 확인: ${existingRows.length}개 행, 첫 번째 행에 ${cells.length}개 컬럼`);
+                if (cells.length !== 9) {
+                    console.warn(`⚠️ 기존 테이블이 ${cells.length}개 컬럼입니다. 9개 컬럼으로 강제 재생성합니다.`);
+                    tbody.innerHTML = ''; // 기존 행 제거
+                } else {
+                    console.log('✅ 이미 9개 컬럼 테이블이 있습니다.');
+                    // 행 개수만 조정 (필요시)
+                    const count = parseInt(document.getElementById('columnCount')?.value) || 3;
+                    if (existingRows.length !== count) {
+                        console.log(`📝 행 개수 조정: ${existingRows.length}개 → ${count}개`);
+                        // 행 개수 조정 로직은 아래에서 처리
+                    } else {
+                        return; // 이미 올바른 상태
+                    }
+                }
+            }
+
             const count = parseInt(document.getElementById('columnCount').value) || 3;
+            console.log(`📊 기둥 개수: ${count}`);
             
-            // 기존 데이터 보존
+            // 기존 데이터 보존 (먼저 수집)
             const existingData = {};
-            columnData.forEach(col => {
-                existingData[col.no] = col;
-            });
-            
-            tbody.innerHTML = '';
-            columnData = [];
-            
-            // 입력한 개수만큼 행 생성
-            for (let i = 1; i <= count; i++) {
-                const existing = existingData[i];
-                const colName = `KC${i}`;
-                columnData.push({
-                    no: i,
-                    name: existing?.name || colName,
-                    pu: existing?.pu || 0,
-                    mux: existing?.mux || 0,
-                    muy: existing?.muy || 0
+            if (Array.isArray(columnData)) {
+                columnData.forEach(col => {
+                    if (col && col.no) {
+                        existingData[col.no] = col;
+                    }
                 });
-                
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td style="font-weight: 600; color: #667eea; text-align: center;">${i}</td>
-                    <td><input type="text" id="col${i}_name" value="${existing?.name || colName}" 
-                               placeholder="기둥 이름" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;"
-                               onchange="updateColumnData(${i}, 'name', this.value); saveInputValues();"></td>
-                    <td><input type="number" id="col${i}_Pu" value="${existing?.pu || 0}" step="0.1" placeholder="Pu" 
-                               style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;"
-                               onchange="updateColumnData(${i}, 'pu', this.value); saveInputValues();"></td>
-                    <td><input type="number" id="col${i}_Mux" value="${existing?.mux || 0}" step="0.1" placeholder="Mux" 
-                               style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;"
-                               onchange="updateColumnData(${i}, 'mux', this.value); saveInputValues();"></td>
-                    <td><input type="number" id="col${i}_Muy" value="${existing?.muy || 0}" step="0.1" placeholder="Muy" 
-                               style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;"
-                               onchange="updateColumnData(${i}, 'muy', this.value); saveInputValues();"></td>
-                `;
-                tbody.appendChild(row);
             }
             
-            // 기둥 개수 변경 시 저장
-            saveInputValues();
+            // 기존 행이 9개 컬럼인지 확인
+            const existingRows = tbody.querySelectorAll('tr');
+            if (existingRows.length > 0) {
+                const firstRow = existingRows[0];
+                const cells = firstRow.querySelectorAll('td');
+                console.log(`현재 테이블 상태: ${existingRows.length}개 행, 첫 번째 행에 ${cells.length}개 컬럼`);
+                
+                // 9개 컬럼이 아니면 무조건 재생성
+                if (cells.length !== 9) {
+                    console.warn(`⚠️ 기존 테이블이 ${cells.length}개 컬럼입니다. 9개 컬럼으로 재생성합니다.`);
+                    // 기존 데이터를 먼저 수집
+                    existingRows.forEach((row, index) => {
+                        const rowNum = index + 1;
+                        const nameInput = row.querySelector(`#col${rowNum}_name`);
+                        const puInput = row.querySelector(`#col${rowNum}_Pu`);
+                        const muxInput = row.querySelector(`#col${rowNum}_Mux`);
+                        const muyInput = row.querySelector(`#col${rowNum}_Muy`);
+                        const lxInput = row.querySelector(`#col${rowNum}_Lx`);
+                        const lyInput = row.querySelector(`#col${rowNum}_Ly`);
+                        const kxInput = row.querySelector(`#col${rowNum}_Kx`);
+                        const kyInput = row.querySelector(`#col${rowNum}_Ky`);
+                        
+                        if (nameInput || puInput) {
+                            existingData[rowNum] = {
+                                name: nameInput?.value || `KC${rowNum}`,
+                                pu: parseFloat(puInput?.value) || 0,
+                                mux: parseFloat(muxInput?.value) || 0,
+                                muy: parseFloat(muyInput?.value) || 0,
+                                lx: parseFloat(lxInput?.value) || 4.5,
+                                ly: parseFloat(lyInput?.value) || 4.5,
+                                kx: parseFloat(kxInput?.value) || 0.8,
+                                ky: parseFloat(kyInput?.value) || 0.8
+                            };
+                        }
+                    });
+                } else {
+                    // 이미 9개 컬럼이 있으면 재생성 생략 (행 개수는 무시)
+                    console.log('✅ 이미 9개 컬럼 테이블이 있습니다. 재생성 생략.');
+                    // 기존 HTML 행의 데이터를 columnData에 반영
+                    existingRows.forEach((row, index) => {
+                        const rowNum = index + 1;
+                        const nameInput = row.querySelector(`#col${rowNum}_name`);
+                        const puInput = row.querySelector(`#col${rowNum}_Pu`);
+                        const muxInput = row.querySelector(`#col${rowNum}_Mux`);
+                        const muyInput = row.querySelector(`#col${rowNum}_Muy`);
+                        const lxInput = row.querySelector(`#col${rowNum}_Lx`);
+                        const lyInput = row.querySelector(`#col${rowNum}_Ly`);
+                        const kxInput = row.querySelector(`#col${rowNum}_Kx`);
+                        const kyInput = row.querySelector(`#col${rowNum}_Ky`);
+                        
+                        if (nameInput || puInput) {
+                            const existingCol = columnData.find(c => c.no === rowNum);
+                            if (existingCol) {
+                                existingCol.name = nameInput?.value || `KC${rowNum}`;
+                                existingCol.pu = parseFloat(puInput?.value) || 0;
+                                existingCol.mux = parseFloat(muxInput?.value) || 0;
+                                existingCol.muy = parseFloat(muyInput?.value) || 0;
+                                existingCol.lx = parseFloat(lxInput?.value) || 4.5;
+                                existingCol.ly = parseFloat(lyInput?.value) || 4.5;
+                                existingCol.kx = parseFloat(kxInput?.value) || 0.8;
+                                existingCol.ky = parseFloat(kyInput?.value) || 0.8;
+                            } else {
+                                columnData.push({
+                                    no: rowNum,
+                                    name: nameInput?.value || `KC${rowNum}`,
+                                    pu: parseFloat(puInput?.value) || 0,
+                                    mux: parseFloat(muxInput?.value) || 0,
+                                    muy: parseFloat(muyInput?.value) || 0,
+                                    lx: parseFloat(lxInput?.value) || 4.5,
+                                    ly: parseFloat(lyInput?.value) || 4.5,
+                                    kx: parseFloat(kxInput?.value) || 0.8,
+                                    ky: parseFloat(kyInput?.value) || 0.8
+                                });
+                            }
+                        }
+                    });
+                    return; // 기존 HTML 행 보존하고 종료
+                }
+            }
+            
+            tbody.innerHTML = '';
+            if (Array.isArray(columnData)) {
+                columnData.forEach(col => {
+                    if (col && col.no) {
+                        existingData[col.no] = col;
+                    }
+                });
+            }
+
+            // 테이블 행 생성
+            for (let i = 1; i <= count; i++) {
+                const existing = existingData[i];
+                const row = document.createElement('tr');
+
+                // Nos.
+                const td1 = document.createElement('td');
+                td1.style.cssText = 'font-weight: 600; color: #667eea; text-align: center;';
+                td1.textContent = i;
+                row.appendChild(td1);
+
+                // 기둥이름
+                const td2 = document.createElement('td');
+                const input2 = document.createElement('input');
+                input2.type = 'text';
+                input2.id = `col${i}_name`;
+                input2.value = existing?.name || `KC${i}`;
+                input2.placeholder = '기둥이름';
+                input2.onchange = function() { updateColumnData(i, 'name', this.value); };
+                td2.appendChild(input2);
+                row.appendChild(td2);
+
+                // Pu (kN)
+                const td3 = document.createElement('td');
+                const input3 = document.createElement('input');
+                input3.type = 'number';
+                input3.id = `col${i}_Pu`;
+                input3.value = existing?.pu !== undefined ? existing.pu : 0;
+                input3.step = '0.1';
+                input3.placeholder = 'Pu';
+                input3.onchange = function() { updateColumnData(i, 'pu', this.value); };
+                td3.appendChild(input3);
+                row.appendChild(td3);
+
+                // Mux (kN-m)
+                const td4 = document.createElement('td');
+                const input4 = document.createElement('input');
+                input4.type = 'number';
+                input4.id = `col${i}_Mux`;
+                input4.value = existing?.mux !== undefined ? existing.mux : 0;
+                input4.step = '0.1';
+                input4.placeholder = 'Mux';
+                input4.onchange = function() { updateColumnData(i, 'mux', this.value); };
+                td4.appendChild(input4);
+                row.appendChild(td4);
+
+                // Muy (kN-m)
+                const td5 = document.createElement('td');
+                const input5 = document.createElement('input');
+                input5.type = 'number';
+                input5.id = `col${i}_Muy`;
+                input5.value = existing?.muy !== undefined ? existing.muy : 0;
+                input5.step = '0.1';
+                input5.placeholder = 'Muy';
+                input5.onchange = function() { updateColumnData(i, 'muy', this.value); };
+                td5.appendChild(input5);
+                row.appendChild(td5);
+
+                // Lx (m) - 새로 추가
+                const td6 = document.createElement('td');
+                const input6 = document.createElement('input');
+                input6.type = 'number';
+                input6.id = `col${i}_Lx`;
+                input6.value = existing?.lx !== undefined ? existing.lx : (parseFloat(document.getElementById('Lx')?.value) || 4.5);
+                input6.step = '0.001';
+                input6.placeholder = 'Lx (m)';
+                input6.onchange = function() { updateColumnData(i, 'lx', this.value); };
+                td6.appendChild(input6);
+                row.appendChild(td6);
+
+                // Ly (m)
+                const td7 = document.createElement('td');
+                const input7 = document.createElement('input');
+                input7.type = 'number';
+                input7.id = `col${i}_Ly`;
+                input7.value = existing?.ly !== undefined ? existing.ly : (parseFloat(document.getElementById('Ly')?.value) || 4.5);
+                input7.step = '0.001';
+                input7.placeholder = 'Ly (m)';
+                input7.onchange = function() { updateColumnData(i, 'ly', this.value); };
+                td7.appendChild(input7);
+                row.appendChild(td7);
+
+                // Kx
+                const td8 = document.createElement('td');
+                const input8 = document.createElement('input');
+                input8.type = 'number';
+                input8.id = `col${i}_Kx`;
+                input8.value = existing?.kx !== undefined ? existing.kx : (parseFloat(document.getElementById('Kx')?.value) || 0.8);
+                input8.step = '0.1';
+                input8.placeholder = 'Kx';
+                input8.onchange = function() { updateColumnData(i, 'kx', this.value); };
+                td8.appendChild(input8);
+                row.appendChild(td8);
+
+                // Ky
+                const td9 = document.createElement('td');
+                const input9 = document.createElement('input');
+                input9.type = 'number';
+                input9.id = `col${i}_Ky`;
+                input9.value = existing?.ky !== undefined ? existing.ky : (parseFloat(document.getElementById('Ky')?.value) || 0.8);
+                input9.step = '0.1';
+                input9.placeholder = 'Ky';
+                input9.onchange = function() { updateColumnData(i, 'ky', this.value); };
+                td9.appendChild(input9);
+                row.appendChild(td9);
+
+                tbody.appendChild(row);
+
+                // columnData 업데이트
+                if (!existing) {
+                    columnData.push({
+                        no: i,
+                        name: input2.value,
+                        pu: parseFloat(input3.value) || 0,
+                        mux: parseFloat(input4.value) || 0,
+                        muy: parseFloat(input5.value) || 0,
+                        lx: parseFloat(input6.value) || 4.5,
+                        ly: parseFloat(input7.value) || 4.5,
+                        kx: parseFloat(input8.value) || 0.8,
+                        ky: parseFloat(input9.value) || 0.8
+                    });
+                }
+            }
+            
+            console.log(`✅ 테이블 생성 완료: ${count}개 행, 각 행은 9개 컬럼 (Nos, 기둥이름, Pu, Mux, Muy, Lx, Ly, Kx, Ky)`);
+            const firstRow = tbody.querySelector('tr');
+            if (firstRow) {
+                const cellCount = firstRow.querySelectorAll('td').length;
+                console.log(`✅ 첫 번째 행의 컬럼 수: ${cellCount}개`);
+            }
         }
+        
+        // 전역 함수로 노출 (브라우저 콘솔에서 직접 호출 가능)
+        window.updateLoadTable = updateLoadTable;
 
-        // 기존 updateColumnTable 함수 제거하고 updateLoadTable 사용
-
-        // 하중 데이터 업데이트
+        // 하중 데이터 업데이트 함수
         function updateColumnData(no, field, value) {
             const col = columnData.find(c => c.no === no);
             if (col) {
@@ -776,229 +1018,14 @@
                     col.mux = parseFloat(value) || 0;
                 } else if (field === 'muy') {
                     col.muy = parseFloat(value) || 0;
-                }
-                // 기둥 데이터 변경 시 즉시 저장
-                saveInputValues();
-            }
-        }
-
-        // 하중 입력 데이터를 엑셀로 다운로드
-        async function exportLoadToExcel() {
-            try {
-                // XLSX 라이브러리 로드 확인 및 대기
-                let XLSXLib = window.XLSX || (typeof XLSX !== 'undefined' ? XLSX : null);
-                
-                if (!XLSXLib || typeof XLSXLib.utils === 'undefined') {
-                    // 라이브러리 로드 시도
-                    console.log('XLSX 라이브러리 로드 중...');
-                    
-                    try {
-                        // loadXLSXLibrary 함수가 있으면 사용
-                        if (typeof loadXLSXLibrary === 'function') {
-                            XLSXLib = await loadXLSXLibrary();
-                        } else {
-                            // 직접 로드 시도
-                            const script = document.createElement('script');
-                            script.src = 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
-                            script.async = false; // 동기 로드로 변경
-                            document.head.appendChild(script);
-                            
-                            // 로드 완료 대기 (최대 5초)
-                            await new Promise((resolve, reject) => {
-                                let attempts = 0;
-                                const checkInterval = setInterval(() => {
-                                    attempts++;
-                                    if (typeof XLSX !== 'undefined' && window.XLSX && window.XLSX.utils) {
-                                        clearInterval(checkInterval);
-                                        XLSXLib = window.XLSX;
-                                        resolve();
-                                    } else if (attempts > 50) { // 5초 대기
-                                        clearInterval(checkInterval);
-                                        reject(new Error('라이브러리 로드 타임아웃'));
-                                    }
-                                }, 100);
-                            });
-                        }
-                    } catch (loadError) {
-                        console.error('XLSX 라이브러리 로드 실패:', loadError);
-                        alert('엑셀 라이브러리를 로드할 수 없습니다.\n\n해결 방법:\n1. 인터넷 연결을 확인해주세요\n2. 브라우저 캐시를 삭제하고 페이지를 새로고침해주세요 (Ctrl+Shift+R)\n3. 브라우저 콘솔(F12)에서 자세한 오류를 확인해주세요\n4. 방화벽이나 보안 프로그램이 CDN 접근을 차단하지 않는지 확인해주세요');
-                        return;
-                    }
-                }
-                
-                // 최종 확인
-                if (!XLSXLib || typeof XLSXLib.utils === 'undefined') {
-                    alert('엑셀 라이브러리가 로드되지 않았습니다.\n\n해결 방법:\n1. 페이지를 새로고침해주세요 (F5 또는 Ctrl+R)\n2. 인터넷 연결을 확인해주세요\n3. 브라우저 콘솔(F12)에서 오류를 확인해주세요');
-                    console.error('XLSX is not defined. window.XLSX:', window.XLSX, 'typeof XLSX:', typeof XLSX);
-                    return;
-                }
-                
-                // columnData 확인
-                if (!columnData || !Array.isArray(columnData)) {
-                    alert('하중 데이터가 없습니다. 먼저 하중을 입력해주세요.');
-                    console.error('columnData is not an array:', columnData);
-                    return;
-                }
-                
-                // 현재 columnData를 사용하여 워크북 생성
-                const wsData = [
-                    ['No.', '기둥 이름', 'Pu (kN)', 'Mux (kN·m)', 'Muy (kN·m)']
-                ];
-                
-                if (columnData.length === 0) {
-                    alert('다운로드할 하중 데이터가 없습니다. 먼저 하중을 입력해주세요.');
-                    return;
-                }
-                
-                columnData.forEach(col => {
-                    if (col && typeof col === 'object') {
-                        wsData.push([
-                            col.no || '',
-                            col.name || `KC${col.no || ''}`,
-                            typeof col.pu === 'number' ? col.pu : (parseFloat(col.pu) || 0),
-                            typeof col.mux === 'number' ? col.mux : (parseFloat(col.mux) || 0),
-                            typeof col.muy === 'number' ? col.muy : (parseFloat(col.muy) || 0)
-                        ]);
-                    }
-                });
-                
-                if (wsData.length <= 1) {
-                    alert('다운로드할 하중 데이터가 없습니다.');
-                    return;
-                }
-                
-                const ws = XLSXLib.utils.aoa_to_sheet(wsData);
-                
-                // 컬럼 너비 설정
-                ws['!cols'] = [
-                    { wch: 5 },   // No.
-                    { wch: 15 },  // 기둥 이름
-                    { wch: 12 },  // Pu
-                    { wch: 12 },  // Mux
-                    { wch: 12 }   // Muy
-                ];
-                
-                // 워크북이 비어있는지 확인
-                if (!ws || !wsData || wsData.length <= 1) {
-                    alert('다운로드할 데이터가 없습니다.');
-                    return;
-                }
-                
-                const wb = XLSXLib.utils.book_new();
-                XLSXLib.utils.book_append_sheet(wb, ws, '하중입력');
-                
-                // 파일명 생성 (현재 날짜/시간 포함)
-                const now = new Date();
-                const dateStr = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}`;
-                const fileName = `하중입력_${dateStr}.xlsx`;
-                
-                // Blob 방식으로 엑셀 파일 다운로드 (더 안정적)
-                try {
-                    // 워크북을 배열로 변환
-                    if (!XLSXLib.write) {
-                        throw new Error('XLSX.write 함수를 사용할 수 없습니다. 라이브러리가 올바르게 로드되지 않았습니다.');
-                    }
-                    
-                    const wbout = XLSXLib.write(wb, { bookType: 'xlsx', type: 'array', cellStyles: false });
-                    
-                    if (!wbout || wbout.length === 0) {
-                        throw new Error('엑셀 파일 데이터 생성에 실패했습니다.');
-                    }
-                    
-                    // Blob 생성
-                    if (typeof Blob === 'undefined') {
-                        throw new Error('Blob을 지원하지 않는 브라우저입니다. 최신 브라우저를 사용해주세요.');
-                    }
-                    
-                    const blob = new Blob([wbout], { 
-                        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
-                    });
-                    
-                    if (!blob || blob.size === 0) {
-                        throw new Error('엑셀 파일 생성에 실패했습니다. (파일 크기 0)');
-                    }
-                    
-                    // 다운로드 링크 생성 및 실행
-                    if (typeof URL === 'undefined' || typeof URL.createObjectURL === 'undefined') {
-                        throw new Error('URL.createObjectURL을 지원하지 않는 브라우저입니다.');
-                    }
-                    
-                    // 팝업 차단을 피하기 위한 다운로드 방법
-                    const url = URL.createObjectURL(blob);
-                    
-                    try {
-                        // 방법 1: 직접 링크 클릭 (가장 안전)
-                        const a = document.createElement('a');
-                        a.href = url;
-                        a.download = fileName;
-                        a.style.display = 'none';
-                        
-                        // DOM에 추가 (일부 브라우저에서 필요)
-                        document.body.appendChild(a);
-                        
-                        // 사용자 상호작용 컨텍스트 내에서 실행
-                        a.click();
-                        
-                        // 정리
-                        setTimeout(() => {
-                            try {
-                                document.body.removeChild(a);
-                            } catch (e) {
-                                // 이미 제거되었을 수 있음
-                            }
-                            setTimeout(() => {
-                                URL.revokeObjectURL(url);
-                            }, 1000);
-                        }, 100);
-                        
-                        alert(`하중 입력 데이터가 "${fileName}" 파일로 다운로드되었습니다.\n\n파일 크기: ${(blob.size / 1024).toFixed(2)} KB\n\n팝업이 차단된 경우 브라우저 주소창 옆 팝업 차단 아이콘을 클릭하여 허용해주세요.`);
-                    } catch (clickError) {
-                        // 방법 2: window.open 사용 (대체 방법)
-                        console.warn('a.click() 실패, window.open 시도:', clickError);
-                        const newWindow = window.open(url, '_blank');
-                        if (newWindow) {
-                            alert(`하중 입력 데이터 다운로드를 시작했습니다.\n\n파일명: ${fileName}\n파일 크기: ${(blob.size / 1024).toFixed(2)} KB\n\n새 창이 열리면 파일을 저장해주세요.`);
-                            setTimeout(() => {
-                                URL.revokeObjectURL(url);
-                            }, 1000);
-                        } else {
-                            // 방법 3: 사용자에게 직접 다운로드 링크 제공
-                            const downloadMsg = `팝업이 차단되었습니다.\n\n다음 링크를 클릭하거나 우클릭하여 "다른 이름으로 저장"을 선택해주세요:\n\n파일명: ${fileName}\n파일 크기: ${(blob.size / 1024).toFixed(2)} KB`;
-                            alert(downloadMsg);
-                            
-                            // 화면에 다운로드 링크 표시
-                            const linkDiv = document.createElement('div');
-                            linkDiv.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:white;padding:20px;border:2px solid #667eea;border-radius:8px;z-index:10000;box-shadow:0 4px 12px rgba(0,0,0,0.3);';
-                            linkDiv.innerHTML = `
-                                <h3 style="margin:0 0 10px 0;color:#1e3a5f;">파일 다운로드</h3>
-                                <p style="margin:0 0 15px 0;color:#666;">팝업이 차단되었습니다. 아래 링크를 클릭하거나 우클릭하여 저장해주세요:</p>
-                                <a href="${url}" download="${fileName}" style="display:inline-block;padding:10px 20px;background:#667eea;color:white;text-decoration:none;border-radius:4px;margin-right:10px;">${fileName} 다운로드</a>
-                                <button onclick="this.parentElement.remove(); URL.revokeObjectURL('${url}');" style="padding:10px 20px;background:#999;color:white;border:none;border-radius:4px;cursor:pointer;">닫기</button>
-                            `;
-                            document.body.appendChild(linkDiv);
-                            
-                            // 30초 후 자동 정리
-                            setTimeout(() => {
-                                if (document.body.contains(linkDiv)) {
-                                    linkDiv.remove();
-                                    URL.revokeObjectURL(url);
-                                }
-                            }, 30000);
-                        }
-                    }
-                } catch (writeError) {
-                    console.error('파일 생성 오류:', writeError);
-                    const errorMsg = writeError.message || String(writeError);
-                    alert(`엑셀 파일 다운로드 중 오류가 발생했습니다.\n\n오류 내용: ${errorMsg}\n\n해결 방법:\n1. 페이지를 새로고침해주세요 (F5)\n2. 브라우저 콘솔(F12)에서 자세한 오류를 확인해주세요\n3. 다른 브라우저에서 시도해보세요`);
-                    throw writeError;
-                }
-            } catch (error) {
-                console.error('엑셀 다운로드 오류:', error);
-                const errorMsg = error.message || String(error);
-                
-                // 에러 메시지가 이미 표시되었는지 확인
-                if (!error.message || !error.message.includes('엑셀 파일 다운로드')) {
-                    alert(`엑셀 다운로드 중 오류가 발생했습니다.\n\n오류 내용: ${errorMsg}\n\n해결 방법:\n1. 페이지를 새로고침해주세요 (F5 또는 Ctrl+R)\n2. 인터넷 연결을 확인해주세요\n3. 브라우저 콘솔(F12)에서 자세한 오류를 확인해주세요\n4. 하중 데이터를 다시 입력한 후 시도해주세요`);
+                } else if (field === 'lx') {
+                    col.lx = parseFloat(value) || 4.5;
+                } else if (field === 'ly') {
+                    col.ly = parseFloat(value) || 4.5;
+                } else if (field === 'kx') {
+                    col.kx = parseFloat(value) || 0.8;
+                } else if (field === 'ky') {
+                    col.ky = parseFloat(value) || 0.8;
                 }
             }
         }
@@ -1092,11 +1119,15 @@
                     
                     // 헤더 확인 (첫 번째 행)
                     const headers = jsonData[0].map(h => String(h).toLowerCase().trim());
-                    const noIdx = headers.findIndex(h => h.includes('no') || h === 'no.');
+                    const noIdx = headers.findIndex(h => h.includes('no') || h === 'no.' || h === 'nos.');
                     const nameIdx = headers.findIndex(h => h.includes('기둥') || h.includes('name') || h.includes('이름'));
-                    const puIdx = headers.findIndex(h => h.includes('pu'));
+                    const puIdx = headers.findIndex(h => h.includes('pu') && !h.includes('mux') && !h.includes('muy'));
                     const muxIdx = headers.findIndex(h => h.includes('mux'));
                     const muyIdx = headers.findIndex(h => h.includes('muy'));
+                    const lxIdx = headers.findIndex(h => h.includes('lx') && !h.includes('mux'));
+                    const lyIdx = headers.findIndex(h => h.includes('ly') && !h.includes('muy'));
+                    const kxIdx = headers.findIndex(h => h.includes('kx') && !h.includes('mux'));
+                    const kyIdx = headers.findIndex(h => h.includes('ky') && !h.includes('muy'));
                     
                     if (puIdx === -1) {
                         alert('엑셀 파일에 "Pu" 컬럼이 없습니다. 컬럼명을 확인해주세요.');
@@ -1114,8 +1145,12 @@
                         const pu = puIdx !== -1 ? parseFloat(row[puIdx]) || 0 : 0;
                         const mux = muxIdx !== -1 ? parseFloat(row[muxIdx]) || 0 : 0;
                         const muy = muyIdx !== -1 ? parseFloat(row[muyIdx]) || 0 : 0;
+                        const lx = lxIdx !== -1 ? parseFloat(row[lxIdx]) || 0 : 0;
+                        const ly = lyIdx !== -1 ? parseFloat(row[lyIdx]) || 0 : 0;
+                        const kx = kxIdx !== -1 ? parseFloat(row[kxIdx]) || 1 : 1;
+                        const ky = kyIdx !== -1 ? parseFloat(row[kyIdx]) || 1 : 1;
                         
-                        importedData.push({ no, name, pu, mux, muy });
+                        importedData.push({ no, name, pu, mux, muy, lx, ly, kx, ky });
                     }
                     
                     if (importedData.length === 0) {
@@ -1389,7 +1424,11 @@
                                         name: displayName,
                                         pu: 0,
                                         mux: 0,
-                                        muy: 0
+                                        muy: 0,
+                                        lx: 0,
+                                        ly: 0,
+                                        kx: 1,
+                                        ky: 1
                                     });
                                     updatedCount++;
                                 }
@@ -1400,7 +1439,11 @@
                                     name: displayName,
                                     pu: 0,
                                     mux: 0,
-                                    muy: 0
+                                    muy: 0,
+                                    lx: 0,
+                                    ly: 0,
+                                    kx: 1,
+                                    ky: 1
                                 });
                                 updatedCount++;
                             }
@@ -2055,6 +2098,10 @@
                 const puInput = document.getElementById(`col${i}_Pu`);
                 const muxInput = document.getElementById(`col${i}_Mux`);
                 const muyInput = document.getElementById(`col${i}_Muy`);
+                const lxInput = document.getElementById(`col${i}_Lx`);
+                const lyInput = document.getElementById(`col${i}_Ly`);
+                const kxInput = document.getElementById(`col${i}_Kx`);
+                const kyInput = document.getElementById(`col${i}_Ky`);
                 
                 if (nameInput || puInput || muxInput || muyInput) {
                     columnData.push({
@@ -2062,7 +2109,11 @@
                         name: nameInput?.value?.trim() || `KC${i}`,
                         pu: parseFloat(puInput?.value) || 0,
                         mux: parseFloat(muxInput?.value) || 0,
-                        muy: parseFloat(muyInput?.value) || 0
+                        muy: parseFloat(muyInput?.value) || 0,
+                        lx: parseFloat(lxInput?.value) || (parseFloat(document.getElementById('Lx')?.value) || 4.5),
+                        ly: parseFloat(lyInput?.value) || (parseFloat(document.getElementById('Ly')?.value) || 4.5),
+                        kx: parseFloat(kxInput?.value) || (parseFloat(document.getElementById('Kx')?.value) || 0.8),
+                        ky: parseFloat(kyInput?.value) || (parseFloat(document.getElementById('Ky')?.value) || 0.8)
                     });
                 }
             }
@@ -2117,11 +2168,15 @@
                         return;
                     }
                     
-                    // 공통 설정의 Lx, Ly 값 사용
-                    const commonLx = parseFloat(document.getElementById('Lx')?.value) || 4.5; // m
-                    const commonLy = parseFloat(document.getElementById('Ly')?.value) || 4.5; // m
-                    const Lx = commonLx * 1000; // m to mm
-                    const Ly = commonLy * 1000; // m to mm
+                    // 각 기둥별 Lx, Ly 값 사용 (없으면 공통 설정 값 사용)
+                    const colLx = col.lx !== undefined ? col.lx : (parseFloat(document.getElementById('Lx')?.value) || 4.5); // m
+                    const colLy = col.ly !== undefined ? col.ly : (parseFloat(document.getElementById('Ly')?.value) || 4.5); // m
+                    const colKx = col.kx !== undefined ? col.kx : (parseFloat(document.getElementById('Kx')?.value) || 0.8);
+                    const colKy = col.ky !== undefined ? col.ky : (parseFloat(document.getElementById('Ky')?.value) || 0.8);
+                    const Lx = colLx * 1000; // m to mm
+                    const Ly = colLy * 1000; // m to mm
+                    const Kx = colKx;
+                    const Ky = colKy;
                     
                     // 조합별 강종 설정: 조합 1, 2는 SM420과 SM355, 조합 3은 SM355만
                     const steelGradesForComb1_2 = [
@@ -3931,7 +3986,14 @@
                 
                 // 기둥 데이터 복원
                 if (inputValues.columnData && Array.isArray(inputValues.columnData)) {
-                    columnData = inputValues.columnData;
+                    // 기존 데이터에 새 필드(lx, ly, kx, ky)가 없으면 기본값 설정
+                    columnData = inputValues.columnData.map(col => ({
+                        ...col,
+                        lx: col.lx !== undefined ? col.lx : 0,
+                        ly: col.ly !== undefined ? col.ly : 0,
+                        kx: col.kx !== undefined ? col.kx : 1,
+                        ky: col.ky !== undefined ? col.ky : 1
+                    }));
                     updateLoadTable();
                 } else if (inputValues.columnCount) {
                     // 기둥 개수만 복원된 경우 테이블 업데이트
@@ -4211,6 +4273,90 @@
             document.body.insertAdjacentHTML('beforeend', modalHTML);
         }
     </script>
+    
+    <!-- 즉시 실행: 하중 입력 테이블 강제 생성 (9개 컬럼 보장) -->
+    <script>
+        (function() {
+            'use strict';
+            console.log('🚀 [TABLE FIX] 즉시 실행 스크립트 시작');
+            
+            function checkAndFixTable() {
+                console.log('🔄 [TABLE FIX] checkAndFixTable 호출됨');
+                const tbody = document.getElementById('loadTableBody');
+                if (!tbody) {
+                    console.log('⏳ [TABLE FIX] loadTableBody를 찾는 중...');
+                    return false;
+                }
+                console.log('✅ [TABLE FIX] loadTableBody 찾음');
+                
+                const rows = tbody.querySelectorAll('tr');
+                if (rows.length === 0) {
+                    console.log('📝 [TABLE FIX] 테이블 행이 없습니다.');
+                    if (typeof updateLoadTable === 'function') {
+                        console.log('✅ [TABLE FIX] updateLoadTable 함수 호출');
+                        updateLoadTable();
+                        return true;
+                    }
+                    return false;
+                }
+                
+                const firstRow = rows[0];
+                const cells = firstRow.querySelectorAll('td');
+                const cellCount = cells.length;
+                console.log(`📊 [TABLE FIX] 현재 테이블 상태: ${rows.length}개 행, 첫 번째 행에 ${cellCount}개 컬럼`);
+                
+                if (cellCount !== 9) {
+                    console.warn(`⚠️ [TABLE FIX] 기존 테이블이 ${cellCount}개 컬럼입니다. 9개 컬럼으로 강제 재생성합니다.`);
+                    if (typeof updateLoadTable === 'function') {
+                        console.log('✅ [TABLE FIX] updateLoadTable 함수 호출');
+                        updateLoadTable();
+                        return true;
+                    } else {
+                        console.error('❌ [TABLE FIX] updateLoadTable 함수를 찾을 수 없습니다!');
+                    }
+                } else {
+                    console.log('✅ [TABLE FIX] 이미 9개 컬럼 테이블이 있습니다.');
+                }
+                return true;
+            }
+            
+            // 여러 시점에서 실행
+            function tryFix() {
+                if (checkAndFixTable()) {
+                    return;
+                }
+                setTimeout(tryFix, 100);
+            }
+            
+            // 즉시 시도
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', function() {
+                    console.log('📅 [TABLE FIX] DOMContentLoaded 이벤트');
+                    setTimeout(tryFix, 100);
+                });
+            } else {
+                console.log('📅 [TABLE FIX] DOM이 이미 로드됨');
+                setTimeout(tryFix, 100);
+            }
+            
+            window.addEventListener('load', function() {
+                console.log('📅 [TABLE FIX] window.load 이벤트');
+                setTimeout(tryFix, 300);
+            });
+            
+            // 추가 보장
+            setTimeout(function() {
+                console.log('⏰ [TABLE FIX] 1초 후 추가 확인');
+                tryFix();
+            }, 1000);
+            
+            setTimeout(function() {
+                console.log('⏰ [TABLE FIX] 3초 후 최종 확인');
+                tryFix();
+            }, 3000);
+        })();
+    </script>
+    
     <script src="/js/auth-config.js"></script>
     <script src="/js/auth.js"></script>
     <script src="/js/feature-guard.js"></script>
