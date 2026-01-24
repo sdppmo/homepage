@@ -1,0 +1,18 @@
+{
+  "/(auth)/login/page": "/login",
+  "/(auth)/pending/page": "/pending",
+  "/(auth)/reset-password/page": "/reset-password",
+  "/(auth)/signup/page": "/signup",
+  "/(protected)/test/page": "/test",
+  "/_global-error/page": "/_global-error",
+  "/_not-found/page": "/_not-found",
+  "/api/auth/verify-status/route": "/api/auth/verify-status",
+  "/api/health/route": "/api/health",
+  "/cad-files/page": "/cad-files",
+  "/favicon.ico/route": "/favicon.ico",
+  "/k-product/2h-steel/page": "/k-product/2h-steel",
+  "/page": "/",
+  "/papers/page": "/papers",
+  "/products/page": "/products",
+  "/videos/page": "/videos"
+}

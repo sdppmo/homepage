@@ -1,0 +1,21 @@
+{
+  "node": {
+    "600538281e111675354c2aca94d01dc7a080f16596": {
+      "workers": {
+        "app/(auth)/login/page": {
+          "moduleId": 46215,
+          "async": false,
+          "exportedName": "login",
+          "filename": "src/app/(auth)/login/actions.ts"
+        }
+      },
+      "layer": {
+        "app/(auth)/login/page": "action-browser"
+      },
+      "filename": "src/app/(auth)/login/actions.ts",
+      "exportedName": "login"
+    }
+  },
+  "edge": {},
+  "encryptionKey": "y5wrKhsL5qf2iJZa0OojEBgmEEDj+FyBTCnWA9INopU="
+}

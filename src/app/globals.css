@@ -1,0 +1,127 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+html, body {
+  font-family: Arial, sans-serif;
+  background: #000;
+  color: #fff;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
+
+@layer components {
+  .nav-item {
+    @apply block bg-gradient-to-b from-[#1a2050] to-[#101535] border-l-8 border-[#ff6600] border-b border-[rgba(255,215,0,0.3)] px-4 text-[#ffcc00] text-lg font-semibold cursor-pointer text-center transition-colors duration-200 no-underline flex-1 flex items-center justify-center;
+  }
+
+  .nav-item:hover {
+    @apply bg-gradient-to-b from-[#252a60] to-[#1a1f45];
+  }
+
+  .nav-item.active {
+    @apply bg-black text-white font-bold;
+  }
+
+  .nav-item.gold {
+    @apply text-[#ffcc00] bg-gradient-to-b from-[#1a2050] to-[#101535];
+  }
+
+  .nav-item.gold:hover {
+    @apply text-[#ffcc00] bg-gradient-to-b from-[#252a60] to-[#1a1f45];
+  }
+
+  .nav-item.active.gold {
+    @apply text-[#ffcc00];
+  }
+
+  .nav-item.small-text {
+    @apply text-sm;
+  }
+
+  .nav-item.gray-text {
+    @apply !text-[#999];
+  }
+
+  .nav-item.gray-text:hover {
+    @apply !text-[#bbb];
+  }
+
+  .brochure-btn {
+    @apply bg-gradient-to-b from-[#1a1a2a] to-[#0a0a1a] border border-[#444] p-2 text-[#ffcc00] text-sm font-semibold cursor-pointer text-center transition-colors duration-200 no-underline flex items-center justify-center;
+  }
+
+  .brochure-btn:hover {
+    @apply bg-gradient-to-b from-[#2a2a3a] to-[#1a1a2a];
+  }
+
+  .brochure-btn:nth-child(odd) {
+    @apply border-r-0;
+  }
+
+  .brochure-btn.yellow {
+    @apply bg-gradient-to-b from-[#ffd700] to-[#cc9900] text-black font-bold;
+  }
+
+  .brochure-btn.white {
+    @apply bg-gradient-to-b from-[#1a1a2a] to-[#0a0a1a] text-[#ffcc00] border border-[#444] font-semibold;
+  }
+
+  .brochure-btn.white:hover {
+    @apply bg-gradient-to-b from-[#2a2a3a] to-[#1a1a2a] text-[#ffcc00];
+  }
+
+  .brochure-btn.gray-text {
+    @apply !text-[#999];
+  }
+
+  .brochure-btn.gray-text:hover {
+    @apply !text-[#bbb];
+  }
+
+  @media (max-width: 768px) {
+    .nav-item {
+      @apply text-base px-4 py-3;
+    }
+    .brochure-btn {
+      @apply text-xs px-1.5 py-2;
+    }
+  }
+
+  @media (max-width: 600px) {
+    .nav-item {
+      @apply text-sm px-3 py-2.5;
+    }
+    .brochure-btn {
+      @apply text-[11px] px-1 py-1.5;
+    }
+  }
+
+  @media (max-width: 400px) {
+    .nav-item {
+      @apply text-[13px] px-2.5 py-2 border-l-[5px];
+    }
+  }
+}

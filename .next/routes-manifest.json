@@ -1,0 +1,213 @@
+{
+  "version": 3,
+  "pages404": true,
+  "appType": "app",
+  "caseSensitive": false,
+  "basePath": "",
+  "redirects": [
+    {
+      "source": "/:path+/",
+      "destination": "/:path+",
+      "internal": true,
+      "priority": true,
+      "statusCode": 308,
+      "regex": "^(?:/((?:[^/]+?)(?:/(?:[^/]+?))*))/$"
+    },
+    {
+      "source": "/index.html",
+      "destination": "/",
+      "statusCode": 308,
+      "regex": "^(?!/_next)/index\\.html(?:/)?$"
+    },
+    {
+      "source": "/pages/auth/:path*.html",
+      "destination": "/auth/:path*",
+      "statusCode": 308,
+      "regex": "^(?!/_next)/pages/auth(?:/((?:[^/]+?)(?:/(?:[^/]+?))*))?\\.html(?:/)?$"
+    },
+    {
+      "source": "/pages/k-col web software/protected/:path*.html",
+      "destination": "/k-col/:path*",
+      "statusCode": 308,
+      "regex": "^(?!/_next)/pages/k-col web software/protected(?:/((?:[^/]+?)(?:/(?:[^/]+?))*))?\\.html(?:/)?$"
+    },
+    {
+      "source": "/pages/k-col web software/:path*.html",
+      "destination": "/k-col/:path*",
+      "statusCode": 308,
+      "regex": "^(?!/_next)/pages/k-col web software(?:/((?:[^/]+?)(?:/(?:[^/]+?))*))?\\.html(?:/)?$"
+    },
+    {
+      "source": "/pages/K-product/:path*.html",
+      "destination": "/k-product/:path*",
+      "statusCode": 308,
+      "regex": "^(?!/_next)/pages/K-product(?:/((?:[^/]+?)(?:/(?:[^/]+?))*))?\\.html(?:/)?$"
+    },
+    {
+      "source": "/pages/:path*.html",
+      "destination": "/:path*",
+      "statusCode": 308,
+      "regex": "^(?!/_next)/pages(?:/((?:[^/]+?)(?:/(?:[^/]+?))*))?\\.html(?:/)?$"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/:path*",
+      "headers": [
+        {
+          "key": "X-Frame-Options",
+          "value": "SAMEORIGIN"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-XSS-Protection",
+          "value": "1; mode=block"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "geolocation=(), microphone=(), camera=(), payment=()"
+        },
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://*.supabase.co wss://*.supabase.co;"
+        }
+      ],
+      "regex": "^(?:/((?:[^/]+?)(?:/(?:[^/]+?))*))?(?:/)?$"
+    }
+  ],
+  "rewrites": {
+    "beforeFiles": [],
+    "afterFiles": [
+      {
+        "source": "/health",
+        "destination": "/api/health",
+        "regex": "^/health(?:/)?$"
+      }
+    ],
+    "fallback": []
+  },
+  "dynamicRoutes": [],
+  "staticRoutes": [
+    {
+      "page": "/",
+      "regex": "^/(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/(?:/)?$"
+    },
+    {
+      "page": "/_global-error",
+      "regex": "^/_global\\-error(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/_global\\-error(?:/)?$"
+    },
+    {
+      "page": "/_not-found",
+      "regex": "^/_not\\-found(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/_not\\-found(?:/)?$"
+    },
+    {
+      "page": "/api/auth/verify-status",
+      "regex": "^/api/auth/verify\\-status(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/auth/verify\\-status(?:/)?$"
+    },
+    {
+      "page": "/api/health",
+      "regex": "^/api/health(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/health(?:/)?$"
+    },
+    {
+      "page": "/cad-files",
+      "regex": "^/cad\\-files(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/cad\\-files(?:/)?$"
+    },
+    {
+      "page": "/favicon.ico",
+      "regex": "^/favicon\\.ico(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/favicon\\.ico(?:/)?$"
+    },
+    {
+      "page": "/k-product/2h-steel",
+      "regex": "^/k\\-product/2h\\-steel(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/k\\-product/2h\\-steel(?:/)?$"
+    },
+    {
+      "page": "/login",
+      "regex": "^/login(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/login(?:/)?$"
+    },
+    {
+      "page": "/papers",
+      "regex": "^/papers(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/papers(?:/)?$"
+    },
+    {
+      "page": "/pending",
+      "regex": "^/pending(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/pending(?:/)?$"
+    },
+    {
+      "page": "/products",
+      "regex": "^/products(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/products(?:/)?$"
+    },
+    {
+      "page": "/reset-password",
+      "regex": "^/reset\\-password(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/reset\\-password(?:/)?$"
+    },
+    {
+      "page": "/signup",
+      "regex": "^/signup(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/signup(?:/)?$"
+    },
+    {
+      "page": "/test",
+      "regex": "^/test(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/test(?:/)?$"
+    },
+    {
+      "page": "/videos",
+      "regex": "^/videos(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/videos(?:/)?$"
+    }
+  ],
+  "dataRoutes": [],
+  "rsc": {
+    "header": "rsc",
+    "varyHeader": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch",
+    "prefetchHeader": "next-router-prefetch",
+    "didPostponeHeader": "x-nextjs-postponed",
+    "contentTypeHeader": "text/x-component",
+    "suffix": ".rsc",
+    "prefetchSegmentHeader": "next-router-segment-prefetch",
+    "prefetchSegmentSuffix": ".segment.rsc",
+    "prefetchSegmentDirSuffix": ".segments",
+    "clientParamParsing": false,
+    "dynamicRSCPrerender": false
+  },
+  "rewriteHeaders": {
+    "pathHeader": "x-nextjs-rewritten-path",
+    "queryHeader": "x-nextjs-rewritten-query"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "headers": {
+    "x-nextjs-stale-time": "300",
+    "x-nextjs-prerender": "1",
+    "x-next-cache-tags": "_N_T_/layout,_N_T_/k-product/layout,_N_T_/k-product/2h-steel/layout,_N_T_/k-product/2h-steel/page,_N_T_/k-product/2h-steel"
+  },
+  "segmentPaths": [
+    "/_tree",
+    "/_full",
+    "/k-product/2h-steel/__PAGE__",
+    "/k-product/2h-steel",
+    "/k-product",
+    "/_index",
+    "/_head"
+  ]
+}
