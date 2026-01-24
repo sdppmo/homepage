@@ -24,13 +24,13 @@ export default function CadFilesPage() {
 
         <div className="mb-16">
           <h2 className="text-3xl font-bold text-white mb-8 pb-4 border-b-3 border-white/30">구조 설계 도면</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-[repeat(auto-fill,minmax(350px,1fr))] gap-6">
           </div>
         </div>
 
         <div className="mb-16">
           <h2 className="text-3xl font-bold text-white mb-8 pb-4 border-b-3 border-white/30">제작 상세도 - 기둥이음</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-[repeat(auto-fill,minmax(350px,1fr))] gap-6">
             <div className="bg-white rounded-xl p-8 shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl flex flex-col">
               <div className="text-5xl text-center mb-4">📐</div>
               <h3 className="text-2xl font-bold text-[#1a1a2e] mb-3 text-center">기둥 Splice Detail</h3>
@@ -48,13 +48,13 @@ export default function CadFilesPage() {
 
         <div className="mb-16">
           <h2 className="text-3xl font-bold text-white mb-8 pb-4 border-b-3 border-white/30">시공 도면</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-[repeat(auto-fill,minmax(350px,1fr))] gap-6">
           </div>
         </div>
 
         <div className="mb-16">
           <h2 className="text-3xl font-bold text-white mb-8 pb-4 border-b-3 border-white/30">표준 도면 라이브러리</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-[repeat(auto-fill,minmax(350px,1fr))] gap-6">
           </div>
         </div>
       </div>

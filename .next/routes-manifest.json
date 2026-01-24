@@ -132,16 +132,46 @@
       "namedRegex": "^/cad\\-files(?:/)?$"
     },
     {
+      "page": "/consulting",
+      "regex": "^/consulting(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/consulting(?:/)?$"
+    },
+    {
       "page": "/favicon.ico",
       "regex": "^/favicon\\.ico(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/favicon\\.ico(?:/)?$"
     },
     {
+      "page": "/k-col/auto-find-section",
+      "regex": "^/k\\-col/auto\\-find\\-section(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/k\\-col/auto\\-find\\-section(?:/)?$"
+    },
+    {
+      "page": "/k-col/calculator",
+      "regex": "^/k\\-col/calculator(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/k\\-col/calculator(?:/)?$"
+    },
+    {
+      "page": "/k-col/print",
+      "regex": "^/k\\-col/print(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/k\\-col/print(?:/)?$"
+    },
+    {
       "page": "/k-product/2h-steel",
       "regex": "^/k\\-product/2h\\-steel(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/k\\-product/2h\\-steel(?:/)?$"
+    },
+    {
+      "page": "/ks-code-database",
+      "regex": "^/ks\\-code\\-database(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/ks\\-code\\-database(?:/)?$"
     },
     {
       "page": "/login",
@@ -162,10 +192,22 @@
       "namedRegex": "^/pending(?:/)?$"
     },
     {
+      "page": "/photo-gallery",
+      "regex": "^/photo\\-gallery(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/photo\\-gallery(?:/)?$"
+    },
+    {
       "page": "/products",
       "regex": "^/products(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/products(?:/)?$"
+    },
+    {
+      "page": "/qa",
+      "regex": "^/qa(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/qa(?:/)?$"
     },
     {
       "page": "/reset-password",
@@ -178,6 +220,12 @@
       "regex": "^/signup(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/signup(?:/)?$"
+    },
+    {
+      "page": "/slim-box-web-support",
+      "regex": "^/slim\\-box\\-web\\-support(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/slim\\-box\\-web\\-support(?:/)?$"
     },
     {
       "page": "/test",

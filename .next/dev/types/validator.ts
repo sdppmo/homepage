@@ -83,6 +83,33 @@ type RouteHandlerConfig<Route extends AppRouteHandlerRoutes = AppRouteHandlerRou
   type __Unused = __Check
 }
 
+// Validate ../../../src/app/(protected)/k-col/auto-find-section/page.tsx
+{
+  type __IsExpected<Specific extends AppPageConfig<"/k-col/auto-find-section">> = Specific
+  const handler = {} as typeof import("../../../src/app/(protected)/k-col/auto-find-section/page.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
+// Validate ../../../src/app/(protected)/k-col/calculator/page.tsx
+{
+  type __IsExpected<Specific extends AppPageConfig<"/k-col/calculator">> = Specific
+  const handler = {} as typeof import("../../../src/app/(protected)/k-col/calculator/page.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
+// Validate ../../../src/app/(protected)/k-col/print/page.tsx
+{
+  type __IsExpected<Specific extends AppPageConfig<"/k-col/print">> = Specific
+  const handler = {} as typeof import("../../../src/app/(protected)/k-col/print/page.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
 // Validate ../../../src/app/(protected)/test/page.tsx
 {
   type __IsExpected<Specific extends AppPageConfig<"/test">> = Specific
@@ -101,10 +128,28 @@ type RouteHandlerConfig<Route extends AppRouteHandlerRoutes = AppRouteHandlerRou
   type __Unused = __Check
 }
 
+// Validate ../../../src/app/consulting/page.tsx
+{
+  type __IsExpected<Specific extends AppPageConfig<"/consulting">> = Specific
+  const handler = {} as typeof import("../../../src/app/consulting/page.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
 // Validate ../../../src/app/k-product/2h-steel/page.tsx
 {
   type __IsExpected<Specific extends AppPageConfig<"/k-product/2h-steel">> = Specific
   const handler = {} as typeof import("../../../src/app/k-product/2h-steel/page.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
+// Validate ../../../src/app/ks-code-database/page.tsx
+{
+  type __IsExpected<Specific extends AppPageConfig<"/ks-code-database">> = Specific
+  const handler = {} as typeof import("../../../src/app/ks-code-database/page.js")
   type __Check = __IsExpected<typeof handler>
   // @ts-ignore
   type __Unused = __Check
@@ -128,10 +173,37 @@ type RouteHandlerConfig<Route extends AppRouteHandlerRoutes = AppRouteHandlerRou
   type __Unused = __Check
 }
 
+// Validate ../../../src/app/photo-gallery/page.tsx
+{
+  type __IsExpected<Specific extends AppPageConfig<"/photo-gallery">> = Specific
+  const handler = {} as typeof import("../../../src/app/photo-gallery/page.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
 // Validate ../../../src/app/products/page.tsx
 {
   type __IsExpected<Specific extends AppPageConfig<"/products">> = Specific
   const handler = {} as typeof import("../../../src/app/products/page.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
+// Validate ../../../src/app/qa/page.tsx
+{
+  type __IsExpected<Specific extends AppPageConfig<"/qa">> = Specific
+  const handler = {} as typeof import("../../../src/app/qa/page.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
+// Validate ../../../src/app/slim-box-web-support/page.tsx
+{
+  type __IsExpected<Specific extends AppPageConfig<"/slim-box-web-support">> = Specific
+  const handler = {} as typeof import("../../../src/app/slim-box-web-support/page.js")
   type __Check = __IsExpected<typeof handler>
   // @ts-ignore
   type __Unused = __Check

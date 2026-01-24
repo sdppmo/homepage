@@ -14,6 +14,36 @@
       },
       "filename": "src/app/(auth)/login/actions.ts",
       "exportedName": "login"
+    },
+    "402e24db557599454d14580ee485da1cff4cfb1308": {
+      "workers": {
+        "app/(protected)/k-col/auto-find-section/page": {
+          "moduleId": 85826,
+          "async": false,
+          "exportedName": "findOptimalSection",
+          "filename": "src/actions/calculate.ts"
+        }
+      },
+      "layer": {
+        "app/(protected)/k-col/auto-find-section/page": "action-browser"
+      },
+      "filename": "src/actions/calculate.ts",
+      "exportedName": "findOptimalSection"
+    },
+    "407bd21f7ef98af90a7d028a595e46a4acfca35efb": {
+      "workers": {
+        "app/(protected)/k-col/calculator/page": {
+          "moduleId": 71529,
+          "async": false,
+          "exportedName": "calculateCrossHColumn",
+          "filename": "src/actions/calculate.ts"
+        }
+      },
+      "layer": {
+        "app/(protected)/k-col/calculator/page": "action-browser"
+      },
+      "filename": "src/actions/calculate.ts",
+      "exportedName": "calculateCrossHColumn"
     }
   },
   "edge": {},

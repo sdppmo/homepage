@@ -452,14 +452,14 @@ bun test --watch
 - [x] Create `src/app/k-product/2h-steel/page.tsx` from `pages/K-product/2H_steel_product.html`
 
 ### 4.3 Information Pages
-- [ ] `src/app/papers/page.tsx` from `pages/papers.html`
-- [ ] `src/app/videos/page.tsx` from `pages/videos.html`
-- [ ] `src/app/cad-files/page.tsx` from `pages/cad-files.html`
-- [ ] `src/app/consulting/page.tsx` from `pages/consulting.html`
-- [ ] `src/app/qa/page.tsx` from `pages/qa.html`
-- [ ] `src/app/photo-gallery/page.tsx` from `pages/photo-gallery.html`
-- [ ] `src/app/ks-code-database/page.tsx` from `pages/ks-code-database.html`
-- [ ] `src/app/slim-box-web-support/page.tsx` from `pages/slim-box-web-support.html`
+- [x] `src/app/papers/page.tsx` from `pages/papers.html`
+- [x] `src/app/videos/page.tsx` from `pages/videos.html`
+- [x] `src/app/cad-files/page.tsx` from `pages/cad-files.html`
+- [x] `src/app/consulting/page.tsx` from `pages/consulting.html`
+- [x] `src/app/qa/page.tsx` from `pages/qa.html`
+- [x] `src/app/photo-gallery/page.tsx` from `pages/photo-gallery.html`
+- [x] `src/app/ks-code-database/page.tsx` from `pages/ks-code-database.html`
+- [x] `src/app/slim-box-web-support/page.tsx` from `pages/slim-box-web-support.html`
 
 ### 4.4 Static Assets
 - [x] Copy `assets/images/*` to `public/images/`
@@ -477,41 +477,41 @@ bun test --watch
 ## Phase 5: Protected Pages (Main Goal)
 
 ### 5.0 Download Source Files (Prerequisite)
-- [ ] Run extraction script from Appendix B
-- [ ] Verify `protected-source/auto-find-section.html` exists
-- [ ] Verify `protected-source/crossHcolumnCalculator-protected.html` exists
-- [ ] Verify `protected-source/boq-report.html` exists
+- [x] Run extraction script from Appendix B
+- [x] Verify `protected-source/auto-find-section.html` exists
+- [x] Verify `protected-source/crossHcolumnCalculator-protected.html` exists
+- [x] Verify `protected-source/boq-report.html` exists
 
 ### 5.1 Server-Side Calculation Architecture (NEW - CRITICAL)
 
 **REQUIREMENT**: All calculation logic MUST run server-side to protect proprietary algorithms.
 
-- [ ] Create `src/lib/calculations/` directory (server-only code)
-- [ ] Create `src/lib/calculations/cross-h-column.ts` - Cross H column structural calculations
-- [ ] Create `src/lib/calculations/boq.ts` - Bill of Quantities calculations
-- [ ] Create `src/lib/calculations/steel-section.ts` - Steel section finder algorithms
-- [ ] Add `'use server'` directive to all calculation files
-- [ ] Create `src/actions/calculate.ts` - Server Actions that invoke calculations
+- [x] Create `src/lib/calculations/` directory (server-only code)
+- [x] Create `src/lib/calculations/cross-h-column.ts` - Cross H column structural calculations
+- [x] Create `src/lib/calculations/boq.ts` - Bill of Quantities calculations
+- [x] Create `src/lib/calculations/steel-section.ts` - Steel section finder algorithms
+- [x] Add `'use server'` directive to all calculation files
+- [x] Create `src/actions/calculate.ts` - Server Actions that invoke calculations
 
 **Verification (CRITICAL)**:
-- [ ] Run `bun run build` and check `.next/static/` - NO calculation code in client bundles
+- [x] Run `bun run build` and check `.next/static/` - NO calculation code in client bundles
 - [ ] In browser DevTools Sources tab - verify calculation functions NOT present
 - [ ] Network tab shows Server Action calls, NOT client-side computation
 
 ### 5.2 Auto Find Section (Server-Side)
-- [ ] Create `src/app/(protected)/k-col/auto-find-section/page.tsx` - UI only
-- [ ] Port UI from `protected-source/auto-find-section.html`
-- [ ] Extract calculation logic to `src/lib/calculations/steel-section.ts`
-- [ ] Create Server Action: `findOptimalSection(inputs)` → returns results
-- [ ] UI calls Server Action on form submit
+- [x] Create `src/app/(protected)/k-col/auto-find-section/page.tsx` - UI only
+- [x] Port UI from `protected-source/auto-find-section.html`
+- [x] Extract calculation logic to `src/lib/calculations/steel-section.ts`
+- [x] Create Server Action: `findOptimalSection(inputs)` → returns results
+- [x] UI calls Server Action on form submit
 - [ ] Run performance test: `./scripts/measure-performance.sh https://localhost:3000/k-col/auto-find-section`
 - [ ] Write test: page renders with valid session
 
 ### 5.3 Cross-H Column Calculator (Server-Side)
-- [ ] Create `src/app/(protected)/k-col/calculator/page.tsx` - UI only
-- [ ] Port UI from `protected-source/crossHcolumnCalculator-protected.html`
-- [ ] Extract calculation logic to `src/lib/calculations/cross-h-column.ts`
-- [ ] Create Server Action: `calculateCrossHColumn(inputs)` → returns results
+- [x] Create `src/app/(protected)/k-col/calculator/page.tsx` - UI only
+- [x] Port UI from `protected-source/crossHcolumnCalculator-protected.html`
+- [x] Extract calculation logic to `src/lib/calculations/cross-h-column.ts`
+- [x] Create Server Action: `calculateCrossHColumn(inputs)` → returns results
 - [ ] Create `src/app/(protected)/k-col/print/page.tsx`
 - [ ] Create `src/app/(protected)/k-col/calc-data-1/page.tsx`
 - [ ] Create `src/app/(protected)/k-col/calc-data-2/page.tsx`

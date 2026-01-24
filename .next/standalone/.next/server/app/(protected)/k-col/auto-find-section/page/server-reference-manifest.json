@@ -1,0 +1,20 @@
+{
+  "node": {
+    "402e24db557599454d14580ee485da1cff4cfb1308": {
+      "workers": {
+        "app/(protected)/k-col/auto-find-section/page": {
+          "moduleId": 85826,
+          "async": false,
+          "exportedName": "findOptimalSection",
+          "filename": "src/actions/calculate.ts"
+        }
+      },
+      "layer": {
+        "app/(protected)/k-col/auto-find-section/page": "action-browser"
+      },
+      "exportedName": "findOptimalSection",
+      "filename": "src/actions/calculate.ts"
+    }
+  },
+  "edge": {}
+}
