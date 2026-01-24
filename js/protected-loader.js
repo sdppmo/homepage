@@ -1,6 +1,6 @@
 /**
  * Protected Page Loader
- * Fetches protected content from Edge Function using Supabase client
+ * Fetches protected content from Edge Function using direct fetch (not SDK)
  * 
  * Usage: Add to protected page shell:
  * <script src="../../js/auth-config.js"></script>
@@ -12,7 +12,6 @@
 (function() {
   'use strict';
 
-  // Show loading state
   function showLoading() {
     document.body.innerHTML = '\
       <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); font-family: Arial, sans-serif;">\
@@ -25,7 +24,6 @@
     ';
   }
 
-  // Show error state
   function showError(title, message, showLoginBtn) {
     var loginBtn = showLoginBtn ? '<button onclick="window.location.assign(\'/pages/auth/login.html?redirect=\' + encodeURIComponent(window.location.pathname))" style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; padding: 12px 32px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; margin-top: 20px;">로그인하기</button>' : '';
     var homeBtn = '<button onclick="window.location.assign(\'/\')" style="background: #6b7280; color: white; border: none; padding: 12px 32px; border-radius: 8px; font-size: 14px; cursor: pointer; margin-top: 10px; margin-left: 10px;">홈으로</button>';
@@ -44,7 +42,6 @@
     ';
   }
 
-  // Wait for auth to be ready
   function waitForAuth(callback) {
     if (window.SDP && window.SDP.auth) {
       callback();
@@ -53,7 +50,29 @@
     }
   }
 
-  // Main loader function
+  function parseErrorResponse(text) {
+    var title = '접근 불가';
+    var message = '페이지에 접근할 수 없습니다.';
+    var showLogin = false;
+    
+    try {
+      var parsed = JSON.parse(text);
+      message = parsed.message || message;
+      if (parsed.error === 'unauthorized') {
+        title = '로그인 필요';
+        showLogin = true;
+      } else if (parsed.error === 'pending') {
+        title = '승인 대기 중';
+      } else if (parsed.error === 'forbidden') {
+        title = '권한 없음';
+      }
+    } catch (e) {
+      // Response is not JSON
+    }
+    
+    return { title: title, message: message, showLogin: showLogin };
+  }
+
   window.loadProtectedPage = function(pageId) {
     showLoading();
 
@@ -66,82 +85,51 @@
           return;
         }
 
-        // Use Supabase client to invoke Edge Function
-        auth.getClient().then(function(client) {
-          client.functions.invoke('serve-protected-page', {
-            body: { page: pageId }
-          }).then(function(result) {
-            console.log('Function result:', result);
-            
-            // Check for errors
-            if (result.error) {
-              console.error('Function error:', result.error);
-              var title = '접근 불가';
-              var showLogin = false;
-              var message = '페이지에 접근할 수 없습니다.';
-              
-              // Try to parse error context if available
-              var errorContext = result.error.context;
-              if (errorContext && typeof errorContext === 'object') {
-                try {
-                  // Parse JSON from error context body if it exists
-                  var bodyText = errorContext.body || '';
-                  if (bodyText) {
-                    var parsed = JSON.parse(bodyText);
-                    message = parsed.message || message;
-                    if (parsed.error === 'unauthorized') {
-                      title = '로그인 필요';
-                      showLogin = true;
-                    } else if (parsed.error === 'pending') {
-                      title = '승인 대기 중';
-                    } else if (parsed.error === 'forbidden') {
-                      title = '권한 없음';
-                    }
-                  }
-                } catch (e) {
-                  console.log('Error parsing context:', e);
-                }
-              }
-              
-              // Fallback: check error message directly
-              var errMsg = result.error.message || '';
-              if (errMsg.includes('로그인') || errMsg.includes('unauthorized')) {
-                title = '로그인 필요';
-                showLogin = true;
-              } else if (errMsg.includes('승인') || errMsg.includes('pending')) {
-                title = '승인 대기 중';
-              } else if (errMsg.includes('권한') || errMsg.includes('forbidden')) {
-                title = '권한 없음';
-              }
-              
-              showError(title, message, showLogin);
-              return;
-            }
-
-            // Success - render the HTML content
-            var html = result.data;
-            if (typeof html === 'string') {
+        // Use fetch directly - Supabase SDK functions.invoke doesn't handle HTML responses well
+        var supabaseUrl = window.SDP_AUTH_CONFIG.url;
+        
+        fetch(supabaseUrl + '/functions/v1/serve-protected-page', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + session.access_token,
+            'apikey': window.SDP_AUTH_CONFIG.anonKey
+          },
+          body: JSON.stringify({ page: pageId })
+        })
+        .then(function(response) {
+          return response.text().then(function(text) {
+            return { ok: response.ok, status: response.status, text: text };
+          });
+        })
+        .then(function(result) {
+          if (!result.ok) {
+            var err = parseErrorResponse(result.text);
+            showError(err.title, err.message, err.showLogin);
+            return;
+          }
+          
+          var html = result.text;
+          var trimmed = html.trim();
+          
+          if (trimmed.startsWith('<!DOCTYPE') || trimmed.startsWith('<html') || trimmed.startsWith('<HTML')) {
+            document.open();
+            document.write(html);
+            document.close();
+          } else {
+            var err = parseErrorResponse(html);
+            if (err.title !== '접근 불가') {
+              showError(err.title, err.message, err.showLogin);
+            } else {
               document.open();
               document.write(html);
               document.close();
-            } else if (html && typeof html === 'object') {
-              // Response might be parsed as JSON if it's an error
-              if (html.error) {
-                var errTitle = '접근 불가';
-                if (html.error === 'unauthorized') errTitle = '로그인 필요';
-                if (html.error === 'pending') errTitle = '승인 대기 중';
-                if (html.error === 'forbidden') errTitle = '권한 없음';
-                showError(errTitle, html.message || '페이지에 접근할 수 없습니다.', html.error === 'unauthorized');
-              } else {
-                showError('오류', '예상치 못한 응답 형식입니다.', false);
-              }
-            } else {
-              showError('오류', '예상치 못한 응답 형식입니다.', false);
             }
-          }).catch(function(error) {
-            console.error('Invoke error:', error);
-            showError('연결 오류', error.message || '서버에 연결할 수 없습니다. 잠시 후 다시 시도해주세요.', false);
-          });
+          }
+        })
+        .catch(function(error) {
+          console.error('Fetch error:', error);
+          showError('연결 오류', error.message || '서버에 연결할 수 없습니다. 잠시 후 다시 시도해주세요.', false);
         });
       });
     });
