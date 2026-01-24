@@ -448,8 +448,8 @@ bun test --watch
 - [x] Style with Tailwind matching current design
 
 ### 4.2 Product Pages
-- [ ] Create `src/app/products/page.tsx` from `pages/products.html`
-- [ ] Create `src/app/k-product/2h-steel/page.tsx` from `pages/K-product/2H_steel_product.html`
+- [x] Create `src/app/products/page.tsx` from `pages/products.html`
+- [x] Create `src/app/k-product/2h-steel/page.tsx` from `pages/K-product/2H_steel_product.html`
 
 ### 4.3 Information Pages
 - [ ] `src/app/papers/page.tsx` from `pages/papers.html`
