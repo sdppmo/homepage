@@ -441,11 +441,11 @@ bun test --watch
 ## Phase 4: Public Pages
 
 ### 4.1 Homepage
-- [ ] Create `src/app/page.tsx`
-- [ ] Create components: `Header`, `LeftSidebar`, `MainContent`, `RightSidebar`, `Footer`
-- [ ] Port layout from `index.html`
-- [ ] Port world clocks from `js/clocks.js` as React component
-- [ ] Style with Tailwind matching current design
+- [x] Create `src/app/page.tsx`
+- [x] Create components: `Header`, `LeftSidebar`, `MainContent`, `RightSidebar`, `Footer`
+- [x] Port layout from `index.html`
+- [x] Port world clocks from `js/clocks.js` as React component
+- [x] Style with Tailwind matching current design
 
 ### 4.2 Product Pages
 - [ ] Create `src/app/products/page.tsx` from `pages/products.html`
@@ -462,10 +462,10 @@ bun test --watch
 - [ ] `src/app/slim-box-web-support/page.tsx` from `pages/slim-box-web-support.html`
 
 ### 4.4 Static Assets
-- [ ] Copy `assets/images/*` to `public/images/`
-- [ ] Copy `assets/pdf/*` to `public/pdf/`
-- [ ] Verify all images render
-- [ ] Verify PDFs download correctly
+- [x] Copy `assets/images/*` to `public/images/`
+- [x] Copy `assets/pdf/*` to `public/pdf/`
+- [x] Verify all images render
+- [x] Verify PDFs download correctly
 
 **Deliverables**:
 - All public pages render
