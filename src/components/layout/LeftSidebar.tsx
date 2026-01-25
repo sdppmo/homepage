@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
+import AuthSection from './AuthSection';
 
 interface LeftSidebarProps {
   onKosisClick: () => void;
@@ -8,7 +9,7 @@ interface LeftSidebarProps {
 
 const LeftSidebar = ({ onKosisClick, kosisModeEnabled }: LeftSidebarProps) => {
   return (
-    <aside className="w-[360px] flex flex-col flex-shrink-0 bg-[#d0d0d0] relative z-10 md:w-full md:order-1">
+    <aside className="w-full flex flex-col flex-shrink-0 bg-[#d0d0d0] relative z-10 order-1 md:w-[360px] md:order-none">
       <div className="bg-gradient-to-b from-[#e8e8e8] to-[#c8c8c8] p-2 border-b-2 border-[#999] sm:p-1.5">
         <div className="flex justify-center">
           <Image
@@ -23,6 +24,7 @@ const LeftSidebar = ({ onKosisClick, kosisModeEnabled }: LeftSidebarProps) => {
         <div className="text-center text-black text-base font-bold my-1.5 sm:text-sm xs:text-xs">
           Welcome to SongDoPartners !!
         </div>
+        <AuthSection />
       </div>
 
       <nav className="flex flex-col bg-[#1a1a3a] flex-1">
@@ -45,13 +47,13 @@ const LeftSidebar = ({ onKosisClick, kosisModeEnabled }: LeftSidebarProps) => {
           D. M. I. S. (K-COL / Slim-Box)
         </Link>
         <Link
-          href="/k-col-web-software"
+          href="/k-col/calculator"
           className="nav-item active gold"
         >
           K-COL Web Software
         </Link>
         <Link
-          href="/k-product-schedule"
+          href="/k-product/2h-steel"
           className="nav-item gold"
         >
           K-COL Product Schedule
@@ -82,7 +84,7 @@ const LeftSidebar = ({ onKosisClick, kosisModeEnabled }: LeftSidebarProps) => {
 
       <div className="grid grid-cols-2 bg-[#1a2050] flex-shrink-0 border-l-8 border-[#ff6600] sm:grid-cols-2 xs:border-l-[5px]">
         <Link
-          href="/k-col-web-software/k-col-user-guide#kcol-guide-header"
+          href="/k-col/user-guide#kcol-guide-header"
           className="brochure-btn"
         >
           K-COL Brochure

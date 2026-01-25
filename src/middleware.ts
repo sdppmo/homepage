@@ -34,7 +34,7 @@ export async function middleware(request: NextRequest) {
   const ip = request.headers.get('x-forwarded-for') || 
               request.headers.get('x-real-ip') || 
               'unknown';
-  if (!rateLimit(ip, 10)) {
+  if (!rateLimit(ip, 30)) {
     return new NextResponse('Too Many Requests', { status: 429 });
   }
 

@@ -10,7 +10,7 @@ interface MainContentProps {
 
 const MainContent = ({ priceType, month, isPriceVisible }: MainContentProps) => {
   return (
-    <div className="flex-1 relative flex flex-col md:order-2 md:min-h-[400px]">
+    <div className="flex-1 relative flex flex-col order-2 min-h-[400px] md:order-none md:min-h-0 md:pr-[300px] lg:pr-[250px]">
       <div className="absolute inset-0 z-0 pointer-events-none">
         <Image
           src="/images/background_vessel_nyc.webp"
