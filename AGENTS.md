@@ -1,23 +1,7 @@
 # AI Agent Context - SongDoPartners Homepage
 
 > This document provides context for AI agents working on this project.
-> Last updated: 2026-01-22
-
-## ⚠️ SECURITY FIRST
-
-**Before implementing ANY feature involving authentication, authorization, or database access:**
-
-1. **READ `/SECURITY.md`** - Contains mandatory security checklist
-2. **Verify RLS is enabled** on all tables (especially `user_profiles`)
-3. **Never expose `SERVICE_ROLE_KEY`** in client-side code
-4. **Run `./deploy.sh --test-security`** before deployment
-
-**Critical Tables:**
-- `user_profiles` - Controls admin access, approval status, permissions
-- `usage_logs` - Analytics data
-- `feature_definitions` - Feature registry
-
----
+> Last updated: 2026-01-25
 
 ## Project Overview
 
@@ -48,136 +32,17 @@
 │  │  Lightsail Load Balancer                              │      │
 │  │  - HTTPS termination (automatic SSL)                  │      │
 │  │  - Custom domains: kcol.kr, www.kcol.kr               │      │
-│  │  - Public Endpoint (DNS, not static IP)               │      │
 │  └───────────────────────────────────────────────────────┘      │
-└─────────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────────┐
-│  AWS Lightsail Public HTTPS Endpoint (NOT a static IP)          │
-│  https://sdppmo-container-service-1.xxxxx.ap-northeast-2.       │
-│         cs.amazonlightsail.com                                   │
 └─────────────────────────────────────────────────────────────────┘
                               │
                               ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │  DNS Provider: Gabia (Korean Registrar)                          │
 │  Domain: kcol.kr                                                 │
-│  ┌─────────────────────────────────────────────────────────┐    │
-│  │  DNS Records:                                           │    │
-│  │  kcol.kr      → CNAME → Lightsail endpoint              │    │
-│  │  www.kcol.kr  → CNAME → Lightsail endpoint              │    │
-│  └─────────────────────────────────────────────────────────┘    │
+│  kcol.kr      → CNAME → Lightsail endpoint                       │
+│  www.kcol.kr  → CNAME → Lightsail endpoint                       │
 └─────────────────────────────────────────────────────────────────┘
 ```
-
----
-
-## Networking & DNS Configuration
-
-### Key Concept: Lightsail Container DNS Endpoint
-
-**Important**: Lightsail Container Services provide a **DNS endpoint (HTTPS URL)**, NOT a static IP address. This is different from Lightsail Instances which can have static IPs.
-
-**Lightsail Endpoint Format:**
-```
-https://{service-name}.{random-id}.{region}.cs.amazonlightsail.com
-```
-
-**Current Endpoint:**
-```
-https://sdppmo-container-service-1.ja5e8wfj26k0j.ap-northeast-2.cs.amazonlightsail.com
-```
-
-### DNS Setup via Gabia
-
-**Domain Registrar**: Gabia (가비아) - Korean domain registrar
-**Domain**: `kcol.kr`
-
-#### Understanding CNAME vs A Records
-
-**Traditional Setup (with static IP):**
-```
-example.com      → A record     → 192.0.2.1 (IP address)
-www.example.com  → CNAME record → example.com (resolves to same IP)
-```
-
-**Lightsail Container Setup (NO static IP, only DNS endpoint):**
-```
-kcol.kr          → ALIAS/ANAME  → sdppmo-container-service-1.xxx.cs.amazonlightsail.com
-www.kcol.kr      → CNAME        → sdppmo-container-service-1.xxx.cs.amazonlightsail.com
-```
-
-#### Why This Is Different
-
-1. **Lightsail Container Services don't provide static IPs** - only a DNS hostname
-2. **You cannot use an A record** because A records require an IP address
-3. **CNAME on apex domain (`kcol.kr`) is technically not allowed by DNS spec** - but some providers offer workarounds
-
-#### DNS Records Configuration (in Gabia)
-
-**Option A: If Gabia supports ALIAS/ANAME records**
-| Type | Host | Value |
-|------|------|-------|
-| ALIAS | `@` (root) | `sdppmo-container-service-1.ja5e8wfj26k0j.ap-northeast-2.cs.amazonlightsail.com` |
-| CNAME | `www` | `sdppmo-container-service-1.ja5e8wfj26k0j.ap-northeast-2.cs.amazonlightsail.com` |
-
-**Option B: If Gabia only supports standard records**
-| Type | Host | Value | Note |
-|------|------|-------|------|
-| URL Redirect | `@` (root) | `https://www.kcol.kr` | 301 redirect |
-| CNAME | `www` | `sdppmo-container-service-1.ja5e8wfj26k0j.ap-northeast-2.cs.amazonlightsail.com` | Main site |
-
-**Option C: CNAME Flattening (if supported)**
-Some providers like Cloudflare offer "CNAME flattening" which allows CNAME-like behavior on apex domains.
-
-#### Current Configuration (Verify in Gabia)
-
-Check your Gabia DNS settings at https://dns.gabia.com/ to confirm which option is in use.
-
-### SSL/HTTPS Certificate
-
-**Managed by Lightsail:**
-1. Certificates are auto-provisioned when you add custom domains in Lightsail Console
-2. Lightsail uses AWS Certificate Manager (ACM) internally
-3. Certificates auto-renew - no manual intervention needed
-
-**Setup Steps (already completed):**
-1. In Lightsail Console → Container Service → Custom domains
-2. Added domains: `kcol.kr`, `www.kcol.kr`
-3. Lightsail provided CNAME validation records
-4. Added validation records to Gabia DNS
-5. Certificate validated and attached automatically
-
-### Traffic Flow
-
-```
-User Browser
-     │
-     ▼
-kcol.kr (DNS query to Gabia)
-     │
-     ▼ CNAME resolution
-     │
-Lightsail Load Balancer (HTTPS:443)
-     │
-     ▼ SSL termination
-     │
-Container Service (HTTP:80)
-     │
-     ▼
-Nginx → Static Files
-```
-
-### Important Notes
-
-1. **No Static IP**: You cannot assign a static IP to Container Services. If the endpoint URL changes (rare), DNS records must be updated.
-
-2. **Health Checks**: Lightsail checks `/health` endpoint every 30 seconds. If it fails, traffic is stopped.
-
-3. **HTTP to HTTPS**: Lightsail automatically redirects HTTP to HTTPS for custom domains.
-
-4. **DNS Propagation**: After changing DNS records in Gabia, allow up to 24-48 hours for global propagation (usually much faster).
 
 ---
 
@@ -211,121 +76,81 @@ homepage/
 │   │   └── protected/      # Loader shells for protected pages
 │   └── K-product/          # Product pages
 │
-├── # Supabase Edge Functions
 ├── supabase/
 │   └── functions/
 │       ├── serve-protected-page/  # Serves protected HTML with auth check
 │       ├── admin-users/           # Admin user management API
 │       └── send-admin-alert/      # New user notification emails
 │
-│
 ├── # Docker & Deployment
 ├── Dockerfile              # Security-hardened nginx:alpine image
 ├── nginx.conf              # Production nginx config with security headers
 ├── docker-compose.yml      # Local testing
-├── deploy.sh               # Main deployment script
-├── bugcheck.sh             # Pre-deployment verification script
+├── deploy.sh               # Main deployment script (Mac/Linux bash)
+├── deploy.bat              # Main deployment script (Windows CMD)
 ├── .dockerignore           # Excludes sensitive/protected files from Docker
 │
-├── scripts/                    # Build/deploy/dev scripts
+├── scripts/
 │   ├── start-server.sh         # Local Python server (Mac/Linux)
 │   ├── start-server.bat        # Local Python server (Windows)
-│   ├── start-server.ps1        # Local Python server (PowerShell)
-│   ├── deploy-edge-functions.py  # Deploy Edge Functions via CLI
-│   └── upload-protected-pages.py # Upload HTML to Supabase Storage
+│   ├── deploy-edge-functions.py
+│   └── upload-protected-pages.py
 │
-├── # Documentation
 ├── README.md               # User documentation
 ├── AGENTS.md               # This file - AI agent context
-│
-├── # Environment (git-ignored)
-├── .env.local              # Supabase secrets (SERVICE_ROLE_KEY)
-│
-└── .gitignore              # Git ignore rules
+├── .env.local              # Supabase secrets (git-ignored)
+└── .gitignore
 ```
 
 ---
 
-## Key Files Explained
+## Deployment Scripts
 
-### `deploy.sh` - Main Deployment Script
+### Mac/Linux: `deploy.sh`
 
 ```bash
-./deploy.sh                   # Full: build + security scan + deploy to Lightsail + Supabase
-./deploy.sh --local           # Build + run local server at http://localhost:8080
-./deploy.sh --stop            # Stop local server + cleanup Docker images
+./deploy.sh                   # Full: build + security scan + deploy
+./deploy.sh --quick           # Skip Trivy security scan (faster)
+./deploy.sh --local           # Build + run local server only
+./deploy.sh --stop            # Stop local server
 ./deploy.sh --build-only      # Build Docker image only
-./deploy.sh --deploy-only     # Deploy existing image to Lightsail
-./deploy.sh --quick           # Skip Trivy security scans
-./deploy.sh --upload-protected  # Upload protected pages to Supabase Storage
+./deploy.sh --deploy-only     # Deploy existing image only
+./deploy.sh --upload-protected  # Upload protected pages to Supabase
 ./deploy.sh --deploy-functions  # Deploy Edge Functions to Supabase
 ```
 
-**Configuration (in script):**
-- `SERVICE_NAME="sdppmo-container-service-1"`
-- `AWS_REGION="ap-northeast-2"`
-- `IMAGE_NAME="sdppmo-homepage"`
+### Windows: `deploy.bat`
+
+```batch
+deploy.bat                    # Full: build + security scan + deploy
+deploy.bat -quick             # Skip Trivy security scan (faster)
+deploy.bat -local             # Build + run local server only
+deploy.bat -stop              # Stop local server
+deploy.bat -help              # Show help
+```
+
+**Note**: Windows `deploy.bat` is a standalone CMD batch script (not PowerShell).
+
+### Configuration (in scripts)
+
+- `SERVICE_NAME=sdppmo-container-service-1`
+- `AWS_REGION=ap-northeast-2`
+- `IMAGE_NAME=sdppmo-homepage`
 - `LOCAL_PORT=8080`
-- `LOCAL_CONTAINER="sdppmo-local-test"`
-
-**Features:**
-- Pre-flight checks (Docker, AWS CLI, Lightsail access)
-- Security vulnerability scanning via Trivy
-- Security header validation
-- macOS/Linux compatible (uses `sed` instead of `grep -P`)
-
-### `nginx.conf` - Production Nginx Configuration
-
-**Security features:**
-- Rate limiting: 10 req/s per IP, burst 20
-- Connection limits: 20 concurrent per IP
-- Security headers: X-Frame-Options, CSP, X-Content-Type-Options, etc.
-- Blocked patterns: Path traversal, .php, .git, .env, wp-admin, etc.
-- Health endpoint: `/health`
-
-### `Dockerfile` - Container Build
-
-- Base: `nginx:1.25-alpine`
-- Removes: curl, wget (security)
-- Copies: Static files to `/usr/share/nginx/html`
-- Health check: Process-based
 
 ---
 
-## Known Issues & Technical Debt
+## Quick Reference
 
-### ✅ Resolved Security Issues
-
-1. **~~Hardcoded Passwords in Frontend~~** *(Fixed 2026-01-18)*
-   - Removed `TEMP_ACCOUNTS` object from `index.html`
-   - Login now uses demo mode (any non-empty ID/password works)
-   - No credentials stored in frontend code
-
-2. **~~Admin Folder in Git~~** *(Fixed 2026-01-18)*
-   - `admin/` folder removed from git history via `git filter-branch`
-   - Added to `.gitignore` to prevent future commits
-   - Excluded from Docker via `.dockerignore`
-
-### 🟡 Technical Debt
-
-1. **No Semantic Versioning**
-   - Uses timestamps (e.g., `20260118-154455`), not semver
-   - No git tag integration
-
-2. **No CI/CD Pipeline**
-   - Manual deployment via `deploy.sh`
-   - Could be automated with GitHub Actions
-
-### ✅ Recently Resolved (2026-01-20)
-
-1. **Server-Side Authentication** *(Implemented)*
-   - Supabase Auth with JWT tokens
-   - Protected pages served via Edge Functions
-   - Permission-based access control (access_column, access_beam)
-
-2. **Admin Email Exposure** *(Fixed)*
-   - Removed hardcoded admin emails from frontend
-   - Admin status determined by database role only
+| Task | Mac/Linux | Windows |
+|------|-----------|---------|
+| Full deploy | `./deploy.sh` | `deploy.bat` |
+| Quick deploy | `./deploy.sh --quick` | `deploy.bat -quick` |
+| Local test | `./deploy.sh --local` | `deploy.bat -local` |
+| Stop local | `./deploy.sh --stop` | `deploy.bat -stop` |
+| Build only | `./deploy.sh --build-only` | *(use full deploy)* |
+| Check status | `aws lightsail get-container-services --service-name sdppmo-container-service-1 --region ap-northeast-2` |
+| View logs | `aws lightsail get-container-log --service-name sdppmo-container-service-1 --container-name homepage --region ap-northeast-2` |
 
 ---
 
@@ -334,74 +159,42 @@ homepage/
 ### Deploy Changes to Production
 
 ```bash
-# 1. Test locally first
-./deploy.sh --local
-# Open http://localhost:8080 and verify changes
-
-# 2. Stop local server
-./deploy.sh --stop
-
-# 3. Commit changes
-git add .
-git commit -m "Description of changes"
-git push origin main
-
-# 4. Deploy to Lightsail
+# Mac/Linux
 ./deploy.sh
+
+# Windows
+deploy.bat
 ```
 
-### Fix CSS/Styling Issues
+That's it. The script handles: pre-flight checks, Docker build, local test, push to Lightsail, and deployment.
 
-1. Edit `css/styles.css`
-2. Responsive breakpoints:
-   - `≤1024px` - Tablet
-   - `≤768px` - Small tablet/large phone
-   - `≤600px` - Mobile
-   - `≤400px` - Small phone
+### Local Development
 
-3. Key layout classes:
-   - `.page-wrapper` - Full viewport container
-   - `.top-row` - Left column + main area
-   - `.bottom-row` - Product logos + footer (100px height)
-   - `.left-column` - Navigation sidebar (360px width)
-   - `.main-area` - Background image + content
-   - `.right-sidebar` - Exchange rates + news
+```bash
+# Mac/Linux
+./deploy.sh --local           # Start local server at http://localhost:8080
+./deploy.sh --stop            # Stop when done
 
-### Add New Page
-
-1. Create HTML file in `pages/` directory
-2. Link from `index.html` navigation
-3. Ensure responsive design
-4. Test with `./deploy.sh --local`
-
-### Update Nginx Security
-
-1. Edit `nginx.conf`
-2. Key sections:
-   - `map $http_user_agent $bad_bot` - Bot blocking
-   - `map $request_uri $suspicious_request` - Path blocking
-   - `location` blocks - Routing and headers
-3. Rebuild: `./deploy.sh --local`
-4. Test with `curl -I http://localhost:8080/`
+# Windows
+deploy.bat -local
+deploy.bat -stop
+```
 
 ---
 
 ## Environment & Prerequisites
 
 ### Development Machine
-- Docker Desktop
-- AWS CLI v2 (for deployment)
-- Python 3 (for local dev server alternative)
+- Docker Desktop (running)
+- AWS CLI v2 configured (`aws configure`)
 
 ### AWS Configuration
-- IAM User: `hosungk`
-- Required Policy: `AmazonLightsailFullAccess`
 - Region: `ap-northeast-2` (Seoul)
+- Required Policy: `AmazonLightsailFullAccess`
 
 ### Lightsail Service
 - Name: `sdppmo-container-service-1`
-- Power: Micro
-- Scale: 1
+- Power: Micro, Scale: 1
 - Custom Domains: `kcol.kr`, `www.kcol.kr`
 - SSL: Auto-managed by Lightsail
 - Endpoint: `https://sdppmo-container-service-1.ja5e8wfj26k0j.ap-northeast-2.cs.amazonlightsail.com/`
@@ -409,277 +202,62 @@ git push origin main
 ### DNS Provider
 - Registrar: Gabia (가비아)
 - Domain: `kcol.kr`
-- Management: https://dns.gabia.com/
 
 ---
 
-## Deployment Checklist
+## Recent Changes (2026-01-25)
 
-Before deploying:
-- [ ] Test locally with `./deploy.sh --local`
-- [ ] Check responsive design on mobile viewport
-- [ ] Verify footer doesn't overflow
-- [ ] Check all links work
-- [ ] Run security header check: `curl -I http://localhost:8080/`
+### Windows Deployment Rewrite
+- ✅ Removed `deploy.ps1` (PowerShell had issues with AWS CLI stderr handling and JSON quoting)
+- ✅ Rewrote `deploy.bat` as standalone CMD batch script
+- ✅ Same functionality as `deploy.sh`: build, test, push, deploy with retry loop
+- ✅ Inline JSON with escaped quotes for `--containers` / `--public-endpoint`
 
-After deploying:
-- [ ] Wait 2-5 minutes for deployment
-- [ ] Verify at https://kcol.kr
-- [ ] Check https://www.kcol.kr redirects correctly
-- [ ] Test health endpoint: `curl https://kcol.kr/health`
+### Deployment Flow Improvements
+- ✅ Retry loop for `create-container-service-deployment` (4 attempts, 12s delay)
+- ✅ Better error messages and status output
 
 ---
 
-## Quick Reference
-
-| Task | Command |
-|------|---------|
-| Local test (rebuild) | `./deploy.sh --stop && ./deploy.sh --local --quick` |
-| Stop local | `./deploy.sh --stop` |
-| Full deploy | `./deploy.sh` |
-| Quick deploy | `./deploy.sh --quick` |
-| Build only | `./deploy.sh --build-only` |
-| Upload protected pages | `./deploy.sh --upload-protected` |
-| Deploy Edge Functions | `./deploy.sh --deploy-functions` |
-| Check status | `aws lightsail get-container-services --service-name sdppmo-container-service-1 --region ap-northeast-2` |
-| View logs | `aws lightsail get-container-log --service-name sdppmo-container-service-1 --container-name homepage --region ap-northeast-2` |
-
-### Local Development Workflow
-
-**IMPORTANT**: 로컬 서버 재시작 시 반드시 다음 순서로 실행:
-
-```bash
-./deploy.sh --stop && ./deploy.sh --local --quick
-```
-
-- `--stop`: 기존 컨테이너 중지 및 정리
-- `--local`: 로컬에서 Docker 컨테이너 실행
-- `--quick`: Trivy 보안 스캔 생략 (개발 시 빠른 반복용)
-
-**Supabase 변경 시 (Edge Functions, Protected Pages)**:
-
-```bash
-# Edge Functions 변경 시
-./deploy.sh --deploy-functions
-
-# Protected Pages 변경 시  
-./deploy.sh --upload-protected
-
-# 전체 (로컬 + Supabase)
-./deploy.sh --stop && ./deploy.sh --local --quick && ./deploy.sh --deploy-functions
-```
-
-**절대 사용하지 말 것**: `docker` 명령어 직접 사용 (항상 deploy.sh 스크립트 사용)
-
----
-
-## Recent Changes (2026-01-22)
+## Previous Changes (2026-01-22)
 
 ### Improved Signup Flow with Auto-Login
 - ✅ Credentials stored in `sessionStorage` after signup for auto-login
-- ✅ `pending.html` polls `check-email-verified` Edge Function (3 second interval)
-- ✅ Auto-login after email verification using stored credentials
-- ✅ Profile creation happens after email verification, before redirect
-- ✅ Clean `signup.html` - removed all pending-related elements
-- ✅ Redirect to home page (`/`) after successful verification
-
-### Security Improvements
-- ✅ Stored credentials auto-cleared after 10 minutes
-- ✅ `beforeunload` event clears credentials (except on success redirect)
-- ✅ Credentials cleared immediately after login attempt (success or fail)
-- ✅ `isNavigatingToHome` flag prevents premature cleanup
-
-### New Edge Functions
-- ✅ `check-email-verified` - Queries `auth.users` directly for verification status
-- ✅ `admin-users` updated - Fetches users from `auth.users`, left-joins `user_profiles`
-
-### Rate Limit Adjustments
-- ✅ Rate: 10r/s → 20r/s (prevents 429 on page load)
-- ✅ Burst: 20 → 40
-- ✅ Connections: 20 → 30
+- ✅ `pending.html` polls `check-email-verified` Edge Function
+- ✅ Auto-login after email verification
+- ✅ Redirect to home page after successful verification
 
 ---
 
 ## Previous Changes (2026-01-21)
 
 ### Dedicated Auth Pages
-- ✅ Added `/pages/auth/login.html` - standalone login page with modern dark theme
-- ✅ Added `/pages/auth/signup.html` - standalone signup page with password requirements checklist
-- ✅ Real-time password strength validation (8+ chars, upper/lower, number, special char)
+- ✅ `/pages/auth/login.html` - standalone login page
+- ✅ `/pages/auth/signup.html` - standalone signup page with password validation
 - ✅ Removed modal-based authentication from main page
-- ✅ Login redirects to dedicated page instead of showing modal
-
-### Login Session Improvements
-- ✅ Fixed login UI flickering on page load
-- ✅ Proper token refresh handling - if expired, redirect to login
-- ✅ Cached session check for instant UI display
-
-### UI/UX Updates
-- ✅ Auth section buttons fill container width
-- ✅ Removed promotional text from auth section
-- ✅ Clean, minimal button design
-
----
-
-## Previous Changes (2026-01-20)
-
-### Server-Side Protected Pages
-- ✅ Added `serve-protected-page` Edge Function for secure page access
-- ✅ Protected pages (Auto Find Section, BOQ) stored in Supabase Storage
-- ✅ Permission-based access control (`access_column`, `access_beam`)
-- ✅ In-memory caching for Edge Function performance
-- ✅ Protected pages excluded from Docker image (`.dockerignore`)
-
-### Security Improvements
-- ✅ Removed hardcoded admin emails from frontend code
-- ✅ Admin status determined by database `role` field only
-- ✅ Hardcoded email in `send-admin-alert` moved to environment variable
-
-### Deployment Automation
-- ✅ Added `--upload-protected` to upload HTML to Supabase Storage
-- ✅ Added `--deploy-functions` to deploy Edge Functions via Supabase CLI
-- ✅ Full deploy now includes Supabase uploads automatically
-
-### Previous Changes (2026-01-18)
-- ✅ Supabase Auth integration (signup, login, session management)
-- ✅ Korean localization for auth UI
-- ✅ Password complexity requirements
-- ✅ User profile management (business name, phone, etc.)
 
 ---
 
 ## Authentication Flow
 
 ### Login Flow
-1. User clicks "로그인" button on main page
-2. Redirects to `/pages/auth/login.html`
-3. User enters email/password
-4. On success, redirects back to original page (or homepage)
+1. User clicks "로그인" → redirects to `/pages/auth/login.html`
+2. User enters email/password
+3. On success, redirects back to homepage
 
 ### Signup Flow
-1. User clicks "회원가입" button on main page
-2. Redirects to `/pages/auth/signup.html`
-3. User enters email, password (with real-time validation), company info
-4. On submit, credentials stored in `sessionStorage` (for auto-login)
-5. Redirects to `/pages/auth/pending.html` with email verification waiting UI
-6. `pending.html` polls `check-email-verified` Edge Function every 3 seconds
-7. When verified, auto-login using stored credentials
-8. Profile created in `user_profiles` table
-9. Redirects to home page with logged-in session
-
-**Security for stored credentials:**
-- `sessionStorage` (cleared when tab closes)
-- 10 minute timeout auto-clear
-- `beforeunload` cleanup (except on success redirect)
-- Immediately cleared after login attempt
-
-### Session Management
-- Sessions stored in `localStorage` by Supabase client
-- `login.js` checks for cached session on page load
-- If valid token exists → show logged-in state immediately
-- If token expired but refresh token exists → wait for SDK refresh
-- If refresh fails → redirect to login page
+1. User clicks "회원가입" → redirects to `/pages/auth/signup.html`
+2. User enters email, password, company info
+3. Credentials stored in `sessionStorage` for auto-login
+4. Redirects to `/pages/auth/pending.html`
+5. Polls for email verification
+6. When verified, auto-login and redirect to homepage
 
 ### Protected Pages
-- Protected pages use `/pages/k-col web software/protected/*.html` loader shells
-- Loader calls Supabase Edge Function `serve-protected-page`
-- Edge Function validates JWT and checks user permissions
-- If authorized, returns actual page content from Supabase Storage
-
----
-
-## Email Configuration (Supabase + Resend)
-
-### Overview
-- **Email Provider**: Resend (https://resend.com)
-- **Sender Email**: `sdppmo@kcol.kr`
-- **Integration**: Supabase Custom SMTP
-
-### Supabase Dashboard Settings
-
-#### 1. URL Configuration (중요!)
-**Location**: Project Settings → Authentication → URL Configuration
-
-| Setting | Value |
-|---------|-------|
-| Site URL | `https://kcol.kr` |
-| Redirect URLs | `https://kcol.kr/**`, `https://www.kcol.kr/**` |
-
-> ⚠️ **Site URL은 `{{ .ConfirmationURL }}`의 base URL로 사용됨**
-> Site URL이 설정되지 않으면 이메일의 인증 링크가 작동하지 않음
-
-#### 2. Custom SMTP Configuration
-**Location**: Project Settings → Authentication → SMTP Settings
-
-| Setting | Value |
-|---------|-------|
-| Enable Custom SMTP | ✅ On |
-| Sender email | `sdppmo@kcol.kr` |
-| Sender name | `송도파트너스피엠오` |
-| Host | `smtp.resend.com` |
-| Port | `465` |
-| Username | `resend` |
-| Password | Resend API Key (`re_xxxxxxxx`) |
-
-#### 3. Email Templates
-**Location**: Authentication → Email Templates
-
-**Confirm Signup (회원가입 인증)**:
-```html
-<h2>송도파트너스피엠오 회원가입을 환영합니다</h2>
-
-<p>안녕하세요,</p>
-
-<p>송도파트너스피엠오 서비스에 가입해 주셔서 감사합니다.<br>
-아래 버튼을 클릭하여 이메일 인증을 완료해 주세요.</p>
-
-<p style="margin: 32px 0;">
-  <a href="{{ .ConfirmationURL }}" style="background-color: #667eea; color: #ffffff; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: 600;">이메일 인증하기</a>
-</p>
-
-<p>버튼이 작동하지 않는 경우, 아래 링크를 브라우저에 직접 붙여넣어 주세요:<br>
-<a href="{{ .ConfirmationURL }}">{{ .ConfirmationURL }}</a></p>
-
-<hr style="border: none; border-top: 1px solid #e5e5e5; margin: 32px 0;">
-
-<p style="font-size: 12px; color: #999999;">
-※ 본 메일은 발신 전용이며, 회신하셔도 답변을 받으실 수 없습니다.
-</p>
-
-<p style="font-size: 13px; color: #666666;">
-본 메일은 송도파트너스피엠오 회원가입 요청에 의해 자동 발송되었습니다.<br>
-회원가입을 요청하지 않으셨다면 이 메일을 무시하셔도 됩니다.
-</p>
-
-<p style="font-size: 13px; color: #666666;">
-주식회사 송도파트너스피엠오<br>
-<a href="https://kcol.kr">https://kcol.kr</a> | sdppmo@kcol.kr
-</p>
-```
-
-### Resend Dashboard Settings
-
-#### Domain Configuration
-**Location**: Resend Dashboard → Domains
-
-1. Add domain: `kcol.kr`
-2. Add DNS records to Gabia:
-   - SPF record (TXT)
-   - DKIM records (CNAME × 3)
-   - Optional: DMARC record (TXT)
-
-#### API Key
-- Create API key with "Sending access" permission
-- Use this key as SMTP password in Supabase
-
-### Troubleshooting
-
-| Issue | Solution |
-|-------|----------|
-| `{{ .ConfirmationURL }}` 빈 값 | Site URL 설정 확인 (Project Settings → Auth → URL Configuration) |
-| 이메일 발송 안됨 | Resend 도메인 인증 상태 확인, DNS 레코드 전파 대기 (최대 48시간) |
-| 인증 링크 클릭 시 404 | Redirect URLs에 도메인 추가 여부 확인 |
-| 스팸함으로 이동 | DKIM, SPF, DMARC 레코드 모두 설정 권장 |
+- Loader shells in `/pages/k-col web software/protected/`
+- Calls `serve-protected-page` Edge Function
+- Edge Function validates JWT and checks permissions
+- Returns page content from Supabase Storage if authorized
 
 ---
 
@@ -687,4 +265,3 @@ After deploying:
 
 - Email: sbd_pmo@naver.com
 - Website: https://kcol.kr
-- Repository: github.com:sdppmo/homepage.git
