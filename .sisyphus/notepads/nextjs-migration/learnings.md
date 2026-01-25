@@ -394,3 +394,28 @@ No code changes needed for images.
 
 ### Login Page Update
 - Removed terms/privacy agreement text per user request
+
+## 2026-01-25: Image Optimization Fix
+
+### Issue
+- `/_next/image?url=...K-COL%20제작...` returning 400 Bad Request
+- Direct image access worked (200), but Next.js image optimization failed
+
+### Root Cause
+- **Korean characters in directory name** (`K-COL 제작`) caused URL encoding issues
+- Next.js image optimization couldn't handle the encoded Korean path
+
+### Solution
+1. Renamed directory: `public/images/K-COL 제작/` → `public/images/k-col-manufacturing/`
+2. Updated image paths in `src/app/photo-gallery/page.tsx`
+
+### Verification
+- `curl "http://localhost:8080/_next/image?url=/images/k-col-manufacturing/P-0.webp&w=640&q=75"` → 200 ✅
+- `curl "http://localhost:8080/_next/image?url=/images/k-col-manufacturing/P-0.webp&w=3840&q=75"` → 200 ✅
+- Photo gallery page loads correctly
+
+### Commit
+- `a5250d6` - fix: rename image directory to ASCII-only path for Next.js image optimization
+
+### Key Learning
+**ALWAYS use ASCII-only characters for file/directory names** in Next.js projects to avoid image optimization issues. Korean, Chinese, or other non-ASCII characters in paths can cause 400 errors with `/_next/image`.
