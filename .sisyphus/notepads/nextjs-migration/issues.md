@@ -122,3 +122,29 @@ These are cleanup tasks intentionally deferred for rollback safety:
 **Next Action**: Resume this work plan on 2026-02-01 to complete cleanup tasks.
 
 **NO FURTHER WORK IS POSSIBLE ON THIS PLAN UNTIL 2026-02-01.**
+
+### [2026-01-25T10:05] Bug Fixes Deployed to Beta (Version 5)
+
+#### Issues Fixed
+1. **429 Rate Limit errors on RSC prefetch requests**
+   - Problem: Next.js RSC prefetch (`?_rsc=...`) requests were being rate limited
+   - Solution: Skip rate limiting for RSC requests in middleware.ts
+   - Also increased general rate limit from 30 to 60 req/s
+
+2. **Dunamu Exchange Rate API DNS error**
+   - Problem: `quotation-api-cdn.dunamu.com` doesn't exist (ERR_NAME_NOT_RESOLVED)
+   - Solution: Changed to `quotation-api.dunamu.com` in ExchangeRate.tsx and CSP
+
+#### Files Changed
+- `src/middleware.ts` - Skip rate limiting for `?_rsc=` requests
+- `src/components/widgets/ExchangeRate.tsx` - Fixed API URL
+- `next.config.ts` - Fixed CSP connect-src domain
+
+#### Deployment
+- Beta: Version 5 deployed via `./deploy-beta.sh --quick`
+- Production: Still on old nginx (user reverted)
+
+#### Key Learning
+- `deploy.sh` → Production (sdppmo-container-service-1)
+- `deploy-beta.sh` → Beta (sdppmo-beta-container)
+- NEVER use deploy.sh without explicit user approval for production

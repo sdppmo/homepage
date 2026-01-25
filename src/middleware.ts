@@ -31,11 +31,16 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  const ip = request.headers.get('x-forwarded-for') || 
-              request.headers.get('x-real-ip') || 
-              'unknown';
-  if (!rateLimit(ip, 30)) {
-    return new NextResponse('Too Many Requests', { status: 429 });
+  // Skip rate limiting for RSC prefetch requests (internal Next.js requests)
+  const isRscRequest = request.nextUrl.searchParams.has('_rsc');
+  
+  if (!isRscRequest) {
+    const ip = request.headers.get('x-forwarded-for') || 
+                request.headers.get('x-real-ip') || 
+                'unknown';
+    if (!rateLimit(ip, 60)) {
+      return new NextResponse('Too Many Requests', { status: 429 });
+    }
   }
 
   const { user, response } = await updateSession(request);

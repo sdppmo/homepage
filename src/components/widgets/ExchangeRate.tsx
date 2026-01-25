@@ -11,7 +11,7 @@ const ExchangeRate = () => {
       try {
         // 1) Dunamu (빠르고 정확, 하지만 CSP/connect-src가 허용되어야 함)
         try {
-          const response = await fetch('https://quotation-api-cdn.dunamu.com/v1/forex/recent?codes=FRX.KRWUSD', {
+          const response = await fetch('https://quotation-api.dunamu.com/v1/forex/recent?codes=FRX.KRWUSD', {
             method: 'GET',
             headers: { 'Accept': 'application/json' }
           });

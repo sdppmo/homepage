@@ -706,17 +706,23 @@ Keep `main` branch unchanged until migration verified (1 week minimum).
 
 ## Final Status: 170/173 Tasks Complete (98.3%)
 
-**Last Updated**: 2026-01-25
+**Last Updated**: 2026-01-25 10:05 KST
 
 ### Completed
 - ✅ All code migration (Phases 0-7)
-- ✅ Beta deployment at https://beta.kcol.kr
-- ✅ Production deployment at https://kcol.kr
+- ✅ Beta deployment at https://beta.kcol.kr (Version 5)
+- ⚠️ Production (https://kcol.kr) reverted to nginx by user - Next.js not deployed
 - ✅ UI testing via Playwright
 - ✅ Performance verification (TTFB 108ms)
 - ✅ Security verification (headers, client bundle)
 - ✅ All 44 tests passing
-- ✅ Both domains verified (kcol.kr, www.kcol.kr)
+- ✅ Bug fixes deployed to beta (429 rate limit, Dunamu API URL)
+
+### Bug Fixes (2026-01-25)
+| Issue | Fix | Status |
+|-------|-----|--------|
+| 429 errors on RSC prefetch | Skip rate limiting for `?_rsc=` requests | ✅ Beta v5 |
+| Dunamu API DNS error | Fixed URL: `quotation-api.dunamu.com` | ✅ Beta v5 |
 
 ### Blocked (3 tasks - waiting until 2026-02-01)
 | Task | Blocker | Resolution |
@@ -726,8 +732,9 @@ Keep `main` branch unchanged until migration verified (1 week minimum).
 | Remove old files | Safety: 1 week monitoring | Execute after 2026-02-01 |
 
 ### Next Steps for User
-1. ✅ Production verified - both kcol.kr and www.kcol.kr working
-2. After 2026-02-01, execute cleanup tasks:
+1. Test beta.kcol.kr to verify bug fixes work
+2. When ready, deploy to production using `./deploy.sh` (requires explicit approval)
+3. After 2026-02-01, execute cleanup tasks:
    - Delete Supabase Edge Functions
    - Delete `protected-pages` Storage bucket
    - Remove old HTML/JS/CSS files from repo
