@@ -1,0 +1,295 @@
+# Project Rules - SongDoPartners Homepage (kcol.kr)
+
+> These rules are learned from past mistakes and must be followed to prevent repeating them.
+> Last updated: 2026-01-25
+
+---
+
+## MANDATORY: Update Rules as You Learn
+
+### After Every Mistake or Discovery
+
+**RULE**: When you encounter a new issue, bug, or learn something important, you MUST:
+
+1. **Update this file** (`.cursorrules`) with the new rule
+2. **Update the notepad** at `.sisyphus/notepads/{plan-name}/`:
+   - `issues.md` - Problems encountered, bugs, blockers
+   - `learnings.md` - Patterns discovered, successful approaches
+   - `decisions.md` - Architectural choices, trade-offs made
+
+### Format for New Rules
+
+```markdown
+### Rule Title
+
+**MISTAKE MADE**: What went wrong
+**LEARNING**: What we discovered
+**RULE**: What to do going forward
+```
+
+### Why This Matters
+
+- Future sessions start fresh with no memory
+- Rules file is read at session start
+- Prevents repeating the same mistakes
+- Accumulates project-specific knowledge
+
+**DO NOT** finish a session without documenting new learnings.
+
+---
+
+## CRITICAL: Deployment Rules
+
+### NEVER Deploy to Production Without Explicit Approval
+
+**MISTAKE MADE**: Accidentally deployed Next.js to production (kcol.kr) when user only wanted beta deployment.
+
+**RULE**: 
+- ALWAYS ask before deploying to production (`./deploy.sh` without `--local`)
+- Use beta.kcol.kr for testing first
+- Production deployment requires explicit user confirmation
+
+**Services**:
+| Service | Domain | Purpose |
+|---------|--------|---------|
+| `sdppmo-container-service-1` | kcol.kr, www.kcol.kr | PRODUCTION - DO NOT TOUCH without approval |
+| `sdppmo-beta-container` | beta.kcol.kr | BETA - Safe for testing |
+
+### Deployment Commands
+
+```bash
+# LOCAL TESTING (safe)
+./deploy.sh --local --quick    # Build and run locally at http://localhost:3000
+./deploy.sh --stop             # Stop local container
+
+# BETA DEPLOYMENT (safe)
+# Build image, push to beta, create deployment
+./deploy.sh --build-only
+aws lightsail push-container-image --service-name sdppmo-beta-container ...
+aws lightsail create-container-service-deployment --service-name sdppmo-beta-container ...
+
+# PRODUCTION DEPLOYMENT (REQUIRES APPROVAL)
+./deploy.sh                    # Full deploy to production - ASK FIRST!
+```
+
+### Lightsail Deployments Cannot Be Cancelled
+
+**LEARNING**: Once `create-container-service-deployment` is called, it CANNOT be cancelled. The deployment will complete regardless.
+
+**RULE**: Double-check the `--service-name` parameter before running deployment commands.
+
+---
+
+## Code Quality Rules
+
+### Never Suppress Type Errors
+
+**FORBIDDEN**:
+```typescript
+// NEVER DO THIS
+as any
+@ts-ignore
+@ts-expect-error
+// eslint-disable
+```
+
+**INSTEAD**: Fix the actual type issue or update the type definitions.
+
+### Test Commands
+
+**CORRECT**: `bun run test` (invokes vitest via package.json)
+**WRONG**: `bun test` (invokes Bun's native test runner, missing jsdom)
+
+### Type Checking
+
+**CORRECT**: `bun run typecheck` (runs `tsc --noEmit`)
+**WRONG**: `bun x tsc` (may have different behavior)
+
+---
+
+## Next.js Specific Rules
+
+### Route Groups Don't Affect URLs
+
+**LEARNING**: Parentheses in folder names create route groups, NOT URL segments.
+
+```
+src/app/(auth)/login/page.tsx  → URL: /login (NOT /auth/login)
+src/app/(protected)/admin/     → URL: /admin (NOT /protected/admin)
+```
+
+**MISTAKE MADE**: Configured redirect `/pages/auth/:path*.html` → `/auth/:path*` when it should be `/:path*`
+
+### Server Actions Security
+
+**VERIFIED**: Server Actions are secure - only reference IDs appear in client bundles, not actual code.
+
+```typescript
+// Client bundle contains:
+createServerReference("405472da6a9c5f3d434de78ff91673695fe7f28847")
+
+// NOT the actual function implementation
+```
+
+### CSP (Content Security Policy)
+
+When adding external APIs/widgets, update `next.config.ts` CSP:
+
+```typescript
+// next.config.ts - headers()
+"Content-Security-Policy": `
+  connect-src 'self' https://*.supabase.co wss://*.supabase.co https://NEW-DOMAIN.com;
+`
+```
+
+**MISTAKE MADE**: Exchange rate widget failed due to missing `dunamu.com` and `er-api.com` in CSP.
+
+---
+
+## Supabase Rules
+
+### Use Correct Client for Admin Operations
+
+**For user-facing operations** (login, signup form submission):
+```typescript
+import { createClient } from '@/lib/supabase/server'
+const supabase = await createClient()  // Uses anon key + cookies
+```
+
+**For admin operations** (create user, delete user, list all users):
+```typescript
+import { createClient } from '@supabase/supabase-js'
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!  // Admin key
+)
+```
+
+### Environment Variables
+
+**Public (exposed to client)**:
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+
+**Secret (server-only)**:
+- `SUPABASE_SERVICE_ROLE_KEY` - NEVER expose to client
+- `CRON_SECRET`
+- `RESEND_API_KEY`
+
+---
+
+## Middleware Rules
+
+### Rate Limiting
+
+**CURRENT**: 30 requests/second (increased from 10)
+
+**MISTAKE MADE**: Rate limit of 10 req/s caused 429 errors during RSC prefetch on page navigation.
+
+**RULE**: If users report 429 errors, check middleware rate limiting first.
+
+### Protected Routes
+
+Protected route patterns in `src/middleware.ts`:
+- `/k-col/*` - Requires `access_column` permission
+- `/admin` - Requires `role === 'admin'`
+
+---
+
+## Git Rules
+
+### Never Commit Secrets
+
+**FORBIDDEN in git**:
+- `.env.local`
+- `admin/` folder
+- Any file with API keys, passwords, credentials
+
+### Commit Message Format
+
+```
+type: brief description
+
+- Detail 1
+- Detail 2
+```
+
+Types: `fix`, `feat`, `refactor`, `docs`, `chore`, `test`
+
+---
+
+## Docker / Local Development
+
+### Always Use deploy.sh
+
+**CORRECT**:
+```bash
+./deploy.sh --stop && ./deploy.sh --local --quick
+```
+
+**WRONG**:
+```bash
+docker stop ...
+docker rm ...
+docker run ...
+```
+
+**REASON**: `deploy.sh` handles cleanup, port mapping, environment variables correctly.
+
+### Local Server Port
+
+- Container internal: 3000
+- Host mapping: 3000 (was 8080, now 3000)
+- Access at: http://localhost:3000
+
+---
+
+## Cleanup Tasks (BLOCKED until 2026-02-01)
+
+These tasks are intentionally deferred for rollback safety:
+
+1. Delete Supabase Edge Functions
+2. Delete `protected-pages` Storage bucket  
+3. Remove old HTML/JS/CSS files from repo
+
+**DO NOT** execute these until the date above, even if asked.
+
+---
+
+## Common Mistakes to Avoid
+
+| Mistake | Prevention |
+|---------|------------|
+| Deploy to production without approval | Always confirm with user first |
+| Use `bun test` instead of `bun run test` | Check package.json scripts |
+| Forget CSP when adding external APIs | Update next.config.ts headers |
+| Use anon key for admin operations | Use service role key |
+| Assume route group affects URL | Parentheses are invisible in URLs |
+| Cancel Lightsail deployment | Can't be cancelled - verify before running |
+| Rate limit too low | Start with 30 req/s, adjust if needed |
+
+---
+
+## Quick Reference
+
+### Verify Beta is Working
+```bash
+curl -s https://beta.kcol.kr/health
+curl -sI https://beta.kcol.kr/ | grep -E "(x-powered-by|content-security)"
+```
+
+### Check Deployment Status
+```bash
+# Beta
+aws lightsail get-container-services --service-name sdppmo-beta-container --region ap-northeast-2 --query 'containerServices[0].{state:state,version:currentDeployment.version}'
+
+# Production
+aws lightsail get-container-services --service-name sdppmo-container-service-1 --region ap-northeast-2 --query 'containerServices[0].{state:state,version:currentDeployment.version}'
+```
+
+### Build and Type Check
+```bash
+bun run typecheck  # No type errors
+bun run build      # Build succeeds
+bun run test       # All tests pass
+```
