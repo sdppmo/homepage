@@ -7,10 +7,16 @@ import Footer from '@/components/layout/Footer';
 
 const MainContent = dynamic(() => import('@/components/layout/MainContent'), {
   ssr: true,
+  loading: () => (
+    <div className="flex-1 relative flex flex-col order-2 min-h-[400px] md:order-none md:min-h-0 md:pr-[300px] lg:pr-[250px] bg-gray-800 animate-pulse" />
+  ),
 });
 
 const RightSidebar = dynamic(() => import('@/components/layout/RightSidebar'), {
   ssr: true,
+  loading: () => (
+    <aside className="relative w-full p-4 z-20 bg-black/80 md:absolute md:top-0 md:right-0 md:bottom-0 md:w-[300px] lg:w-[250px] animate-pulse" />
+  ),
 });
 
 export default function Home() {

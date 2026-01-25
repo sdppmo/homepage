@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 
 interface ClockState {
   hourDeg: number;
@@ -17,8 +17,34 @@ const ZONES = [
   { id: 'sanfrancisco', offset: -8, label: 'San Francisco' },
 ];
 
+// Calculate initial state for SSR - shows correct time immediately
+const getInitialStates = (): Record<string, ClockState> => {
+  const now = new Date();
+  const utc = now.getTime() + now.getTimezoneOffset() * 60000;
+  const states: Record<string, ClockState> = {};
+  
+  ZONES.forEach((z) => {
+    const local = new Date(utc + z.offset * 3600000);
+    const h = local.getHours();
+    const m = local.getMinutes();
+    const s = local.getSeconds();
+    
+    states[z.id] = {
+      hourDeg: (h % 12) * 30 + m * 0.5,
+      minDeg: m * 6 + s * 0.1,
+      secDeg: s * 6,
+      ampm: h >= 12 ? 'PM' : 'AM',
+      isNight: h >= 18 || h < 6,
+    };
+  });
+  
+  return states;
+};
+
 const WorldClocks = () => {
-  const [clockStates, setClockStates] = useState<Record<string, ClockState>>({});
+  // Initialize with current time so clocks show immediately
+  const initialStates = useMemo(() => getInitialStates(), []);
+  const [clockStates, setClockStates] = useState<Record<string, ClockState>>(initialStates);
 
   useEffect(() => {
     const tick = () => {
@@ -47,10 +73,14 @@ const WorldClocks = () => {
       setClockStates(newStates);
     };
 
-    tick();
-    const interval = setInterval(tick, 50);
+    // Start animation after a short delay to prioritize initial render
+    const timeout = setTimeout(() => {
+      tick();
+      const interval = setInterval(tick, 50);
+      return () => clearInterval(interval);
+    }, 100);
 
-    return () => clearInterval(interval);
+    return () => clearTimeout(timeout);
   }, []);
 
   return (

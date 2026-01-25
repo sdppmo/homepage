@@ -3,8 +3,8 @@
 import { useState, useEffect } from 'react';
 
 const ExchangeRate = () => {
-  const [rate, setRate] = useState<string>('로딩중...');
-  const [title, setTitle] = useState<string>('');
+  const [rate, setRate] = useState<string>('1,350원');
+  const [title, setTitle] = useState<string>('로딩중...');
 
   useEffect(() => {
     const fetchExchangeRate = async () => {

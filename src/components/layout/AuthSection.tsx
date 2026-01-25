@@ -13,6 +13,7 @@ interface UserProfile {
 const AuthSection = () => {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   
   const supabaseRef = useRef(createClient());
   const supabase = supabaseRef.current;
@@ -43,6 +44,8 @@ const AuthSection = () => {
             });
         }
       } catch {
+      } finally {
+        if (isMounted) setIsLoading(false);
       }
     };
 
@@ -64,6 +67,7 @@ const AuthSection = () => {
           setUser(null);
           setProfile(null);
         }
+        setIsLoading(false);
       }
     );
 
@@ -77,6 +81,17 @@ const AuthSection = () => {
     await supabase.auth.signOut();
     window.location.href = '/';
   };
+
+  if (isLoading) {
+    return (
+      <div className="mt-3 p-4 bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-xl shadow-lg">
+        <div className="flex gap-2.5">
+          <div className="flex-1 h-12 bg-white/10 rounded-lg animate-pulse" />
+          <div className="flex-1 h-12 bg-white/10 rounded-lg animate-pulse" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="mt-3 p-4 bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-xl shadow-lg">
