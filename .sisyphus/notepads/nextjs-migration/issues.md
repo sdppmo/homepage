@@ -221,3 +221,41 @@ Remaining 3 tasks are BLOCKED until 2026-02-01:
 3. Remove old HTML/JS/CSS files
 
 **NO FURTHER WORK POSSIBLE UNTIL 2026-02-01.**
+
+### [2026-01-25T10:45] Final Blocker Documentation
+
+#### Blocker Type: TIME-BASED (Immutable)
+
+**Current Date**: 2026-01-25  
+**Unblock Date**: 2026-02-01  
+**Days Remaining**: 7
+
+#### Blocked Tasks (3/3 remaining)
+
+| # | Task | Blocker Reason |
+|---|------|----------------|
+| 1 | Delete Supabase Edge Functions | Rollback safety - 1 week monitoring period |
+| 2 | Delete `protected-pages` Storage bucket | Rollback safety - 1 week monitoring period |
+| 3 | Remove old HTML/JS/CSS files | Rollback safety - 1 week monitoring period |
+
+#### Why This Cannot Be Bypassed
+
+These are **destructive cleanup operations** that would permanently delete:
+- Production Edge Functions (backup auth system)
+- Protected page storage (backup content delivery)
+- Legacy static files (rollback capability)
+
+The 1-week safety period ensures the Next.js deployment is stable before removing rollback infrastructure.
+
+#### Resolution
+
+**WAIT until 2026-02-01**, then execute:
+1. Supabase Dashboard → Edge Functions → Delete all
+2. Supabase Dashboard → Storage → Delete `protected-pages` bucket
+3. `git rm -r static-pages/ protected-source/ index.html && git commit && git push`
+
+#### Work Plan Status
+
+**170/173 COMPLETE (98.3%) - EFFECTIVELY DONE**
+
+All code, deployment, and verification tasks are complete. Only cleanup remains.
