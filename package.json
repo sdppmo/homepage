@@ -1,13 +1,14 @@
 {
-  "name": "nextjs-temp",
+  "name": "sdppmo-homepage",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "test": "vitest",
-    "test:run": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "test:ui": "vitest --ui"
   },
   "dependencies": {

@@ -33,8 +33,8 @@ export default function Home() {
   };
 
   return (
-    <div className="page-wrapper flex flex-col w-screen h-screen m-0 overflow-hidden md:h-auto md:min-h-screen md:overflow-visible">
-      <div className="top-row flex flex-1 overflow-hidden relative md:flex-col md:overflow-visible">
+    <div className="page-wrapper flex flex-col w-screen min-h-screen m-0 overflow-visible md:h-screen md:overflow-hidden">
+      <div className="top-row flex flex-col flex-1 overflow-visible relative md:flex-row md:overflow-hidden">
         <LeftSidebar
           onKosisClick={handleKosisClick}
           kosisModeEnabled={kosisModeEnabled}
@@ -49,7 +49,7 @@ export default function Home() {
           kosisModeEnabled={kosisModeEnabled}
         />
       </div>
-      <div className="bottom-row flex flex-shrink-0 h-[100px] md:flex-col md:h-auto">
+      <div className="bottom-row flex flex-col flex-shrink-0 h-auto md:flex-row md:h-[100px]">
         <Footer />
       </div>
     </div>

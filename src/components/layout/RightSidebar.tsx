@@ -19,8 +19,8 @@ const RightSidebar = ({ onMonthSelect, kosisModeEnabled }: RightSidebarProps) =>
     : "p-1.5 text-xs text-[#333] border-r border-[#ddd] flex items-center gap-2 cursor-pointer transition-colors duration-200 hover:bg-[#f0f4ff] xs:p-1 xs:text-[10px]";
 
   return (
-    <aside className="absolute top-0 right-0 bottom-0 w-[300px] p-4 z-20 overflow-y-auto overflow-x-hidden pointer-events-auto lg:w-[250px] lg:p-2.5 md:relative md:w-full md:p-4 md:bg-black/80">
-      <div className="news-section mt-5 lg:mt-[100px] md:mt-5">
+    <aside className="relative w-full p-4 z-20 overflow-y-auto overflow-x-hidden pointer-events-auto bg-black/80 md:absolute md:top-0 md:right-0 md:bottom-0 md:w-[300px] md:bg-transparent lg:w-[250px] lg:p-2.5">
+      <div className="news-section mt-5 lg:mt-[100px]">
         <div className="text-3xl font-bold text-white text-center mb-4 drop-shadow-[2px_2px_4px_#000] lg:text-2xl xs:text-xl">
           NEWS
         </div>
@@ -38,7 +38,7 @@ const RightSidebar = ({ onMonthSelect, kosisModeEnabled }: RightSidebarProps) =>
         </div>
       </div>
 
-      <div className="exchange-table absolute bottom-0 left-5 z-[9999] pointer-events-auto bg-white/90 border-2 border-[#666] mb-4 md:relative md:bottom-auto md:left-auto md:mb-0 md:mt-4 xs:text-[11px]">
+      <div className="exchange-table relative mb-0 mt-4 z-[9999] pointer-events-auto bg-white/90 border-2 border-[#666] md:absolute md:bottom-0 md:left-5 md:mb-4 md:mt-0 xs:text-[11px]">
         <div className="bg-gradient-to-b from-[#666] to-[#555] text-white p-1.5 text-xs font-bold">
           환율(won/$): <ExchangeRate />
         </div>

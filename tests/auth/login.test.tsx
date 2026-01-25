@@ -1,6 +1,3 @@
-/**
- * @vitest-environment jsdom
- */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import { useSearchParams } from 'next/navigation';
@@ -12,11 +9,19 @@ vi.mock('next/navigation', () => ({
   useSearchParams: vi.fn(),
 }));
 
-// Mock the server action
 const mockLogin = vi.fn();
 vi.mock('@/app/(auth)/login/actions', () => ({
   login: (...args: unknown[]) => mockLogin(...args),
 }));
+
+async function renderAndWait(component: React.ReactElement) {
+  let result;
+  await act(async () => {
+    result = render(component);
+    await new Promise(resolve => setTimeout(resolve, 0));
+  });
+  return result;
+}
 
 describe('LoginPage', () => {
   const mockGet = vi.fn();
@@ -30,9 +35,7 @@ describe('LoginPage', () => {
   });
 
   it('should render login form correctly', async () => {
-    await act(async () => {
-      render(<LoginPage />);
-    });
+    await renderAndWait(<LoginPage />);
 
     expect(screen.getByText('송도파트너스피엠오')).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: '로그인' })).toBeInTheDocument();
@@ -42,9 +45,7 @@ describe('LoginPage', () => {
   });
 
   it('should render password reset link', async () => {
-    await act(async () => {
-      render(<LoginPage />);
-    });
+    await renderAndWait(<LoginPage />);
 
     const resetLink = screen.getByText('비밀번호 찾기');
     expect(resetLink).toBeInTheDocument();
@@ -52,9 +53,7 @@ describe('LoginPage', () => {
   });
 
   it('should render signup link', async () => {
-    await act(async () => {
-      render(<LoginPage />);
-    });
+    await renderAndWait(<LoginPage />);
 
     const signupLink = screen.getByText('회원가입');
     expect(signupLink).toBeInTheDocument();
@@ -62,9 +61,7 @@ describe('LoginPage', () => {
   });
 
   it('should toggle password visibility', async () => {
-    await act(async () => {
-      render(<LoginPage />);
-    });
+    await renderAndWait(<LoginPage />);
 
     const passwordInput = screen.getByLabelText('비밀번호') as HTMLInputElement;
     const toggleButton = screen.getByLabelText('비밀번호 보기');
@@ -85,9 +82,7 @@ describe('LoginPage', () => {
   it('should call server action on form submit', async () => {
     mockLogin.mockResolvedValue(null);
 
-    await act(async () => {
-      render(<LoginPage />);
-    });
+    await renderAndWait(<LoginPage />);
 
     const emailInput = screen.getByLabelText('이메일 주소');
     const passwordInput = screen.getByLabelText('비밀번호');
@@ -106,7 +101,6 @@ describe('LoginPage', () => {
       expect(mockLogin).toHaveBeenCalled();
     });
 
-    // Verify the FormData contains correct values
     const callArgs = mockLogin.mock.calls[0];
     const formData = callArgs[1] as FormData;
     expect(formData.get('email')).toBe('test@example.com');
@@ -117,9 +111,7 @@ describe('LoginPage', () => {
     mockGet.mockReturnValue('/k-col/calculator');
     mockLogin.mockResolvedValue(null);
 
-    await act(async () => {
-      render(<LoginPage />);
-    });
+    await renderAndWait(<LoginPage />);
 
     const emailInput = screen.getByLabelText('이메일 주소');
     const passwordInput = screen.getByLabelText('비밀번호');
@@ -146,9 +138,7 @@ describe('LoginPage', () => {
   it('should display error message when server action returns error', async () => {
     mockLogin.mockResolvedValue({ error: 'Invalid login credentials' });
 
-    await act(async () => {
-      render(<LoginPage />);
-    });
+    await renderAndWait(<LoginPage />);
 
     const emailInput = screen.getByLabelText('이메일 주소');
     const passwordInput = screen.getByLabelText('비밀번호');
@@ -171,9 +161,7 @@ describe('LoginPage', () => {
   it('should display Korean error message for missing credentials', async () => {
     mockLogin.mockResolvedValue({ error: '이메일과 비밀번호를 모두 입력해주세요.' });
 
-    await act(async () => {
-      render(<LoginPage />);
-    });
+    await renderAndWait(<LoginPage />);
 
     const form = screen.getByRole('button', { name: /로그인/i }).closest('form')!;
 
@@ -187,9 +175,7 @@ describe('LoginPage', () => {
   });
 
   it('should require email and password fields', async () => {
-    await act(async () => {
-      render(<LoginPage />);
-    });
+    await renderAndWait(<LoginPage />);
 
     const emailInput = screen.getByLabelText('이메일 주소') as HTMLInputElement;
     const passwordInput = screen.getByLabelText('비밀번호') as HTMLInputElement;
@@ -199,9 +185,7 @@ describe('LoginPage', () => {
   });
 
   it('should have correct input types', async () => {
-    await act(async () => {
-      render(<LoginPage />);
-    });
+    await renderAndWait(<LoginPage />);
 
     const emailInput = screen.getByLabelText('이메일 주소') as HTMLInputElement;
     const passwordInput = screen.getByLabelText('비밀번호') as HTMLInputElement;
@@ -213,9 +197,7 @@ describe('LoginPage', () => {
   it('should have hidden redirect input with default value', async () => {
     mockGet.mockReturnValue(null);
 
-    await act(async () => {
-      render(<LoginPage />);
-    });
+    await renderAndWait(<LoginPage />);
 
     const hiddenInput = document.querySelector('input[name="redirect"]') as HTMLInputElement;
     expect(hiddenInput).toBeInTheDocument();
@@ -226,9 +208,7 @@ describe('LoginPage', () => {
   it('should have hidden redirect input with custom value', async () => {
     mockGet.mockReturnValue('/dashboard');
 
-    await act(async () => {
-      render(<LoginPage />);
-    });
+    await renderAndWait(<LoginPage />);
 
     const hiddenInput = document.querySelector('input[name="redirect"]') as HTMLInputElement;
     expect(hiddenInput.value).toBe('/dashboard');

@@ -1,7 +1,7 @@
 # AI Agent Context - SongDoPartners Homepage
 
 > This document provides context for AI agents working on this project.
-> Last updated: 2026-01-22
+> Last updated: 2026-01-25
 
 ## ⚠️ SECURITY FIRST
 
@@ -23,8 +23,9 @@
 
 **Project**: SongDoPartners (SDP) Corporate Homepage
 **Purpose**: K-COL Steel Column Design Platform - Corporate website with product information, calculators, and news
-**Stack**: Static HTML/CSS/JS served via Nginx in Docker, deployed to AWS Lightsail
+**Stack**: Next.js 15 + Bun + TypeScript + Tailwind CSS, deployed to AWS Lightsail
 **Domain**: https://kcol.kr, https://www.kcol.kr
+**Beta**: https://beta.kcol.kr (for testing before production deployment)
 
 ---
 
@@ -34,42 +35,47 @@
 ┌─────────────────────────────────────────────────────────────────┐
 │                        AWS Lightsail                             │
 │  ┌─────────────────────────────────────────────────────────┐    │
-│  │  Container Service: sdppmo-container-service-1          │    │
+│  │  Container Service: sdppmo-container-service-1 (PROD)   │    │
+│  │  Container Service: sdppmo-beta-container (BETA)        │    │
 │  │  Region: ap-northeast-2 (Seoul)                         │    │
 │  │  ┌─────────────────────────────────────────────────┐    │    │
-│  │  │  Docker Container (nginx:alpine)                │    │    │
-│  │  │  - Port 80 (HTTP)                               │    │    │
-│  │  │  - Health check: /health                        │    │    │
-│  │  │  - Static files in /usr/share/nginx/html        │    │    │
+│  │  │  Docker Container (Next.js 15 + Bun)            │    │    │
+│  │  │  - Port 3000 (HTTP)                             │    │    │
+│  │  │  - Health check: /health → /api/health          │    │    │
+│  │  │  - Server-side rendering (SSR)                  │    │    │
+│  │  │  - Server Actions for calculations              │    │    │
 │  │  └─────────────────────────────────────────────────┘    │    │
 │  └─────────────────────────────────────────────────────────┘    │
 │                              │                                   │
 │  ┌───────────────────────────▼───────────────────────────┐      │
 │  │  Lightsail Load Balancer                              │      │
 │  │  - HTTPS termination (automatic SSL)                  │      │
-│  │  - Custom domains: kcol.kr, www.kcol.kr               │      │
+│  │  - Custom domains: kcol.kr, www.kcol.kr, beta.kcol.kr │      │
 │  │  - Public Endpoint (DNS, not static IP)               │      │
 │  └───────────────────────────────────────────────────────┘      │
 └─────────────────────────────────────────────────────────────────┘
                               │
                               ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│  AWS Lightsail Public HTTPS Endpoint (NOT a static IP)          │
-│  https://sdppmo-container-service-1.xxxxx.ap-northeast-2.       │
-│         cs.amazonlightsail.com                                   │
-└─────────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────────┐
-│  DNS Provider: Gabia (Korean Registrar)                          │
-│  Domain: kcol.kr                                                 │
+│  AWS Route 53 (beta.kcol.kr)                                     │
+│  DNS Provider: Gabia (kcol.kr, www.kcol.kr)                      │
 │  ┌─────────────────────────────────────────────────────────┐    │
 │  │  DNS Records:                                           │    │
-│  │  kcol.kr      → CNAME → Lightsail endpoint              │    │
-│  │  www.kcol.kr  → CNAME → Lightsail endpoint              │    │
+│  │  kcol.kr      → CNAME → Lightsail prod endpoint         │    │
+│  │  www.kcol.kr  → CNAME → Lightsail prod endpoint         │    │
+│  │  beta.kcol.kr → ALIAS → Lightsail beta endpoint         │    │
 │  └─────────────────────────────────────────────────────────┘    │
 └─────────────────────────────────────────────────────────────────┘
 ```
+
+### Key Architecture Changes (2026-01-25)
+
+**Migrated from Static HTML/Nginx to Next.js 15:**
+- Server-side rendering (SSR) for all pages
+- Server Actions for proprietary calculation logic (protected from client exposure)
+- Middleware-based authentication (no more Edge Functions for protected pages)
+- API routes replace Supabase Edge Functions
+- Tailwind CSS replaces custom CSS
 
 ---
 
@@ -185,63 +191,59 @@ Nginx → Static Files
 
 ```
 homepage/
-├── index.html              # Main homepage
-├── css/
-│   └── styles.css          # All styles including responsive design
-├── js/
-│   ├── auth-config.js      # Supabase config (URL, public key)
-│   ├── auth.js             # Supabase authentication
-│   ├── auth-guard.js       # Page access guard (for protected pages)
-│   ├── feature-guard.js    # Permission-based UI access control
-│   ├── protected-loader.js # Loads protected pages via Edge Function
-│   ├── clocks.js           # World clocks
-│   ├── login.js            # Login UI + session state
-│   ├── main.js             # Global init + navigation
-│   └── modal.js            # Project selection modal
-├── assets/
-│   ├── images/             # Product logos, backgrounds, partner logos
-│   ├── pdf/                # Downloadable brochures
-│   └── powerpoint/         # Source slide decks
-├── pages/
-│   ├── auth/               # Authentication pages
-│   │   ├── login.html      # Dedicated login page
-│   │   ├── signup.html     # Dedicated signup page
-│   │   └── pending.html    # Pending approval page
-│   ├── k-col web software/ # K-COL calculator pages
-│   │   └── protected/      # Loader shells for protected pages
-│   └── K-product/          # Product pages
+├── src/                        # Next.js 15 application source
+│   ├── app/                    # App Router pages
+│   │   ├── page.tsx            # Homepage
+│   │   ├── layout.tsx          # Root layout
+│   │   ├── (auth)/             # Auth pages (login, signup, pending, reset-password)
+│   │   ├── (protected)/        # Protected pages (requires auth)
+│   │   │   ├── admin/          # Admin dashboard
+│   │   │   └── k-col/          # K-COL calculators and tools
+│   │   ├── api/                # API routes (replaced Edge Functions)
+│   │   │   ├── auth/           # Auth APIs
+│   │   │   ├── admin/          # Admin APIs
+│   │   │   ├── usage/          # Usage logging
+│   │   │   ├── proxy/          # External API proxies
+│   │   │   ├── cron/           # Scheduled jobs
+│   │   │   └── health/         # Health check endpoint
+│   │   └── [public pages]/     # products, papers, videos, etc.
+│   │
+│   ├── components/             # React components
+│   │   ├── layout/             # Header, Footer, Sidebar
+│   │   └── ui/                 # Reusable UI components
+│   │
+│   ├── lib/                    # Shared utilities
+│   │   ├── supabase/           # Supabase clients (server, client, middleware)
+│   │   ├── db/                 # Database query functions
+│   │   └── calculations/       # Server-side calculation logic (PROTECTED)
+│   │
+│   ├── actions/                # Server Actions
+│   └── middleware.ts           # Auth middleware for protected routes
 │
-├── # Supabase Edge Functions
-├── supabase/
-│   └── functions/
-│       ├── serve-protected-page/  # Serves protected HTML with auth check
-│       ├── admin-users/           # Admin user management API
-│       └── send-admin-alert/      # New user notification emails
+├── public/                     # Static assets
+│   ├── images/                 # Product logos, backgrounds
+│   └── pdf/                    # Downloadable brochures
 │
+├── # Configuration
+├── next.config.ts              # Next.js config (redirects, headers, rewrites)
+├── tailwind.config.ts          # Tailwind CSS configuration
+├── tsconfig.json               # TypeScript configuration
+├── package.json                # Dependencies (Bun)
 │
 ├── # Docker & Deployment
-├── Dockerfile              # Security-hardened nginx:alpine image
-├── nginx.conf              # Production nginx config with security headers
-├── docker-compose.yml      # Local testing
-├── deploy.sh               # Main deployment script
-├── bugcheck.sh             # Pre-deployment verification script
-├── .dockerignore           # Excludes sensitive/protected files from Docker
-│
-├── scripts/                    # Build/deploy/dev scripts
-│   ├── start-server.sh         # Local Python server (Mac/Linux)
-│   ├── start-server.bat        # Local Python server (Windows)
-│   ├── start-server.ps1        # Local Python server (PowerShell)
-│   ├── deploy-edge-functions.py  # Deploy Edge Functions via CLI
-│   └── upload-protected-pages.py # Upload HTML to Supabase Storage
+├── Dockerfile                  # Multi-stage Bun + Next.js build
+├── deploy.sh                   # Main deployment script
+├── .dockerignore               # Docker build exclusions
 │
 ├── # Documentation
-├── README.md               # User documentation
-├── AGENTS.md               # This file - AI agent context
+├── README.md                   # User documentation
+├── AGENTS.md                   # This file - AI agent context
+├── SECURITY.md                 # Security checklist
 │
 ├── # Environment (git-ignored)
-├── .env.local              # Supabase secrets (SERVICE_ROLE_KEY)
+├── .env.local                  # Supabase secrets
 │
-└── .gitignore              # Git ignore rules
+└── .gitignore                  # Git ignore rules
 ```
 
 ---
@@ -251,44 +253,61 @@ homepage/
 ### `deploy.sh` - Main Deployment Script
 
 ```bash
-./deploy.sh                   # Full: build + security scan + deploy to Lightsail + Supabase
-./deploy.sh --local           # Build + run local server at http://localhost:8080
+./deploy.sh                   # Full: build + security scan + deploy to Lightsail
+./deploy.sh --local           # Build + run local server at http://localhost:3000
 ./deploy.sh --stop            # Stop local server + cleanup Docker images
 ./deploy.sh --build-only      # Build Docker image only
 ./deploy.sh --deploy-only     # Deploy existing image to Lightsail
 ./deploy.sh --quick           # Skip Trivy security scans
-./deploy.sh --upload-protected  # Upload protected pages to Supabase Storage
-./deploy.sh --deploy-functions  # Deploy Edge Functions to Supabase
+./deploy.sh --test-security   # Run security tests (RLS verification)
 ```
 
 **Configuration (in script):**
 - `SERVICE_NAME="sdppmo-container-service-1"`
 - `AWS_REGION="ap-northeast-2"`
 - `IMAGE_NAME="sdppmo-homepage"`
-- `LOCAL_PORT=8080`
+- `LOCAL_PORT=3000`
 - `LOCAL_CONTAINER="sdppmo-local-test"`
 
 **Features:**
 - Pre-flight checks (Docker, AWS CLI, Lightsail access)
 - Security vulnerability scanning via Trivy
 - Security header validation
-- macOS/Linux compatible (uses `sed` instead of `grep -P`)
-
-### `nginx.conf` - Production Nginx Configuration
-
-**Security features:**
-- Rate limiting: 10 req/s per IP, burst 20
-- Connection limits: 20 concurrent per IP
-- Security headers: X-Frame-Options, CSP, X-Content-Type-Options, etc.
-- Blocked patterns: Path traversal, .php, .git, .env, wp-admin, etc.
-- Health endpoint: `/health`
+- macOS/Linux compatible
 
 ### `Dockerfile` - Container Build
 
-- Base: `nginx:1.25-alpine`
-- Removes: curl, wget (security)
-- Copies: Static files to `/usr/share/nginx/html`
-- Health check: Process-based
+- Multi-stage build: deps → builder → runner
+- Base: `oven/bun:1` for build, `oven/bun:1-slim` for runtime
+- Standalone Next.js output for minimal image size
+- Health check: HTTP GET to `/api/health`
+- Port: 3000
+
+### `next.config.ts` - Next.js Configuration
+
+**Security headers:**
+- X-Frame-Options: DENY
+- X-Content-Type-Options: nosniff
+- Content-Security-Policy (CSP)
+- Referrer-Policy: strict-origin-when-cross-origin
+
+**Redirects:**
+- Old HTML URLs → New Next.js routes (301 permanent)
+- See Appendix A in work plan for full mapping
+
+**Rewrites:**
+- `/health` → `/api/health` (for Lightsail health checks)
+
+### `src/middleware.ts` - Auth Middleware
+
+**Protected route patterns:**
+- `/k-col/*` - K-COL calculators (requires `access_column`)
+- `/admin` - Admin dashboard (requires `role === 'admin'`)
+
+**Behavior:**
+- Checks Supabase session via `@supabase/ssr`
+- Redirects unauthenticated users to `/login?redirect={originalUrl}`
+- Refreshes session tokens automatically
 
 ---
 
@@ -336,7 +355,7 @@ homepage/
 ```bash
 # 1. Test locally first
 ./deploy.sh --local
-# Open http://localhost:8080 and verify changes
+# Open http://localhost:3000 and verify changes
 
 # 2. Stop local server
 ./deploy.sh --stop
@@ -350,39 +369,27 @@ git push origin main
 ./deploy.sh
 ```
 
-### Fix CSS/Styling Issues
-
-1. Edit `css/styles.css`
-2. Responsive breakpoints:
-   - `≤1024px` - Tablet
-   - `≤768px` - Small tablet/large phone
-   - `≤600px` - Mobile
-   - `≤400px` - Small phone
-
-3. Key layout classes:
-   - `.page-wrapper` - Full viewport container
-   - `.top-row` - Left column + main area
-   - `.bottom-row` - Product logos + footer (100px height)
-   - `.left-column` - Navigation sidebar (360px width)
-   - `.main-area` - Background image + content
-   - `.right-sidebar` - Exchange rates + news
-
 ### Add New Page
 
-1. Create HTML file in `pages/` directory
-2. Link from `index.html` navigation
-3. Ensure responsive design
-4. Test with `./deploy.sh --local`
+1. Create page file in `src/app/[route]/page.tsx`
+2. For protected pages, use `src/app/(protected)/[route]/page.tsx`
+3. Use existing components from `src/components/`
+4. Style with Tailwind CSS
+5. Test with `./deploy.sh --local`
 
-### Update Nginx Security
+### Add New API Route
 
-1. Edit `nginx.conf`
-2. Key sections:
-   - `map $http_user_agent $bad_bot` - Bot blocking
-   - `map $request_uri $suspicious_request` - Path blocking
-   - `location` blocks - Routing and headers
-3. Rebuild: `./deploy.sh --local`
-4. Test with `curl -I http://localhost:8080/`
+1. Create route file in `src/app/api/[route]/route.ts`
+2. Export HTTP method handlers: `GET`, `POST`, etc.
+3. Use `createServerClient` from `src/lib/supabase/server.ts` for auth
+4. Write tests in `src/app/api/[route]/route.test.ts`
+
+### Modify Protected Page Logic
+
+1. UI components go in `src/app/(protected)/[route]/page.tsx`
+2. Calculation logic goes in `src/lib/calculations/` (server-only)
+3. Create Server Actions in `src/actions/` to invoke calculations
+4. Never expose calculation code to client bundles
 
 ---
 
@@ -418,15 +425,17 @@ git push origin main
 Before deploying:
 - [ ] Test locally with `./deploy.sh --local`
 - [ ] Check responsive design on mobile viewport
-- [ ] Verify footer doesn't overflow
-- [ ] Check all links work
-- [ ] Run security header check: `curl -I http://localhost:8080/`
+- [ ] Verify all links work
+- [ ] Run `bun run typecheck` - no type errors
+- [ ] Run `bun run test` - all tests pass
+- [ ] Run security header check: `curl -I http://localhost:3000/`
 
 After deploying:
 - [ ] Wait 2-5 minutes for deployment
 - [ ] Verify at https://kcol.kr
 - [ ] Check https://www.kcol.kr redirects correctly
 - [ ] Test health endpoint: `curl https://kcol.kr/health`
+- [ ] Test login flow works
 
 ---
 
@@ -439,8 +448,8 @@ After deploying:
 | Full deploy | `./deploy.sh` |
 | Quick deploy | `./deploy.sh --quick` |
 | Build only | `./deploy.sh --build-only` |
-| Upload protected pages | `./deploy.sh --upload-protected` |
-| Deploy Edge Functions | `./deploy.sh --deploy-functions` |
+| Type check | `bun run typecheck` |
+| Run tests | `bun run test` |
 | Check status | `aws lightsail get-container-services --service-name sdppmo-container-service-1 --region ap-northeast-2` |
 | View logs | `aws lightsail get-container-log --service-name sdppmo-container-service-1 --container-name homepage --region ap-northeast-2` |
 
@@ -456,24 +465,35 @@ After deploying:
 - `--local`: 로컬에서 Docker 컨테이너 실행
 - `--quick`: Trivy 보안 스캔 생략 (개발 시 빠른 반복용)
 
-**Supabase 변경 시 (Edge Functions, Protected Pages)**:
-
-```bash
-# Edge Functions 변경 시
-./deploy.sh --deploy-functions
-
-# Protected Pages 변경 시  
-./deploy.sh --upload-protected
-
-# 전체 (로컬 + Supabase)
-./deploy.sh --stop && ./deploy.sh --local --quick && ./deploy.sh --deploy-functions
-```
-
 **절대 사용하지 말 것**: `docker` 명령어 직접 사용 (항상 deploy.sh 스크립트 사용)
 
 ---
 
-## Recent Changes (2026-01-22)
+## Recent Changes (2026-01-25)
+
+### Next.js Migration Complete
+- ✅ Migrated from static HTML/Nginx to Next.js 15 + Bun + TypeScript
+- ✅ All 25 pages converted to React Server Components
+- ✅ Server-side rendering (SSR) for all pages
+- ✅ Server Actions protect proprietary calculation logic
+- ✅ Middleware-based authentication replaces Edge Functions
+- ✅ API routes replace Supabase Edge Functions
+- ✅ Tailwind CSS replaces custom CSS
+- ✅ Beta deployment at https://beta.kcol.kr
+
+### Protected Pages (Server-Side Calculations)
+- ✅ `/k-col/auto-find-section` - Steel section finder
+- ✅ `/k-col/calculator` - Cross-H column calculator
+- ✅ `/k-col/boq-report` - Bill of Quantities report
+- ✅ `/k-col/print`, `/k-col/calc-data-1`, `/k-col/calc-data-2` - Calculation outputs
+- ✅ `/k-col/user-guide`, `/k-col/developer-guide` - Documentation
+
+### Performance Improvements
+- ✅ Protected page TTFB: ~75ms (was 2-3s with Edge Functions)
+- ✅ No client-side waterfall for protected content
+- ✅ Calculation code NOT exposed in client bundles
+
+## Previous Changes (2026-01-22)
 
 ### Improved Signup Flow with Auto-Login
 - ✅ Credentials stored in `sessionStorage` after signup for auto-login
@@ -552,17 +572,18 @@ After deploying:
 
 ### Login Flow
 1. User clicks "로그인" button on main page
-2. Redirects to `/pages/auth/login.html`
+2. Redirects to `/login`
 3. User enters email/password
-4. On success, redirects back to original page (or homepage)
+4. Server Action validates credentials via Supabase Auth
+5. On success, redirects back to original page (or homepage)
 
 ### Signup Flow
 1. User clicks "회원가입" button on main page
-2. Redirects to `/pages/auth/signup.html`
+2. Redirects to `/signup`
 3. User enters email, password (with real-time validation), company info
 4. On submit, credentials stored in `sessionStorage` (for auto-login)
-5. Redirects to `/pages/auth/pending.html` with email verification waiting UI
-6. `pending.html` polls `check-email-verified` Edge Function every 3 seconds
+5. Redirects to `/pending` with email verification waiting UI
+6. `/pending` page polls `/api/auth/verify-status` every 3 seconds
 7. When verified, auto-login using stored credentials
 8. Profile created in `user_profiles` table
 9. Redirects to home page with logged-in session
@@ -574,17 +595,18 @@ After deploying:
 - Immediately cleared after login attempt
 
 ### Session Management
-- Sessions stored in `localStorage` by Supabase client
-- `login.js` checks for cached session on page load
-- If valid token exists → show logged-in state immediately
-- If token expired but refresh token exists → wait for SDK refresh
+- Sessions managed by `@supabase/ssr` package
+- Middleware (`src/middleware.ts`) checks session on every request
+- If valid token exists → allow access to protected routes
+- If token expired → middleware refreshes automatically
 - If refresh fails → redirect to login page
 
 ### Protected Pages
-- Protected pages use `/pages/k-col web software/protected/*.html` loader shells
-- Loader calls Supabase Edge Function `serve-protected-page`
-- Edge Function validates JWT and checks user permissions
-- If authorized, returns actual page content from Supabase Storage
+- Protected pages are React Server Components in `src/app/(protected)/`
+- Middleware checks authentication BEFORE page renders
+- No client-side loading or waterfall
+- Permission checks (`access_column`, `access_beam`) in layout.tsx
+- Calculation logic runs server-side via Server Actions
 
 ---
 

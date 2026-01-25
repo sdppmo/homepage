@@ -2,18 +2,44 @@
 
 K-COL 철골기둥 설계 플랫폼 기업 웹사이트입니다.
 
-**Live:** https://kcol.kr
+**Live:** https://kcol.kr  
+**Beta:** https://beta.kcol.kr
+
+---
+
+## 기술 스택
+
+- **Framework:** Next.js 15 (App Router)
+- **Runtime:** Bun
+- **Language:** TypeScript
+- **Styling:** Tailwind CSS
+- **Auth:** Supabase Auth
+- **Database:** Supabase (PostgreSQL)
+- **Deployment:** AWS Lightsail Container Service
 
 ---
 
 ## 빠른 시작
 
 ```bash
+# 의존성 설치
+bun install
+
+# 개발 서버 실행
+bun run dev
+
+# 브라우저에서 확인
+open http://localhost:3000
+```
+
+### Docker로 로컬 테스트
+
+```bash
 # 로컬 테스트 (Docker 필요)
 ./deploy.sh --local
 
 # 브라우저에서 확인
-open http://localhost:8080
+open http://localhost:3000
 
 # 테스트 종료
 ./deploy.sh --stop
@@ -42,16 +68,24 @@ open http://localhost:8080
 
 ```
 homepage/
-├── index.html          # 메인 페이지
-├── css/styles.css      # 스타일 (반응형 포함)
-├── js/main.js          # 스크립트
-├── assets/             # 이미지, PDF
-├── pages/              # 하위 페이지들
+├── src/
+│   ├── app/                # Next.js App Router 페이지
+│   │   ├── (auth)/         # 인증 페이지 (login, signup, pending)
+│   │   ├── (protected)/    # 보호된 페이지 (로그인 필요)
+│   │   │   ├── admin/      # 관리자 대시보드
+│   │   │   └── k-col/      # K-COL 계산기
+│   │   └── api/            # API 라우트
+│   ├── components/         # React 컴포넌트
+│   ├── lib/                # 유틸리티 함수
+│   │   ├── supabase/       # Supabase 클라이언트
+│   │   ├── db/             # 데이터베이스 쿼리
+│   │   └── calculations/   # 서버사이드 계산 로직
+│   └── actions/            # Server Actions
 │
-├── deploy.sh           # 배포/테스트 통합 스크립트
-├── Dockerfile          # 보안 강화 nginx 이미지
-├── nginx.conf          # 프로덕션 nginx 설정
-└── docker-compose.yml  # 로컬 Docker 테스트용
+├── public/                 # 정적 파일 (이미지, PDF)
+├── deploy.sh               # 배포 스크립트
+├── Dockerfile              # Docker 빌드 설정
+└── next.config.ts          # Next.js 설정
 ```
 
 ---
@@ -69,35 +103,61 @@ homepage/
 
 ---
 
-## 보안
+## 개발 명령어
 
-nginx에 적용된 보호:
-
-- **Rate Limiting:** IP당 20 req/s, burst 40
-- **연결 제한:** IP당 동시 30개
-- **차단 패턴:** path traversal, .php/.git/.env, WordPress 공격, 악성 봇
-- **보안 헤더:** X-Frame-Options, CSP, X-Content-Type-Options 등
-
-테스트:
 ```bash
-# 헤더 확인
-curl -I http://localhost:8080/
+# 개발 서버
+bun run dev
 
-# 차단 경로 테스트
-curl -I http://localhost:8080/.git  # 404
+# 타입 체크
+bun run typecheck
+
+# 테스트 실행
+bun run test
+
+# 프로덕션 빌드
+bun run build
+
+# 프로덕션 서버 실행
+bun run start
 ```
 
 ---
 
-## 로컬 개발 (Docker 없이)
+## 보안
+
+Next.js에 적용된 보호:
+
+- **Security Headers:** X-Frame-Options, CSP, X-Content-Type-Options 등
+- **Auth Middleware:** 보호된 페이지 접근 제어
+- **Server Actions:** 계산 로직 서버사이드 실행 (클라이언트 노출 방지)
+- **Rate Limiting:** API 라우트 요청 제한
+
+테스트:
+```bash
+# 헤더 확인
+curl -I http://localhost:3000/
+
+# 보호된 페이지 테스트 (로그인 없이)
+curl -I http://localhost:3000/k-col/calculator  # 302 redirect to /login
+```
+
+---
+
+## 환경 변수
+
+`.env.local` 파일 생성:
 
 ```bash
-# Python 사용
-python -m http.server 8080
+# Supabase
+NEXT_PUBLIC_SUPABASE_URL=https://xxx.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=xxx
+SUPABASE_SERVICE_ROLE_KEY=xxx
 
-# 또는
-./scripts/start-server.sh      # Mac/Linux
-scripts/start-server.bat       # Windows
+# Optional
+RESEND_API_KEY=xxx
+ADMIN_ALERT_EMAIL=xxx
+CRON_SECRET=xxx
 ```
 
 ---
