@@ -2,19 +2,51 @@
 
 ## Final Status: 170/173 Tasks Complete (98.3%)
 
-**Last Updated**: 2026-01-25 10:55 KST
+**Last Updated**: 2026-01-25 23:00 KST
+
+## ⏸️ WORK PAUSED - TIME-BLOCKED UNTIL 2026-02-01
+
+All remaining tasks are cleanup operations blocked for rollback safety.
+No further work is possible until the 1-week stability period expires.
 
 ## Current Environment Status
 
 | Environment | URL | Stack | Status |
 |-------------|-----|-------|--------|
-| **Beta** | https://beta.kcol.kr | Next.js 15 + Bun | ✅ Live (v7) |
+| **Beta** | https://beta.kcol.kr | Next.js 15 + Bun | ✅ Live (v8) |
 | **Production** | https://kcol.kr | nginx (legacy) | User reverted |
 
 > **Note**: Production was deployed with Next.js (v31) but user reverted to nginx.
 > Beta is the active Next.js deployment for testing.
 
 ## Recent Updates (2026-01-25)
+
+### OAuth Redirect Fix (Pending Deploy)
+1. **Fixed OAuth redirect issue** - Was redirecting to Supabase URL instead of kcol.kr
+   - `src/app/auth/callback/route.ts` - Uses `host` header for redirect URL
+   - `src/app/(auth)/login/actions.ts` - Added `getBaseUrl()` helper, removed hardcoded beta.kcol.kr
+2. **Added OAuth documentation to AGENTS.md**
+   - Google/Kakao OAuth setup instructions
+   - Email linking configuration (Supabase Dashboard)
+   - Redirect URLs configuration
+
+**Files Changed:**
+- `src/app/auth/callback/route.ts`
+- `src/app/(auth)/login/actions.ts`
+- `AGENTS.md`
+
+### OAuth Login & Bug Fixes Deployed to Beta (Commit f45d572, v8)
+1. **Google/Kakao OAuth login** - Added social login buttons (requires Supabase Dashboard config)
+2. **Login page redesign** - Modern UI with social login first, email form expandable
+3. **AuthSection hang fix** - Added 3s timeout to getSession() to prevent infinite loading
+4. **Scrolling fix** - Removed overflow:hidden from globals.css, subpages now scroll
+5. **OAuth callback route** - Added /auth/callback for OAuth flow
+6. **Tests updated** - 21 login tests updated for new UI (53 total tests pass)
+
+**Note**: OAuth won't work until configured in Supabase Dashboard:
+- Authentication → Providers → Enable Google & Kakao
+- Add credentials from Google Cloud Console / Kakao Developers
+- Callback URL: https://beta.kcol.kr/auth/callback
 
 ### Performance & Layout Fixes Deployed to Beta (Commit 23c80fd, v7)
 1. **AuthSection loading perf** - Changed `getUser()` to `getSession()` for faster cached auth, memoized supabase client

@@ -608,6 +608,78 @@ After deploying:
 - Permission checks (`access_column`, `access_beam`) in layout.tsx
 - Calculation logic runs server-side via Server Actions
 
+### OAuth Login (Google, Kakao)
+
+**Supported Providers:**
+- Google (signInWithGoogle)
+- Kakao (signInWithKakao)
+
+**Flow:**
+1. User clicks Google/Kakao button on `/login`
+2. Server Action calls `supabase.auth.signInWithOAuth()`
+3. User redirected to provider's login page
+4. After auth, provider redirects to `/auth/callback?code=xxx&next=/`
+5. Callback route exchanges code for session
+6. User redirected to intended destination
+
+**Code Locations:**
+- OAuth actions: `src/app/(auth)/login/actions.ts`
+- Callback handler: `src/app/auth/callback/route.ts`
+
+---
+
+## OAuth Provider Configuration (Supabase Dashboard)
+
+### Google OAuth Setup
+**Location**: Supabase Dashboard → Authentication → Providers → Google
+
+1. Enable Google provider
+2. Get credentials from [Google Cloud Console](https://console.cloud.google.com/apis/credentials):
+   - Create OAuth 2.0 Client ID (Web application)
+   - Authorized redirect URI: `https://iwudkwhafyrhgzuntdgm.supabase.co/auth/v1/callback`
+3. Enter Client ID and Client Secret in Supabase
+
+### Kakao OAuth Setup
+**Location**: Supabase Dashboard → Authentication → Providers → Kakao
+
+1. Enable Kakao provider
+2. Get credentials from [Kakao Developers](https://developers.kakao.com/):
+   - Create application
+   - Enable Kakao Login
+   - Add redirect URI: `https://iwudkwhafyrhgzuntdgm.supabase.co/auth/v1/callback`
+   - Get REST API Key (Client ID) and Client Secret
+3. Enter Client ID and Client Secret in Supabase
+
+### Email Linking Configuration (IMPORTANT)
+**Location**: Supabase Dashboard → Authentication → Providers
+
+To allow users who signed up with email to also login with Google/Kakao (and vice versa):
+
+1. Go to **Authentication → Providers**
+2. Scroll to **Email** provider settings
+3. Enable **"Automatically link accounts with the same email"**
+
+**Behavior when enabled:**
+- User signs up with email `user@example.com`
+- Later logs in with Google using same email
+- Accounts are automatically linked (same user_id)
+- User can login with either method
+
+**Behavior when disabled:**
+- User signs up with email `user@example.com`
+- Tries to login with Google using same email
+- Error: "User already registered" (separate accounts)
+
+### Redirect URLs Configuration
+**Location**: Supabase Dashboard → Authentication → URL Configuration
+
+| Setting | Value |
+|---------|-------|
+| Site URL | `https://kcol.kr` |
+| Redirect URLs | `https://kcol.kr/**`, `https://www.kcol.kr/**`, `https://beta.kcol.kr/**` |
+
+**IMPORTANT**: Add `beta.kcol.kr` to Redirect URLs for testing OAuth on beta environment.
+
 ---
 
 ## Email Configuration (Supabase + Resend)
