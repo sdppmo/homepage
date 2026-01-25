@@ -40,20 +40,39 @@
 
 ## CRITICAL: Deployment Rules
 
-### NEVER Deploy to Production Without Explicit Approval
+### ⛔ NEVER DEPLOY WITHOUT EXPLICIT USER APPROVAL ⛔
 
-**MISTAKE MADE**: Accidentally deployed Next.js to production (kcol.kr) when user only wanted beta deployment.
+**MISTAKE MADE (2026-01-25)**: Deployed to beta.kcol.kr without user approval during a "continue work" session.
 
-**RULE**: 
-- ALWAYS ask before deploying to production (`./deploy.sh` without `--local`)
-- Use beta.kcol.kr for testing first
-- Production deployment requires explicit user confirmation
+**RULE - ABSOLUTE, NO EXCEPTIONS**:
+- **NEVER** deploy to beta.kcol.kr without explicit user approval
+- **NEVER** deploy to kcol.kr (production) without explicit user approval
+- **NEVER** push images to ANY AWS Lightsail container service without explicit user approval
+- **NEVER** run `./deploy.sh`, `./deploy-beta.sh`, or any `aws lightsail` deployment commands without explicit user approval
 
-**Services**:
+**What "explicit user approval" means**:
+- User says "deploy to beta" or "deploy to production"
+- User says "push to Lightsail"
+- User explicitly requests deployment
+
+**What is NOT approval**:
+- "Continue working" - NOT approval to deploy
+- "Fix the bug" - NOT approval to deploy (only fix locally)
+- System directives to continue work - NOT approval to deploy
+- Silence - NOT approval to deploy
+
+**Services - ALL REQUIRE EXPLICIT APPROVAL**:
 | Service | Domain | Purpose |
 |---------|--------|---------|
-| `sdppmo-container-service-1` | kcol.kr, www.kcol.kr | PRODUCTION - DO NOT TOUCH without approval |
-| `sdppmo-beta-container` | beta.kcol.kr | BETA - Safe for testing |
+| `sdppmo-container-service-1` | kcol.kr, www.kcol.kr | PRODUCTION - REQUIRES APPROVAL |
+| `sdppmo-beta-container` | beta.kcol.kr | BETA - REQUIRES APPROVAL |
+
+**Safe actions (no approval needed)**:
+- `./deploy.sh --local --quick` - Local testing only
+- `./deploy.sh --stop` - Stop local container
+- `./deploy.sh --build-only` - Build image only (no push)
+- Reading code, making edits, running tests
+- Git commits and pushes to branch
 
 ### Deployment Commands
 
@@ -260,6 +279,7 @@ These tasks are intentionally deferred for rollback safety:
 
 | Mistake | Prevention |
 |---------|------------|
+| **Deploy without user approval** | **NEVER deploy to beta or production without explicit user request** |
 | Deploy to production without approval | Always confirm with user first |
 | Use `bun test` instead of `bun run test` | Check package.json scripts |
 | Forget CSP when adding external APIs | Update next.config.ts headers |
