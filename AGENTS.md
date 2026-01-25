@@ -5,6 +5,8 @@
 
 ## ⚠️ MANDATORY DEPLOYMENT WORKFLOW (AI AGENTS MUST FOLLOW)
 
+**🚨 CRITICAL: NEVER deploy to production without EXPLICIT user consent! 🚨**
+
 **NEVER deploy directly to beta or production. ALWAYS follow this exact sequence:**
 
 ### Step-by-Step Deployment Process
@@ -20,6 +22,13 @@
 8. Only after approval: Deploy to production (./deploy.sh)
 ```
 
+### ⛔ PRODUCTION DEPLOYMENT RULES (NON-NEGOTIABLE)
+
+1. **NEVER run `./deploy.sh` (production) without explicit user request**
+2. **NEVER assume user wants production deployment** - always ask
+3. **NEVER deploy to production just because beta works** - wait for user to say "deploy to production"
+4. **If user says "deploy"** without specifying target, ASK: "Do you mean beta or production?"
+
 ### Why This Matters
 - **Local testing catches bugs** before they reach any server
 - **User verification** ensures changes match expectations
@@ -31,6 +40,8 @@
 - ❌ Assuming previous session's deployments are "fine to continue"
 - ❌ Skipping user approval steps
 - ❌ Running `docker` commands directly (always use `deploy.sh`)
+- ❌ **Deploying to production without explicit user request**
+- ❌ **Assuming "deploy" means production**
 
 ### Quick Reference
 | Action | Command | Requires User Approval? |
@@ -38,7 +49,7 @@
 | Start local test | `./deploy.sh --stop && ./deploy.sh --local --quick` | No |
 | Stop local | `./deploy.sh --stop` | No |
 | Deploy to beta | After local approval | **YES** |
-| Deploy to production | After beta approval | **YES** |
+| Deploy to production | After beta approval | **YES - EXPLICIT REQUEST REQUIRED** |
 
 ---
 

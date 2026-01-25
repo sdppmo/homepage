@@ -13,9 +13,7 @@ interface UserProfile {
 const AuthSection = () => {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [loading, setLoading] = useState(true);
   
-  // Use ref to ensure single client instance across renders
   const supabaseRef = useRef(createClient());
   const supabase = supabaseRef.current;
 
@@ -24,11 +22,9 @@ const AuthSection = () => {
     
     const initAuth = async () => {
       try {
-        // Use getSession first (cached, fast) instead of getUser (network call)
-        // Add timeout to prevent hanging
         const sessionPromise = supabase.auth.getSession();
         const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Session timeout')), 3000)
+          setTimeout(() => reject(new Error('Session timeout')), 1500)
         );
         
         const { data: { session } } = await Promise.race([sessionPromise, timeoutPromise]) as Awaited<ReturnType<typeof supabase.auth.getSession>>;
@@ -37,7 +33,6 @@ const AuthSection = () => {
         
         if (session?.user) {
           setUser(session.user);
-          // Fetch profile in parallel, don't block loading state
           supabase
             .from('user_profiles')
             .select('role, business_name')
@@ -47,18 +42,14 @@ const AuthSection = () => {
               if (isMounted) setProfile(profile);
             });
         }
-      } catch (error) {
-        // On timeout or error, just show logged out state
-        console.warn('Auth session check failed:', error);
-      } finally {
-        if (isMounted) setLoading(false);
+      } catch {
       }
     };
 
     initAuth();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      async (_event, session) => {
         if (!isMounted) return;
         
         if (session?.user) {
@@ -73,7 +64,6 @@ const AuthSection = () => {
           setUser(null);
           setProfile(null);
         }
-        setLoading(false);
       }
     );
 
@@ -87,17 +77,6 @@ const AuthSection = () => {
     await supabase.auth.signOut();
     window.location.href = '/';
   };
-
-  if (loading) {
-    return (
-      <div className="mt-3 p-4 bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-xl shadow-lg">
-        <div className="flex gap-2.5">
-          <div className="flex-1 h-[44px] bg-white/10 rounded-lg animate-pulse" />
-          <div className="flex-1 h-[44px] bg-white/10 rounded-lg animate-pulse" />
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="mt-3 p-4 bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-xl shadow-lg">

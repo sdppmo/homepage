@@ -334,3 +334,33 @@
 **Deployment:**
 - Beta version 6 deployed via `./deploy-beta.sh --quick`
 - Health check verified: https://beta.kcol.kr/health → 200 OK
+
+## Verified: 2026-01-25 (Image Investigation)
+
+### Images Display Correctly
+
+**Investigation Result**: All images ARE displaying correctly on localhost:3000
+
+**Verified via Playwright Screenshot:**
+1. ✅ Logo in sidebar - SongDoPartners logo visible
+2. ✅ Background image - Vessel structure in main content
+3. ✅ Product images - K-COL, SLiM-BOX, ExSlim-Beam, COL in footer
+4. ✅ Network logos - All 6 partner logos (DONG YANG S·Tec, POSCO, Steel Ball, p6sc, CLBS, HYUNDAI STEEL)
+
+**Console Warnings (Minor - Not Blocking):**
+1. Next.js Image aspect ratio warnings for product-1.png through product-4.png
+   - Warning: "has either width or height modified, but not the other"
+   - Fix: Add `width: "auto"` or `height: "auto"` to maintain aspect ratio
+   - Status: Non-blocking, images still display
+
+2. Dunamu API error (`ERR_NAME_NOT_RESOLVED`)
+   - Exchange rate API failing on localhost
+   - Fallback working correctly
+   - Status: Expected on localhost (network issue)
+
+**Conclusion**: The "images not showing" issue was either:
+- A temporary issue that resolved itself
+- A browser cache issue
+- Specific to a different environment
+
+No code changes needed for images.
