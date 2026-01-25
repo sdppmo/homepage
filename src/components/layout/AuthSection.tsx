@@ -46,9 +46,8 @@ const AuthSection = () => {
     
     const initAuth = async () => {
       try {
-        // Add timeout to prevent infinite loading if Supabase is misconfigured
         const timeoutPromise = new Promise<null>((_, reject) => 
-          setTimeout(() => reject(new Error('Auth timeout')), 5000)
+          setTimeout(() => reject(new Error('Auth timeout')), 2000)
         );
         
         const sessionPromise = supabase.auth.getSession();
