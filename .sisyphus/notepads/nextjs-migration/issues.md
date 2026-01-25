@@ -260,6 +260,29 @@ The 1-week safety period ensures the Next.js deployment is stable before removin
 
 All code, deployment, and verification tasks are complete. Only cleanup remains.
 
+### [2026-01-25T16:55] Session Continuation - Image Fix Deployed
+
+#### Actions Completed
+1. ✅ Fixed image optimization 400 error (Korean chars in path)
+2. ✅ Renamed `K-COL 제작` → `k-col-manufacturing`
+3. ✅ Deployed fix to beta (version 12)
+4. ✅ Verified image optimization works on beta
+5. ✅ Updated learnings.md with fix details
+6. ✅ Pushed all changes to remote
+
+#### Commits This Session
+```
+a5250d6 fix: rename image directory to ASCII-only path for Next.js image optimization
+6643f42 docs: add image optimization fix to learnings
+```
+
+#### Beta Status
+- Version: 12 (RUNNING)
+- Image optimization: ✅ Working
+- Photo gallery: ✅ Working
+
+---
+
 ### [2026-01-25T18:45] Session Continuation - No Action Possible
 
 #### Verification
