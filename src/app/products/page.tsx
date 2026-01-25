@@ -17,7 +17,7 @@ export default function ProductsPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-[repeat(auto-fit,minmax(380px,1fr))] gap-9 mt-10">
           {/* Panel 1: K-COL (공개) */}
-          <Link href="/k-product/k-col-user-guide" className="no-underline text-inherit group">
+          <Link href="/k-col/user-guide" className="no-underline text-inherit group">
             <div className="bg-gradient-to-br from-[#e0f2fe] via-[#bae6fd] to-white rounded-3xl p-11 md:p-9 shadow-[0_20px_60px_rgba(0,0,0,0.15),0_0_0_1px_rgba(255,255,255,0.5)] transition-all duration-400 cubic-bezier(0.175,0.885,0.32,1.275) border-2 border-[#0284c7] relative overflow-hidden group-hover:-translate-y-2 group-hover:scale-[1.02] group-hover:shadow-[0_30px_80px_rgba(0,0,0,0.25),0_0_0_1px_rgba(255,255,255,0.8)] group-hover:bg-gradient-to-br group-hover:from-[#dbeafe] group-hover:via-[#93c5fd] group-hover:to-[#e0f2fe]">
               <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#0284c7] to-[#0369a1] opacity-1 transition-opacity duration-300"></div>
               <div className="text-7xl text-center mb-6 transition-transform duration-400 drop-shadow-[0_4px_8px_rgba(0,0,0,0.1)] w-30 h-30 mx-auto flex items-center justify-center group-hover:scale-110 group-hover:rotate-3">
