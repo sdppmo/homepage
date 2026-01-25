@@ -1,10 +1,17 @@
 "use client";
 
 import { useState } from 'react';
+import dynamic from 'next/dynamic';
 import LeftSidebar from '@/components/layout/LeftSidebar';
-import MainContent from '@/components/layout/MainContent';
-import RightSidebar from '@/components/layout/RightSidebar';
 import Footer from '@/components/layout/Footer';
+
+const MainContent = dynamic(() => import('@/components/layout/MainContent'), {
+  ssr: true,
+});
+
+const RightSidebar = dynamic(() => import('@/components/layout/RightSidebar'), {
+  ssr: true,
+});
 
 export default function Home() {
   const [kosisModeEnabled, setKosisModeEnabled] = useState(false);
