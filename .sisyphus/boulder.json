@@ -1,6 +1,13 @@
 {
   "active_plan": "/Users/hkder/homepage/.sisyphus/plans/nextjs-migration.md",
   "started_at": "2026-01-24T07:31:30.149Z",
+  "status": "BLOCKED_UNTIL_2026-02-01",
+  "completion": "170/173 (98.3%)",
+  "blocked_tasks": [
+    "Delete Supabase Edge Functions",
+    "Delete protected-pages Storage bucket", 
+    "Remove old HTML/JS/CSS files"
+  ],
   "session_ids": [
     "ses_41128241fffeWnQ7a1jT9033BB",
     "ses_41101a493ffe6NvSVYE266Jeg9",
@@ -17,7 +24,14 @@
     "ses_40fab062cffeTrU3Hc4Ku9euge",
     "ses_40fa75c8fffedSxsqm5KDaHfTh",
     "ses_40f8de459ffeByDXc390VYRXAs",
-    "ses_40f8af7aaffe6Xh7L2rCnitXKN"
+    "ses_40f8af7aaffe6Xh7L2rCnitXKN",
+    "ses_40f5fa1e3ffeRdC527os2twGJZ",
+    "ses_40f377ca2ffekyajYFvDZq2JET",
+    "ses_40de0a3d0ffe97sWUw0pITuS0k",
+    "ses_40dd169e0ffeGuXdOFQEM8oAW7",
+    "ses_40dcb3a7effedMumRdrQPTMDpm",
+    "ses_40dbf2739ffeJwJ2D1bPWgfY2C",
+    "ses_40daca927ffeXsfvdBFX9riDId"
   ],
   "plan_name": "nextjs-migration"
 }
