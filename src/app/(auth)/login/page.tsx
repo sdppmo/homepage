@@ -237,13 +237,6 @@ function LoginContent() {
         </p>
       </div>
 
-      <p className="mt-6 text-center text-xs text-slate-600">
-        로그인하면{' '}
-        <Link href="/terms" className="underline hover:text-slate-500">이용약관</Link>
-        {' '}및{' '}
-        <Link href="/privacy" className="underline hover:text-slate-500">개인정보처리방침</Link>
-        에 동의하게 됩니다.
-      </p>
     </div>
   );
 }
