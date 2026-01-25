@@ -10,7 +10,6 @@ const ROUTE_PERMISSIONS: Record<string, 'access_column' | 'access_beam' | null> 
   '/k-col/auto-find-section': 'access_column',
   '/k-col/calculator': 'access_column',
   '/k-col/boq-report': 'access_column',
-  '/k-col/user-guide': 'access_column',
   '/k-col/developer-guide': 'access_column',
   '/k-col/print': 'access_column',
   '/k-col/calc-data-1': 'access_column',

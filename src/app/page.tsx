@@ -15,7 +15,7 @@ const MainContent = dynamic(() => import('@/components/layout/MainContent'), {
 const RightSidebar = dynamic(() => import('@/components/layout/RightSidebar'), {
   ssr: true,
   loading: () => (
-    <aside className="relative w-full p-4 z-20 bg-black/80 md:absolute md:top-0 md:right-0 md:bottom-0 md:w-[300px] lg:w-[250px] animate-pulse" />
+    <aside className="relative w-full p-4 z-20 bg-black/80 order-3 md:absolute md:top-0 md:right-0 md:bottom-0 md:w-[300px] md:order-none lg:w-[250px] animate-pulse" />
   ),
 });
 

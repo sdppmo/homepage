@@ -447,9 +447,16 @@ if [ "$DEPLOY_ONLY" = false ]; then
     
     TIMESTAMP=$(date +%Y%m%d-%H%M%S)
     
+    # Read NEXT_PUBLIC_SUPABASE_ANON_KEY from .env.local if it exists
+    ANON_KEY=""
+    if [ -f ".env.local" ]; then
+        ANON_KEY=$(grep "^NEXT_PUBLIC_SUPABASE_ANON_KEY=" .env.local | cut -d'=' -f2-)
+    fi
+    
     docker build \
         --platform linux/amd64 \
         --pull \
+        --build-arg NEXT_PUBLIC_SUPABASE_ANON_KEY="${ANON_KEY}" \
         -t "${IMAGE_NAME}:${IMAGE_TAG}" \
         -t "${IMAGE_NAME}:${TIMESTAMP}" \
         .

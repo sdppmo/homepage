@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useFormState, useFormStatus } from 'react-dom';
 import { useSearchParams } from 'next/navigation';
 import { login, signInWithGoogle, signInWithKakao } from './actions';
-import { Suspense, useState } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 
 function GoogleIcon() {
   return (
@@ -73,6 +73,16 @@ function SocialButton({
   borderColor?: string;
 }) {
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    setLoading(false);
+  }, []);
+
+  useEffect(() => {
+    if (!loading) return;
+    const timeout = setTimeout(() => setLoading(false), 10000);
+    return () => clearTimeout(timeout);
+  }, [loading]);
 
   const handleClick = async () => {
     setLoading(true);

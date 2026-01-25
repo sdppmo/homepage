@@ -1,7 +1,8 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { User } from '@supabase/supabase-js';
 
@@ -14,37 +15,56 @@ const AuthSection = () => {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const router = useRouter();
   
   const supabaseRef = useRef(createClient());
   const supabase = supabaseRef.current;
+
+  const fetchProfile = useCallback(async (userId: string) => {
+    const { data } = await supabase
+      .from('user_profiles')
+      .select('role, business_name')
+      .eq('id', userId)
+      .single();
+    return data;
+  }, [supabase]);
+
+  const handleUserSession = useCallback(async (sessionUser: User | null) => {
+    if (sessionUser) {
+      setUser(sessionUser);
+      const profileData = await fetchProfile(sessionUser.id);
+      setProfile(profileData);
+    } else {
+      setUser(null);
+      setProfile(null);
+    }
+    setIsLoading(false);
+  }, [fetchProfile]);
 
   useEffect(() => {
     let isMounted = true;
     
     const initAuth = async () => {
       try {
-        const sessionPromise = supabase.auth.getSession();
-        const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Session timeout')), 1500)
+        // Add timeout to prevent infinite loading if Supabase is misconfigured
+        const timeoutPromise = new Promise<null>((_, reject) => 
+          setTimeout(() => reject(new Error('Auth timeout')), 5000)
         );
         
-        const { data: { session } } = await Promise.race([sessionPromise, timeoutPromise]) as Awaited<ReturnType<typeof supabase.auth.getSession>>;
+        const sessionPromise = supabase.auth.getSession();
+        
+        const result = await Promise.race([sessionPromise, timeoutPromise]);
         
         if (!isMounted) return;
         
-        if (session?.user) {
-          setUser(session.user);
-          supabase
-            .from('user_profiles')
-            .select('role, business_name')
-            .eq('id', session.user.id)
-            .single()
-            .then(({ data: profile }) => {
-              if (isMounted) setProfile(profile);
-            });
+        if (result && 'data' in result) {
+          await handleUserSession(result.data.session?.user || null);
+        } else {
+          // Timeout or error - show login buttons
+          setIsLoading(false);
         }
-      } catch {
-      } finally {
+      } catch (error) {
+        console.error('Auth init error:', error);
         if (isMounted) setIsLoading(false);
       }
     };
@@ -52,22 +72,19 @@ const AuthSection = () => {
     initAuth();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
+      async (event, session) => {
         if (!isMounted) return;
         
-        if (session?.user) {
-          setUser(session.user);
-          const { data: profile } = await supabase
-            .from('user_profiles')
-            .select('role, business_name')
-            .eq('id', session.user.id)
-            .single();
-          if (isMounted) setProfile(profile);
-        } else {
+        if (event === 'INITIAL_SESSION') {
+          await handleUserSession(session?.user || null);
+        } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+          await handleUserSession(session?.user || null);
+          router.refresh();
+        } else if (event === 'SIGNED_OUT') {
           setUser(null);
           setProfile(null);
+          setIsLoading(false);
         }
-        setIsLoading(false);
       }
     );
 
@@ -75,7 +92,7 @@ const AuthSection = () => {
       isMounted = false;
       subscription.unsubscribe();
     };
-  }, [supabase]);
+  }, [supabase, handleUserSession, router]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();

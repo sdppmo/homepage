@@ -727,6 +727,11 @@ Keep `main` branch unchanged until migration verified (1 week minimum).
 | 429 errors on RSC prefetch | Skip rate limiting for `?_rsc=` requests | ✅ Beta v5 |
 | Dunamu API DNS error | Fixed URL: `quotation-api.dunamu.com` | ✅ Beta v5 |
 | AuthSection slow loading | Removed skeleton, reduced timeout to 1.5s | ✅ Committed |
+| K-COL User Guide images not showing | Replaced placeholders with actual Image components | ✅ Committed |
+| K-Product 2H Steel links not working | Added tab switching, toast notifications, interactive buttons | ✅ Committed |
+| OAuth spinner persisting after back | Added useEffect reset on mount + 10s timeout | ✅ Committed |
+| AuthSection not showing after Google login | Added INITIAL_SESSION handling + router.refresh() | ✅ Committed |
+| K-COL Calculator missing images/A.F.S. | Added Cross-H image, linked operator control buttons | ✅ Committed |
 
 ### Blocked (3 tasks - waiting until 2026-02-01)
 | Task | Blocker | Resolution |

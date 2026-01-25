@@ -3,6 +3,30 @@ import { NextResponse } from 'next/server';
 import { headers } from 'next/headers';
 
 /**
+ * Determines the base URL from request headers.
+ * Checks x-forwarded-host first (set by load balancers), then host header.
+ * Falls back to NEXT_PUBLIC_SITE_URL env var if available.
+ */
+function getBaseUrl(headersList: Headers): string {
+  // Check x-forwarded-host first (more reliable behind load balancers)
+  const forwardedHost = headersList.get('x-forwarded-host');
+  const host = forwardedHost || headersList.get('host');
+  const protocol = headersList.get('x-forwarded-proto') || 'https';
+  
+  if (host) {
+    return `${protocol}://${host}`;
+  }
+  
+  // Fallback to environment variable if set
+  if (process.env.NEXT_PUBLIC_SITE_URL) {
+    return process.env.NEXT_PUBLIC_SITE_URL;
+  }
+  
+  // Last resort fallback
+  return 'https://kcol.kr';
+}
+
+/**
  * OAuth callback handler - exchanges auth code for session.
  * Creates user_profile if it doesn't exist (for OAuth users).
  * Uses host header for redirect URL (NOT request.url which may be Supabase URL).
@@ -13,9 +37,7 @@ export async function GET(request: Request) {
   const next = requestUrl.searchParams.get('next') || '/';
 
   const headersList = await headers();
-  const host = headersList.get('host') || 'kcol.kr';
-  const protocol = headersList.get('x-forwarded-proto') || 'https';
-  const baseUrl = `${protocol}://${host}`;
+  const baseUrl = getBaseUrl(headersList);
 
   if (code) {
     const supabase = await createClient();

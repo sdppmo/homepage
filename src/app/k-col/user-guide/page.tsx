@@ -1,8 +1,8 @@
-import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import type { Metadata } from 'next';
 
-export const metadata = {
+export const metadata: Metadata = {
   title: 'K-COL 기능 설명서 - SongDoPartners',
   description: 'Cross H형 강재 기둥 설계 및 제작 관리 시스템 K-COL의 기능 설명서입니다.',
 };
@@ -148,11 +148,13 @@ export default function UserGuidePage() {
 
             <div className="text-center my-10 p-5 bg-gradient-to-br from-[#f8fafc] to-white rounded-[16px] border-2 border-[#e2e8f0]">
               <div className="relative max-w-[450px] h-auto mx-auto rounded-[12px] shadow-[0_12px_32px_rgba(0,0,0,0.15)] border-2 border-[#e2e8f0] transition-transform duration-300 hover:scale-[1.02] overflow-hidden">
-                <div className="p-10 text-center color-[#718096] text-[19.2px]">
-                  K-COL 구조 계산 이미지
-                  <br />
-                  (추가 예정)
-                </div>
+                <Image
+                  src="/images/K-COL-CAL.png"
+                  alt="K-COL 구조 계산 인터페이스"
+                  width={450}
+                  height={400}
+                  className="w-full h-auto object-contain"
+                />
               </div>
               <p className="mt-[15px] text-[16px] color-[#666] italic">SRC (Cross H) Design Calculator 인터페이스</p>
             </div>
@@ -334,11 +336,13 @@ export default function UserGuidePage() {
 
             <div className="text-center my-10 p-5 bg-gradient-to-br from-[#f8fafc] to-white rounded-[16px] border-2 border-[#e2e8f0]">
               <div className="relative max-w-full h-auto mx-auto rounded-[12px] shadow-[0_12px_32px_rgba(0,0,0,0.15)] border-2 border-[#e2e8f0] transition-transform duration-300 hover:scale-[1.02] overflow-hidden">
-                <div className="p-10 text-center color-[#718096] text-[19.2px]">
-                  공정관리시스템 이미지
-                  <br />
-                  (추가 예정)
-                </div>
+                <Image
+                  src="/images/schedule.png"
+                  alt="공정관리시스템 인터페이스"
+                  width={1200}
+                  height={600}
+                  className="w-full h-auto object-contain"
+                />
               </div>
             </div>
           </section>
@@ -390,11 +394,13 @@ export default function UserGuidePage() {
 
               <div className="flex-[0_0_400px] self-end mt-[200px] max-md:flex-auto max-md:w-full max-md:mt-10">
                 <div className="relative max-w-full h-auto mx-auto rounded-[12px] shadow-[0_12px_32px_rgba(0,0,0,0.15)] border-2 border-[#e2e8f0] transition-transform duration-300 hover:scale-[1.02] overflow-hidden">
-                  <div className="p-10 text-center color-[#718096] text-[19.2px]">
-                    Mapping 기능 이미지
-                    <br />
-                    (추가 예정)
-                  </div>
+                  <Image
+                    src="/images/mapping.png"
+                    alt="현장기둥설치 Mapping 기능"
+                    width={400}
+                    height={350}
+                    className="w-full h-auto object-contain"
+                  />
                 </div>
               </div>
             </div>
@@ -441,20 +447,26 @@ export default function UserGuidePage() {
             </div>
 
             <div className="grid grid-cols-3 gap-[30px] mt-10 max-md:grid-cols-1">
-              {['오피스 건물', '복합시설', '기타 건물'].map((title, index) => (
+              {[
+                { title: '오피스 건물', image: '/images/Shimizu/office.png' },
+                { title: '복합시설', image: '/images/Shimizu/complex.jpg' },
+                { title: '초고층 건물', image: '/images/Shimizu/highrise.png' },
+              ].map((item, index) => (
                 <div
                   key={index}
                   className="bg-white rounded-[16px] overflow-hidden shadow-[0_6px_20px_rgba(0,0,0,0.1)] transition-all duration-300 ease-in-out border-2 border-[#e2e8f0] hover:-translate-y-2 hover:scale-[1.02] hover:shadow-[0_12px_40px_rgba(102,126,234,0.2)] hover:border-[#667eea]"
                 >
-                  <div className="w-full h-[350px] object-contain bg-gradient-to-br from-[#f8fafc] to-white p-5 transition-transform duration-300 hover:scale-[1.05] overflow-hidden">
-                    <div className="p-10 text-center color-[#718096] text-[19.2px] h-full flex items-center justify-center">
-                      {title} 이미지
-                      <br />
-                      (추가 예정)
-                    </div>
+                  <div className="w-full h-[350px] bg-gradient-to-br from-[#f8fafc] to-white p-5 transition-transform duration-300 hover:scale-[1.05] overflow-hidden flex items-center justify-center">
+                    <Image
+                      src={item.image}
+                      alt={item.title}
+                      width={350}
+                      height={300}
+                      className="w-full h-full object-contain"
+                    />
                   </div>
                   <div className="p-[25px] text-[22.88px] font-bold text-[#1e3a5f] text-center bg-gradient-to-br from-[#f0f4ff] to-white border-t-[3px] border-[#667eea]">
-                    {title}
+                    {item.title}
                   </div>
                 </div>
               ))}
@@ -556,19 +568,23 @@ export default function UserGuidePage() {
               <section id="lakhta-gallery" className="py-[40px] px-[16px] text-center mt-[50px]">
                 <h2 className="text-[28px] font-bold text-[#1e3a5f] mb-5">라흐타 타워 전경 및 시공 사진</h2>
                 <div className="grid grid-cols-2 gap-5 items-stretch mt-5 max-md:grid-cols-1">
-                  <div className="relative w-full h-[380px] object-contain mx-auto bg-gradient-to-br from-[#f8fafc] to-[#e2e8f0] p-5 rounded-[12px] shadow-[0_4px_20px_rgba(0,0,0,0.1)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_30px_rgba(0,0,0,0.15)] overflow-hidden mt-[30px]">
-                    <div className="p-10 text-center color-[#718096] text-[19.2px] h-full flex items-center justify-center">
-                      라흐타 타워 도시 전경
-                      <br />
-                      (추가 예정)
-                    </div>
+                  <div className="relative w-full h-[380px] mx-auto bg-gradient-to-br from-[#f8fafc] to-[#e2e8f0] p-5 rounded-[12px] shadow-[0_4px_20px_rgba(0,0,0,0.1)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_30px_rgba(0,0,0,0.15)] overflow-hidden mt-[30px] flex items-center justify-center">
+                    <Image
+                      src="/images/Shimizu/lakhta-0.png"
+                      alt="라흐타 타워 도시 전경"
+                      width={500}
+                      height={350}
+                      className="w-full h-full object-contain"
+                    />
                   </div>
-                  <div className="relative w-full h-[380px] object-contain mx-auto bg-gradient-to-br from-[#f8fafc] to-[#e2e8f0] p-5 rounded-[12px] shadow-[0_4px_20px_rgba(0,0,0,0.1)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_30px_rgba(0,0,0,0.15)] overflow-hidden mt-[30px]">
-                    <div className="p-10 text-center color-[#718096] text-[19.2px] h-full flex items-center justify-center">
-                      라흐타 타워 전경
-                      <br />
-                      (추가 예정)
-                    </div>
+                  <div className="relative w-full h-[380px] mx-auto bg-gradient-to-br from-[#f8fafc] to-[#e2e8f0] p-5 rounded-[12px] shadow-[0_4px_20px_rgba(0,0,0,0.1)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_30px_rgba(0,0,0,0.15)] overflow-hidden mt-[30px] flex items-center justify-center">
+                    <Image
+                      src="/images/Shimizu/lakhta-2.png"
+                      alt="라흐타 타워 전경"
+                      width={500}
+                      height={350}
+                      className="w-full h-full object-contain"
+                    />
                   </div>
                 </div>
 
@@ -618,19 +634,28 @@ export default function UserGuidePage() {
             {/* 공장 사진 섹션 */}
             <div className="mt-[60px] pt-10 border-t-2 border-[#e2e8f0]">
               <div className="grid grid-cols-2 gap-[30px] mt-[30px] max-md:grid-cols-1">
-                {[1, 2, 3, 4, 5, 6].map((num) => (
+                {[
+                  { num: 1, src: '/images/Shimizu/factory-1.jpg' },
+                  { num: 2, src: '/images/Shimizu/factory-2.png' },
+                  { num: 3, src: '/images/Shimizu/factory-3.jpg' },
+                  { num: 4, src: '/images/Shimizu/factory-4.jpg' },
+                  { num: 5, src: '/images/Shimizu/factory-5.jpg' },
+                  { num: 6, src: '/images/Shimizu/factory-6.jpg' },
+                ].map((item) => (
                   <div
-                    key={num}
+                    key={item.num}
                     className="bg-[#f7fafc] rounded-[12px] overflow-hidden shadow-[0_4px_12px_rgba(0,0,0,0.1)] transition-all duration-300 border-2 border-[#e2e8f0] hover:-translate-y-1 hover:shadow-[0_8px_24px_rgba(102,126,234,0.2)] hover:border-[#667eea]"
                   >
-                    <div className="w-full h-[400px] object-contain block bg-gradient-to-br from-[#f8fafc] to-white p-[10px] overflow-hidden">
-                      <div className="p-[60px] text-center color-[#718096] text-[19.2px] h-[250px] flex items-center justify-center">
-                        공장 사진 {num}
-                        <br />
-                        (추가 예정)
-                      </div>
+                    <div className="w-full h-[400px] bg-gradient-to-br from-[#f8fafc] to-white p-[10px] overflow-hidden flex items-center justify-center">
+                      <Image
+                        src={item.src}
+                        alt={`공장 사진 ${item.num}`}
+                        width={600}
+                        height={400}
+                        className="w-full h-full object-contain"
+                      />
                     </div>
-                    <div className="p-5 text-center text-[18px] font-bold text-[#2d3748]">공장 사진 {num}</div>
+                    <div className="p-5 text-center text-[18px] font-bold text-[#2d3748]">공장 사진 {item.num}</div>
                   </div>
                 ))}
               </div>
@@ -672,19 +697,24 @@ export default function UserGuidePage() {
                 🏗️ 가설건축공사 사진
               </h3>
               <div className="grid grid-cols-1 gap-[30px] mt-[30px] max-w-full">
-                {[1, 3].map((num) => (
+                {[
+                  { num: 1, src: '/images/Shimizu/temporary-2.png' },
+                  { num: 2, src: '/images/Shimizu/temporary-3.png' },
+                ].map((item) => (
                   <div
-                    key={num}
+                    key={item.num}
                     className="bg-[#f7fafc] rounded-[12px] overflow-hidden shadow-[0_4px_12px_rgba(0,0,0,0.1)] transition-all duration-300 border-2 border-[#e2e8f0] hover:-translate-y-1 hover:shadow-[0_8px_24px_rgba(102,126,234,0.2)] hover:border-[#667eea]"
                   >
-                    <div className="w-full h-[800px] object-contain block bg-gradient-to-br from-[#f8fafc] to-white p-[10px] overflow-hidden">
-                      <div className="p-[60px] text-center color-[#718096] text-[19.2px] h-[250px] flex items-center justify-center">
-                        가설건축공사 사진 {num}
-                        <br />
-                        (추가 예정)
-                      </div>
+                    <div className="w-full h-[800px] bg-gradient-to-br from-[#f8fafc] to-white p-[10px] overflow-hidden flex items-center justify-center">
+                      <Image
+                        src={item.src}
+                        alt={`가설건축공사 사진 ${item.num}`}
+                        width={1200}
+                        height={800}
+                        className="w-full h-full object-contain"
+                      />
                     </div>
-                    <div className="p-5 text-center text-[18px] font-bold text-[#2d3748]">가설건축공사 사진 {num}</div>
+                    <div className="p-5 text-center text-[18px] font-bold text-[#2d3748]">가설건축공사 사진 {item.num}</div>
                   </div>
                 ))}
               </div>

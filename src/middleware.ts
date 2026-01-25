@@ -6,7 +6,6 @@ const PROTECTED_PATTERNS = [
   '/k-col/auto-find-section',
   '/k-col/calculator',
   '/k-col/boq-report',
-  '/k-col/user-guide',
   '/k-col/developer-guide',
   '/k-col/print',
   '/k-col/calc-data-1',

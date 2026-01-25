@@ -5,11 +5,16 @@ import { redirect } from 'next/navigation';
 import { headers } from 'next/headers';
 
 function getBaseUrl(headersList: Headers): string {
-  const host = headersList.get('host');
+  const forwardedHost = headersList.get('x-forwarded-host');
+  const host = forwardedHost || headersList.get('host');
   const protocol = headersList.get('x-forwarded-proto') || 'https';
   
   if (host) {
     return `${protocol}://${host}`;
+  }
+  
+  if (process.env.NEXT_PUBLIC_SITE_URL) {
+    return process.env.NEXT_PUBLIC_SITE_URL;
   }
   
   return 'https://kcol.kr';

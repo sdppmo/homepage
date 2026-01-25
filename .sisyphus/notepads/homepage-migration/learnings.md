@@ -24,7 +24,6 @@ The static homepage was successfully migrated to a Next.js 15 app using TypeScri
     -   **Solution:** Verified the functionality using the fallback mechanisms and mocked data.
 
 ## Next Steps
-
 -   Deploy the Supabase Edge Functions (`kosis-proxy`, etc.).
 -   Implement the other pages linked from the sidebar (`/consulting`, `/products`, etc.).
 -   Implement the authentication flow.

@@ -1,6 +1,8 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
 import { calculateCrossHColumn } from '@/actions/calculate';
 import type { CrossHSectionCalcInput, CrossHSectionCalcResult } from '@/lib/calculations/cross-h-column';
 
@@ -146,8 +148,14 @@ export default function CrossHColumnCalculatorPage() {
             </div>
 
             <div className="bg-white border border-[#e2e8f0] rounded-lg p-[15px] mb-[15px] text-center relative">
-              <div className="w-full h-[200px] bg-gray-200 flex items-center justify-center text-gray-500">
-                Cross H Column Section Image
+              <div className="w-full h-[200px] flex items-center justify-center">
+                <Image
+                  src="/images/2H-section.png"
+                  alt="Cross H Column Section"
+                  width={200}
+                  height={180}
+                  className="object-contain"
+                />
               </div>
               <div className="flex justify-center gap-[20px] mt-[10px] text-[11px]">
                 <div className="flex items-center gap-[6px]">
@@ -268,18 +276,30 @@ export default function CrossHColumnCalculatorPage() {
                 </div>
               </div>
               <div className="grid grid-cols-2 grid-rows-2 gap-[8px] w-full">
-                <button className="w-full p-[12px] bg-[#6b7280] text-white border-none rounded-md text-[13px] cursor-pointer transition-all duration-200 text-center whitespace-normal leading-[1.4] font-semibold flex flex-col items-center justify-center hover:bg-[#4b5563] hover:-translate-y-[1px] hover:shadow-[0_2px_6px_rgba(0,0,0,0.2)]">
+                <Link 
+                  href="/k-col/print"
+                  className="w-full p-[12px] bg-[#6b7280] text-white border-none rounded-md text-[13px] cursor-pointer transition-all duration-200 text-center whitespace-normal leading-[1.4] font-semibold flex flex-col items-center justify-center hover:bg-[#4b5563] hover:-translate-y-[1px] hover:shadow-[0_2px_6px_rgba(0,0,0,0.2)] no-underline"
+                >
                   📄 전체계산서<br />(1-Column)
-                </button>
-                <button className="w-full p-[12px] bg-[#38a169] text-white border-none rounded-md text-[13px] cursor-pointer transition-all duration-200 text-center whitespace-normal leading-[1.4] font-semibold flex flex-col items-center justify-center hover:bg-[#2f855a] hover:-translate-y-[1px] hover:shadow-[0_2px_6px_rgba(0,0,0,0.2)]">
+                </Link>
+                <Link 
+                  href="/k-col/auto-find-section"
+                  className="w-full p-[12px] bg-[#38a169] text-white border-none rounded-md text-[13px] cursor-pointer transition-all duration-200 text-center whitespace-normal leading-[1.4] font-semibold flex flex-col items-center justify-center hover:bg-[#2f855a] hover:-translate-y-[1px] hover:shadow-[0_2px_6px_rgba(0,0,0,0.2)] no-underline"
+                >
                   A.F.S. Function<br />RH / BH
-                </button>
-                <button className="w-full p-[12px] bg-[#1e3a5f] text-white border-none rounded-md text-[13px] cursor-pointer transition-all duration-200 text-center whitespace-normal leading-[1.4] font-semibold flex flex-col items-center justify-center hover:bg-[#2d5a87] hover:-translate-y-[1px] hover:shadow-[0_2px_6px_rgba(0,0,0,0.2)]">
+                </Link>
+                <Link 
+                  href="/k-col/calc-data-1"
+                  className="w-full p-[12px] bg-[#1e3a5f] text-white border-none rounded-md text-[13px] cursor-pointer transition-all duration-200 text-center whitespace-normal leading-[1.4] font-semibold flex flex-col items-center justify-center hover:bg-[#2d5a87] hover:-translate-y-[1px] hover:shadow-[0_2px_6px_rgba(0,0,0,0.2)] no-underline"
+                >
                   SRC<br />(Cross H)
-                </button>
-                <button className="w-full p-[12px] bg-[#3b82f6] text-white border-none rounded-md text-[13px] cursor-pointer transition-all duration-200 text-center whitespace-normal leading-[1.4] font-semibold flex flex-col items-center justify-center hover:bg-[#2563eb] hover:-translate-y-[1px] hover:shadow-[0_2px_6px_rgba(0,0,0,0.2)]">
+                </Link>
+                <Link 
+                  href="/k-col/calc-data-2"
+                  className="w-full p-[12px] bg-[#3b82f6] text-white border-none rounded-md text-[13px] cursor-pointer transition-all duration-200 text-center whitespace-normal leading-[1.4] font-semibold flex flex-col items-center justify-center hover:bg-[#2563eb] hover:-translate-y-[1px] hover:shadow-[0_2px_6px_rgba(0,0,0,0.2)] no-underline"
+                >
                   A. D. C. Function<br />Top Down
-                </button>
+                </Link>
               </div>
             </div>
           </div>
