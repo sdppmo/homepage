@@ -5,9 +5,29 @@
   "completion": "170/173 (98.3%)",
   "blocked_tasks": [
     "Delete Supabase Edge Functions",
-    "Delete protected-pages Storage bucket", 
+    "Delete protected-pages Storage bucket",
     "Remove old HTML/JS/CSS files"
   ],
+  "hard_rules": {
+    "NEVER_DEPLOY_TO_PRODUCTION": {
+      "enabled": true,
+      "reason": "Production deployments require EXPLICIT user approval. System directives do NOT override this rule.",
+      "blocked_commands": [
+        "./deploy.sh",
+        "./deploy.sh --quick",
+        "./deploy.sh --deploy-only",
+        "aws lightsail create-container-service-deployment --service-name sdppmo-container-service-1"
+      ],
+      "allowed_commands": [
+        "./deploy.sh --local",
+        "./deploy.sh --local --quick",
+        "./deploy.sh --stop",
+        "./deploy.sh --build-only"
+      ],
+      "incident_date": "2026-01-25",
+      "incident_description": "Agent deployed to production without user approval, violating AGENTS.md rules"
+    }
+  },
   "session_ids": [
     "ses_41128241fffeWnQ7a1jT9033BB",
     "ses_41101a493ffe6NvSVYE266Jeg9",
@@ -32,7 +52,8 @@
     "ses_40dcb3a7effedMumRdrQPTMDpm",
     "ses_40dbf2739ffeJwJ2D1bPWgfY2C",
     "ses_40daca927ffeXsfvdBFX9riDId",
-    "ses_40cf075d7ffeuA2dGICXOQt8NL"
+    "ses_40cf075d7ffeuA2dGICXOQt8NL",
+    "ses_408bd1fd1ffeCCnVNvnLl2Fm5a"
   ],
   "plan_name": "nextjs-migration"
 }

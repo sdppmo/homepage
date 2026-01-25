@@ -419,3 +419,31 @@ No code changes needed for images.
 
 ### Key Learning
 **ALWAYS use ASCII-only characters for file/directory names** in Next.js projects to avoid image optimization issues. Korean, Chinese, or other non-ASCII characters in paths can cause 400 errors with `/_next/image`.
+
+## 2026-01-25: Auth Performance Optimization
+
+### Issue
+Login validation was slow (500-1200ms) for users who already have a session cookie.
+
+### Root Cause
+Two separate auth checks were happening:
+1. **Middleware** (`src/lib/supabase/middleware.ts`): Called `getUser()` on EVERY request - makes network call to Supabase server (~200-500ms)
+2. **AuthSection** (`src/components/layout/AuthSection.tsx`): Called `getSession()` + `fetchProfile()` - another ~300-700ms
+
+### Solution
+1. **Middleware**: Changed from `getUser()` to `getSession()`
+   - `getUser()` = validates JWT with Supabase server (SLOW - network call)
+   - `getSession()` = reads JWT from cookies locally (FAST - no network call)
+   - For route protection in middleware, `getSession()` is sufficient since JWT signature is validated locally
+
+2. **AuthSection**: Reduced timeout from 5s to 2s for faster fallback
+
+### Files Changed
+- `src/lib/supabase/middleware.ts` - Use `getSession()` instead of `getUser()`
+- `src/components/layout/AuthSection.tsx` - Reduced timeout from 5000ms to 2000ms
+
+### Key Learning
+**For middleware auth checks, prefer `getSession()` over `getUser()`**:
+- `getSession()` reads JWT from cookies and validates signature locally - instant
+- `getUser()` makes a network call to Supabase to validate token - 200-500ms
+- Only use `getUser()` when you need to verify the token hasn't been revoked server-side
