@@ -304,3 +304,33 @@
 3. Remove old HTML/JS/CSS files
 
 **Reason for Block**: 1 week stability monitoring period for rollback safety
+
+## Fixed: 2026-01-25 (UI Polish - Session 2)
+
+### UI Fixes Deployed to Beta (Version 6)
+
+**Issues Fixed:**
+
+1. **AuthSection Loading Skeleton**
+   - **Problem**: Component returned `null` during loading, causing visible layout shift
+   - **File**: `src/components/layout/AuthSection.tsx`
+   - **Fix**: Replaced `return null` with skeleton placeholder matching logged-out state dimensions
+   - **Code**: Added `animate-pulse` skeleton with two flex-1 divs matching button heights
+
+2. **WorldClocks Styling**
+   - **Problem**: Background was `bg-black/50` and clocks were centered on mobile
+   - **File**: `src/components/widgets/WorldClocks.tsx`
+   - **Fix**: Changed `md:bg-black/50` → `md:bg-transparent`, `md:justify-center` → `md:justify-start`
+
+3. **Footer Width**
+   - **Problem**: Footer didn't extend to full window width
+   - **File**: `src/app/page.tsx`
+   - **Fix**: Added `w-full` to bottom-row container
+
+**Build Warnings (Non-blocking):**
+- `middleware` deprecation warning - Next.js 16 prefers "proxy" pattern (can address later)
+- Bun `worker_threads` NotImplementedError - Known compatibility issue, doesn't affect functionality
+
+**Deployment:**
+- Beta version 6 deployed via `./deploy-beta.sh --quick`
+- Health check verified: https://beta.kcol.kr/health → 200 OK

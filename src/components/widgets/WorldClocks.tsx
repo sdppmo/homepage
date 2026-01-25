@@ -54,7 +54,7 @@ const WorldClocks = () => {
   }, []);
 
   return (
-    <div className="world-clocks absolute top-[15px] left-[15px] flex gap-5 z-10 md:relative md:top-0 md:left-0 md:justify-center md:p-4 md:bg-black/50 md:flex-wrap md:gap-2.5">
+    <div className="world-clocks absolute top-[15px] left-[15px] flex gap-5 z-10 md:relative md:top-0 md:left-0 md:justify-start md:p-4 md:bg-transparent md:flex-wrap md:gap-2.5">
       {ZONES.map((z) => {
         const state = clockStates[z.id];
         if (!state) return null;

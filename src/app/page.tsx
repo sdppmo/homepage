@@ -49,7 +49,7 @@ export default function Home() {
           kosisModeEnabled={kosisModeEnabled}
         />
       </div>
-      <div className="bottom-row flex flex-col flex-shrink-0 h-auto md:flex-row md:h-[100px]">
+      <div className="bottom-row flex flex-col flex-shrink-0 h-auto w-full md:flex-row md:h-[100px]">
         <Footer />
       </div>
     </div>

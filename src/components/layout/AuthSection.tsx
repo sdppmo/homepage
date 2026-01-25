@@ -63,7 +63,14 @@ const AuthSection = () => {
   };
 
   if (loading) {
-    return null;
+    return (
+      <div className="mt-3 p-4 bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-xl shadow-lg">
+        <div className="flex gap-2.5">
+          <div className="flex-1 h-[44px] bg-white/10 rounded-lg animate-pulse" />
+          <div className="flex-1 h-[44px] bg-white/10 rounded-lg animate-pulse" />
+        </div>
+      </div>
+    );
   }
 
   return (
