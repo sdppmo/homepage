@@ -2,29 +2,32 @@
 
 ## Final Status: 170/173 Tasks Complete (98.3%)
 
-**Last Updated**: 2026-01-25 09:35 KST
+**Last Updated**: 2026-01-25 10:30 KST
+
+## Current Environment Status
+
+| Environment | URL | Stack | Status |
+|-------------|-----|-------|--------|
+| **Beta** | https://beta.kcol.kr | Next.js 15 + Bun | ✅ Live (v6) |
+| **Production** | https://kcol.kr | nginx (legacy) | User reverted |
+
+> **Note**: Production was deployed with Next.js (v31) but user reverted to nginx.
+> Beta is the active Next.js deployment for testing.
 
 ## Recent Updates (2026-01-25)
 
-### Bug Fixes Deployed (Commit f011813)
+### UI Polish Fixes Deployed to Beta (Commit 0139c51)
+1. **AuthSection skeleton** - Added loading placeholder to prevent layout shift
+2. **WorldClocks styling** - Transparent background, left-aligned
+3. **Footer width** - Full width container
+
+### Previous Bug Fixes (Commit f011813)
 1. **CSP fix** - Added `dunamu.com` and `er-api.com` to `connect-src` for exchange rate widget
 2. **Navigation links fix** - Fixed broken hrefs in LeftSidebar.tsx
 3. **Layout fix** - Added right padding to MainContent to prevent NEWS section overlap
 4. **Rate limit fix** - Increased from 10 to 30 req/s to prevent 429 on RSC prefetch
 
-### Production Deployment
-- Version 31 deployed to Lightsail
-- All fixes live on https://kcol.kr
-
-## Production Verification
-
-| Domain | Status | Verified |
-|--------|--------|----------|
-| https://kcol.kr | HTTP 200, Next.js serving | 2026-01-25 |
-| https://www.kcol.kr | HTTP 200, Next.js serving | 2026-01-25 |
-| https://beta.kcol.kr | HTTP 200, Next.js serving | 2026-01-25 |
-
-## Security Headers Verified
+## Security Headers Verified (Beta)
 
 - X-Frame-Options: SAMEORIGIN
 - X-Content-Type-Options: nosniff
@@ -35,22 +38,17 @@
 
 ## Blocked Tasks (3 remaining)
 
-All 3 remaining tasks are **intentionally blocked** until 2026-02-01 for rollback safety:
+**⚠️ ALL 3 REMAINING TASKS ARE TIME-BLOCKED UNTIL 2026-02-01**
 
-### 1. Delete Supabase Edge Functions
-- **Blocker**: Safety period (1 week monitoring)
-- **Unblock Date**: 2026-02-01
-- **Action**: Delete from Supabase Dashboard → Edge Functions
+These are cleanup tasks intentionally deferred for rollback safety. If Next.js has issues, we can revert to nginx + Edge Functions.
 
-### 2. Delete `protected-pages` Storage Bucket
-- **Blocker**: Safety period (1 week monitoring)
-- **Unblock Date**: 2026-02-01
-- **Action**: Delete from Supabase Dashboard → Storage
+| Task | Blocker | Unblock Date |
+|------|---------|--------------|
+| Delete Supabase Edge Functions | 1 week safety period | 2026-02-01 |
+| Delete `protected-pages` Storage bucket | 1 week safety period | 2026-02-01 |
+| Remove old HTML/JS/CSS files | 1 week safety period | 2026-02-01 |
 
-### 3. Remove Old HTML/JS/CSS Files
-- **Blocker**: Safety period (1 week monitoring)
-- **Unblock Date**: 2026-02-01
-- **Action**: `git rm -r pages/ css/ js/ assets/ && git commit && git push`
+**NO FURTHER WORK IS POSSIBLE UNTIL 2026-02-01.**
 
 ## Cleanup Commands (Execute After 2026-02-01)
 
