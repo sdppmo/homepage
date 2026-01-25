@@ -2,17 +2,20 @@
 
 # ============================================================
 # Amazon Lightsail Container Deployment Script
-# Combined: Streamlined + Security-Hardened
 # ============================================================
 #
-# Usage:
-#   ./deploy.sh                    # Full build + security checks + deploy
-#   ./deploy.sh --local            # Build + run local test server (NO AWS deploy)
-#   ./deploy.sh --stop             # Stop local test server
-#   ./deploy.sh --build-only       # Only build Docker image
-#   ./deploy.sh --deploy-only      # Only deploy existing image
-#   ./deploy.sh --quick            # Skip security scans (faster)
-#   ./deploy.sh --upload-protected # Upload protected pages to Supabase Storage
+# Normal deployment (one command does everything):
+#   ./deploy.sh
+#   Full build, security checks, push to Lightsail, deploy.
+#   Prerequisites: Docker running, AWS CLI configured.
+#
+# Other options:
+#   ./deploy.sh --quick            # Skip Trivy scans (faster)
+#   ./deploy.sh --local            # Build + run local server only
+#   ./deploy.sh --stop             # Stop local server (only if you used --local)
+#   ./deploy.sh --build-only       # Build image only
+#   ./deploy.sh --deploy-only      # Deploy existing image only
+#   ./deploy.sh --upload-protected # Upload protected pages to Supabase
 #   ./deploy.sh --deploy-functions # Deploy Supabase Edge Functions
 #   ./deploy.sh --test-security    # Run security tests (RLS verification)
 #   ./deploy.sh --supabase-start   # Start local Supabase (Docker)
@@ -20,12 +23,6 @@
 #   ./deploy.sh --supabase-test    # Run database tests against local Supabase
 #   ./deploy.sh --supabase-reset   # Reset local database and re-seed
 #   ./deploy.sh --help             # Show help
-#
-# Prerequisites:
-#   1. Docker installed and running
-#   2. AWS CLI v2 configured (aws configure)
-#   3. Lightsail Container Service created in AWS Console
-#   4. IAM user needs Lightsail permissions
 #
 # ============================================================
 
