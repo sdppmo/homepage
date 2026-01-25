@@ -2,13 +2,13 @@
 
 ## Final Status: 170/173 Tasks Complete (98.3%)
 
-**Last Updated**: 2026-01-25 10:30 KST
+**Last Updated**: 2026-01-25 10:55 KST
 
 ## Current Environment Status
 
 | Environment | URL | Stack | Status |
 |-------------|-----|-------|--------|
-| **Beta** | https://beta.kcol.kr | Next.js 15 + Bun | ✅ Live (v6) |
+| **Beta** | https://beta.kcol.kr | Next.js 15 + Bun | ✅ Live (v7) |
 | **Production** | https://kcol.kr | nginx (legacy) | User reverted |
 
 > **Note**: Production was deployed with Next.js (v31) but user reverted to nginx.
@@ -16,7 +16,12 @@
 
 ## Recent Updates (2026-01-25)
 
-### UI Polish Fixes Deployed to Beta (Commit 0139c51)
+### Performance & Layout Fixes Deployed to Beta (Commit 23c80fd, v7)
+1. **AuthSection loading perf** - Changed `getUser()` to `getSession()` for faster cached auth, memoized supabase client
+2. **Footer width** - Added `w-full` to outer div for full browser width
+3. **News/Currency overlap** - Replaced absolute positioning with flexbox layout in RightSidebar
+
+### UI Polish Fixes (Commit 0139c51, v6)
 1. **AuthSection skeleton** - Added loading placeholder to prevent layout shift
 2. **WorldClocks styling** - Transparent background, left-aligned
 3. **Footer width** - Full width container

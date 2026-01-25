@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { User } from '@supabase/supabase-js';
@@ -15,31 +15,44 @@ const AuthSection = () => {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   
-  // Memoize supabase client to prevent recreation on each render
-  const supabase = useMemo(() => createClient(), []);
+  // Use ref to ensure single client instance across renders
+  const supabaseRef = useRef(createClient());
+  const supabase = supabaseRef.current;
 
   useEffect(() => {
     let isMounted = true;
     
     const initAuth = async () => {
-      // Use getSession first (cached, fast) instead of getUser (network call)
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!isMounted) return;
-      
-      if (session?.user) {
-        setUser(session.user);
-        // Fetch profile in parallel, don't block loading state
-        supabase
-          .from('user_profiles')
-          .select('role, business_name')
-          .eq('id', session.user.id)
-          .single()
-          .then(({ data: profile }) => {
-            if (isMounted) setProfile(profile);
-          });
+      try {
+        // Use getSession first (cached, fast) instead of getUser (network call)
+        // Add timeout to prevent hanging
+        const sessionPromise = supabase.auth.getSession();
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Session timeout')), 3000)
+        );
+        
+        const { data: { session } } = await Promise.race([sessionPromise, timeoutPromise]) as Awaited<ReturnType<typeof supabase.auth.getSession>>;
+        
+        if (!isMounted) return;
+        
+        if (session?.user) {
+          setUser(session.user);
+          // Fetch profile in parallel, don't block loading state
+          supabase
+            .from('user_profiles')
+            .select('role, business_name')
+            .eq('id', session.user.id)
+            .single()
+            .then(({ data: profile }) => {
+              if (isMounted) setProfile(profile);
+            });
+        }
+      } catch (error) {
+        // On timeout or error, just show logged out state
+        console.warn('Auth session check failed:', error);
+      } finally {
+        if (isMounted) setLoading(false);
       }
-      setLoading(false);
     };
 
     initAuth();

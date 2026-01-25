@@ -33,7 +33,7 @@ export default function Home() {
   };
 
   return (
-    <div className="page-wrapper flex flex-col w-screen min-h-screen m-0 overflow-visible md:h-screen md:overflow-hidden">
+    <div className="page-wrapper flex flex-col w-screen min-h-screen m-0 overflow-auto md:h-screen md:overflow-hidden">
       <div className="top-row flex flex-col flex-1 overflow-visible relative md:flex-row md:overflow-hidden">
         <LeftSidebar
           onKosisClick={handleKosisClick}
