@@ -2,7 +2,7 @@ import Image from 'next/image';
 
 const Footer = () => {
   return (
-    <div className="flex flex-col h-auto md:flex-row md:flex-shrink-0 md:h-[100px]">
+    <div className="flex flex-col h-auto w-full md:flex-row md:flex-shrink-0 md:h-[100px]">
       <div className="w-full p-2.5 h-auto bg-[#d0d0d0] flex justify-evenly items-center border-t-4 border-[#333] flex-shrink-0 md:w-[360px] md:p-0">
         <Image
           src="/images/product-1.png"

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { User } from '@supabase/supabase-js';
@@ -14,28 +14,40 @@ const AuthSection = () => {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
-  const supabase = createClient();
+  
+  // Memoize supabase client to prevent recreation on each render
+  const supabase = useMemo(() => createClient(), []);
 
   useEffect(() => {
-    const getUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      setUser(user);
-
-      if (user) {
-        const { data: profile } = await supabase
+    let isMounted = true;
+    
+    const initAuth = async () => {
+      // Use getSession first (cached, fast) instead of getUser (network call)
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!isMounted) return;
+      
+      if (session?.user) {
+        setUser(session.user);
+        // Fetch profile in parallel, don't block loading state
+        supabase
           .from('user_profiles')
           .select('role, business_name')
-          .eq('id', user.id)
-          .single();
-        setProfile(profile);
+          .eq('id', session.user.id)
+          .single()
+          .then(({ data: profile }) => {
+            if (isMounted) setProfile(profile);
+          });
       }
       setLoading(false);
     };
 
-    getUser();
+    initAuth();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_, session) => {
+      async (event, session) => {
+        if (!isMounted) return;
+        
         if (session?.user) {
           setUser(session.user);
           const { data: profile } = await supabase
@@ -43,7 +55,7 @@ const AuthSection = () => {
             .select('role, business_name')
             .eq('id', session.user.id)
             .single();
-          setProfile(profile);
+          if (isMounted) setProfile(profile);
         } else {
           setUser(null);
           setProfile(null);
@@ -53,6 +65,7 @@ const AuthSection = () => {
     );
 
     return () => {
+      isMounted = false;
       subscription.unsubscribe();
     };
   }, [supabase]);
