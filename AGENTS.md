@@ -3,6 +3,45 @@
 > This document provides context for AI agents working on this project.
 > Last updated: 2026-01-25
 
+## ⚠️ MANDATORY DEPLOYMENT WORKFLOW (AI AGENTS MUST FOLLOW)
+
+**NEVER deploy directly to beta or production. ALWAYS follow this exact sequence:**
+
+### Step-by-Step Deployment Process
+
+```
+1. Make code changes
+2. Run: ./deploy.sh --stop && ./deploy.sh --local --quick
+3. STOP and ASK USER: "Local server is ready at http://localhost:3000. Please verify the changes."
+4. WAIT for user approval
+5. Only after approval: Deploy to beta (./deploy.sh --beta or appropriate command)
+6. STOP and ASK USER: "Beta deployment complete. Please verify at https://beta.kcol.kr"
+7. WAIT for user approval
+8. Only after approval: Deploy to production (./deploy.sh)
+```
+
+### Why This Matters
+- **Local testing catches bugs** before they reach any server
+- **User verification** ensures changes match expectations
+- **Beta testing** catches environment-specific issues
+- **Production is sacred** - only deploy after full verification chain
+
+### Common Mistakes to AVOID
+- ❌ Deploying to beta/production without local testing first
+- ❌ Assuming previous session's deployments are "fine to continue"
+- ❌ Skipping user approval steps
+- ❌ Running `docker` commands directly (always use `deploy.sh`)
+
+### Quick Reference
+| Action | Command | Requires User Approval? |
+|--------|---------|------------------------|
+| Start local test | `./deploy.sh --stop && ./deploy.sh --local --quick` | No |
+| Stop local | `./deploy.sh --stop` | No |
+| Deploy to beta | After local approval | **YES** |
+| Deploy to production | After beta approval | **YES** |
+
+---
+
 ## ⚠️ SECURITY FIRST
 
 **Before implementing ANY feature involving authentication, authorization, or database access:**
