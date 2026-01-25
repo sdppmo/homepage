@@ -3,8 +3,8 @@
 > **Project**: SongDoPartners Homepage Migration
 > **Branch**: `feature/nextjs-migration`
 > **Created**: 2026-01-24
-> **Updated**: 2026-01-24 (Added server-side calculation requirement)
-> **Status**: Ready for execution (Momus reviewed)
+> **Updated**: 2026-01-25
+> **Status**: 170/173 COMPLETE - 3 tasks BLOCKED until 2026-02-01 (rollback safety)
 
 ---
 
