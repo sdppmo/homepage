@@ -35,7 +35,7 @@ const Footer = () => {
       </div>
 
       <footer className="flex-1 bg-[#1a1a1a] flex flex-col h-auto p-4 gap-2.5 items-stretch z-20 relative border-t-4 border-[#333] overflow-hidden min-w-0 md:flex-row md:items-center md:justify-between md:p-2 md:gap-3 md:h-full">
-        <div className="flex-1 min-w-0 text-[11px] text-[#ccc] leading-[1.3] overflow-visible text-center whitespace-normal mb-1.5 order-1 md:overflow-hidden md:text-left md:whitespace-nowrap md:mb-0 md:order-none lg:text-[10px] xs:text-[11px]">
+        <div className="flex-1 min-w-0 text-sm text-[#ccc] leading-relaxed overflow-visible text-center whitespace-normal mb-1.5 order-1 md:overflow-hidden md:text-left md:whitespace-nowrap md:mb-0 md:order-none md:text-xs lg:text-[11px] xs:text-sm">
           <div className="whitespace-normal overflow-visible md:whitespace-nowrap md:overflow-hidden md:text-ellipsis md:max-w-full">
             Homepage : http://www.kcol.kr
           </div>
