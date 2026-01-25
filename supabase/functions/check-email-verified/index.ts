@@ -1,7 +1,7 @@
 // Supabase Edge Function: check-email-verified
 // Checks if a user's email has been verified by querying auth.users directly
 
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from "jsr:@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
