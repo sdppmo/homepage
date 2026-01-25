@@ -364,3 +364,33 @@
 - Specific to a different environment
 
 No code changes needed for images.
+
+## 2026-01-25: Login Testing Results
+
+### Email Login
+- ✅ Working correctly
+- Shows proper error message for invalid credentials: "이메일 또는 비밀번호가 올바르지 않습니다."
+- Form validation works
+
+### Google OAuth Login
+- ✅ Working correctly
+- Redirects to Google sign-in page
+- OAuth callback URL properly configured: `http://localhost:8080/auth/callback?next=/`
+- Supabase OAuth integration functional
+
+### Kakao OAuth Login
+- ⏸️ Not tested (user mentioned no proper authorization yet)
+
+### Photo Gallery Page
+- ✅ Working correctly at `/photo-gallery`
+- Returns 200 status
+- Renders gallery with images
+
+### Performance Optimizations Committed
+- WorldClocks: Shows clocks immediately with initial state
+- ExchangeRate: Shows default value immediately
+- AuthSection: Added loading skeleton
+- page.tsx: Added loading placeholders for dynamic imports
+
+### Login Page Update
+- Removed terms/privacy agreement text per user request

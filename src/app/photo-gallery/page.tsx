@@ -54,9 +54,9 @@ export default function PhotoGalleryPage() {
         <div className="mb-16">
           <h2 className="text-3xl font-bold text-white mb-8 pb-4 border-b-3 border-white/30">기중제작 커팅(유석철강)</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-            <div className="relative bg-white rounded-xl overflow-hidden shadow-lg transition-all duration-300 cursor-pointer hover:-translate-y-1 hover:shadow-2xl group select-none" onClick={() => openModal('/images/K-COL 제작/P-0.webp', '기둥제작 커팅')}>
+            <div className="relative bg-white rounded-xl overflow-hidden shadow-lg transition-all duration-300 cursor-pointer hover:-translate-y-1 hover:shadow-2xl group select-none" onClick={() => openModal('/images/k-col-manufacturing/P-0.webp', '기둥제작 커팅')}>
               <Image
-                src="/images/K-COL 제작/P-0.webp"
+                src="/images/k-col-manufacturing/P-0.webp"
                 alt="기둥제작 커팅"
                 width={400}
                 height={250}
@@ -75,9 +75,9 @@ export default function PhotoGalleryPage() {
         <div className="mb-16">
           <h2 className="text-3xl font-bold text-white mb-8 pb-4 border-b-3 border-white/30">기둥조립(유석철강)</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-            <div className="relative bg-white rounded-xl overflow-hidden shadow-lg transition-all duration-300 cursor-pointer hover:-translate-y-1 hover:shadow-2xl group select-none" onClick={() => openModal('/images/K-COL 제작/p-1.webp', '기둥조립')}>
+            <div className="relative bg-white rounded-xl overflow-hidden shadow-lg transition-all duration-300 cursor-pointer hover:-translate-y-1 hover:shadow-2xl group select-none" onClick={() => openModal('/images/k-col-manufacturing/p-1.webp', '기둥조립')}>
               <Image
-                src="/images/K-COL 제작/p-1.webp"
+                src="/images/k-col-manufacturing/p-1.webp"
                 alt="기둥조립"
                 width={400}
                 height={250}
@@ -90,9 +90,9 @@ export default function PhotoGalleryPage() {
               </div>
               <div className="p-4 bg-white text-base text-[#2d3748] text-center font-medium">기둥조립</div>
             </div>
-            <div className="relative bg-white rounded-xl overflow-hidden shadow-lg transition-all duration-300 cursor-pointer hover:-translate-y-1 hover:shadow-2xl group select-none" onClick={() => openModal('/images/K-COL 제작/p-2.webp', '기둥조립')}>
+            <div className="relative bg-white rounded-xl overflow-hidden shadow-lg transition-all duration-300 cursor-pointer hover:-translate-y-1 hover:shadow-2xl group select-none" onClick={() => openModal('/images/k-col-manufacturing/p-2.webp', '기둥조립')}>
               <Image
-                src="/images/K-COL 제작/p-2.webp"
+                src="/images/k-col-manufacturing/p-2.webp"
                 alt="기둥조립"
                 width={400}
                 height={250}
