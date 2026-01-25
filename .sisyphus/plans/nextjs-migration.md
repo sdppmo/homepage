@@ -706,23 +706,27 @@ Keep `main` branch unchanged until migration verified (1 week minimum).
 
 ## Final Status: 170/173 Tasks Complete (98.3%)
 
-**Last Updated**: 2026-01-25 10:05 KST
+**Last Updated**: 2026-01-25 18:30 KST
 
 ### Completed
 - ✅ All code migration (Phases 0-7)
-- ✅ Beta deployment at https://beta.kcol.kr (Version 5)
+- ✅ Beta deployment at https://beta.kcol.kr (Version 6)
 - ⚠️ Production (https://kcol.kr) reverted to nginx by user - Next.js not deployed
 - ✅ UI testing via Playwright
 - ✅ Performance verification (TTFB 108ms)
 - ✅ Security verification (headers, client bundle)
 - ✅ All 44 tests passing
 - ✅ Bug fixes deployed to beta (429 rate limit, Dunamu API URL)
+- ✅ AuthSection loading fix (removed skeleton, faster timeout)
+- ✅ AGENTS.md production deployment rules strengthened
+- ✅ Image display verified (all images working correctly)
 
 ### Bug Fixes (2026-01-25)
 | Issue | Fix | Status |
 |-------|-----|--------|
 | 429 errors on RSC prefetch | Skip rate limiting for `?_rsc=` requests | ✅ Beta v5 |
 | Dunamu API DNS error | Fixed URL: `quotation-api.dunamu.com` | ✅ Beta v5 |
+| AuthSection slow loading | Removed skeleton, reduced timeout to 1.5s | ✅ Committed |
 
 ### Blocked (3 tasks - waiting until 2026-02-01)
 | Task | Blocker | Resolution |
@@ -730,6 +734,8 @@ Keep `main` branch unchanged until migration verified (1 week minimum).
 | Delete Edge Functions | Safety: 1 week monitoring | Execute after 2026-02-01 |
 | Delete Storage bucket | Safety: 1 week monitoring | Execute after 2026-02-01 |
 | Remove old files | Safety: 1 week monitoring | Execute after 2026-02-01 |
+
+**⚠️ CANNOT PROCEED**: Today is 2026-01-25. These 3 tasks are intentionally blocked for rollback safety. Resume cleanup after 2026-02-01.
 
 ### Next Steps for User
 1. Test beta.kcol.kr to verify bug fixes work
