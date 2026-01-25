@@ -1,86 +1,105 @@
 # ============================================================
-# SECURITY-HARDENED DOCKERFILE
+# NEXT.JS 15 + BUN DOCKERFILE FOR AWS LIGHTSAIL
 # ============================================================
-# Use specific version tag (not 'latest') for reproducibility
-FROM nginx:1.25-alpine
+# Multi-stage build optimized for minimal image size (<200MB)
+# Security hardened with non-root user
 
 # ============================================================
-# SECURITY: Remove unnecessary packages and reduce attack surface
+# Stage 1: Dependencies
 # ============================================================
-RUN apk update && \
-    apk upgrade && \
-    # Remove unnecessary packages
-    apk del --purge curl wget && \
-    # Clear package cache
-    rm -rf /var/cache/apk/* && \
-    # Remove default nginx content
-    rm -rf /usr/share/nginx/html/* && \
-    # Remove default nginx configs
-    rm -f /etc/nginx/conf.d/default.conf
+FROM oven/bun:1.2 AS deps
+WORKDIR /app
+
+# Copy package files
+COPY package.json bun.lock* ./
+
+# Install dependencies (production + dev for build)
+RUN bun install --frozen-lockfile
 
 # ============================================================
-# SECURITY: Create non-root user for nginx
+# Stage 2: Builder
 # ============================================================
-RUN addgroup -g 101 -S nginx 2>/dev/null || true && \
-    adduser -S -D -H -u 101 -h /var/cache/nginx -s /sbin/nologin -G nginx -g nginx nginx 2>/dev/null || true
+FROM oven/bun:1.2 AS builder
+WORKDIR /app
+
+# Copy dependencies from deps stage
+COPY --from=deps /app/node_modules ./node_modules
+
+# Copy source code
+COPY . .
+
+# Set build-time environment variables
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+
+# Build Next.js (standalone output configured in next.config.ts)
+RUN bun run build
 
 # ============================================================
-# SECURITY: Set proper file permissions
+# Stage 3: Runner (Production)
 # ============================================================
-# Create necessary directories with correct ownership
-RUN mkdir -p /var/cache/nginx /var/log/nginx /var/run && \
-    chown -R nginx:nginx /var/cache/nginx /var/log/nginx && \
-    chmod -R 755 /var/cache/nginx /var/log/nginx && \
-    # nginx.pid needs to be writable
-    touch /var/run/nginx.pid && \
-    chown nginx:nginx /var/run/nginx.pid
+FROM oven/bun:1.2-alpine AS runner
+WORKDIR /app
+
+# Set production environment
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+
+# Environment variable placeholders (set at runtime)
+# These are required for Supabase integration
+ENV NEXT_PUBLIC_SUPABASE_URL=""
+ENV NEXT_PUBLIC_SUPABASE_ANON_KEY=""
+ENV SUPABASE_SERVICE_ROLE_KEY=""
 
 # ============================================================
-# Copy configuration and content
+# SECURITY: Create non-root user
 # ============================================================
-COPY --chown=nginx:nginx nginx.conf /etc/nginx/nginx.conf
-COPY --chown=nginx:nginx index.html /usr/share/nginx/html/
-COPY --chown=nginx:nginx css/ /usr/share/nginx/html/css/
-COPY --chown=nginx:nginx js/ /usr/share/nginx/html/js/
-COPY --chown=nginx:nginx assets/ /usr/share/nginx/html/assets/
-COPY --chown=nginx:nginx pages/ /usr/share/nginx/html/pages/
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 nextjs
 
 # ============================================================
-# SECURITY: Create simple error pages (don't leak info)
+# Copy standalone build output
 # ============================================================
-RUN echo '<!DOCTYPE html><html><head><title>Not Found</title></head><body><h1>404 - Page Not Found</h1></body></html>' > /usr/share/nginx/html/404.html && \
-    chown nginx:nginx /usr/share/nginx/html/404.html
+# Copy public assets
+COPY --from=builder --chown=nextjs:nodejs /app/public ./public
+
+# Copy standalone server
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+
+# Copy static files
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
 # ============================================================
-# SECURITY: Set restrictive file permissions on content
+# SECURITY: Set restrictive permissions
 # ============================================================
-RUN find /usr/share/nginx/html -type f -exec chmod 644 {} \; && \
-    find /usr/share/nginx/html -type d -exec chmod 755 {} \; && \
-    chmod 644 /etc/nginx/nginx.conf
+RUN chmod -R 755 /app && \
+    chown -R nextjs:nodejs /app
 
 # ============================================================
-# SECURITY: Container hardening labels
+# Container configuration
 # ============================================================
 LABEL maintainer="SongDoPartners" \
-      version="1.0" \
-      description="Hardened static website container" \
-      security.privileged="false" \
-      security.readonly-rootfs="true"
+      version="2.0" \
+      description="Next.js 15 + Bun production container" \
+      security.privileged="false"
 
-# Expose port 80 (Lightsail handles HTTPS termination)
-EXPOSE 80
+# Switch to non-root user
+USER nextjs
+
+# Expose port 3000 (Lightsail handles HTTPS termination)
+EXPOSE 3000
+
+# Set hostname for Next.js standalone server
+ENV HOSTNAME="0.0.0.0"
+ENV PORT=3000
 
 # ============================================================
-# SECURITY: Health check (using built-in nginx stub)
+# Health check for /health endpoint
 # ============================================================
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD ["/bin/sh", "-c", "kill -0 $(cat /var/run/nginx.pid) || exit 1"]
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD wget --no-verbose --tries=1 --spider http://localhost:3000/health || exit 1
 
 # ============================================================
-# SECURITY: Run as non-root (nginx master still needs root for port 80)
-# Note: For true non-root, use port 8080 and change nginx.conf
+# Start Next.js standalone server with Bun
 # ============================================================
-# Using nginx's built-in user directive instead
-
-# Start nginx
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["bun", "server.js"]
