@@ -4,6 +4,17 @@ import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { headers } from 'next/headers';
 
+function getBaseUrl(headersList: Headers): string {
+  const host = headersList.get('host');
+  const protocol = headersList.get('x-forwarded-proto') || 'https';
+  
+  if (host) {
+    return `${protocol}://${host}`;
+  }
+  
+  return 'https://kcol.kr';
+}
+
 export async function login(prevState: any, formData: FormData) {
   const email = formData.get('email') as string;
   const password = formData.get('password') as string;
@@ -33,12 +44,12 @@ export async function login(prevState: any, formData: FormData) {
 export async function signInWithGoogle(redirectTo: string = '/') {
   const supabase = await createClient();
   const headersList = await headers();
-  const origin = headersList.get('origin') || 'https://beta.kcol.kr';
+  const baseUrl = getBaseUrl(headersList);
   
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
-      redirectTo: `${origin}/auth/callback?next=${encodeURIComponent(redirectTo)}`,
+      redirectTo: `${baseUrl}/auth/callback?next=${encodeURIComponent(redirectTo)}`,
       queryParams: {
         access_type: 'offline',
         prompt: 'consent',
@@ -60,12 +71,12 @@ export async function signInWithGoogle(redirectTo: string = '/') {
 export async function signInWithKakao(redirectTo: string = '/') {
   const supabase = await createClient();
   const headersList = await headers();
-  const origin = headersList.get('origin') || 'https://beta.kcol.kr';
+  const baseUrl = getBaseUrl(headersList);
   
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'kakao',
     options: {
-      redirectTo: `${origin}/auth/callback?next=${encodeURIComponent(redirectTo)}`,
+      redirectTo: `${baseUrl}/auth/callback?next=${encodeURIComponent(redirectTo)}`,
     },
   });
 
