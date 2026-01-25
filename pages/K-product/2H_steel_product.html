@@ -3732,7 +3732,7 @@
                 const weekdays = ['일', '월', '화', '수', '목', '금', '토'];
 
                 // 헤더 행 생성 (날짜와 요일)
-                const headerRow = ['기둥번호'];
+                const headerRow = ['기둥번호', '운송차수'];
                 dates.forEach(date => {
                     const dateStr = date.toISOString().split('T')[0];
                     const month = date.getMonth() + 1;
@@ -3746,12 +3746,33 @@
                 wsData.push(headerRow);
                 
                 // 디버깅: 첫 번째 날짜 헤더 확인
-                console.log('엑셀 헤더 첫 번째 날짜:', headerRow[1]);
+                console.log('엑셀 헤더 첫 번째 날짜:', headerRow[2]);
 
                 // 각 기둥별 데이터 행 생성
                 for (let c = 1; c <= TOTAL_COLUMNS; c++) {
                     const colId = c + 'C';
-                    const row = [colId];
+                    
+                    // 해당 기둥이 속한 운송차수 찾기
+                    const tripNumbers = [];
+                    if (transportPlan && Object.keys(transportPlan).length > 0) {
+                        for (let tripNum in transportPlan) {
+                            const tripData = transportPlan[tripNum];
+                            if (tripData && tripData.columns && Array.isArray(tripData.columns)) {
+                                const found = tripData.columns.some(col => {
+                                    const colNum = typeof col === 'number' ? col : parseInt(String(col).replace(/[^0-9]/g, ''));
+                                    return colNum === c;
+                                });
+                                if (found) {
+                                    tripNumbers.push(parseInt(tripNum));
+                                }
+                            }
+                        }
+                    }
+                    // 차수 번호를 오름차순으로 정렬
+                    tripNumbers.sort((a, b) => a - b);
+                    const tripDisplay = tripNumbers.length > 0 ? tripNumbers.map(t => `${t}차수`).join(', ') : '';
+                    
+                    const row = [colId, tripDisplay];
 
                     dates.forEach(date => {
                         const dateStr = date.toISOString().split('T')[0];
@@ -3768,7 +3789,8 @@
                             }
                         }
 
-                        // 운송계획 확인 (process 5)
+                        // 운송계획 확인 (process 5) - 차수 번호 찾기
+                        let tripNumberForDate = null;
                         if (transportPlan && Object.keys(transportPlan).length > 0) {
                             for (let tripNum in transportPlan) {
                                 const tripData = transportPlan[tripNum];
@@ -3790,8 +3812,11 @@
                                             const colNum = typeof col === 'number' ? col : parseInt(String(col).replace(/[^0-9]/g, ''));
                                             return colNum === c;
                                         });
-                                        if (columnIndex !== -1 && !completedProcesses.includes(5)) {
-                                            completedProcesses.push(5);
+                                        if (columnIndex !== -1) {
+                                            tripNumberForDate = parseInt(tripNum);
+                                            if (!completedProcesses.includes(5)) {
+                                                completedProcesses.push(5);
+                                            }
                                         }
                                     }
                                 }
@@ -3805,7 +3830,13 @@
                                 row.push('1+2');
                             } else {
                                 // 공정 번호를 쉼표로 구분하여 표시
-                                const processText = completedProcesses.map(p => processNames[p] || `P${p}`).join(', ');
+                                // process 5 (현장배송)는 차수 번호로 표시
+                                const processText = completedProcesses.map(p => {
+                                    if (p === 5 && tripNumberForDate !== null) {
+                                        return `${tripNumberForDate}차수`;
+                                    }
+                                    return processNames[p] || `P${p}`;
+                                }).join(', ');
                                 row.push(processText);
                             }
                         } else {
@@ -3820,7 +3851,7 @@
                 const ws = XLSXLib.utils.aoa_to_sheet(wsData);
 
                 // 열 너비 설정
-                const colWidths = [{ wch: 12 }]; // 기둥번호 열
+                const colWidths = [{ wch: 12 }, { wch: 15 }]; // 기둥번호 열, 운송차수 열
                 dates.forEach(() => {
                     colWidths.push({ wch: 15 }); // 날짜 열
                 });
