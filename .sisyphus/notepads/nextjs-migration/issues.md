@@ -123,6 +123,48 @@ These are cleanup tasks intentionally deferred for rollback safety:
 
 **NO FURTHER WORK IS POSSIBLE ON THIS PLAN UNTIL 2026-02-01.**
 
+### [2026-01-25T12:00] Preparation for Cleanup Tasks (2026-02-01)
+
+#### Task 3: Files to Remove (28 HTML files identified)
+
+**Directories to delete:**
+- `static-pages/` - All old HTML pages (26 files)
+- `protected-source/` - Old protected page sources (3 files)
+- `index.html` - Root HTML file
+
+**Commands to execute on 2026-02-01:**
+```bash
+# Remove old static pages
+rm -rf static-pages/
+rm -rf protected-source/
+rm index.html
+
+# Commit the removal
+git add -A
+git commit -m "chore: remove old HTML/JS/CSS files after Next.js migration"
+git push origin feature/nextjs-migration
+```
+
+#### Task 1 & 2: Supabase Dashboard Actions
+
+**Edge Functions to delete:**
+- `serve-protected-page`
+- `check-email-verified`
+- `admin-users`
+- `send-admin-alert`
+- (any others in the dashboard)
+
+**Storage bucket to delete:**
+- `protected-pages`
+
+**These require manual Supabase Dashboard access - cannot be automated.**
+
+---
+
+## WORK PLAN STATUS: BLOCKED UNTIL 2026-02-01
+
+All preparatory documentation is complete. The 3 remaining tasks have a hard time-based dependency and cannot be executed until the 1-week stability period expires.
+
 ### [2026-01-25T10:05] Bug Fixes Deployed to Beta (Version 5)
 
 #### Issues Fixed
