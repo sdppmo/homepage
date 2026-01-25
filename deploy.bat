@@ -298,6 +298,26 @@ echo Service State: %STATE%
 echo Service URL:   %URL%
 
 REM ============================================================
+REM Upload protected pages to Supabase Storage
+REM ============================================================
+if exist .env.local (
+    if exist scripts\upload-protected-pages.py (
+        echo.
+        echo ========================================
+        echo   Uploading Protected Pages
+        echo ========================================
+        python scripts\upload-protected-pages.py
+        if !ERRORLEVEL!==0 (
+            echo [OK] Protected pages uploaded to Supabase
+        ) else (
+            echo [!] Failed to upload protected pages ^(non-critical^)
+        )
+    )
+) else (
+    echo [!] Skipping Supabase upload ^(.env.local not found^)
+)
+
+REM ============================================================
 REM Done
 REM ============================================================
 echo.

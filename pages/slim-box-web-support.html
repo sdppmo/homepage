@@ -234,6 +234,50 @@
             font-style: italic;
         }
 
+        /* Document Control Section */
+        .document-control {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px solid #e2e8f0;
+        }
+
+        .document-control-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1e3a5f;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .document-control-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .document-control-item {
+            font-size: 14px;
+            color: #4a5568;
+            padding: 8px 0;
+            padding-left: 20px;
+            position: relative;
+            line-height: 1.6;
+        }
+
+        .document-control-item::before {
+            content: '📄';
+            position: absolute;
+            left: 0;
+            font-size: 16px;
+        }
+
+        .project-panel.empty .document-control-title,
+        .project-panel.empty .document-control-item {
+            color: #a0aec0;
+        }
+
         .empty-placeholder {
             text-align: center;
             padding: 40px 20px;
@@ -295,7 +339,7 @@
                 <!-- K-COL Design Management System -->
                 <div class="system-section">
                     <div class="system-header">
-                        <h2>1. K-COL Design Management System</h2>
+                        <h2>1. K-COL Design Management Information System</h2>
                         <p class="system-subtitle">Cross H형 강재 기둥 설계 및 제작 관리 시스템</p>
                     </div>
                     <div class="project-grid">
@@ -304,7 +348,7 @@
                             <div class="project-header">
                                 <div class="project-icon">🏢</div>
                                 <div class="project-title-area">
-                                    <h3 class="project-title">프로젝트 1</h3>
+                                    <h3 class="project-title">여수학동 프로젝트</h3>
                                     <p class="project-subtitle">K-COL 프로젝트</p>
                                 </div>
                             </div>
@@ -328,6 +372,17 @@
                                     </div>
                                 </div>
                                 <p class="project-description">프로젝트 정보를 입력하세요.</p>
+                                <div class="document-control">
+                                    <div class="document-control-title">📋 Document Control</div>
+                                    <ul class="document-control-list">
+                                        <li class="document-control-item">지반조사보고서</li>
+                                        <li class="document-control-item">CAD파일</li>
+                                        <li class="document-control-item">구조계산서</li>
+                                        <li class="document-control-item">기타제안서</li>
+                                        <li class="document-control-item">관련사진</li>
+                                        <li class="document-control-item">동영상</li>
+                                    </ul>
+                                </div>
                             </div>
                         </div>
 
@@ -360,6 +415,17 @@
                                     </div>
                                 </div>
                                 <p class="project-description">프로젝트 정보를 입력하세요.</p>
+                                <div class="document-control">
+                                    <div class="document-control-title">📋 Document Control</div>
+                                    <ul class="document-control-list">
+                                        <li class="document-control-item">지반조사보고서</li>
+                                        <li class="document-control-item">CAD파일</li>
+                                        <li class="document-control-item">구조계산서</li>
+                                        <li class="document-control-item">기타제안서</li>
+                                        <li class="document-control-item">관련사진</li>
+                                        <li class="document-control-item">동영상</li>
+                                    </ul>
+                                </div>
                             </div>
                         </div>
 
@@ -392,6 +458,17 @@
                                     </div>
                                 </div>
                                 <p class="project-description">프로젝트 정보를 입력하세요.</p>
+                                <div class="document-control">
+                                    <div class="document-control-title">📋 Document Control</div>
+                                    <ul class="document-control-list">
+                                        <li class="document-control-item">지반조사보고서</li>
+                                        <li class="document-control-item">CAD파일</li>
+                                        <li class="document-control-item">구조계산서</li>
+                                        <li class="document-control-item">기타제안서</li>
+                                        <li class="document-control-item">관련사진</li>
+                                        <li class="document-control-item">동영상</li>
+                                    </ul>
+                                </div>
                             </div>
                         </div>
 
@@ -424,6 +501,17 @@
                                     </div>
                                 </div>
                                 <p class="project-description">프로젝트 정보를 입력하세요.</p>
+                                <div class="document-control">
+                                    <div class="document-control-title">📋 Document Control</div>
+                                    <ul class="document-control-list">
+                                        <li class="document-control-item">지반조사보고서</li>
+                                        <li class="document-control-item">CAD파일</li>
+                                        <li class="document-control-item">구조계산서</li>
+                                        <li class="document-control-item">기타제안서</li>
+                                        <li class="document-control-item">관련사진</li>
+                                        <li class="document-control-item">동영상</li>
+                                    </ul>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -432,8 +520,8 @@
                 <!-- Slim-Box Design Management System -->
                 <div class="system-section">
                     <div class="system-header">
-                        <h2>2. Slim-Box Design Management System</h2>
-                        <p class="system-subtitle">Slim-Box 설계 및 제작 관리 시스템</p>
+                        <h2>2. Slim-Box Design Management Information System</h2>
+                        <p class="system-subtitle">Slim-BOx 강합성 흙막이 파일설계 및 제작관리시스템</p>
                     </div>
                     <div class="project-grid">
                         <!-- Project 1 -->
@@ -465,6 +553,17 @@
                                     </div>
                                 </div>
                                 <p class="project-description">프로젝트 정보를 입력하세요.</p>
+                                <div class="document-control">
+                                    <div class="document-control-title">📋 Document Control</div>
+                                    <ul class="document-control-list">
+                                        <li class="document-control-item">지반조사보고서</li>
+                                        <li class="document-control-item">CAD파일</li>
+                                        <li class="document-control-item">구조계산서</li>
+                                        <li class="document-control-item">기타제안서</li>
+                                        <li class="document-control-item">관련사진</li>
+                                        <li class="document-control-item">동영상</li>
+                                    </ul>
+                                </div>
                             </div>
                         </div>
 
@@ -497,6 +596,17 @@
                                     </div>
                                 </div>
                                 <p class="project-description">프로젝트 정보를 입력하세요.</p>
+                                <div class="document-control">
+                                    <div class="document-control-title">📋 Document Control</div>
+                                    <ul class="document-control-list">
+                                        <li class="document-control-item">지반조사보고서</li>
+                                        <li class="document-control-item">CAD파일</li>
+                                        <li class="document-control-item">구조계산서</li>
+                                        <li class="document-control-item">기타제안서</li>
+                                        <li class="document-control-item">관련사진</li>
+                                        <li class="document-control-item">동영상</li>
+                                    </ul>
+                                </div>
                             </div>
                         </div>
 
@@ -529,6 +639,17 @@
                                     </div>
                                 </div>
                                 <p class="project-description">프로젝트 정보를 입력하세요.</p>
+                                <div class="document-control">
+                                    <div class="document-control-title">📋 Document Control</div>
+                                    <ul class="document-control-list">
+                                        <li class="document-control-item">지반조사보고서</li>
+                                        <li class="document-control-item">CAD파일</li>
+                                        <li class="document-control-item">구조계산서</li>
+                                        <li class="document-control-item">기타제안서</li>
+                                        <li class="document-control-item">관련사진</li>
+                                        <li class="document-control-item">동영상</li>
+                                    </ul>
+                                </div>
                             </div>
                         </div>
 
@@ -561,6 +682,17 @@
                                     </div>
                                 </div>
                                 <p class="project-description">프로젝트 정보를 입력하세요.</p>
+                                <div class="document-control">
+                                    <div class="document-control-title">📋 Document Control</div>
+                                    <ul class="document-control-list">
+                                        <li class="document-control-item">지반조사보고서</li>
+                                        <li class="document-control-item">CAD파일</li>
+                                        <li class="document-control-item">구조계산서</li>
+                                        <li class="document-control-item">기타제안서</li>
+                                        <li class="document-control-item">관련사진</li>
+                                        <li class="document-control-item">동영상</li>
+                                    </ul>
+                                </div>
                             </div>
                         </div>
                     </div>

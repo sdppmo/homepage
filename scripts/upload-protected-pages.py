@@ -20,6 +20,12 @@ import urllib.request
 import urllib.error
 from pathlib import Path
 
+# Fix Windows console encoding
+if sys.platform == 'win32':
+    import io
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
+    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
+
 # Fix SSL certificate verification on macOS
 ssl_context = ssl.create_default_context()
 try:
@@ -169,15 +175,17 @@ def main():
     
     load_env()
     
-    SUPABASE_URL = os.environ.get('SUPABASE_URL', 'https://iwudkwhafyrhgzuntdgm.supabase.co')
-    SUPABASE_SERVICE_ROLE_KEY = os.environ.get('SUPABASE_SERVICE_ROLE_KEY')
+    SUPABASE_URL = os.environ.get('SUPABASE_URL') or os.environ.get('NEXT_PUBLIC_SUPABASE_URL', 'https://iwudkwhafyrhgzuntdgm.supabase.co')
+    SUPABASE_SERVICE_ROLE_KEY = os.environ.get('SUPABASE_SERVICE_ROLE_KEY') or os.environ.get('NEXT_PUBLIC_SUPABASE_ANON_KEY')
     
     if not SUPABASE_SERVICE_ROLE_KEY:
-        print(f"{RED}❌ Error: SUPABASE_SERVICE_ROLE_KEY environment variable is required{NC}")
+        print(f"{RED}❌ Error: SUPABASE_SERVICE_ROLE_KEY or NEXT_PUBLIC_SUPABASE_ANON_KEY environment variable is required{NC}")
         print()
         print("Create .env.local file with:")
         print("  SUPABASE_URL=https://your-project.supabase.co")
         print("  SUPABASE_SERVICE_ROLE_KEY=your-service-role-key")
+        print()
+        print("Note: Storage upload typically requires SERVICE_ROLE_KEY (not ANON_KEY)")
         sys.exit(1)
     
     print()

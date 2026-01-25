@@ -456,6 +456,31 @@
             <!-- 하중 입력 -->
             <div class="section">
                 <div class="section-title">하중 입력</div>
+                
+                <!-- 엑셀 업로드 섹션 -->
+                <div id="load-excel-upload-section" style="margin-bottom: 20px; margin-top: 15px; padding: 20px; background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); border-radius: 8px; border: 2px solid #2196f3; box-shadow: 0 4px 12px rgba(33,150,243,0.3); display: block !important; visibility: visible !important;">
+                    <div style="margin-bottom: 12px; font-weight: 700; color: #2c4a7c; font-size: 18px; display: flex; align-items: center; gap: 8px;">
+                        <span>📊</span>
+                        <span>엑셀 파일로 하중 입력</span>
+                    </div>
+                    <div style="margin-bottom: 15px; padding: 12px; background: rgba(255,255,255,0.9); border-radius: 6px; font-size: 13px; color: #555; line-height: 1.8; border-left: 4px solid #2196f3;">
+                        <div style="margin-bottom: 8px;"><strong style="color: #2c4a7c;">엑셀 파일로 하중 데이터를 한꺼번에 업로드할 수 있습니다.</strong></div>
+                        <div style="margin-bottom: 5px;"><strong style="color: #2c4a7c;">엑셀 형식:</strong> 첫 행에 <strong style="color: #d32f2f;">Nos., 기둥이름, Pu, Mux, Muy, Lx, Ly, Kx, Ky</strong> 헤더를 넣어주세요.</div>
+                        <div style="margin-bottom: 5px;"><strong style="color: #2c4a7c;">파일 확장자:</strong> <strong style="color: #d32f2f;">*.xlsx</strong> (엑셀 2007 이상 형식)</div>
+                        <div style="color: #666; font-size: 12px;">※ 컬럼명은 대소문자 구분 없이 인식됩니다. (예: PU, pu, Pu 모두 가능)</div>
+                    </div>
+                    <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center; padding-top: 15px; border-top: 2px solid rgba(33,150,243,0.4);">
+                        <label for="load-excel-file" style="padding: 12px 20px; border: 2px solid #2196f3; border-radius: 6px; background: white; font-size: 14px; cursor: pointer; font-weight: 600; color: #2196f3; display: inline-block; transition: all 0.3s;" onmouseover="this.style.background='#2196f3'; this.style.color='white';" onmouseout="this.style.background='white'; this.style.color='#2196f3';">
+                            📁 엑셀 파일 선택
+                        </label>
+                        <input type="file" accept=".xlsx,.xls,.csv" id="load-excel-file" onchange="importLoadFromExcel(event)" style="display: none;" title="엑셀 파일 선택 (*.xlsx)">
+                        <button class="action-btn" onclick="exportLoadToExcel()" style="background: #4caf50; color: white; padding: 12px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 14px; box-shadow: 0 2px 6px rgba(76,175,80,0.3); transition: all 0.3s;" onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 4px 8px rgba(76,175,80,0.4)';" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 2px 6px rgba(76,175,80,0.3)';">
+                            📥 엑셀 템플릿 다운로드
+                        </button>
+                        <span id="load-excel-status" style="color: #555; font-size: 13px; font-weight: 500; padding: 8px 12px; background: rgba(255,255,255,0.8); border-radius: 4px;">파일을 업로드해주세요.</span>
+                    </div>
+                </div>
+                
                 <div style="overflow-x: auto; margin-top: 15px;">
                     <table class="load-table" style="width: 100%; border-collapse: collapse; font-size: 13px;">
                         <thead>
@@ -782,12 +807,12 @@
                 });
             }
             
-            // 기존 행이 9개 컬럼인지 확인
-            const existingRows = tbody.querySelectorAll('tr');
-            if (existingRows.length > 0) {
-                const firstRow = existingRows[0];
+            // 기존 행이 9개 컬럼인지 확인 (이미 위에서 확인했으므로 재확인)
+            const currentRows = tbody.querySelectorAll('tr');
+            if (currentRows.length > 0) {
+                const firstRow = currentRows[0];
                 const cells = firstRow.querySelectorAll('td');
-                console.log(`현재 테이블 상태: ${existingRows.length}개 행, 첫 번째 행에 ${cells.length}개 컬럼`);
+                console.log(`현재 테이블 상태: ${currentRows.length}개 행, 첫 번째 행에 ${cells.length}개 컬럼`);
                 
                 // 9개 컬럼이 아니면 무조건 재생성
                 if (cells.length !== 9) {
@@ -1165,8 +1190,143 @@
                     const actualCount = importedData.length;
                     document.getElementById('columnCount').value = actualCount;
                     
-                    // 테이블 업데이트
-                    updateLoadTable();
+                    // 테이블 완전히 재생성 (엑셀 데이터로 교체)
+                    const tbody = document.getElementById('loadTableBody');
+                    if (tbody) {
+                        tbody.innerHTML = ''; // 기존 행 모두 제거
+                        
+                        // 엑셀 데이터로 새 행 생성
+                        importedData.forEach((col, index) => {
+                            const rowNum = index + 1;
+                            const row = document.createElement('tr');
+                            
+                            // Nos.
+                            const td1 = document.createElement('td');
+                            td1.style.cssText = 'font-weight: 600; color: #667eea; text-align: center; padding: 8px; border: 1px solid #e2e8f0;';
+                            td1.textContent = rowNum;
+                            row.appendChild(td1);
+                            
+                            // 기둥이름
+                            const td2 = document.createElement('td');
+                            td2.style.cssText = 'padding: 8px; border: 1px solid #e2e8f0;';
+                            const input2 = document.createElement('input');
+                            input2.type = 'text';
+                            input2.id = `col${rowNum}_name`;
+                            input2.value = col.name || `KC${rowNum}`;
+                            input2.placeholder = '기둥이름';
+                            input2.style.cssText = 'width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px; font-size: 13px;';
+                            input2.onchange = function() { updateColumnData(rowNum, 'name', this.value); };
+                            td2.appendChild(input2);
+                            row.appendChild(td2);
+                            
+                            // Pu
+                            const td3 = document.createElement('td');
+                            td3.style.cssText = 'padding: 8px; border: 1px solid #e2e8f0;';
+                            const input3 = document.createElement('input');
+                            input3.type = 'number';
+                            input3.id = `col${rowNum}_Pu`;
+                            input3.value = col.pu || 0;
+                            input3.step = '0.1';
+                            input3.placeholder = 'Pu';
+                            input3.style.cssText = 'width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px; font-size: 13px;';
+                            input3.onchange = function() { updateColumnData(rowNum, 'pu', this.value); };
+                            td3.appendChild(input3);
+                            row.appendChild(td3);
+                            
+                            // Mux
+                            const td4 = document.createElement('td');
+                            td4.style.cssText = 'padding: 8px; border: 1px solid #e2e8f0;';
+                            const input4 = document.createElement('input');
+                            input4.type = 'number';
+                            input4.id = `col${rowNum}_Mux`;
+                            input4.value = col.mux || 0;
+                            input4.step = '0.1';
+                            input4.placeholder = 'Mux';
+                            input4.style.cssText = 'width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px; font-size: 13px;';
+                            input4.onchange = function() { updateColumnData(rowNum, 'mux', this.value); };
+                            td4.appendChild(input4);
+                            row.appendChild(td4);
+                            
+                            // Muy
+                            const td5 = document.createElement('td');
+                            td5.style.cssText = 'padding: 8px; border: 1px solid #e2e8f0;';
+                            const input5 = document.createElement('input');
+                            input5.type = 'number';
+                            input5.id = `col${rowNum}_Muy`;
+                            input5.value = col.muy || 0;
+                            input5.step = '0.1';
+                            input5.placeholder = 'Muy';
+                            input5.style.cssText = 'width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px; font-size: 13px;';
+                            input5.onchange = function() { updateColumnData(rowNum, 'muy', this.value); };
+                            td5.appendChild(input5);
+                            row.appendChild(td5);
+                            
+                            // Lx
+                            const td6 = document.createElement('td');
+                            td6.style.cssText = 'padding: 8px; border: 1px solid #e2e8f0;';
+                            const input6 = document.createElement('input');
+                            input6.type = 'number';
+                            input6.id = `col${rowNum}_Lx`;
+                            input6.value = col.lx || 4.5;
+                            input6.step = '0.001';
+                            input6.placeholder = 'Lx (m)';
+                            input6.style.cssText = 'width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px; font-size: 13px;';
+                            input6.onchange = function() { updateColumnData(rowNum, 'lx', this.value); };
+                            td6.appendChild(input6);
+                            row.appendChild(td6);
+                            
+                            // Ly
+                            const td7 = document.createElement('td');
+                            td7.style.cssText = 'padding: 8px; border: 1px solid #e2e8f0;';
+                            const input7 = document.createElement('input');
+                            input7.type = 'number';
+                            input7.id = `col${rowNum}_Ly`;
+                            input7.value = col.ly || 4.5;
+                            input7.step = '0.001';
+                            input7.placeholder = 'Ly (m)';
+                            input7.style.cssText = 'width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px; font-size: 13px;';
+                            input7.onchange = function() { updateColumnData(rowNum, 'ly', this.value); };
+                            td7.appendChild(input7);
+                            row.appendChild(td7);
+                            
+                            // Kx
+                            const td8 = document.createElement('td');
+                            td8.style.cssText = 'padding: 8px; border: 1px solid #e2e8f0;';
+                            const input8 = document.createElement('input');
+                            input8.type = 'number';
+                            input8.id = `col${rowNum}_Kx`;
+                            input8.value = col.kx || 0.8;
+                            input8.step = '0.1';
+                            input8.placeholder = 'Kx';
+                            input8.style.cssText = 'width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px; font-size: 13px;';
+                            input8.onchange = function() { updateColumnData(rowNum, 'kx', this.value); };
+                            td8.appendChild(input8);
+                            row.appendChild(td8);
+                            
+                            // Ky
+                            const td9 = document.createElement('td');
+                            td9.style.cssText = 'padding: 8px; border: 1px solid #e2e8f0;';
+                            const input9 = document.createElement('input');
+                            input9.type = 'number';
+                            input9.id = `col${rowNum}_Ky`;
+                            input9.value = col.ky || 0.8;
+                            input9.step = '0.1';
+                            input9.placeholder = 'Ky';
+                            input9.style.cssText = 'width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px; font-size: 13px;';
+                            input9.onchange = function() { updateColumnData(rowNum, 'ky', this.value); };
+                            td9.appendChild(input9);
+                            row.appendChild(td9);
+                            
+                            tbody.appendChild(row);
+                        });
+                    }
+                    
+                    // 상태 업데이트
+                    const statusEl = document.getElementById('load-excel-status');
+                    if (statusEl) {
+                        statusEl.textContent = `업로드 완료: ${importedData.length}개 하중 데이터`;
+                        statusEl.style.color = '#4caf50';
+                    }
                     
                     alert(`${importedData.length}개의 하중 입력 데이터를 불러왔습니다.`);
                 } catch (error) {
@@ -1178,6 +1338,134 @@
             reader.readAsArrayBuffer(file);
             
             // 파일 입력 초기화 (같은 파일 다시 선택 가능하도록)
+        }
+
+        // 하중 입력 데이터를 엑셀 템플릿으로 다운로드
+        async function exportLoadToExcel() {
+            try {
+                // XLSX 라이브러리 확인
+                let XLSXLib = window.XLSX || (typeof XLSX !== 'undefined' ? XLSX : null);
+                
+                if (!XLSXLib || typeof XLSXLib.utils === 'undefined') {
+                    // 라이브러리 로드 시도
+                    if (typeof loadXLSXLibrary === 'function') {
+                        XLSXLib = await loadXLSXLibrary();
+                    } else {
+                        alert('엑셀 라이브러리를 로드할 수 없습니다. 페이지를 새로고침해주세요.');
+                        return;
+                    }
+                }
+                
+                // 현재 하중 입력 데이터 가져오기
+                const tbody = document.getElementById('loadTableBody');
+                if (!tbody) {
+                    alert('하중 입력 테이블을 찾을 수 없습니다.');
+                    return;
+                }
+                
+                const rows = tbody.querySelectorAll('tr');
+                if (rows.length === 0) {
+                    alert('하중 입력 데이터가 없습니다.');
+                    return;
+                }
+                
+                // 헤더 생성
+                const headers = ['Nos.', '기둥이름', 'Pu (kN)', 'Mux (kN-m)', 'Muy (kN-m)', 'Lx (m)', 'Ly (m)', 'Kx', 'Ky'];
+                
+                // 데이터 행 생성
+                const data = [headers];
+                rows.forEach((row, index) => {
+                    const cells = row.querySelectorAll('td');
+                    if (cells.length >= 9) {
+                        const rowData = [
+                            index + 1, // Nos.
+                            cells[1].querySelector('input')?.value || '', // 기둥이름
+                            cells[2].querySelector('input')?.value || 0, // Pu
+                            cells[3].querySelector('input')?.value || 0, // Mux
+                            cells[4].querySelector('input')?.value || 0, // Muy
+                            cells[5].querySelector('input')?.value || 0, // Lx
+                            cells[6].querySelector('input')?.value || 0, // Ly
+                            cells[7].querySelector('input')?.value || 0.8, // Kx
+                            cells[8].querySelector('input')?.value || 0.8  // Ky
+                        ];
+                        data.push(rowData);
+                    }
+                });
+                
+                // 워크시트 생성
+                const ws = XLSXLib.utils.aoa_to_sheet(data);
+                
+                // 열 너비 설정
+                const colWidths = [
+                    { wch: 8 },  // Nos.
+                    { wch: 15 }, // 기둥이름
+                    { wch: 12 }, // Pu
+                    { wch: 12 }, // Mux
+                    { wch: 12 }, // Muy
+                    { wch: 12 }, // Lx
+                    { wch: 12 }, // Ly
+                    { wch: 8 },  // Kx
+                    { wch: 8 }   // Ky
+                ];
+                ws['!cols'] = colWidths;
+                
+                // 워크북 생성
+                const wb = XLSXLib.utils.book_new();
+                XLSXLib.utils.book_append_sheet(wb, ws, '하중입력');
+                
+                // 파일명 생성
+                const dateStr = new Date().toISOString().split('T')[0].replace(/-/g, '');
+                const fileName = `하중입력템플릿_${dateStr}.xlsx`;
+                
+                // 파일 다운로드
+                try {
+                    const wbout = XLSXLib.write(wb, { bookType: 'xlsx', type: 'array', cellStyles: false });
+                    const blob = new Blob([wbout], { 
+                        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
+                    });
+                    
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = fileName;
+                    a.style.display = 'none';
+                    document.body.appendChild(a);
+                    a.click();
+                    
+                    setTimeout(() => {
+                        try {
+                            document.body.removeChild(a);
+                            URL.revokeObjectURL(url);
+                        } catch (e) {
+                            console.warn('정리 중 오류:', e);
+                        }
+                    }, 100);
+                    
+                    // 상태 업데이트
+                    const statusEl = document.getElementById('load-excel-status');
+                    if (statusEl) {
+                        statusEl.textContent = `템플릿 다운로드 완료: ${rows.length}개 행`;
+                        statusEl.style.color = '#4caf50';
+                    }
+                } catch (error) {
+                    console.error('엑셀 파일 생성 실패:', error);
+                    // XLSX.writeFile로 폴백 시도
+                    try {
+                        XLSXLib.writeFile(wb, fileName);
+                        const statusEl = document.getElementById('load-excel-status');
+                        if (statusEl) {
+                            statusEl.textContent = '템플릿 다운로드 완료';
+                            statusEl.style.color = '#4caf50';
+                        }
+                    } catch (fallbackError) {
+                        console.error('폴백 엑셀 저장 실패:', fallbackError);
+                        alert('엑셀 파일 저장에 실패했습니다. 브라우저 콘솔을 확인해주세요.');
+                    }
+                }
+            } catch (error) {
+                console.error('엑셀 템플릿 다운로드 오류:', error);
+                alert('엑셀 템플릿 다운로드 중 오류가 발생했습니다: ' + error.message);
+            }
         }
 
         // 엑셀 파일에서 기둥번호 가져오기 (기둥번호만 업데이트)
