@@ -148,3 +148,34 @@ These are cleanup tasks intentionally deferred for rollback safety:
 - `deploy.sh` → Production (sdppmo-container-service-1)
 - `deploy-beta.sh` → Beta (sdppmo-beta-container)
 - NEVER use deploy.sh without explicit user approval for production
+
+### [2026-01-25T11:30] Git Cleanup Complete - Session End
+
+#### Completed
+- [x] Staged and committed all pending changes (bug fixes + .gitignore update)
+- [x] Removed 5,292 `.next/` build files from git tracking
+- [x] Pushed to `feature/nextjs-migration` branch
+- [x] Verified beta health: https://beta.kcol.kr/health → OK
+
+#### Commit Details
+```
+0c93bf2 fix: rate limit for RSC prefetch, Dunamu API URL, remove .next from git
+- 5299 files changed, 73 insertions(+), 845750 deletions(-)
+```
+
+#### GitHub Warning (Non-blocking)
+Push succeeded with warnings about large files in git history:
+- `node_modules/@next/swc-darwin-arm64/next-swc.darwin-arm64.node` (98 MB)
+- `.next/dev/cache/turbopack/...` (59 MB)
+
+These are in git history from before .gitignore was updated. Not blocking but could be cleaned with `git filter-branch` if needed.
+
+#### Final Status
+**170/173 tasks complete (98.3%)**
+
+Remaining 3 tasks are BLOCKED until 2026-02-01:
+1. Delete Supabase Edge Functions
+2. Delete `protected-pages` Storage bucket
+3. Remove old HTML/JS/CSS files
+
+**NO FURTHER WORK POSSIBLE UNTIL 2026-02-01.**
