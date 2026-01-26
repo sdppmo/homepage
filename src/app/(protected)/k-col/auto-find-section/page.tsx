@@ -164,7 +164,7 @@ export default function AutoFindSectionPage() {
             Auto Find Section : Cross H 기둥 자동구조계산 및 철골기둥 BOQ 산출
           </h1>
           <Link
-            href="/k-col"
+            href="/k-col/calculator"
             className="rounded border border-white/30 px-4 py-2 text-sm text-white/80 transition-all hover:bg-white/10 hover:text-white"
           >
             ← 계산기로 돌아가기
