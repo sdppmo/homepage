@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 
@@ -17,10 +17,15 @@ export default function PendingPage() {
   const router = useRouter();
   const supabase = createClient();
 
+  const handleVerificationComplete = useCallback(() => {
+    sessionStorage.removeItem('pending_email');
+    router.replace('/login?verified=true');
+  }, [router]);
+
   useEffect(() => {
     const storedEmail = sessionStorage.getItem('pending_email');
     if (!storedEmail) {
-      router.push('/signup');
+      router.replace('/signup');
       return;
     }
     setEmail(storedEmail);
@@ -44,19 +49,7 @@ export default function PendingPage() {
     }, 3000);
 
     return () => clearInterval(interval);
-  }, [router]);
-
-  useEffect(() => {
-    if (countdown > 0) {
-      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
-      return () => clearTimeout(timer);
-    }
-  }, [countdown]);
-
-  const handleVerificationComplete = () => {
-    sessionStorage.removeItem('pending_email');
-    router.push('/login?verified=true');
-  };
+  }, [router, handleVerificationComplete]);
 
   const handleResendEmail = async () => {
     if (!email) return;
@@ -185,7 +178,7 @@ export default function PendingPage() {
         <button
           onClick={() => {
             sessionStorage.removeItem('pending_email');
-            router.push('/signup');
+            router.replace('/signup');
           }}
           className="w-full px-6 py-3 text-[14px] font-medium font-inherit text-slate-400 bg-slate-600/20 border border-slate-600/20 rounded-lg cursor-pointer transition-all hover:bg-slate-600/30"
         >
