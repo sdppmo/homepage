@@ -8,21 +8,23 @@ import { headers } from 'next/headers';
  * Falls back to NEXT_PUBLIC_SITE_URL env var if available.
  */
 function getBaseUrl(headersList: Headers): string {
-  // Check x-forwarded-host first (more reliable behind load balancers)
   const forwardedHost = headersList.get('x-forwarded-host');
   const host = forwardedHost || headersList.get('host');
-  const protocol = headersList.get('x-forwarded-proto') || 'https';
+  
+  // Localhost needs http, not https
+  let protocol = headersList.get('x-forwarded-proto') || 'https';
+  if (host?.includes('localhost')) {
+    protocol = 'http';
+  }
   
   if (host) {
     return `${protocol}://${host}`;
   }
   
-  // Fallback to environment variable if set
   if (process.env.NEXT_PUBLIC_SITE_URL) {
     return process.env.NEXT_PUBLIC_SITE_URL;
   }
   
-  // Last resort fallback
   return 'https://kcol.kr';
 }
 

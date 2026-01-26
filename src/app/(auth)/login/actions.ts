@@ -7,7 +7,12 @@ import { headers } from 'next/headers';
 function getBaseUrl(headersList: Headers): string {
   const forwardedHost = headersList.get('x-forwarded-host');
   const host = forwardedHost || headersList.get('host');
-  const protocol = headersList.get('x-forwarded-proto') || 'https';
+  
+  // Determine protocol - localhost should use http
+  let protocol = headersList.get('x-forwarded-proto') || 'https';
+  if (host?.includes('localhost')) {
+    protocol = 'http';
+  }
   
   if (host) {
     return `${protocol}://${host}`;
