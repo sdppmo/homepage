@@ -506,3 +506,54 @@ const handleLogout = async () => {
   router.refresh();
 };
 ```
+
+## 2026-01-25: Instant Logout UI Feedback
+
+### Issue
+Logout API returned 200 but UI didn't update immediately. User had to wait for full page reload.
+
+### Root Cause
+```typescript
+// OLD CODE - slow
+const handleLogout = async () => {
+  await fetch('/api/auth/logout', { method: 'POST' });  // Wait ~100ms
+  await supabase.auth.signOut();                        // Wait ~50ms
+  window.location.href = '/';  // Full page reload - SLOWEST (~500-1000ms)
+};
+```
+
+Problems:
+1. Sequential API calls (not parallel)
+2. UI only updates AFTER both calls complete
+3. `window.location.href` triggers full page reload (slowest navigation)
+
+### Solution
+```typescript
+// NEW CODE - instant feedback
+const handleLogout = async () => {
+  // 1. Immediately update UI (instant - 0ms)
+  setUser(null);
+  setProfile(null);
+  
+  // 2. Fire both logout calls in parallel (faster)
+  await Promise.all([
+    fetch('/api/auth/logout', { method: 'POST' }),
+    supabase.auth.signOut()
+  ]);
+  
+  // 3. Client-side navigation (faster than window.location)
+  router.push('/');
+  router.refresh();
+};
+```
+
+### Key Learning
+**For instant logout feedback in React + Next.js:**
+1. **Update state FIRST** - `setUser(null)` before any async calls
+2. **Parallelize API calls** - `Promise.all()` instead of sequential awaits
+3. **Use router navigation** - `router.push()` + `router.refresh()` instead of `window.location.href`
+
+This gives users instant visual feedback while cleanup happens in background.
+
+### Commit
+- `2ec02d0` - fix: instant logout UI feedback - update state before async calls
