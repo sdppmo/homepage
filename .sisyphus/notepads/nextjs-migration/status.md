@@ -26,7 +26,11 @@
    - Mobile: 2×2 grid
    - Desktop: 1×4 horizontal row, left-aligned
 
-**Status:** Changes applied, local server running at localhost:8080 for verification.
+**Status:** ✅ Changes committed and pushed to remote.
+
+**Commits:**
+- `2a00824` - feat: UI improvements - operator control visibility, footer redesign, worldclocks layout
+- `4996f97` - test: fix test environment - jsdom to happy-dom, add supabase mocks
 
 ---
 
