@@ -421,6 +421,90 @@ Deno.serve(async (req) => {
   }
 
   // ============================================
+  // Get page usage statistics (user per page, last 2 weeks)
+  // ============================================
+  if (action === "get_page_usage_stats") {
+    const now = new Date();
+    // Last 2 weeks (14 days)
+    const startDate = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
+
+    // Get all usage logs in the last 2 weeks
+    const { data: usageLogs, error: logsError } = await supabase
+      .from("usage_logs")
+      .select("user_id, feature_name, accessed_at")
+      .gte("accessed_at", startDate.toISOString())
+      .lte("accessed_at", now.toISOString())
+      .order("accessed_at", { ascending: false });
+
+    if (logsError) {
+      return new Response(logsError.message, {
+        status: 400,
+        headers: corsHeaders,
+      });
+    }
+
+    // Get all users with their details
+    const { data: allUsers, error: usersError } = await supabase
+      .from("user_profiles")
+      .select("id, email, business_name");
+
+    if (usersError) {
+      return new Response(usersError.message, {
+        status: 400,
+        headers: corsHeaders,
+      });
+    }
+
+    // Create user map for quick lookup
+    const userMap = new Map<string, { email: string; business_name: string }>();
+    (allUsers ?? []).forEach((user: { id: string; email: string; business_name: string }) => {
+      userMap.set(user.id, { email: user.email ?? "", business_name: user.business_name ?? "" });
+    });
+
+    // Aggregate: user_id -> page_path -> count
+    const userPageMap = new Map<string, Map<string, number>>();
+
+    (usageLogs ?? []).forEach((log: { user_id: string; feature_name: string; accessed_at: string }) => {
+      const userId = log.user_id;
+      const pagePath = log.feature_name;
+
+      if (!userPageMap.has(userId)) {
+        userPageMap.set(userId, new Map<string, number>());
+      }
+
+      const pageMap = userPageMap.get(userId)!;
+      pageMap.set(pagePath, (pageMap.get(pagePath) ?? 0) + 1);
+    });
+
+    // Convert to array format: [{ user_id, email, business_name, pages: [{ page_path, count }] }]
+    const result = Array.from(userPageMap.entries()).map(([userId, pageMap]) => {
+      const userInfo = userMap.get(userId) ?? { email: "Unknown", business_name: "" };
+      const pages = Array.from(pageMap.entries())
+        .map(([pagePath, count]) => ({ page_path: pagePath, count }))
+        .sort((a, b) => b.count - a.count); // Sort by count descending
+
+      return {
+        user_id: userId,
+        email: userInfo.email,
+        business_name: userInfo.business_name,
+        total_pages: pages.length,
+        total_accesses: Array.from(pageMap.values()).reduce((sum, count) => sum + count, 0),
+        pages: pages,
+      };
+    }).sort((a, b) => b.total_accesses - a.total_accesses); // Sort by total accesses descending
+
+    return new Response(JSON.stringify({
+      period: "14d",
+      start_date: startDate.toISOString(),
+      end_date: now.toISOString(),
+      users: result,
+    }), {
+      status: 200,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
+  // ============================================
   // Reset user password
   // ============================================
   if (action === "reset_password") {

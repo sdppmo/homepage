@@ -34,6 +34,7 @@
         <button class="tab active" data-tab="users">사용자 관리</button>
         <button class="tab" data-tab="create">사용자 생성</button>
         <button class="tab" data-tab="analytics">사용 현황</button>
+        <button class="tab" data-tab="page-usage">페이지 사용 통계</button>
     </nav>
 
     <!-- Content -->
@@ -154,6 +155,25 @@
                     <span class="card-title">사용자별 활동</span>
                 </div>
                 <div id="activityTableContainer">
+                    <div class="loading"><div class="spinner"></div></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page Usage Tab -->
+        <div class="tab-content" id="tab-page-usage">
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">최근 2주간 페이지 사용 통계</span>
+                    <button class="refresh-btn" id="refreshPageUsageBtn" title="새로고침">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="23 4 23 10 17 10"></polyline>
+                            <polyline points="1 20 1 14 7 14"></polyline>
+                            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                        </svg>
+                    </button>
+                </div>
+                <div id="pageUsageContainer">
                     <div class="loading"><div class="spinner"></div></div>
                 </div>
             </div>

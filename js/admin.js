@@ -46,6 +46,8 @@
             
             if (tabId === 'analytics') {
                 loadAnalytics();
+            } else if (tabId === 'page-usage') {
+                loadPageUsage();
             }
         });
     });
@@ -104,6 +106,12 @@
         return date.toLocaleDateString('ko-KR', { year: 'numeric', month: 'short', day: 'numeric' });
     }
 
+    function escapeHtml(text) {
+        var div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
     // Check if user is pending (not email verified OR not approved)
     function isUserPending(user) {
         return !user.email_verified || !user.is_approved;
@@ -121,7 +129,11 @@
         html += '<span class="user-name">' + (user.business_name || '사용자') + '</span>';
         html += '<span class="user-email">' + (user.email || '-') + '</span>';
         if (user.business_number) {
-            html += '<span class="user-email">' + user.business_number + '</span>';
+            html += '<span class="user-biz-number" style="display: block; margin-top: 4px; font-size: 12px; color: #94a3b8;">';
+            html += '<strong style="color: #64748b;">사업자등록번호:</strong> ' + user.business_number;
+            html += '</span>';
+        } else {
+            html += '<span class="user-biz-number" style="display: block; margin-top: 4px; font-size: 12px; color: #64748b; font-style: italic;">사업자등록번호 미입력</span>';
         }
         html += '</div></td>';
         html += '<td>' + formatDate(user.created_at) + '</td>';
@@ -776,6 +788,92 @@
 
         html += '</tbody></table>';
         activityTableContainer.innerHTML = html;
+    }
+
+    // ============================================
+    // Page Usage Statistics
+    // ============================================
+    var pageUsageContainer = document.getElementById('pageUsageContainer');
+    var refreshPageUsageBtn = document.getElementById('refreshPageUsageBtn');
+
+    // Load page usage statistics
+    function loadPageUsage() {
+        if (!pageUsageContainer) return;
+        
+        pageUsageContainer.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+
+        callAdmin('get_page_usage_stats', {})
+            .then(function(data) {
+                renderPageUsage(data);
+            })
+            .catch(function(err) {
+                setStatus('error', err.message || '페이지 사용 통계를 불러오지 못했습니다');
+                pageUsageContainer.innerHTML = '<div class="empty-state"><p>데이터를 불러올 수 없습니다</p></div>';
+            });
+    }
+
+    // Render page usage statistics
+    function renderPageUsage(data) {
+        if (!data || !data.users || !data.users.length) {
+            pageUsageContainer.innerHTML = '<div class="empty-state"><p>최근 2주간 사용 기록이 없습니다</p></div>';
+            return;
+        }
+
+        var html = '<div class="page-usage-info" style="margin-bottom: 20px; padding: 12px; background: #f1f5f9; border-radius: 8px; font-size: 14px; color: #64748b;">';
+        html += '<strong>기간:</strong> ' + formatDate(data.start_date) + ' ~ ' + formatDate(data.end_date);
+        html += ' <span style="margin-left: 20px;"><strong>총 사용자:</strong> ' + data.users.length + '명</span>';
+        html += '</div>';
+
+        html += '<div class="page-usage-list">';
+        
+        data.users.forEach(function(user) {
+            html += '<div class="page-usage-user-card" style="margin-bottom: 20px; padding: 20px; background: white; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">';
+            html += '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 2px solid #e2e8f0;">';
+            html += '<div>';
+            html += '<div style="font-weight: 600; font-size: 16px; color: #1e293b; margin-bottom: 4px;">' + (user.email || 'Unknown') + '</div>';
+            html += '<div style="font-size: 14px; color: #64748b;">' + (user.business_name || '-') + '</div>';
+            html += '</div>';
+            html += '<div style="text-align: right;">';
+            html += '<div style="font-size: 12px; color: #64748b; margin-bottom: 4px;">총 접근</div>';
+            html += '<div style="font-weight: 700; font-size: 20px; color: #3b82f6;">' + user.total_accesses + '</div>';
+            html += '<div style="font-size: 12px; color: #64748b; margin-top: 4px;">' + user.total_pages + '개 페이지</div>';
+            html += '</div>';
+            html += '</div>';
+
+            if (user.pages && user.pages.length > 0) {
+                html += '<div style="overflow-x: auto;">';
+                html += '<table style="width: 100%; border-collapse: collapse; font-size: 14px;">';
+                html += '<thead><tr style="background: #f8fafc; border-bottom: 2px solid #e2e8f0;">';
+                html += '<th style="padding: 10px 12px; text-align: left; font-weight: 600; color: #475569;">페이지 경로</th>';
+                html += '<th style="padding: 10px 12px; text-align: right; font-weight: 600; color: #475569; width: 100px;">사용 횟수</th>';
+                html += '</tr></thead>';
+                html += '<tbody>';
+
+                user.pages.forEach(function(page) {
+                    html += '<tr style="border-bottom: 1px solid #f1f5f9;">';
+                    html += '<td style="padding: 10px 12px; color: #334155;">' + escapeHtml(page.page_path) + '</td>';
+                    html += '<td style="padding: 10px 12px; text-align: right; font-weight: 600; color: #3b82f6;">' + page.count + '</td>';
+                    html += '</tr>';
+                });
+
+                html += '</tbody></table>';
+                html += '</div>';
+            } else {
+                html += '<div style="padding: 20px; text-align: center; color: #94a3b8; font-size: 14px;">사용 기록이 없습니다</div>';
+            }
+
+            html += '</div>';
+        });
+
+        html += '</div>';
+        pageUsageContainer.innerHTML = html;
+    }
+
+    // Refresh button
+    if (refreshPageUsageBtn) {
+        refreshPageUsageBtn.addEventListener('click', function() {
+            loadPageUsage();
+        });
     }
 
     // Logout
