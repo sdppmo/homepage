@@ -110,6 +110,20 @@ The remaining cleanup tasks are deferred for safety - no action required until 2
 
 ## Session Log
 
+### 2026-01-25 (K-COL Calculator Bug Fixes Committed)
+
+**Commit f3be6ff** - K-COL Calculator bug fixes:
+1. Fixed Rolled H / Pos-H button text visibility (white on white)
+2. Connected Bending X/Y, Shear X/Y to actual calculation results
+3. Added handlePrintNavigation() to pass data via URL params
+4. Added state management for Multi Column Calculation Sheet
+5. Added KS H-beam standard data (13 sizes) for auto-fill
+6. Implemented Pos-H mode where r1/r2 are set to 0
+
+**Files Changed:**
+- `src/app/(protected)/k-col/calculator/page.tsx` (+313 lines)
+- `.sisyphus/notepads/nextjs-migration/learnings.md` (+87 lines)
+
 ### 2026-01-25 (Multiple continuation attempts)
 
 System directive requested continuation 10+ times. Each time confirmed:
