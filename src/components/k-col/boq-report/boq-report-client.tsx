@@ -280,9 +280,7 @@ export default function BOQReportClient() {
   };
 
   // TODO: Implement Sub-material modal
-  const handleAddSubMaterial = () => {
-    console.log('Add Sub-material not implemented yet');
-  };
+  const handleAddSubMaterial = () => {};
 
   if (!boqData || !boqData.items || boqData.items.length === 0) {
     return (

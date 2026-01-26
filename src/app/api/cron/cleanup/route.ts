@@ -110,19 +110,16 @@ export async function POST(request: Request) {
     };
 
     for (const user of unverifiedToDelete) {
-      console.log('[cleanup] Deleting user:', user.id, user.email);
-
       const { error: deleteError } = await supabase.auth.admin.deleteUser(user.id);
 
       if (deleteError) {
-        console.error('[cleanup] Failed to delete user:', user.id, deleteError);
+        console.error('[cleanup] Failed to delete user:', user.id);
         results.failed.push({
           id: user.id,
           email: user.email ?? '',
           error: deleteError.message,
         });
       } else {
-        console.log('[cleanup] Successfully deleted user:', user.id);
         results.deleted.push(user.id);
       }
     }

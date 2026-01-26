@@ -113,8 +113,6 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    console.log('[signup] Starting request processing');
-
     let supabase: SupabaseClient;
     try {
       supabase = createAdminClient();
@@ -127,7 +125,6 @@ export async function POST(request: NextRequest) {
     }
 
     const body: SignupRequest = await request.json();
-    console.log('[signup] Parsed body, email:', body.email);
 
     const { email, password, business_name, business_number, phone } = body;
 
@@ -166,7 +163,6 @@ export async function POST(request: NextRequest) {
     }
 
     const normalizedEmail = email.toLowerCase().trim();
-    console.log('[signup] Validation passed, checking existing user:', normalizedEmail);
 
     const { data: existingProfile } = await supabase
       .from('user_profiles')
@@ -175,7 +171,6 @@ export async function POST(request: NextRequest) {
       .maybeSingle();
 
     if (existingProfile) {
-      console.log('[signup] User already exists in profiles:', existingProfile.id);
       return NextResponse.json(
         {
           error: 'user_exists',
@@ -184,8 +179,6 @@ export async function POST(request: NextRequest) {
         { status: 409, headers: corsHeaders }
       );
     }
-
-    console.log('[signup] No existing profile, creating auth user');
 
     const { data: authData, error: authError } = await supabase.auth.admin.createUser({
       email: normalizedEmail,
@@ -197,8 +190,6 @@ export async function POST(request: NextRequest) {
         phone: phone,
       },
     });
-
-    console.log('[signup] createUser result - error:', authError, 'user:', authData?.user?.id);
 
     if (authError || !authData.user) {
       console.error('[signup] Auth error:', JSON.stringify(authError));
@@ -230,9 +221,6 @@ export async function POST(request: NextRequest) {
 
     const userId = authData.user.id;
     const now = new Date().toISOString();
-    console.log('[signup] User created successfully, userId:', userId);
-
-    console.log('[signup] About to upsert profile for userId:', userId);
 
     const { error: profileError } = await supabase.from('user_profiles').upsert(
       {
@@ -250,8 +238,6 @@ export async function POST(request: NextRequest) {
       },
       { onConflict: 'id' }
     );
-
-    console.log('[signup] Profile upsert completed - error:', profileError);
 
     if (profileError) {
       console.error('[signup] Profile creation error:', JSON.stringify(profileError));
@@ -277,9 +263,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log('[signup] User created via admin API (email verification handled separately)');
-
-    console.log('[signup] About to notify admins');
     notifyAdmins(supabase, {
       id: userId,
       email: normalizedEmail,
@@ -289,7 +272,6 @@ export async function POST(request: NextRequest) {
       created_at: now,
     });
 
-    console.log('[signup] Returning success response');
     return NextResponse.json(
       {
         success: true,
