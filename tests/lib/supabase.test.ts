@@ -1,5 +1,29 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
+// Mock the Supabase SSR package
+const mockClient = {
+  auth: {
+    getSession: vi.fn(() => Promise.resolve({ data: { session: null }, error: null })),
+    getUser: vi.fn(() => Promise.resolve({ data: { user: null }, error: null })),
+    signInWithPassword: vi.fn(),
+    signUp: vi.fn(),
+    signOut: vi.fn(),
+  },
+  from: vi.fn(() => ({
+    select: vi.fn(() => ({
+      eq: vi.fn(() => ({
+        single: vi.fn(() => Promise.resolve({ data: null, error: null })),
+      })),
+    })),
+    insert: vi.fn(() => Promise.resolve({ data: null, error: null })),
+  })),
+};
+
+vi.mock('@supabase/ssr', () => ({
+  createBrowserClient: vi.fn(() => mockClient),
+  createServerClient: vi.fn(() => mockClient),
+}));
+
 vi.mock('next/headers', () => ({
   cookies: vi.fn(() => ({
     getAll: vi.fn(() => []),
