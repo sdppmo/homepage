@@ -1,5 +1,6 @@
 'use server';
 
+import { createClient } from '../lib/supabase/server';
 import { calculateSection, type CrossHSectionCalcInput, type CrossHSectionCalcResult } from '../lib/calculations/cross-h-column';
 import {
   findOptimalSection as findOptimalSectionCalc,
@@ -15,18 +16,24 @@ import {
   type BOQUnitPrices,
 } from '../lib/calculations/boq';
 
-/**
- * Server Actions wrapper for calculation modules.
- *
- * IMPORTANT: keep this file server-only to prevent calculation code from
- * being included in client bundles.
- */
+async function requireAuth() {
+  const supabase = await createClient();
+  const { data: { user }, error } = await supabase.auth.getUser();
+  
+  if (error || !user) {
+    throw new Error('Unauthorized: Authentication required');
+  }
+  
+  return user;
+}
 
 export async function calculateCrossHColumn(input: CrossHSectionCalcInput): Promise<CrossHSectionCalcResult> {
+  await requireAuth();
   return calculateSection(input);
 }
 
 export async function findOptimalSection(input: OptimalSectionSearchInput): Promise<OptimalSectionSearchResult> {
+  await requireAuth();
   return findOptimalSectionCalc(input);
 }
 
@@ -42,6 +49,7 @@ export interface GenerateBOQResult {
 }
 
 export async function generateBOQ(input: GenerateBOQInput): Promise<GenerateBOQResult> {
+  await requireAuth();
   const totals = await calculateBOQTotals(input.items, input.unitPrices);
   const plates = await generatePlateBOQ(input.items, input.thicknessMergeRules ?? {});
   return { totals, plates };
