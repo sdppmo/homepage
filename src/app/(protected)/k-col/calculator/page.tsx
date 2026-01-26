@@ -138,13 +138,13 @@ export default function CrossHColumnCalculatorPage() {
 
             <div className="flex gap-[10px] mb-[15px] items-center">
               <label className="text-[12px] text-[#666] font-medium">NAME</label>
-              <input
-                type="text"
-                name="projectName"
-                value={inputs.projectName}
-                onChange={handleInputChange}
-                className="flex-1 p-[8px_12px] border border-[#ddd] rounded text-[13px] focus:outline-none focus:border-[#667eea]"
-              />
+                <input
+                  type="text"
+                  name="projectName"
+                  value={inputs.projectName}
+                  onChange={handleInputChange}
+                  className="flex-1 p-[8px_12px] border border-[#ddd] rounded text-[13px] text-[#333] focus:outline-none focus:border-[#667eea]"
+                />
             </div>
 
             <div className="bg-white border border-[#e2e8f0] rounded-lg p-[15px] mb-[15px] text-center relative">
@@ -193,7 +193,7 @@ export default function CrossHColumnCalculatorPage() {
                         name={field.name}
                         value={inputs[field.name as keyof typeof inputs]}
                         onChange={handleInputChange}
-                        className="w-[100px] p-[4px_6px] border border-[#ddd] rounded-[3px] text-[11px] bg-white cursor-pointer focus:outline-none focus:border-[#667eea]"
+                        className="w-[100px] p-[4px_6px] border border-[#ddd] rounded-[3px] text-[11px] text-[#333] bg-white cursor-pointer focus:outline-none focus:border-[#667eea]"
                       >
                         {field.options?.map((opt) => (
                           <option key={opt} value={opt}>
@@ -207,7 +207,7 @@ export default function CrossHColumnCalculatorPage() {
                         name={field.name}
                         value={inputs[field.name as keyof typeof inputs]}
                         onChange={handleInputChange}
-                        className="w-[45px] p-[4px_6px] border border-[#ddd] rounded-[3px] text-right text-[11px] focus:outline-none focus:border-[#667eea]"
+                        className="w-[45px] p-[4px_6px] border border-[#ddd] rounded-[3px] text-right text-[11px] text-[#333] focus:outline-none focus:border-[#667eea]"
                       />
                     )}
                     <span className="text-[10px] text-[#999] w-[20px]">mm</span>
@@ -231,7 +231,7 @@ export default function CrossHColumnCalculatorPage() {
                         name={field.name}
                         value={inputs[field.name as keyof typeof inputs]}
                         onChange={handleInputChange}
-                        className="w-[100px] p-[4px_6px] border border-[#ddd] rounded-[3px] text-[11px] bg-white cursor-pointer focus:outline-none focus:border-[#667eea]"
+                        className="w-[100px] p-[4px_6px] border border-[#ddd] rounded-[3px] text-[11px] text-[#333] bg-white cursor-pointer focus:outline-none focus:border-[#667eea]"
                       >
                         {field.options?.map((opt) => (
                           <option key={opt} value={opt}>
@@ -245,7 +245,7 @@ export default function CrossHColumnCalculatorPage() {
                         name={field.name}
                         value={inputs[field.name as keyof typeof inputs]}
                         onChange={handleInputChange}
-                        className="w-[45px] p-[4px_6px] border border-[#ddd] rounded-[3px] text-right text-[11px] focus:outline-none focus:border-[#667eea]"
+                        className="w-[45px] p-[4px_6px] border border-[#ddd] rounded-[3px] text-right text-[11px] text-[#333] focus:outline-none focus:border-[#667eea]"
                       />
                     )}
                     <span className="text-[10px] text-[#999] w-[20px]">mm</span>
@@ -316,7 +316,7 @@ export default function CrossHColumnCalculatorPage() {
                     name="steelGrade"
                     value={inputs.steelGrade}
                     onChange={handleInputChange}
-                    className="p-[4px_6px] border border-[#ddd] rounded-[4px] text-[11px] bg-white"
+                    className="p-[4px_6px] border border-[#ddd] rounded-[4px] text-[11px] text-[#333] bg-white"
                   >
                     <option>SS275</option>
                     <option>SS355</option>
@@ -337,7 +337,7 @@ export default function CrossHColumnCalculatorPage() {
                         name={field.name}
                         value={inputs[field.name as keyof typeof inputs]}
                         onChange={handleInputChange}
-                        className="w-[80px] p-[4px_6px] border border-[#ddd] rounded-[4px] text-right text-[11px] focus:outline-none focus:border-[#667eea] focus:shadow-[0_0_0_3px_rgba(102,126,234,0.1)]"
+                        className="w-[80px] p-[4px_6px] border border-[#ddd] rounded-[4px] text-right text-[11px] text-[#333] focus:outline-none focus:border-[#667eea] focus:shadow-[0_0_0_3px_rgba(102,126,234,0.1)]"
                       />
                       <span className="text-[11px] text-[#888] min-w-[35px]">{field.unit}</span>
                     </div>
@@ -358,7 +358,7 @@ export default function CrossHColumnCalculatorPage() {
                         name={name}
                         value={inputs[name as keyof typeof inputs]}
                         onChange={handleInputChange}
-                        className="w-full p-[4px] border border-[#ddd] rounded-[4px] text-center text-[11px]"
+                        className="w-full p-[4px] border border-[#ddd] rounded-[4px] text-center text-[11px] text-[#333]"
                       />
                     </div>
                   ))}
@@ -371,7 +371,7 @@ export default function CrossHColumnCalculatorPage() {
                       name="Cb"
                       value={inputs.Cb}
                       onChange={handleInputChange}
-                      className="w-[50px] p-[4px_6px] border border-[#ddd] rounded-[4px] text-center text-[11px] focus:outline-none focus:border-[#667eea] focus:shadow-[0_0_0_3px_rgba(102,126,234,0.1)]"
+                      className="w-[50px] p-[4px_6px] border border-[#ddd] rounded-[4px] text-center text-[11px] text-[#333] focus:outline-none focus:border-[#667eea] focus:shadow-[0_0_0_3px_rgba(102,126,234,0.1)]"
                     />
                   </div>
                 </div>
@@ -390,7 +390,7 @@ export default function CrossHColumnCalculatorPage() {
                         name={name}
                         value={inputs[name as keyof typeof inputs]}
                         onChange={handleInputChange}
-                        className="w-[80px] p-[4px_6px] border border-[#ddd] rounded-[4px] text-right text-[11px] focus:outline-none focus:border-[#667eea] focus:shadow-[0_0_0_3px_rgba(102,126,234,0.1)]"
+                        className="w-[80px] p-[4px_6px] border border-[#ddd] rounded-[4px] text-right text-[11px] text-[#333] focus:outline-none focus:border-[#667eea] focus:shadow-[0_0_0_3px_rgba(102,126,234,0.1)]"
                       />
                       <span className="text-[11px] text-[#888] min-w-[35px]">m</span>
                     </div>
@@ -410,7 +410,7 @@ export default function CrossHColumnCalculatorPage() {
                       name="Pu"
                       value={inputs.Pu}
                       onChange={handleInputChange}
-                      className="w-[80px] p-[4px_6px] border border-[#ddd] rounded-[4px] text-right text-[11px] focus:outline-none focus:border-[#667eea] focus:shadow-[0_0_0_3px_rgba(102,126,234,0.1)]"
+                      className="w-[80px] p-[4px_6px] border border-[#ddd] rounded-[4px] text-right text-[11px] text-[#333] focus:outline-none focus:border-[#667eea] focus:shadow-[0_0_0_3px_rgba(102,126,234,0.1)]"
                     />
                     <span className="text-[11px] text-[#888] min-w-[35px]">kN</span>
                   </div>
@@ -430,7 +430,7 @@ export default function CrossHColumnCalculatorPage() {
                           name={field.name}
                           value={inputs[field.name as keyof typeof inputs]}
                           onChange={handleInputChange}
-                          className="w-[60px] p-[4px_6px] border border-[#ddd] rounded-[4px] text-right text-[11px] focus:outline-none focus:border-[#667eea] focus:shadow-[0_0_0_3px_rgba(102,126,234,0.1)]"
+                          className="w-[60px] p-[4px_6px] border border-[#ddd] rounded-[4px] text-right text-[11px] text-[#333] focus:outline-none focus:border-[#667eea] focus:shadow-[0_0_0_3px_rgba(102,126,234,0.1)]"
                         />
                         <span className="text-[11px] text-[#888] min-w-[35px]">{field.unit}</span>
                       </div>
@@ -487,9 +487,9 @@ export default function CrossHColumnCalculatorPage() {
                     {[1, 2, 3, 4, 5, 6].map((row) => (
                       <tr key={row} className="hover:bg-[#f8fafc]">
                         <td className="p-[6px] text-center border border-[#e2e8f0] font-semibold text-[#1e3a5f] bg-[#f8fafc]">{row}</td>
-                        <td className="p-[6px] text-center border border-[#e2e8f0]"><input type="text" className="w-full p-[4px] border border-[#ddd] rounded-[4px] text-center text-[11px] focus:outline-none focus:border-[#667eea] focus:shadow-[0_0_0_2px_rgba(102,126,234,0.1)]" /></td>
-                        <td className="p-[6px] text-center border border-[#e2e8f0]"><input type="text" className="w-full p-[4px] border border-[#ddd] rounded-[4px] text-center text-[11px] focus:outline-none focus:border-[#667eea] focus:shadow-[0_0_0_2px_rgba(102,126,234,0.1)]" /></td>
-                        <td className="p-[6px] text-center border border-[#e2e8f0]"><input type="text" className="w-full p-[4px] border border-[#ddd] rounded-[4px] text-center text-[11px] focus:outline-none focus:border-[#667eea] focus:shadow-[0_0_0_2px_rgba(102,126,234,0.1)]" /></td>
+                        <td className="p-[6px] text-center border border-[#e2e8f0]"><input type="text" className="w-full p-[4px] border border-[#ddd] rounded-[4px] text-center text-[11px] text-[#333] focus:outline-none focus:border-[#667eea] focus:shadow-[0_0_0_2px_rgba(102,126,234,0.1)]" /></td>
+                        <td className="p-[6px] text-center border border-[#e2e8f0]"><input type="text" className="w-full p-[4px] border border-[#ddd] rounded-[4px] text-center text-[11px] text-[#333] focus:outline-none focus:border-[#667eea] focus:shadow-[0_0_0_2px_rgba(102,126,234,0.1)]" /></td>
+                        <td className="p-[6px] text-center border border-[#e2e8f0]"><input type="text" className="w-full p-[4px] border border-[#ddd] rounded-[4px] text-center text-[11px] text-[#333] focus:outline-none focus:border-[#667eea] focus:shadow-[0_0_0_2px_rgba(102,126,234,0.1)]" /></td>
                         <td className="p-[6px] text-center border border-[#e2e8f0] font-medium text-[#555]">-</td>
                         <td className="p-[6px] text-center border border-[#e2e8f0] font-medium text-[#555]">-</td>
                       </tr>
