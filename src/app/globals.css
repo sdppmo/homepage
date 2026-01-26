@@ -33,94 +33,90 @@ html, body {
 
 @layer components {
   .nav-item {
-    @apply block bg-gradient-to-b from-[#1a2050] to-[#101535] border-l-8 border-[#ff6600] border-b border-[rgba(255,215,0,0.3)] px-4 text-[#ffcc00] text-lg font-semibold cursor-pointer text-center transition-colors duration-200 no-underline flex-1 flex items-center justify-center;
+    @apply flex items-center gap-3 px-4 py-3 text-slate-300 text-sm font-medium cursor-pointer transition-all duration-200 no-underline border-l-4 border-transparent hover:bg-slate-800/60 hover:text-white hover:border-blue-500;
   }
 
-  .nav-item:hover {
-    @apply bg-gradient-to-b from-[#252a60] to-[#1a1f45];
+  .nav-item .nav-icon {
+    @apply text-slate-500 transition-colors duration-200;
+  }
+
+  .nav-item:hover .nav-icon {
+    @apply text-blue-400;
   }
 
   .nav-item.active {
-    @apply bg-black text-white font-bold;
+    @apply bg-gradient-to-r from-blue-600/20 to-transparent text-white border-l-4 border-blue-500 font-semibold;
   }
 
-  .nav-item.gold {
-    @apply text-[#ffcc00] bg-gradient-to-b from-[#1a2050] to-[#101535];
+  .nav-item.active .nav-icon {
+    @apply text-blue-400;
   }
 
-  .nav-item.gold:hover {
-    @apply text-[#ffcc00] bg-gradient-to-b from-[#252a60] to-[#1a1f45];
+  .nav-item.disabled {
+    @apply text-slate-600 cursor-not-allowed hover:bg-transparent hover:text-slate-600 hover:border-transparent;
   }
 
-  .nav-item.active.gold {
-    @apply text-[#ffcc00];
+  .nav-item.disabled .nav-icon {
+    @apply text-slate-700;
   }
 
-  .nav-item.small-text {
-    @apply text-sm;
+  .nav-item.disabled:hover .nav-icon {
+    @apply text-slate-700;
   }
 
-  .nav-item.gray-text {
-    @apply !text-[#999];
+  .nav-item.kosis-active {
+    @apply bg-blue-600/30 text-blue-300 border-blue-400;
   }
 
-  .nav-item.gray-text:hover {
-    @apply !text-[#bbb];
+  .nav-item.kosis-active .nav-icon {
+    @apply text-blue-400;
   }
 
   .brochure-btn {
-    @apply bg-gradient-to-b from-[#1a1a2a] to-[#0a0a1a] border border-[#444] p-2 text-[#ffcc00] text-sm font-semibold cursor-pointer text-center transition-colors duration-200 no-underline flex items-center justify-center;
-  }
-
-  .brochure-btn:hover {
-    @apply bg-gradient-to-b from-[#2a2a3a] to-[#1a1a2a];
+    @apply flex items-center justify-center gap-2 px-3 py-2.5 text-slate-300 text-xs font-medium cursor-pointer transition-all duration-200 no-underline border border-slate-700/50 hover:bg-slate-700/50 hover:text-white hover:border-slate-600;
   }
 
   .brochure-btn:nth-child(odd) {
     @apply border-r-0;
   }
 
-  .brochure-btn.yellow {
-    @apply bg-gradient-to-b from-[#ffd700] to-[#cc9900] text-black font-bold;
+  .brochure-btn:nth-child(n+5) {
+    @apply border-t-0;
   }
 
-  .brochure-btn.white {
-    @apply bg-gradient-to-b from-[#1a1a2a] to-[#0a0a1a] text-[#ffcc00] border border-[#444] font-semibold;
+  .brochure-btn.primary {
+    @apply text-blue-400 hover:text-blue-300 hover:bg-blue-600/20;
   }
 
-  .brochure-btn.white:hover {
-    @apply bg-gradient-to-b from-[#2a2a3a] to-[#1a1a2a] text-[#ffcc00];
+  .brochure-btn.accent {
+    @apply bg-gradient-to-r from-cyan-600 to-blue-600 text-white font-semibold border-transparent hover:from-cyan-500 hover:to-blue-500;
   }
 
-  .brochure-btn.gray-text {
-    @apply !text-[#999];
-  }
-
-  .brochure-btn.gray-text:hover {
-    @apply !text-[#bbb];
+  .brochure-btn.disabled {
+    @apply text-slate-600 cursor-not-allowed hover:bg-transparent hover:text-slate-600 hover:border-slate-700/50;
   }
 
   @media (max-width: 768px) {
     .nav-item {
-      @apply text-base px-4 py-3;
+      @apply text-sm px-4 py-3;
     }
     .brochure-btn {
-      @apply text-xs px-1.5 py-2;
+      @apply text-[11px] px-2 py-2;
     }
   }
 
   @media (max-width: 600px) {
     .nav-item {
-      @apply text-sm px-3 py-2.5;
+      @apply text-xs px-3 py-2.5;
     }
     .brochure-btn {
-      @apply text-[11px] px-1 py-1.5;
+      @apply text-[10px] px-1.5 py-1.5;
     }
   }
 
   @media (max-width: 400px) {
     .nav-item {
-      @apply text-[13px] px-2.5 py-2 border-l-[5px];
+      @apply text-[11px] px-2.5 py-2 border-l-2;
     }
   }
 }

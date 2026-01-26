@@ -59,7 +59,6 @@ const AuthSection = () => {
         if (result && 'data' in result) {
           await handleUserSession(result.data.session?.user || null);
         } else {
-          // Timeout or error - show login buttons
           setIsLoading(false);
         }
       } catch (error) {
@@ -94,12 +93,10 @@ const AuthSection = () => {
   }, [supabase, handleUserSession, router]);
 
   const handleLogout = async () => {
-    // Immediately update UI to show logged-out state
     setUser(null);
     setProfile(null);
     
     try {
-      // Fire both logout calls in parallel for speed
       await Promise.all([
         fetch('/api/auth/logout', { method: 'POST' }),
         supabase.auth.signOut()
@@ -108,29 +105,28 @@ const AuthSection = () => {
       console.error('Logout error:', error);
     }
     
-    // Use Next.js router for faster client-side navigation
     router.push('/');
     router.refresh();
   };
 
   if (isLoading) {
     return (
-      <div className="mt-3 p-4 bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-xl shadow-lg">
-        <div className="flex gap-2.5">
-          <div className="flex-1 h-12 bg-white/10 rounded-lg animate-pulse" />
-          <div className="flex-1 h-12 bg-white/10 rounded-lg animate-pulse" />
+      <div className="p-3 bg-slate-800/50 rounded-lg border border-slate-700/50">
+        <div className="flex gap-2">
+          <div className="flex-1 h-10 bg-slate-700/50 rounded-lg animate-pulse" />
+          <div className="flex-1 h-10 bg-slate-700/50 rounded-lg animate-pulse" />
         </div>
       </div>
     );
   }
 
   return (
-    <div className="mt-3 p-4 bg-gradient-to-br from-[#1a1a2e] to-[#16213e] rounded-xl shadow-lg">
+    <div className="p-3 bg-slate-800/50 rounded-lg border border-slate-700/50">
       {!user ? (
-        <div className="flex gap-2.5">
+        <div className="flex gap-2">
           <Link
             href="/login"
-            className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 border-none rounded-lg text-sm font-semibold cursor-pointer transition-all duration-200 ease-in-out bg-gradient-to-br from-[#667eea] to-[#764ba2] text-white shadow-[0_4px_15px_rgba(102,126,234,0.4)] hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(102,126,234,0.6)]"
+            className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium cursor-pointer transition-all duration-200 bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:from-blue-500 hover:to-blue-600 shadow-lg shadow-blue-600/20"
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
@@ -141,7 +137,7 @@ const AuthSection = () => {
           </Link>
           <Link
             href="/signup"
-            className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 border border-white/20 rounded-lg text-sm font-semibold cursor-pointer transition-all duration-200 ease-in-out bg-white/10 text-white hover:bg-white/20 hover:-translate-y-0.5"
+            className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 border border-slate-600 rounded-lg text-sm font-medium cursor-pointer transition-all duration-200 bg-slate-700/50 text-slate-300 hover:bg-slate-700 hover:text-white hover:border-slate-500"
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
@@ -155,14 +151,14 @@ const AuthSection = () => {
       ) : (
         <div className="flex flex-col gap-3">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#667eea] to-[#764ba2] flex items-center justify-center text-white font-bold text-lg">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-blue-500/20">
               {profile?.business_name?.charAt(0).toUpperCase() || user.email?.charAt(0).toUpperCase()}
             </div>
             <div className="flex flex-col overflow-hidden">
-              <span className="text-white font-semibold truncate">
+              <span className="text-white font-medium truncate text-sm">
                 {profile?.business_name || 'User'}
               </span>
-              <span className="text-gray-400 text-xs truncate">
+              <span className="text-slate-400 text-xs truncate">
                 {user.email}
               </span>
             </div>
@@ -171,7 +167,7 @@ const AuthSection = () => {
             {profile?.role === 'admin' && (
               <Link
                 href="/admin"
-                className="flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 border border-[#667eea]/50 rounded-lg text-xs font-semibold cursor-pointer transition-all duration-200 ease-in-out bg-[#667eea]/20 text-[#667eea] hover:bg-[#667eea]/30"
+                className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 border border-blue-500/30 rounded-lg text-xs font-medium cursor-pointer transition-all duration-200 bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 hover:border-blue-500/50"
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z"/>
@@ -182,7 +178,7 @@ const AuthSection = () => {
             )}
             <button
               onClick={handleLogout}
-              className="flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 border border-red-500/50 rounded-lg text-xs font-semibold cursor-pointer transition-all duration-200 ease-in-out bg-red-500/20 text-red-500 hover:bg-red-500/30"
+              className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 border border-red-500/30 rounded-lg text-xs font-medium cursor-pointer transition-all duration-200 bg-red-500/10 text-red-400 hover:bg-red-500/20 hover:border-red-500/50"
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>

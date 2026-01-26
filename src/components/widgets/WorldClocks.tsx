@@ -17,7 +17,6 @@ const ZONES = [
   { id: 'sanfrancisco', offset: -8, label: 'San Francisco' },
 ];
 
-// Calculate initial state for SSR - shows correct time immediately
 const getInitialStates = (): Record<string, ClockState> => {
   const now = new Date();
   const utc = now.getTime() + now.getTimezoneOffset() * 60000;
@@ -42,7 +41,6 @@ const getInitialStates = (): Record<string, ClockState> => {
 };
 
 const WorldClocks = () => {
-  // Initialize with current time so clocks show immediately
   const initialStates = useMemo(() => getInitialStates(), []);
   const [clockStates, setClockStates] = useState<Record<string, ClockState>>(initialStates);
 
@@ -60,7 +58,6 @@ const WorldClocks = () => {
         const m = local.getMinutes();
         const s = local.getSeconds();
 
-        // Smooth rotation: include sub-second for second hand
         const hourDeg = (h % 12) * 30 + m * 0.5;
         const minDeg = m * 6 + s * 0.1;
         const secDeg = s * 6 + ms * 0.006;
@@ -73,7 +70,6 @@ const WorldClocks = () => {
       setClockStates(newStates);
     };
 
-    // Start animation after a short delay to prioritize initial render
     const timeout = setTimeout(() => {
       tick();
       const interval = setInterval(tick, 50);
@@ -84,50 +80,49 @@ const WorldClocks = () => {
   }, []);
 
   return (
-    <div className="world-clocks w-full p-2 md:p-4">
-      {/* Mobile: 2x2 grid, Desktop: 1x4 row left-aligned */}
+    <div className="w-full p-2 md:p-4">
       <div className="grid grid-cols-2 gap-3 md:flex md:flex-row md:gap-4 md:justify-start">
         {ZONES.map((z) => {
           const state = clockStates[z.id];
           if (!state) return null;
 
           return (
-            <div key={z.id} className="clock-container flex flex-col items-center">
+            <div key={z.id} className="flex flex-col items-center">
               <div
-                className={`clock w-16 h-16 md:w-20 md:h-20 rounded-full bg-gradient-to-br from-[#f5f5f5] to-[#d0d0d0] border-[3px] md:border-4 border-[#8b7355] relative transition-all duration-500 ease-in-out shadow-[0_0_0_2px_#c9a96e,inset_0_2px_4px_rgba(0,0,0,0.2),0_4px_8px_rgba(0,0,0,0.3)] ${
+                className={`w-16 h-16 md:w-20 md:h-20 rounded-full relative transition-all duration-500 ease-in-out ${
                   state.isNight
-                    ? 'night bg-gradient-to-br from-[#1a1a2e] via-[#16213e] to-[#0f3460] border-[#4a4a6a] shadow-[0_0_0_2px_#5a5a8a,inset_0_2px_4px_rgba(0,0,0,0.4),0_4px_8px_rgba(0,0,0,0.5),0_0_15px_rgba(100,149,237,0.3)]'
-                    : ''
+                    ? 'bg-gradient-to-br from-slate-800 via-slate-900 to-slate-950 border-2 border-slate-600 shadow-[0_0_15px_rgba(59,130,246,0.2),inset_0_2px_4px_rgba(0,0,0,0.4)]'
+                    : 'bg-gradient-to-br from-slate-100 to-slate-300 border-2 border-slate-400 shadow-[0_4px_8px_rgba(0,0,0,0.2),inset_0_2px_4px_rgba(255,255,255,0.5)]'
                 }`}
               >
-                <div className="clock-face w-full h-full relative rounded-full">
+                <div className="w-full h-full relative rounded-full">
                   <div
-                    className={`hand hour-hand absolute bottom-1/2 left-1/2 origin-bottom z-[5] w-1 md:w-1.5 h-[14px] md:h-[18px] bg-[#222] -ml-[2px] md:-ml-[3px] rounded-[2px] ${
-                      state.isNight ? 'bg-[#e0e0e0]' : ''
+                    className={`absolute bottom-1/2 left-1/2 origin-bottom z-[5] w-1 md:w-1.5 h-[14px] md:h-[18px] -ml-[2px] md:-ml-[3px] rounded-[2px] ${
+                      state.isNight ? 'bg-slate-300' : 'bg-slate-700'
                     }`}
                     style={{ transform: `rotate(${state.hourDeg}deg)` }}
                   ></div>
                   <div
-                    className={`hand minute-hand absolute bottom-1/2 left-1/2 origin-bottom z-[5] w-[3px] md:w-1 h-5 md:h-6 bg-[#222] -ml-[1.5px] md:-ml-[2px] rounded-[2px] ${
-                      state.isNight ? 'bg-[#e0e0e0]' : ''
+                    className={`absolute bottom-1/2 left-1/2 origin-bottom z-[5] w-[3px] md:w-1 h-5 md:h-6 -ml-[1.5px] md:-ml-[2px] rounded-[2px] ${
+                      state.isNight ? 'bg-slate-300' : 'bg-slate-700'
                     }`}
                     style={{ transform: `rotate(${state.minDeg}deg)` }}
                   ></div>
                   <div
-                    className={`hand second-hand absolute bottom-1/2 left-1/2 origin-bottom z-[6] w-[1px] md:w-[2px] h-6 md:h-7 bg-[#e74c3c] -ml-[0.5px] md:-ml-[1px] ${
-                      state.isNight ? 'bg-[#ff6b6b]' : ''
+                    className={`absolute bottom-1/2 left-1/2 origin-bottom z-[6] w-[1px] md:w-[2px] h-6 md:h-7 -ml-[0.5px] md:-ml-[1px] ${
+                      state.isNight ? 'bg-blue-400' : 'bg-blue-500'
                     }`}
                     style={{ transform: `rotate(${state.secDeg}deg)` }}
                   ></div>
                   <div
-                    className={`clock-center absolute top-1/2 left-1/2 w-2 h-2 md:w-2.5 md:h-2.5 bg-[#e74c3c] rounded-full -translate-x-1/2 -translate-y-1/2 z-10 ${
-                      state.isNight ? 'bg-[#ff6b6b] shadow-[0_0_5px_rgba(255,107,107,0.5)]' : ''
+                    className={`absolute top-1/2 left-1/2 w-2 h-2 md:w-2.5 md:h-2.5 rounded-full -translate-x-1/2 -translate-y-1/2 z-10 ${
+                      state.isNight ? 'bg-blue-400 shadow-[0_0_5px_rgba(59,130,246,0.5)]' : 'bg-blue-500'
                     }`}
                   ></div>
                 </div>
               </div>
-              <div className="clock-label mt-1.5 text-[10px] md:text-xs font-bold text-white shadow-[1px_1px_2px_#000] bg-black/60 px-2 py-0.5 rounded">
-                {z.label} <span className="ampm-indicator text-[9px] md:text-[10px] font-bold text-yellow-300 tracking-[1px] ml-0.5">{state.ampm}</span>
+              <div className="mt-1.5 text-[10px] md:text-xs font-medium text-slate-300 bg-slate-800/80 backdrop-blur-sm px-2 py-0.5 rounded border border-slate-700/50">
+                {z.label} <span className="text-[9px] md:text-[10px] font-semibold text-blue-400 ml-0.5">{state.ampm}</span>
               </div>
             </div>
           );

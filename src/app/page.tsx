@@ -56,11 +56,10 @@ export default function Home() {
           priceType={selectedPriceType}
           month={selectedMonth}
           isPriceVisible={isPriceVisible}
-        />
-        <RightSidebar
           onMonthSelect={handleMonthSelect}
           kosisModeEnabled={kosisModeEnabled}
         />
+        <RightSidebar />
       </div>
       <div className="bottom-row flex-shrink-0 w-full">
         <Footer />

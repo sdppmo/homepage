@@ -1,141 +1,60 @@
-import ExchangeRate from '../widgets/ExchangeRate';
-
-interface RightSidebarProps {
-  onMonthSelect: (priceType: string, month: number) => void;
-  kosisModeEnabled: boolean;
-}
-
-const RightSidebar = ({ onMonthSelect, kosisModeEnabled }: RightSidebarProps) => {
-  const handleMonthChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const priceType = e.target.getAttribute('data-price-type');
-    const month = parseInt(e.target.value, 10);
-    if (priceType && month) {
-      onMonthSelect(priceType, month);
-    }
-  };
-
-  const priceRowClass = kosisModeEnabled
-    ? "p-1.5 text-xs text-[#333] border-r border-[#ddd] flex items-center gap-2 cursor-pointer transition-colors duration-200 hover:bg-[#f0f4ff] bg-[#f0f4ff] border-2 border-[#667eea] font-semibold xs:p-1 xs:text-[10px]"
-    : "p-1.5 text-xs text-[#333] border-r border-[#ddd] flex items-center gap-2 cursor-pointer transition-colors duration-200 hover:bg-[#f0f4ff] xs:p-1 xs:text-[10px]";
+const RightSidebar = () => {
+  const newsItems = [
+    {
+      title: 'K-COL Steel Column',
+      content: 'Program is release on 1 of Dec. New Auto Find Section to be loaded on 1 of Feb.',
+      isNew: true,
+    },
+    {
+      title: 'Slimbox Tests',
+      content: 'Tests on 1 of Jan with POSCO Global R&D Center at Songdo, Incheon',
+      isNew: false,
+    },
+    {
+      title: 'H Beam Price Update',
+      content: 'Price up 50won/kg on Nov. from Hyundai-steel',
+      isNew: false,
+    },
+    {
+      title: 'K-COL 실시공',
+      content: '현장 OPEN',
+      isNew: false,
+    },
+  ];
 
   return (
-    <aside className="relative w-full p-4 z-20 overflow-y-auto overflow-x-hidden pointer-events-auto bg-black/80 order-3 md:absolute md:top-0 md:right-0 md:bottom-0 md:w-[300px] md:bg-transparent md:flex md:flex-col md:order-none lg:w-[250px] lg:p-2.5">
-      <div className="news-section mt-5 flex-1 lg:mt-[100px]">
-        <div className="text-3xl font-bold text-white text-center mb-4 drop-shadow-[2px_2px_4px_#000] lg:text-2xl xs:text-xl">
-          NEWS
+    <aside className="relative w-full p-4 z-20 overflow-y-auto overflow-x-hidden pointer-events-auto bg-slate-900/95 backdrop-blur-sm order-3 md:absolute md:top-0 md:right-0 md:bottom-0 md:w-[280px] md:bg-slate-900/80 md:flex md:flex-col md:order-none lg:w-[260px] lg:p-3">
+      <div className="mt-4 flex-1 lg:mt-[80px]">
+        <div className="flex items-center justify-center gap-2 mb-4">
+          <div className="h-px flex-1 bg-gradient-to-r from-transparent to-slate-600"></div>
+          <h2 className="text-xl font-bold text-white tracking-wider flex items-center gap-2">
+            <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+            </svg>
+            NEWS
+          </h2>
+          <div className="h-px flex-1 bg-gradient-to-l from-transparent to-slate-600"></div>
         </div>
-        <div className="bg-black/70 border border-[rgba(255,215,0,0.5)] p-3.5 mb-2.5 text-lg italic text-[#ffd700] leading-normal text-center lg:text-sm lg:p-2.5 xs:text-[13px] xs:p-2.5">
-          K-COL Steel Column<br />Program is release on<br />1 of Dec.<br />New Auto Find Section<br />to be loaded on<br />1 of Feb.
-        </div>
-        <div className="bg-black/70 border border-[rgba(255,215,0,0.5)] p-3.5 mb-2.5 text-lg italic text-[#ffd700] leading-normal text-center lg:text-sm lg:p-2.5 xs:text-[13px] xs:p-2.5">
-          Slimbox tests on 1 of Jan<br />with posco Global R&D<br />Center at Songdo, Incheon
-        </div>
-        <div className="bg-black/70 border border-[rgba(255,215,0,0.5)] p-3.5 mb-2.5 text-lg italic text-[#ffd700] leading-normal text-center lg:text-sm lg:p-2.5 xs:text-[13px] xs:p-2.5">
-          H beam price up<br />50won/kg on Nov. from<br />Hyundai-steel
-        </div>
-        <div className="bg-black/70 border border-[rgba(255,215,0,0.5)] p-3.5 mb-2.5 text-lg italic text-[#ffd700] leading-normal text-center lg:text-sm lg:p-2.5 xs:text-[13px] xs:p-2.5">
-          K-COL<br />실시공 현장 OPEN
-        </div>
-      </div>
-
-      <div className="exchange-table relative mt-4 z-[9999] pointer-events-auto bg-white/90 border-2 border-[#666] flex-shrink-0 md:mt-auto md:mb-4 xs:text-[11px]">
-        <div className="bg-gradient-to-b from-[#666] to-[#555] text-white p-1.5 text-xs font-bold">
-          환율(won/$): <ExchangeRate />
-        </div>
-        <div className="grid grid-cols-2 border-b border-[#ddd]">
-          <div className={priceRowClass} title={kosisModeEnabled ? "클릭하여 월평균 가격 확인" : ""}>
-            <span className="flex-shrink-0 font-medium">건설지수</span>
-            <select className="flex-1 p-1 text-[11px] border border-[#999] rounded bg-white text-[#333] cursor-pointer min-w-[60px] hover:border-[#667eea] hover:bg-[#f0f4ff] focus:outline-none focus:border-[#667eea] focus:ring-2 focus:ring-[rgba(102,126,234,0.2)]" data-price-type="construction" onChange={handleMonthChange} defaultValue="12">
-              <option value="1">1월</option>
-              <option value="2">2월</option>
-              <option value="3">3월</option>
-              <option value="4">4월</option>
-              <option value="5">5월</option>
-              <option value="6">6월</option>
-              <option value="7">7월</option>
-              <option value="8">8월</option>
-              <option value="9">9월</option>
-              <option value="10">10월</option>
-              <option value="11">11월</option>
-              <option value="12">12월</option>
-            </select>
-          </div>
-        </div>
-        <div className="grid grid-cols-2 border-b border-[#ddd]">
-          <div className={priceRowClass} title={kosisModeEnabled ? "클릭하여 월평균 가격 확인" : "KOSIS (국가통계포털)에서 받아봅니다."}>
-            <span className="flex-shrink-0 font-medium">철강가격</span>
-            <select className="flex-1 p-1 text-[11px] border border-[#999] rounded bg-white text-[#333] cursor-pointer min-w-[60px] hover:border-[#667eea] hover:bg-[#f0f4ff] focus:outline-none focus:border-[#667eea] focus:ring-2 focus:ring-[rgba(102,126,234,0.2)]" data-price-type="steel" onChange={handleMonthChange} defaultValue="12">
-              <option value="1">1월</option>
-              <option value="2">2월</option>
-              <option value="3">3월</option>
-              <option value="4">4월</option>
-              <option value="5">5월</option>
-              <option value="6">6월</option>
-              <option value="7">7월</option>
-              <option value="8">8월</option>
-              <option value="9">9월</option>
-              <option value="10">10월</option>
-              <option value="11">11월</option>
-              <option value="12">12월</option>
-            </select>
-          </div>
-        </div>
-        <div className="grid grid-cols-2 border-b border-[#ddd]">
-          <div className={priceRowClass} title={kosisModeEnabled ? "클릭하여 월평균 가격 확인" : ""}>
-            <span className="flex-shrink-0 font-medium">판재가격</span>
-            <select className="flex-1 p-1 text-[11px] border border-[#999] rounded bg-white text-[#333] cursor-pointer min-w-[60px] hover:border-[#667eea] hover:bg-[#f0f4ff] focus:outline-none focus:border-[#667eea] focus:ring-2 focus:ring-[rgba(102,126,234,0.2)]" data-price-type="plate" onChange={handleMonthChange} defaultValue="12">
-              <option value="1">1월</option>
-              <option value="2">2월</option>
-              <option value="3">3월</option>
-              <option value="4">4월</option>
-              <option value="5">5월</option>
-              <option value="6">6월</option>
-              <option value="7">7월</option>
-              <option value="8">8월</option>
-              <option value="9">9월</option>
-              <option value="10">10월</option>
-              <option value="11">11월</option>
-              <option value="12">12월</option>
-            </select>
-          </div>
-        </div>
-        <div className="grid grid-cols-2 border-b border-[#ddd]">
-          <div className={priceRowClass} title={kosisModeEnabled ? "클릭하여 월평균 가격 확인" : ""}>
-            <span className="flex-shrink-0 font-medium">철근가격</span>
-            <select className="flex-1 p-1 text-[11px] border border-[#999] rounded bg-white text-[#333] cursor-pointer min-w-[60px] hover:border-[#667eea] hover:bg-[#f0f4ff] focus:outline-none focus:border-[#667eea] focus:ring-2 focus:ring-[rgba(102,126,234,0.2)]" data-price-type="rebar" onChange={handleMonthChange} defaultValue="12">
-              <option value="1">1월</option>
-              <option value="2">2월</option>
-              <option value="3">3월</option>
-              <option value="4">4월</option>
-              <option value="5">5월</option>
-              <option value="6">6월</option>
-              <option value="7">7월</option>
-              <option value="8">8월</option>
-              <option value="9">9월</option>
-              <option value="10">10월</option>
-              <option value="11">11월</option>
-              <option value="12">12월</option>
-            </select>
-          </div>
-        </div>
-        <div className="grid grid-cols-2">
-          <div className={priceRowClass} title={kosisModeEnabled ? "클릭하여 월평균 가격 확인" : ""}>
-            <span className="flex-shrink-0 font-medium">레미콘가격</span>
-            <select className="flex-1 p-1 text-[11px] border border-[#999] rounded bg-white text-[#333] cursor-pointer min-w-[60px] hover:border-[#667eea] hover:bg-[#f0f4ff] focus:outline-none focus:border-[#667eea] focus:ring-2 focus:ring-[rgba(102,126,234,0.2)]" data-price-type="concrete" onChange={handleMonthChange} defaultValue="12">
-              <option value="1">1월</option>
-              <option value="2">2월</option>
-              <option value="3">3월</option>
-              <option value="4">4월</option>
-              <option value="5">5월</option>
-              <option value="6">6월</option>
-              <option value="7">7월</option>
-              <option value="8">8월</option>
-              <option value="9">9월</option>
-              <option value="10">10월</option>
-              <option value="11">11월</option>
-              <option value="12">12월</option>
-            </select>
-          </div>
+        
+        <div className="space-y-3">
+          {newsItems.map((item, index) => (
+            <div
+              key={index}
+              className="group relative bg-slate-800/60 backdrop-blur-sm border border-slate-700/50 rounded-lg p-3 transition-all duration-300 hover:bg-slate-800/80 hover:border-blue-500/30 hover:shadow-lg hover:shadow-blue-500/5"
+            >
+              {item.isNew && (
+                <span className="absolute -top-2 -right-2 bg-gradient-to-r from-blue-500 to-cyan-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-lg">
+                  NEW
+                </span>
+              )}
+              <h3 className="text-sm font-semibold text-blue-400 mb-1 group-hover:text-blue-300 transition-colors">
+                {item.title}
+              </h3>
+              <p className="text-xs text-slate-400 leading-relaxed group-hover:text-slate-300 transition-colors">
+                {item.content}
+              </p>
+            </div>
+          ))}
         </div>
       </div>
     </aside>
