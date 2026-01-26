@@ -447,3 +447,62 @@ Two separate auth checks were happening:
 - `getSession()` reads JWT from cookies and validates signature locally - instant
 - `getUser()` makes a network call to Supabase to validate token - 200-500ms
 - Only use `getUser()` when you need to verify the token hasn't been revoked server-side
+
+## 2026-01-25: Invalid Tailwind CSS Class Fix
+
+### Issue
+Text was invisible/unstyled on several pages due to invalid Tailwind CSS class syntax.
+
+### Root Cause
+Used `color-[#hex]` instead of the correct `text-[#hex]` syntax for text colors.
+- `color-[#...]` is NOT valid Tailwind CSS
+- `text-[#...]` is the correct syntax for arbitrary text colors
+
+### Files Fixed
+| File | Instances Fixed |
+|------|-----------------|
+| `src/app/(auth)/pending/page.tsx` | 1 |
+| `src/app/k-col/user-guide/page.tsx` | 39 |
+| `src/app/(protected)/k-col/developer-guide/page.tsx` | 59 |
+| **Total** | **99 instances** |
+
+### Solution
+Used `replaceAll` edit to change all `color-[#` to `text-[#` in affected files.
+
+### Key Learning
+**Tailwind CSS arbitrary value syntax for text colors is `text-[#hex]`, NOT `color-[#hex]`**:
+- ✅ Correct: `text-[#4a5568]`, `text-[#1e3a5f]`
+- ❌ Wrong: `color-[#4a5568]`, `color-[#1e3a5f]`
+
+### Commit
+- `a95f8e5` - fix: invalid Tailwind color classes and add server-side logout
+
+## 2026-01-25: Server-Side Logout API
+
+### Issue
+Client-side logout via `supabase.auth.signOut()` doesn't properly clear server-side cookies.
+
+### Solution
+Created `/api/auth/logout` route that:
+1. Creates server-side Supabase client with cookies
+2. Calls `supabase.auth.signOut()` server-side
+3. Returns success response
+
+Updated `AuthSection.tsx` to call this API before client-side signOut.
+
+### Files Created/Modified
+- `src/app/api/auth/logout/route.ts` (NEW)
+- `src/components/layout/AuthSection.tsx` (MODIFIED)
+- `AUTHENTICATION.md` (NEW - documentation)
+
+### Key Learning
+**For complete logout in Next.js + Supabase SSR, call server-side signOut first**:
+```typescript
+// In client component
+const handleLogout = async () => {
+  await fetch('/api/auth/logout', { method: 'POST' }); // Server-side cookie clearing
+  await supabase.auth.signOut(); // Client-side cleanup
+  router.push('/');
+  router.refresh();
+};
+```
