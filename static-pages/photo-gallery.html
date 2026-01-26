@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>사진 갤러리 - SongDoPartners</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <style>
+        html, body {
+            overflow: auto !important;
+            overflow-x: hidden !important;
+            height: auto !important;
+            min-height: 100vh;
+        }
+
+        .gallery-container {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            padding: 40px 20px;
+        }
+
+        .gallery-wrapper {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .gallery-header {
+            text-align: center;
+            color: white;
+            margin-bottom: 50px;
+        }
+
+        .gallery-header h1 {
+            font-size: 48.6px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            letter-spacing: -0.5px;
+        }
+
+        .gallery-header .subtitle {
+            font-size: 23.4px;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+
+        .gallery-header .home-link {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+
+        .gallery-header .home-link:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+
+        .gallery-section {
+            margin-bottom: 60px;
+        }
+
+        .gallery-section-title {
+            font-size: 32.4px;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid rgba(255,255,255,0.3);
+        }
+
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .gallery-item {
+            position: relative;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+        }
+
+        .gallery-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        }
+
+        .gallery-item img {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+            display: block;
+            position: relative;
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            -webkit-user-drag: none;
+            -khtml-user-drag: none;
+            -moz-user-drag: none;
+            -o-user-drag: none;
+            pointer-events: auto;
+        }
+
+        .gallery-item {
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+        }
+
+        /* K-COL 워터마크 - 이미지 안에 표시 (세로 배치) */
+        .gallery-item::after {
+            content: 'K-\A COL';
+            white-space: pre;
+            text-align: center;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-45deg);
+            background: rgba(0, 0, 0, 0.4);
+            color: rgba(255, 255, 255, 0.9);
+            padding: 15px 20px;
+            border-radius: 8px;
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: 3px;
+            line-height: 1.2;
+            pointer-events: none;
+            z-index: 20;
+            opacity: 0.7;
+            transition: opacity 0.3s;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .gallery-item:hover::after {
+            opacity: 0.85;
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        .gallery-item-caption {
+            padding: 15px;
+            background: white;
+            font-size: 16px;
+            color: #2d3748;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        /* Modal for full-size image view */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.9);
+            overflow: auto;
+        }
+
+        .modal-content {
+            position: relative;
+            margin: auto;
+            padding: 20px;
+            width: 90%;
+            max-width: 1200px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .modal-content img {
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            -webkit-user-drag: none;
+            -khtml-user-drag: none;
+            -moz-user-drag: none;
+            -o-user-drag: none;
+            pointer-events: auto;
+        }
+
+        .close {
+            position: absolute;
+            top: 20px;
+            right: 35px;
+            color: #f1f1f1;
+            font-size: 40px;
+            font-weight: bold;
+            cursor: pointer;
+            z-index: 1001;
+        }
+
+        .close:hover {
+            color: #fff;
+        }
+
+        @media (max-width: 768px) {
+            .gallery-grid {
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+                gap: 15px;
+            }
+
+            .gallery-header h1 {
+                font-size: 36px;
+            }
+
+            .gallery-section-title {
+                font-size: 28px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="gallery-container">
+        <div class="gallery-wrapper">
+            <div class="gallery-header">
+                <h1>📸 사진 갤러리</h1>
+                <p class="subtitle">제품 및 프로젝트 관련 사진 자료</p>
+                <a href="products.html" class="home-link">← 제품 페이지로 돌아가기</a>
+                <a href="../index.html" class="home-link" style="margin-left: 10px;">🏠 홈으로 돌아가기</a>
+            </div>
+
+            <!-- 기둥제작 커팅 -->
+            <div class="gallery-section">
+                <h2 class="gallery-section-title">기중제작 커팅(유석철강)</h2>
+                <div class="gallery-grid">
+                    <div class="gallery-item" onclick="openModal(this)">
+                        <img src="../assets/images/K-COL 제작/P-0.webp" alt="기둥제작 커팅" onerror="this.parentElement.style.display='none';" draggable="false" oncontextmenu="return false;" onselectstart="return false;">
+                        <div class="gallery-item-caption">기둥제작 커팅</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 기둥조립 -->
+            <div class="gallery-section">
+                <h2 class="gallery-section-title">기둥조립(유석철강)</h2>
+                <div class="gallery-grid">
+                    <div class="gallery-item" onclick="openModal(this)">
+                        <img src="../assets/images/K-COL 제작/p-1.webp" alt="기둥조립" onerror="this.parentElement.style.display='none';" draggable="false" oncontextmenu="return false;" onselectstart="return false;">
+                        <div class="gallery-item-caption">기둥조립</div>
+                    </div>
+                    <div class="gallery-item" onclick="openModal(this)">
+                        <img src="../assets/images/K-COL 제작/p-2.webp" alt="기둥조립" onerror="this.parentElement.style.display='none';" draggable="false" oncontextmenu="return false;" onselectstart="return false;">
+                        <div class="gallery-item-caption">기둥조립</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 상차사진 -->
+            <div class="gallery-section">
+                <h2 class="gallery-section-title">상차사진</h2>
+                <div class="gallery-grid">
+                    <!-- 이미지 추가 예정 -->
+                </div>
+            </div>
+
+            <!-- 현장설치사진 -->
+            <div class="gallery-section">
+                <h2 class="gallery-section-title">현장설치사진</h2>
+                <div class="gallery-grid">
+                    <!-- 이미지 추가 예정 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for full-size image -->
+    <div id="imageModal" class="modal">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <div class="modal-content">
+            <img id="modalImage" src="" alt="Full size image" draggable="false" oncontextmenu="return false;" onselectstart="return false;">
+        </div>
+    </div>
+
+    <script>
+        function openModal(element) {
+            const modal = document.getElementById('imageModal');
+            const modalImg = document.getElementById('modalImage');
+            const img = element.querySelector('img');
+            
+            modal.style.display = 'block';
+            modalImg.src = img.src;
+            modalImg.alt = img.alt;
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('imageModal');
+            modal.style.display = 'none';
+        }
+
+        // Close modal when clicking outside the image
+        window.onclick = function(event) {
+            const modal = document.getElementById('imageModal');
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,1673 @@
+/**
+ * SongDoPartners Homepage Styles
+ * K-COL Steel Column Design Platform
+ */
+
+/* ==========================================================================
+   1. RESET & BASE
+   ========================================================================== */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Cursor IDE 요소 선택 지원 - 선택 가능한 요소 표시 */
+[data-selectable="true"],
+[data-cursor-selectable="true"] {
+  position: relative;
+  cursor: default;
+  /* pointer-events는 기본값(auto) 유지 */
+}
+
+/* 배경 이미지는 pointer-events를 none으로 유지 (클릭이 뒤로 전달되도록) */
+.bg-image {
+  pointer-events: none !important;
+}
+
+html, body {
+  font-family: Arial, sans-serif;
+  background: #000;
+  color: #fff;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  -webkit-text-size-adjust: 100%; /* Prevent font scaling in landscape on iOS */
+  -webkit-tap-highlight-color: transparent; /* Remove tap highlight on mobile */
+}
+
+/* ==========================================================================
+   2. PAGE LAYOUT
+   ========================================================================== */
+
+.page-wrapper {
+  display: flex;
+  flex-direction: column;
+  width: 100vw;
+  height: 100vh; /* Fallback for older browsers */
+  height: 100dvh; /* Dynamic viewport height for modern browsers */
+  margin: 0;
+  overflow: hidden;
+}
+
+/* Top Row - Contains left column and main area */
+.top-row {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* Bottom Row - Product logos and footer aligned (fixed height) */
+.bottom-row {
+  display: flex;
+  flex-shrink: 0;
+  height: 100px;
+}
+
+/* ==========================================================================
+   3. LEFT COLUMN (Fixed width 360px)
+   ========================================================================== */
+
+.left-column {
+  width: 360px;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  background: #d0d0d0;
+  position: relative;
+  z-index: 10;
+}
+
+/* Logo Section */
+.logo-section {
+  background: linear-gradient(180deg, #e8e8e8 0%, #c8c8c8 100%);
+  padding: 8px 12px;
+  border-bottom: 2px solid #999;
+}
+
+.logo-container {
+  display: flex;
+  justify-content: center;
+}
+
+.logo-container img {
+  height: 68px;
+  mix-blend-mode: multiply;
+}
+
+.welcome-text {
+  text-align: center;
+  color: #000;
+  font-size: 16px;
+  font-weight: bold;
+  margin: 6px 0;
+}
+
+/* Language Toggle */
+.lang-row {
+  display: flex;
+  margin-bottom: 10px;
+}
+
+.lang-btn {
+  flex: 1;
+  padding: 7px;
+  border: 1px solid #666;
+  background: linear-gradient(180deg, #f0f0f0 0%, #d0d0d0 100%);
+  color: #000;
+  font-size: 13px;
+  cursor: pointer;
+  text-align: center;
+}
+
+.lang-btn:not(:last-child) {
+  border-right: none;
+}
+
+/* Auth Section - Modern Design */
+.auth-section {
+  margin-top: 12px;
+  padding: 16px;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.auth-guest {
+  text-align: center;
+}
+
+.auth-guest,
+.auth-user {
+  width: 100%;
+}
+
+.auth-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.auth-btn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.auth-btn svg {
+  flex-shrink: 0;
+}
+
+.auth-btn.primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #fff;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.auth-btn.primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+}
+
+.auth-btn.secondary {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.auth-btn.secondary:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Logged In State */
+.auth-user {
+  display: block;
+}
+
+.user-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  padding: 14px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.user-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* GitHub-style Avatar */
+.gh-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 600;
+  color: #fff;
+  text-transform: uppercase;
+  flex-shrink: 0;
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.user-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.user-email {
+  font-size: 11px;
+  color: #94a3b8;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.user-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.user-action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  border: none;
+  white-space: nowrap;
+}
+
+.user-action-btn.admin {
+  background: rgba(99, 102, 241, 0.15);
+  color: #a5b4fc;
+  border: 1px solid rgba(99, 102, 241, 0.25);
+}
+
+.user-action-btn.admin:hover {
+  background: rgba(99, 102, 241, 0.25);
+}
+
+.user-action-btn.settings {
+  background: rgba(34, 197, 94, 0.15);
+  color: #86efac;
+  border: 1px solid rgba(34, 197, 94, 0.25);
+}
+
+.user-action-btn.settings:hover {
+  background: rgba(34, 197, 94, 0.25);
+}
+
+.user-action-btn.logout {
+  background: rgba(100, 116, 139, 0.2);
+  color: #94a3b8;
+  border: 1px solid rgba(100, 116, 139, 0.25);
+}
+
+.user-action-btn.logout:hover {
+  background: rgba(100, 116, 139, 0.3);
+  color: #cbd5e1;
+}
+
+/* Navigation Menu */
+.nav-menu {
+  display: flex;
+  flex-direction: column;
+  background: #1a1a3a;
+  flex: 1;
+}
+
+.nav-item {
+  display: block;
+  background: linear-gradient(180deg, #1a2050 0%, #101535 100%);
+  border-left: 8px solid #ff6600;
+  border-bottom: 1px solid rgba(255, 215, 0, 0.3);
+  padding: 0 16px;
+  color: #ffcc00;
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+  transition: background 0.2s;
+  text-decoration: none;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nav-item:hover {
+  background: linear-gradient(180deg, #252a60 0%, #1a1f45 100%);
+}
+
+.nav-item.active {
+  background: #000;
+  color: #fff;
+  font-weight: bold;
+}
+
+/* 링크된 nav-item 스타일 */
+a.nav-item {
+  text-decoration: none;
+  color: #fff;
+  background: #000;
+}
+
+/* div nav-item도 동일한 색상 적용 */
+div.nav-item {
+  color: #fff;
+  background: #000;
+}
+
+a.nav-item:hover {
+  color: #fff;
+  background: #222;
+}
+
+div.nav-item:hover {
+  background: #222;
+}
+
+/* 작은 글씨 네비게이션 항목 */
+.nav-item.small-text {
+  font-size: 14px;
+}
+
+/* 회색 텍스트 */
+.nav-item.gray-text,
+a.nav-item.gray-text,
+div.nav-item.gray-text {
+  color: #999 !important;
+}
+
+.nav-item.gray-text:hover,
+a.nav-item.gray-text:hover {
+  color: #bbb !important;
+}
+
+.brochure-btn.gray-text {
+  color: #999 !important;
+}
+
+.brochure-btn.gray-text:hover {
+  color: #bbb !important;
+}
+
+/* 황금색 네비게이션 항목 */
+a.nav-item.gold {
+  color: #ffcc00;
+  background: linear-gradient(180deg, #1a2050 0%, #101535 100%);
+}
+
+a.nav-item.gold:hover {
+  color: #ffcc00;
+  background: linear-gradient(180deg, #252a60 0%, #1a1f45 100%);
+}
+
+/* active와 gold가 함께 있을 때 gold 색상 우선 */
+a.nav-item.active.gold {
+  color: #ffcc00;
+}
+
+/* Brochure Grid */
+.brochure-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background: #1a1a2a;
+  flex-shrink: 0;
+  border-left: 8px solid #ff6600;
+}
+
+.brochure-btn {
+  background: linear-gradient(180deg, #1a1a2a 0%, #0a0a1a 100%);
+  border: 1px solid #444;
+  padding: 10px 8px;
+  color: #ffcc00;
+}
+
+button.brochure-btn {
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+  transition: background 0.2s;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+a.brochure-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffcc00;
+  text-decoration: none;
+}
+
+a.brochure-btn:hover {
+  color: #ffcc00;
+}
+
+.brochure-btn:nth-child(odd) {
+  border-right: none;
+}
+
+.brochure-btn:hover {
+  background: linear-gradient(180deg, #2a2a3a 0%, #1a1a2a 100%);
+}
+
+.brochure-btn.yellow {
+  background: linear-gradient(180deg, #ffd700 0%, #cc9900 100%);
+  color: #000;
+  font-weight: bold;
+}
+
+.brochure-btn.white {
+  background: linear-gradient(180deg, #1a1a2a 0%, #0a0a1a 100%);
+  color: #ffcc00;
+  border: 1px solid #444;
+  font-weight: 600;
+}
+
+.brochure-btn.white:hover {
+  background: linear-gradient(180deg, #2a2a3a 0%, #1a1a2a 100%);
+}
+
+a.brochure-btn.white {
+  color: #ffcc00;
+}
+
+a.brochure-btn.white:hover {
+  color: #ffcc00;
+}
+
+/* Product Logos - In bottom row, matches footer height */
+.product-logos {
+  width: 360px;
+  background: #d0d0d0;
+  padding: 0;
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+  border-top: 3px solid #333;
+  flex-shrink: 0;
+}
+
+.product-logos img {
+  width: 25%;
+  height: auto;
+  object-fit: contain;
+  mix-blend-mode: multiply;
+}
+
+.product-logos img:nth-child(1) {
+  transform: scale(1.0) translateX(20px);
+  filter: contrast(1.3) saturate(1.5);
+}
+
+.product-logos img:nth-child(2) {
+  transform: scale(0.75);
+  filter: contrast(1.3) saturate(1.5);
+}
+
+.product-logos img:nth-child(3) {
+  transform: scale(1.15);
+  filter: contrast(1.3) saturate(1.5);
+}
+
+.product-logos img:nth-child(4) {
+  transform: scale(0.85) translateY(5px);
+  filter: contrast(1.3) saturate(1.5);
+}
+
+/* ==========================================================================
+   4. MAIN CONTENT AREA (Right pane - fills remaining space)
+   ========================================================================== */
+
+.main-area {
+  flex: 1;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Background Image - Covers entire right pane */
+/* WebP: 984KB vs original 9.8MB PNG (90% smaller, full 2816×1536 resolution) */
+.bg-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url('../assets/images/background_vessel_nyc.webp') center center no-repeat;
+  background-size: cover;
+  z-index: 0;
+}
+
+/* Content layer - On top of background */
+.content-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ==========================================================================
+   5. RIGHT SIDEBAR (Transparent, fits naturally)
+   ========================================================================== */
+
+.right-sidebar {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 300px;
+  padding: 15px;
+  z-index: 2;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* Exchange Table - Semi-transparent */
+.exchange-table {
+  background: rgba(255, 255, 255, 0.9);
+  border: 2px solid #666;
+  margin-bottom: 15px;
+}
+
+.exchange-header {
+  background: linear-gradient(180deg, #666 0%, #555 100%);
+  color: #fff;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+.exchange-link {
+  color: #fff;
+  text-decoration: none;
+  transition: opacity 0.3s;
+}
+
+.exchange-link:hover {
+  opacity: 0.8;
+  text-decoration: underline;
+}
+
+#exchange-rate {
+  font-weight: bold;
+  color: #ffcc00;
+}
+
+.exchange-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border-bottom: 1px solid #ddd;
+}
+
+.exchange-row:last-child {
+  border-bottom: none;
+}
+
+.exchange-cell {
+  padding: 5px 10px;
+  font-size: 12px;
+  color: #333;
+  border-right: 1px solid #ddd;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.exchange-cell:last-child {
+  border-right: none;
+}
+
+.exchange-cell span {
+  flex-shrink: 0;
+  font-weight: 500;
+}
+
+.exchange-cell .month-select {
+  flex: 1;
+  padding: 3px 6px;
+  font-size: 11px;
+  border: 1px solid #999;
+  border-radius: 3px;
+  background: #fff;
+  color: #333;
+  cursor: pointer;
+  min-width: 60px;
+}
+
+.exchange-cell .month-select:hover {
+  border-color: #667eea;
+  background-color: #f0f4ff;
+}
+
+.exchange-cell .month-select:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+}
+
+.exchange-cell[onclick] {
+  transition: background-color 0.2s;
+}
+
+.exchange-cell[onclick]:hover {
+  background-color: #f0f4ff;
+}
+
+/* KOSIS 클릭 가능한 셀 (레거시 - 호환성 유지) */
+.exchange-cell.kosis-clickable {
+  transition: all 0.2s;
+}
+
+.exchange-cell.kosis-clickable:hover {
+  background-color: #f0f4ff;
+  transform: scale(1.02);
+}
+
+.exchange-cell.highlight {
+  background: #fffacd;
+}
+
+.exchange-description {
+  font-size: 9px;
+  color: #666;
+  margin-top: 2px;
+  font-style: italic;
+  line-height: 1.2;
+}
+
+/* Exchange Table - 좌측 하단 배치 */
+.exchange-table-bottom-left {
+  position: absolute;
+  bottom: 0;
+  left: 20px;
+  z-index: 9999; /* ensure clickable above any overlays */
+  pointer-events: auto;
+}
+
+/* Ensure exchange table content always receives clicks */
+.exchange-table-bottom-left * {
+  pointer-events: auto;
+}
+
+/* Price Section - 철근 가격 정보 */
+.price-section {
+  position: absolute;
+  bottom: 0;
+  left: 250px;
+  z-index: 10;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 8px;
+  padding: 15px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  min-width: 280px;
+  max-width: 320px;
+}
+
+.price-section h2 {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1e3a5f;
+  margin-bottom: 8px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #667eea;
+}
+
+.price-section > p {
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 12px;
+}
+
+.price-section table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 10px;
+}
+
+.price-section thead {
+  background: linear-gradient(180deg, #666 0%, #555 100%);
+  color: #fff;
+}
+
+.price-section th {
+  padding: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: left;
+}
+
+.price-section td {
+  padding: 8px;
+  font-size: 12px;
+  color: #333;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.price-section tbody tr:hover {
+  background: #f8fafc;
+}
+
+.price-section small {
+  display: block;
+  font-size: 10px;
+  color: #718096;
+  line-height: 1.4;
+  margin-top: 8px;
+}
+
+/* News Section - Semi-transparent */
+.news-section {
+  margin-top: 20px;
+}
+
+.news-title {
+  font-size: 32px;
+  font-weight: bold;
+  color: #fff;
+  text-shadow: 2px 2px 4px #000;
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+.news-item {
+  background: rgba(0, 0, 0, 0.7);
+  border: 1px solid rgba(255, 215, 0, 0.5);
+  padding: 14px 16px;
+  margin-bottom: 10px;
+  font-size: 19px;
+  font-style: italic;
+  color: #ffd700;
+  line-height: 1.5;
+  text-align: center;
+}
+
+/* ==========================================================================
+   6. FOOTER (In bottom row, same height as product-logos)
+   ========================================================================== */
+
+.footer {
+  flex: 1;
+  background: #1a1a1a;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 15px;
+  gap: 12px;
+  z-index: 2;
+  position: relative;
+  border-top: 3px solid #333;
+  height: 100%;
+  overflow: hidden;
+  min-width: 0;
+}
+
+.footer-info {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 11px;
+  color: #ccc;
+  line-height: 1.3;
+  overflow: hidden;
+}
+
+.footer-info div {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.footer-info a {
+  color: #6af;
+  text-decoration: none;
+}
+
+.footer-info a:hover {
+  text-decoration: underline;
+}
+
+/* Database Button */
+.db-button {
+  background: linear-gradient(180deg, #ffd700 0%, #cc9900 100%);
+  border: 2px solid #996600;
+  padding: 6px 12px;
+  text-align: center;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.db-button .click-text {
+  font-size: 10px;
+  color: #333;
+}
+
+.db-button .main-text {
+  font-size: 12px;
+  color: #000;
+  font-weight: bold;
+}
+
+/* Company Logos - 3 columns × 2 rows grid */
+.company-logos {
+  display: grid;
+  grid-template-columns: repeat(3, 55px);
+  grid-template-rows: repeat(2, 38px);
+  gap: 3px;
+  flex-shrink: 0;
+  align-items: center;
+}
+
+.company-logo {
+  background: #fff;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #ddd;
+  border-radius: 2px;
+  overflow: hidden;
+  height: 38px;
+  width: 55px;
+}
+
+.company-logo img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+/* All company logos share the same styles - links fill container */
+.company-logo a {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ==========================================================================
+   7. IMAGE ENHANCEMENTS
+   ========================================================================== */
+
+/* K-COL Image - Enhanced contrast */
+.kcol-image {
+  filter: contrast(1.3) saturate(1.2) brightness(1.05);
+}
+
+/* ==========================================================================
+   8. WORLD CLOCKS
+   ========================================================================== */
+
+.world-clocks {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  display: flex;
+  gap: 20px;
+  z-index: 10;
+}
+
+.clock-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.clock {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #f5f5f5 0%, #d0d0d0 100%);
+  border: 4px solid #8b7355;
+  box-shadow: 
+    0 0 0 2px #c9a96e,
+    inset 0 2px 4px rgba(0,0,0,0.2),
+    0 4px 8px rgba(0,0,0,0.3);
+  position: relative;
+  transition: all 0.5s ease;
+}
+
+/* 밤 시간 시계 스타일 (저녁 6시 ~ 아침 6시) */
+.clock.night {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  border-color: #4a4a6a;
+  box-shadow: 
+    0 0 0 2px #5a5a8a,
+    inset 0 2px 4px rgba(0,0,0,0.4),
+    0 4px 8px rgba(0,0,0,0.5),
+    0 0 15px rgba(100, 149, 237, 0.3);
+}
+
+.clock.night .hour-hand,
+.clock.night .minute-hand {
+  background: #e0e0e0;
+}
+
+.clock.night .second-hand {
+  background: #ff6b6b;
+}
+
+.clock.night .clock-center {
+  background: #ff6b6b;
+  box-shadow: 0 0 5px rgba(255, 107, 107, 0.5);
+}
+
+.clock-face {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  border-radius: 50%;
+}
+
+.hand {
+  position: absolute;
+  bottom: 50%;
+  left: 50%;
+  transform-origin: 50% 100%;
+  z-index: 5;
+}
+
+.hour-hand {
+  width: 4px;
+  height: 18px;
+  background: #222;
+  margin-left: -2px;
+  border-radius: 2px;
+}
+
+.minute-hand {
+  width: 3px;
+  height: 24px;
+  background: #222;
+  margin-left: -1.5px;
+  border-radius: 2px;
+}
+
+.second-hand {
+  width: 2px;
+  height: 28px;
+  background: #e74c3c;
+  margin-left: -1px;
+  z-index: 6;
+}
+
+.clock-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 8px;
+  height: 8px;
+  background: #e74c3c;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10;
+}
+
+/* AM/PM 표시 (도시명과 함께) */
+.ampm-indicator {
+  font-size: 10px;
+  font-weight: bold;
+  color: #fff;
+  letter-spacing: 1px;
+  margin-left: 3px;
+}
+
+.clock-label {
+  margin-top: 5px;
+  font-size: 11px;
+  font-weight: bold;
+  color: #fff;
+  text-shadow: 1px 1px 2px #000;
+  background: rgba(0,0,0,0.5);
+  padding: 2px 8px;
+  border-radius: 3px;
+}
+
+/* ==========================================================================
+   9. RESPONSIVE DESIGN - MOBILE & TABLET
+   ========================================================================== */
+
+/* Footer overflow fixes are now in main footer styles */
+
+/* Tablet: 768px - 1024px */
+@media screen and (max-width: 1024px) {
+  .right-sidebar {
+    width: 250px;
+    padding: 10px;
+  }
+  
+  .news-section {
+    margin-top: 100px;
+  }
+  
+  .news-item {
+    font-size: 14px;
+    padding: 10px 12px;
+  }
+  
+  .news-title {
+    font-size: 24px;
+  }
+  
+  .footer-info {
+    font-size: 10px;
+  }
+  
+  .company-logos {
+    grid-template-columns: repeat(3, 50px);
+    grid-template-rows: repeat(2, 34px);
+    gap: 2px;
+  }
+  
+  .company-logo {
+    width: 50px;
+    height: 34px;
+    padding: 2px;
+  }
+  
+  .db-button {
+    padding: 6px 10px;
+  }
+  
+  .db-button .main-text {
+    font-size: 11px;
+  }
+}
+
+/* Small tablet / Large phone: 600px - 768px */
+@media screen and (max-width: 768px) {
+  html, body {
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+  
+  .page-wrapper {
+    height: auto;
+    min-height: 100vh; /* Fallback */
+    min-height: 100dvh;
+    overflow: visible;
+  }
+  
+  .top-row {
+    flex-direction: column;
+    overflow: visible;
+  }
+  
+  .left-column {
+    width: 100%;
+    order: 1;
+  }
+  
+  .main-area {
+    order: 2;
+    min-height: 400px;
+  }
+  
+  .bottom-row {
+    flex-direction: column;
+    height: auto;
+  }
+  
+  .product-logos {
+    width: 100%;
+    padding: 10px;
+    height: auto;
+  }
+  
+  .product-logos img {
+    width: 22%;
+    transform: none !important;
+  }
+  
+  .footer {
+    flex-direction: column;
+    height: auto;
+    padding: 15px;
+    gap: 10px;
+    align-items: stretch;
+  }
+  
+  .footer-info {
+    order: 1;
+    text-align: center;
+  }
+  
+  .footer-info div {
+    white-space: normal;
+    overflow: visible;
+    margin-bottom: 5px;
+  }
+  
+  .db-button {
+    order: 2;
+    width: 100%;
+    padding: 12px;
+  }
+  
+  .company-logos {
+    order: 3;
+    width: 100%;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(2, 40px);
+    gap: 6px;
+  }
+  
+  .company-logo {
+    width: auto;
+    height: 40px;
+    padding: 4px;
+  }
+  
+  /* Right sidebar - below main content */
+  .right-sidebar {
+    position: relative;
+    width: 100%;
+    padding: 15px;
+    background: rgba(0, 0, 0, 0.8);
+  }
+  
+  .news-section {
+    margin-top: 20px;
+  }
+  
+  /* World clocks */
+  .world-clocks {
+    position: relative;
+    top: 0;
+    left: 0;
+    justify-content: center;
+    padding: 15px;
+    background: rgba(0, 0, 0, 0.5);
+    flex-wrap: wrap;
+  }
+  
+  .clock {
+    width: 60px;
+    height: 60px;
+  }
+  
+  .hour-hand {
+    height: 14px;
+  }
+  
+  .minute-hand {
+    height: 18px;
+  }
+  
+  .second-hand {
+    height: 22px;
+  }
+  
+  /* Navigation adjustments */
+  .nav-item {
+    font-size: 16px;
+    padding: 12px 16px;
+  }
+  
+  .brochure-btn {
+    font-size: 12px;
+    padding: 8px 6px;
+  }
+}
+
+/* Mobile phones: < 600px */
+@media screen and (max-width: 600px) {
+  .logo-container img {
+    height: 50px;
+  }
+  
+  .welcome-text {
+    font-size: 14px;
+  }
+  
+  .lang-row {
+    flex-wrap: wrap;
+  }
+  
+  .lang-btn {
+    flex: 1 1 30%;
+    font-size: 11px;
+    padding: 6px 4px;
+  }
+  
+  .auth-section {
+    padding: 12px;
+    margin-top: 8px;
+  }
+  
+  .auth-buttons {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .auth-btn {
+    padding: 10px 14px;
+    font-size: 13px;
+  }
+  
+  .auth-actions {
+    justify-content: center;
+  }
+  
+  .nav-item {
+    font-size: 14px;
+    padding: 10px 12px;
+  }
+  
+  .brochure-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  
+  .brochure-btn {
+    font-size: 11px;
+    padding: 6px 4px;
+  }
+  
+  .world-clocks {
+    gap: 10px;
+  }
+  
+  .clock {
+    width: 50px;
+    height: 50px;
+    border-width: 3px;
+  }
+  
+  .clock-label {
+    font-size: 9px;
+    padding: 2px 5px;
+  }
+  
+  .hour-hand {
+    height: 12px;
+    width: 3px;
+  }
+  
+  .minute-hand {
+    height: 16px;
+    width: 2px;
+  }
+  
+  .second-hand {
+    height: 18px;
+    width: 1px;
+  }
+  
+  .clock-center {
+    width: 6px;
+    height: 6px;
+  }
+  
+  .exchange-table {
+    font-size: 11px;
+  }
+  
+  .exchange-cell {
+    padding: 4px 6px;
+    font-size: 10px;
+  }
+  
+  .news-title {
+    font-size: 20px;
+  }
+  
+  .news-item {
+    font-size: 13px;
+    padding: 10px;
+  }
+  
+  .footer-info {
+    font-size: 11px;
+  }
+  
+  .company-logos {
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(2, 35px);
+    gap: 4px;
+  }
+  
+  .company-logo {
+    height: 35px;
+  }
+  
+  .db-button .click-text {
+    font-size: 10px;
+  }
+  
+  .db-button .main-text {
+    font-size: 12px;
+  }
+}
+
+/* Very small phones: < 400px */
+@media screen and (max-width: 400px) {
+  .logo-section {
+    padding: 6px 8px;
+  }
+  
+  .logo-container img {
+    height: 40px;
+  }
+  
+  .welcome-text {
+    font-size: 12px;
+  }
+  
+  .nav-item {
+    font-size: 13px;
+    padding: 8px 10px;
+    border-left-width: 5px;
+  }
+  
+  .brochure-grid {
+    border-left-width: 5px;
+  }
+  
+  .clock {
+    width: 45px;
+    height: 45px;
+  }
+  
+  .ampm-indicator {
+    font-size: 8px;
+  }
+}
+
+/* Landscape mode on mobile */
+@media screen and (max-height: 500px) and (orientation: landscape) {
+  .page-wrapper {
+    height: auto;
+    min-height: 100vh; /* Fallback */
+    min-height: 100dvh;
+  }
+  
+  .top-row {
+    flex-direction: row;
+  }
+  
+  .left-column {
+    width: 280px;
+  }
+  
+  .nav-item {
+    font-size: 12px;
+    padding: 6px 10px;
+  }
+  
+  .brochure-btn {
+    font-size: 10px;
+    padding: 5px 4px;
+  }
+  
+  .logo-container img {
+    height: 40px;
+  }
+  
+  .welcome-text {
+    font-size: 12px;
+    margin: 4px 0;
+  }
+}
+
+/* ==========================================================================
+   10. PROJECT MODAL
+   ========================================================================== */
+
+.proj-modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  padding: 20px;
+  background:
+    radial-gradient(1200px 600px at 20% 10%, rgba(44, 74, 124, 0.55), rgba(0,0,0,0.25)),
+    rgba(0,0,0,0.55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.proj-modal {
+  max-width: 820px;
+  margin: 5vh auto;
+  background: rgba(255,255,255,0.92);
+  border-radius: 18px;
+  box-shadow: 0 18px 70px rgba(0,0,0,0.45);
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.55);
+}
+
+.proj-modal-header {
+  padding: 18px 20px;
+  background: linear-gradient(135deg, #1f3358, #355c94 55%, #4a6fa5);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.proj-modal-title {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.proj-modal-title strong {
+  font-size: 16px;
+  letter-spacing: 0.2px;
+}
+
+.proj-modal-title span {
+  font-size: 12px;
+  opacity: 0.9;
+}
+
+.proj-modal-close {
+  border: 1px solid rgba(255,255,255,0.35);
+  background: rgba(255,255,255,0.12);
+  color: #fff;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform .15s, background .15s, border-color .15s;
+}
+
+.proj-modal-close:hover {
+  transform: translateY(-1px);
+  background: rgba(255,255,255,0.18);
+  border-color: rgba(255,255,255,0.55);
+}
+
+.proj-modal-body {
+  padding: 18px 20px 20px;
+}
+
+.proj-modal-note {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 12px 14px;
+  border: 1px solid rgba(44,74,124,0.18);
+  background: linear-gradient(180deg, rgba(44,74,124,0.06), rgba(44,74,124,0.02));
+  border-radius: 14px;
+  color: #2b2b2b;
+  font-size: 13px;
+  line-height: 1.5;
+  margin-bottom: 14px;
+}
+
+.proj-modal-note .dot {
+  width: 10px;
+  height: 10px;
+  margin-top: 4px;
+  border-radius: 999px;
+  background: #4a6fa5;
+  box-shadow: 0 0 0 4px rgba(74,111,165,0.15);
+  flex: 0 0 auto;
+}
+
+.proj-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+@media (max-width: 680px) {
+  .proj-grid { grid-template-columns: 1fr; }
+}
+
+.proj-card {
+  text-align: left;
+  border: 1px solid rgba(0,0,0,0.08);
+  background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(250,251,252,0.92));
+  padding: 14px;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: transform .15s, box-shadow .15s, border-color .15s;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.proj-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+  border-color: rgba(44,74,124,0.25);
+}
+
+.proj-card-main {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.proj-card-name {
+  font-weight: 900;
+  color: #20385f;
+  font-size: 15px;
+  letter-spacing: 0.2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.proj-card-meta {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+  font-size: 12px;
+  color: #5d6675;
+}
+
+.proj-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(44,74,124,0.18);
+  background: rgba(44,74,124,0.06);
+  color: #2c4a7c;
+  font-weight: 800;
+}
+
+.proj-last {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(46,125,50,0.22);
+  background: rgba(46,125,50,0.08);
+  color: #2e7d32;
+  font-weight: 800;
+}
+
+.proj-card-schedule {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  padding: 6px 10px;
+  background: linear-gradient(135deg, rgba(44,74,124,0.08), rgba(44,74,124,0.04));
+  border: 1px solid rgba(44,74,124,0.12);
+  border-radius: 8px;
+  font-size: 12px;
+  color: #2c4a7c;
+  font-weight: 600;
+}
+
+.proj-schedule-icon {
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+.proj-schedule-text {
+  letter-spacing: 0.2px;
+}
+
+.proj-card-right {
+  color: rgba(44,74,124,0.85);
+  font-weight: 900;
+  font-size: 18px;
+  line-height: 1;
+  margin-top: 2px;
+}
+
+.proj-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(0,0,0,0.06);
+}
+
+.proj-footer .last {
+  color: #5b6472;
+  font-size: 12px;
+}
+
+.proj-footer .last strong {
+  color: #111;
+}
+
+.proj-btn-secondary {
+  border: 1px solid rgba(0,0,0,0.12);
+  background: rgba(255,255,255,0.75);
+  padding: 9px 12px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 700;
+  color: #333;
+  transition: transform .15s, box-shadow .15s, background .15s;
+}
+
+.proj-btn-secondary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(0,0,0,0.10);
+  background: rgba(255,255,255,0.92);
+}

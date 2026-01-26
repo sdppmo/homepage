@@ -1,0 +1,1893 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BOQ 산출서 - K-COL</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+            padding: 20px;
+            color: #1a202c;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .header h1 {
+            color: #1e3a5f;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header .subtitle {
+            color: #718096;
+            font-size: 14px;
+        }
+
+        .info-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f7fafc;
+            border-radius: 8px;
+        }
+
+        .info-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .info-label {
+            font-size: 12px;
+            color: #718096;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        .info-value {
+            font-size: 16px;
+            color: #1a202c;
+            font-weight: 600;
+        }
+
+        .boq-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+            font-size: 13px;
+        }
+
+        .boq-table thead {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .boq-table th {
+            padding: 12px 8px;
+            text-align: center;
+            font-weight: 600;
+            border: 1px solid #e2e8f0;
+        }
+
+        .boq-table td {
+            padding: 10px 8px;
+            text-align: center;
+            border: 1px solid #e2e8f0;
+        }
+
+        .boq-table tbody tr:nth-child(even) {
+            background: #f7fafc;
+        }
+
+        .boq-table tbody tr:hover {
+            background: #edf2f7;
+        }
+
+        .text-left {
+            text-align: left;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .total-row {
+            background: #e6fffa !important;
+            font-weight: 700;
+            color: #1e3a5f;
+        }
+
+        .total-row td {
+            border-top: 2px solid #38a169;
+            border-bottom: 2px solid #38a169;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-print {
+            background: #38a169;
+            color: white;
+        }
+
+        .btn-print:hover {
+            background: #2f855a;
+        }
+
+        .btn-export {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-export:hover {
+            background: #5568d3;
+        }
+
+        .btn-close {
+            background: #718096;
+            color: white;
+        }
+
+        .btn-close:hover {
+            background: #4a5568;
+        }
+
+        @media print {
+            body {
+                padding: 0;
+                background: white;
+            }
+
+            .container {
+                box-shadow: none;
+                padding: 20px;
+            }
+
+            .actions {
+                display: none;
+            }
+
+            .boq-table {
+                page-break-inside: auto;
+            }
+
+            .boq-table tr {
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>BOQ (Bill of Quantities)</h1>
+            <div class="subtitle">공사 수량 산출서</div>
+        </div>
+
+        <div class="info-section">
+            <div class="info-item">
+                <div class="info-label">작성일</div>
+                <div class="info-value" id="reportDate"></div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">총 기둥 개수</div>
+                <div class="info-value" id="totalCount">0</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">총 단면적</div>
+                <div class="info-value" id="totalArea">0 mm²</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">총 중량</div>
+                <div class="info-value" id="totalWeight">0 kg</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">총 금액</div>
+                <div class="info-value" id="totalAmount" style="color: #667eea; font-size: 18px; font-weight: 700;">0원</div>
+            </div>
+        </div>
+
+        <div style="margin-bottom: 30px;">
+            <div style="margin-bottom: 15px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <h2 style="color: #1e3a5f; font-size: 20px; margin: 0; padding-bottom: 10px; border-bottom: 2px solid #667eea; flex: 1;">1. 기둥 물량 정리(Cross H) - Auto Find Selection 기능</h2>
+                </div>
+                <div style="display: flex; justify-content: flex-end; padding: 10px; background: #f7fafc; border-radius: 6px; margin-top: 10px;">
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 14px; font-weight: 600; color: #4a5568;">
+                        <input type="checkbox" id="quantityGroupingCheckbox" onchange="loadBOQData()" style="width: 18px; height: 18px; cursor: pointer;">
+                        <span>물량 기준 그룹핑 (많은 순 정렬 + 작은 물량 유사 단면 통합)</span>
+                    </label>
+                </div>
+            </div>
+            <table class="boq-table">
+                <thead>
+                    <tr>
+                        <th>No.</th>
+                        <th>기둥명</th>
+                        <th>조합</th>
+                        <th>H<br>(mm)</th>
+                        <th>B<br>(mm)</th>
+                        <th>tw<br>(mm)</th>
+                        <th>tf<br>(mm)</th>
+                        <th>단면적<br>(mm²)</th>
+                        <th>단중<br>(kg/m)</th>
+                        <th>길이<br>(m)</th>
+                        <th>길이타입</th>
+                        <th>개수</th>
+                        <th>총 중량<br>(kg)</th>
+                        <th>강종</th>
+                        <th>금액<br>(원)</th>
+                </tr>
+            </thead>
+            <tbody id="boqTableBody">
+                <!-- BOQ 데이터가 여기에 표시됩니다 -->
+            </tbody>
+            <tfoot>
+                <tr class="total-row">
+                    <td colspan="11" class="text-right" style="font-weight: 700;">합계</td>
+                    <td id="totalCountFooter">0</td>
+                    <td id="totalWeightFooter">0</td>
+                    <td>-</td>
+                    <td id="totalColumnAmountFooter" class="text-right" style="font-weight: 700;">0원</td>
+                </tr>
+            </tfoot>
+            </table>
+        </div>
+
+        <div style="margin-top: 40px;">
+            <div style="margin-bottom: 15px;">
+                <h2 style="color: #1e3a5f; font-size: 20px; margin: 0; padding-bottom: 10px; border-bottom: 2px solid #667eea; flex: 1;">2. 주기둥 Built-UP 부재 물량 정리</h2>
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; background: #f7fafc; border-radius: 6px; margin-top: 10px;">
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 14px; font-weight: 600; color: #4a5568;">
+                        <input type="checkbox" id="plateGroupingCheckbox" onchange="loadBOQData()" style="width: 18px; height: 18px; cursor: pointer;">
+                        <span>물량 기준 그룹핑 (많은 순 정렬 + 작은 물량 유사 단면 통합)</span>
+                    </label>
+                    <button onclick="showThicknessMergeModal()" style="padding: 8px 16px; background: #667eea; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600;">
+                        🔧 두께 통합 설정
+                    </button>
+                </div>
+            </div>
+            <table class="boq-table">
+                <thead>
+                    <tr>
+                        <th>No.</th>
+                        <th>Plate 종류<br>(두께, mm)</th>
+                        <th>사용부위</th>
+                        <th>폭<br>(mm)</th>
+                        <th>두께<br>(mm)</th>
+                        <th>단중<br>(kg/m)</th>
+                        <th>길이<br>(m)</th>
+                        <th>개수</th>
+                        <th>총 중량<br>(kg)</th>
+                        <th>강종</th>
+                        <th>비고</th>
+                    </tr>
+                </thead>
+                <tbody id="plateTableBody">
+                    <!-- Plate 물량 데이터가 여기에 표시됩니다 -->
+                </tbody>
+                <tfoot>
+                    <tr class="total-row">
+                        <td colspan="7" class="text-right" style="font-weight: 700;">합계</td>
+                        <td id="plateTotalCountFooter">0</td>
+                        <td id="plateTotalWeightFooter">0</td>
+                        <td>-</td>
+                        <td id="plateTotalNoteFooter">-</td>
+                    </tr>
+                </tfoot>
+            </table>
+            <!-- NOTE -->
+            <div style="margin-top: 15px; padding: 12px 16px; background: #fffbf0; border-left: 4px solid #f6ad55; border-radius: 6px; font-size: 13px; color: #744210; line-height: 1.6;">
+                <strong>Note:</strong> 조정된 Plate 두께는 두께통합설정내에 규칙이 존재하므로 신규 Auto Find Section을 원하면 <span style="color: #e53e3e; font-weight: 600;">두께통합설정내 규칙을 삭제하고 실행</span>하시기 바랍니다.
+            </div>
+        </div>
+
+        <!-- Rolled H 물량 정리 (조합3이 있을 때만 표시) -->
+        <div id="rolledHSection" style="margin-top: 40px; display: none;">
+            <div style="margin-bottom: 15px;">
+                <h2 style="color: #1e3a5f; font-size: 20px; margin: 0; padding-bottom: 10px; border-bottom: 2px solid #667eea; flex: 1;">3. Rolled H 물량 정리</h2>
+                <div style="display: flex; justify-content: flex-end; padding: 10px; background: #f7fafc; border-radius: 6px; margin-top: 10px;">
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 14px; font-weight: 600; color: #4a5568;">
+                        <input type="checkbox" id="rolledHGroupingCheckbox" onchange="loadBOQData()" style="width: 18px; height: 18px; cursor: pointer;">
+                        <span>물량 기준 그룹핑 (많은 순 정렬 + 작은 물량 유사 단면 통합)</span>
+                    </label>
+                </div>
+            </div>
+            <table class="boq-table">
+                <thead>
+                    <tr>
+                        <th>No.</th>
+                        <th>기둥번호</th>
+                        <th>단면 규격</th>
+                        <th>길이<br>(m)</th>
+                        <th>개수</th>
+                        <th>단중<br>(kg/m)</th>
+                        <th>총 중량<br>(kg)</th>
+                        <th>강종</th>
+                        <th>비고</th>
+                    </tr>
+                </thead>
+                <tbody id="rolledHTableBody">
+                    <!-- Rolled H 물량 데이터가 여기에 표시됩니다 -->
+                </tbody>
+                <tfoot>
+                    <tr class="total-row">
+                        <td colspan="4" class="text-right" style="font-weight: 700;">합계</td>
+                        <td id="rolledHTotalCountFooter">0</td>
+                        <td>-</td>
+                        <td id="rolledHTotalWeightFooter">0</td>
+                        <td>-</td>
+                        <td id="rolledHTotalNoteFooter">-</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <div id="subMaterialSection" style="margin-top: 40px;">
+            <h2 id="subMaterialTitle" style="color: #1e3a5f; font-size: 20px; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px solid #667eea;">3. 소부재 물량 정리</h2>
+            <table class="boq-table">
+                <thead>
+                    <tr>
+                        <th>No.</th>
+                        <th>소부재 종류</th>
+                        <th>규격/사양</th>
+                        <th>단위</th>
+                        <th>수량</th>
+                        <th>강종</th>
+                        <th>주기둥부재물량<br>(kg)</th>
+                        <th>할증<br>(15%)</th>
+                        <th>소부재 단가<br>(원/톤)</th>
+                        <th>금액<br>(원)</th>
+                        <th>비고</th>
+                    </tr>
+                </thead>
+                <tbody id="subMaterialTableBody">
+                    <!-- 소부재 물량 데이터가 여기에 표시됩니다 -->
+                </tbody>
+                <tfoot>
+                    <tr class="total-row">
+                        <td colspan="4" class="text-right" style="font-weight: 700;">합계</td>
+                        <td id="subMaterialTotalQtyFooter">0</td>
+                        <td>-</td>
+                        <td id="subMaterialTotalWeightFooter">0</td>
+                        <td id="subMaterialTotalSurchargeFooter">0</td>
+                        <td id="subMaterialTotalUnitPriceFooter">0</td>
+                        <td id="subMaterialTotalAmountFooter">0</td>
+                        <td>-</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+
+        <div class="actions">
+            <button class="btn btn-print" onclick="window.print()">🖨️ 인쇄</button>
+            <button class="btn btn-export" onclick="exportToCSV()">📥 CSV 다운로드</button>
+            <button class="btn" style="background: #667eea; color: white;" onclick="showSubMaterialModal()">➕ 소부재 추가</button>
+            <button class="btn btn-close" onclick="window.close()">닫기</button>
+        </div>
+    </div>
+
+    <!-- 두께 통합 설정 모달 -->
+    <div id="thicknessMergeModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10002; align-items: center; justify-content: center; overflow-y: auto; padding: 20px;">
+        <div style="background: white; border-radius: 12px; padding: 30px; max-width: 700px; width: 100%; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 40px rgba(0,0,0,0.2);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 2px solid #667eea;">
+                <h2 style="color: #1e3a5f; font-size: 22px; margin: 0;">두께 통합 설정</h2>
+                <button onclick="closeThicknessMergeModal()" style="background: none; border: none; font-size: 24px; color: #999; cursor: pointer; padding: 0; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;">&times;</button>
+            </div>
+            
+            <div style="margin-bottom: 20px; padding: 15px; background: #f7fafc; border-radius: 8px;">
+                <h3 style="color: #4a5568; font-size: 16px; margin-bottom: 15px;">현재 두께 현황</h3>
+                <div id="currentThicknessList" style="max-height: 200px; overflow-y: auto;">
+                    <!-- 현재 두께 목록이 여기에 표시됩니다 -->
+                </div>
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <h3 style="color: #4a5568; font-size: 16px; margin-bottom: 15px;">두께 통합 규칙 추가</h3>
+                <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 15px;">
+                    <label style="font-weight: 600; color: #4a5568;">From:</label>
+                    <input type="number" id="mergeFromThickness" placeholder="예: 11" min="1" max="100" step="1" style="padding: 8px 12px; border: 1px solid #cbd5e0; border-radius: 6px; width: 100px; font-size: 14px;">
+                    <label style="font-weight: 600; color: #4a5568;">To:</label>
+                    <input type="number" id="mergeToThickness" placeholder="예: 12" min="1" max="100" step="1" style="padding: 8px 12px; border: 1px solid #cbd5e0; border-radius: 6px; width: 100px; font-size: 14px;">
+                    <button onclick="addThicknessMergeRule()" style="padding: 8px 16px; background: #38a169; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600;">추가</button>
+                </div>
+            </div>
+
+            <div style="margin-bottom: 25px;">
+                <h3 style="color: #4a5568; font-size: 16px; margin-bottom: 15px;">통합 규칙 목록</h3>
+                <div id="mergeRulesList" style="min-height: 100px; max-height: 200px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px;">
+                    <!-- 통합 규칙 목록이 여기에 표시됩니다 -->
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button onclick="closeThicknessMergeModal()" style="padding: 10px 20px; background: #718096; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600;">취소</button>
+                <button onclick="applyThicknessMerge()" style="padding: 10px 20px; background: #667eea; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600;">적용</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 물량 기준 BOQ 아이템 그룹핑 함수
+        function groupBOQItemsByQuantity(items) {
+            if (!items || items.length === 0) return items;
+
+            // 각 아이템의 물량 계산 (unitWeight × length × count)
+            const itemsWithQuantity = items.map(item => {
+                const quantity = item.unitWeight * item.length * item.count;
+                return {
+                    ...item,
+                    quantity: quantity
+                };
+            });
+
+            // 물량 순으로 정렬 (큰 것부터)
+            itemsWithQuantity.sort((a, b) => (b.quantity || 0) - (a.quantity || 0));
+
+            // 전체 물량 합계 계산
+            const totalQuantity = itemsWithQuantity.reduce((sum, item) => sum + (item.quantity || 0), 0);
+
+            // 물량이 적은 항목 기준 설정 (전체의 5% 이하)
+            const smallQuantityThreshold = totalQuantity * 0.05;
+
+            // 큰 물량 항목과 작은 물량 항목 분리
+            const largeQuantityItems = [];
+            const smallQuantityItems = [];
+
+            itemsWithQuantity.forEach(item => {
+                if (item.quantity >= smallQuantityThreshold) {
+                    largeQuantityItems.push(item);
+                } else {
+                    smallQuantityItems.push(item);
+                }
+            });
+
+            // 작은 물량 항목들을 유사한 단면끼리 그룹핑
+            const groupedSmallItems = [];
+            const tolerance = 0.15; // 15% 오차 허용
+
+            smallQuantityItems.forEach(item => {
+                if (!item.h || !item.b || !item.tw || !item.tf) {
+                    largeQuantityItems.push(item);
+                    return;
+                }
+
+                // 기존 그룹에서 유사한 단면 찾기
+                let foundGroup = false;
+                for (let group of groupedSmallItems) {
+                    const groupItem = group.items[0];
+                    if (!groupItem.h || !groupItem.b || !groupItem.tw || !groupItem.tf) continue;
+
+                    // H, B, tw, tf가 모두 ±15% 이내이고, 조합과 강종이 같은지 확인
+                    const hDiff = Math.abs(item.h - groupItem.h) / groupItem.h;
+                    const bDiff = Math.abs(item.b - groupItem.b) / groupItem.b;
+                    const twDiff = Math.abs(item.tw - groupItem.tw) / groupItem.tw;
+                    const tfDiff = Math.abs(item.tf - groupItem.tf) / groupItem.tf;
+                    const sameCombination = item.combination === groupItem.combination;
+                    const sameSteelGrade = item.steelGrade === groupItem.steelGrade;
+
+                    if (hDiff <= tolerance && bDiff <= tolerance &&
+                        twDiff <= tolerance && tfDiff <= tolerance &&
+                        sameCombination && sameSteelGrade) {
+                        // 유사한 단면 그룹에 추가
+                        group.items.push(item);
+                        group.totalQuantity += item.quantity || 0;
+                        group.totalCount += item.count || 0;
+                        group.totalLength += item.length * item.count || 0;
+                        group.names.push(...item.names);
+                        foundGroup = true;
+                        break;
+                    }
+                }
+
+                if (!foundGroup) {
+                    // 새로운 그룹 생성
+                    groupedSmallItems.push({
+                        items: [item],
+                        totalQuantity: item.quantity || 0,
+                        totalCount: item.count || 0,
+                        totalLength: item.length * item.count || 0,
+                        names: [...item.names],
+                        representative: item
+                    });
+                }
+            });
+
+            // 그룹핑된 작은 물량 항목들을 하나의 아이템으로 변환
+            const groupedItems = groupedSmallItems.map(group => {
+                const rep = group.representative;
+                const avgLength = group.totalCount > 0 ? group.totalLength / group.totalCount : rep.length;
+                
+                return {
+                    ...rep,
+                    names: group.names.length > 1 ? 
+                        [`${group.names[0]} 외 ${group.names.length - 1}개`] : 
+                        group.names,
+                    quantity: group.totalQuantity,
+                    count: group.totalCount,
+                    length: avgLength,
+                    isGrouped: true,
+                    originalNames: group.names,
+                    originalCount: group.items.length
+                };
+            });
+
+            // 큰 물량 항목 + 그룹핑된 작은 물량 항목 (그룹핑된 항목도 물량순 정렬)
+            groupedItems.sort((a, b) => (b.quantity || 0) - (a.quantity || 0));
+
+            return [...largeQuantityItems, ...groupedItems];
+        }
+
+        // BOQ 데이터 로드
+        function loadBOQData() {
+            const boqData = JSON.parse(localStorage.getItem('boqData')) || null;
+            
+            if (!boqData || !boqData.items || boqData.items.length === 0) {
+                document.getElementById('boqTableBody').innerHTML = 
+                    '<tr><td colspan="14" style="text-align: center; padding: 30px; color: #999;">BOQ 데이터가 없습니다.</td></tr>';
+                document.getElementById('plateTableBody').innerHTML = 
+                    '<tr><td colspan="10" style="text-align: center; padding: 30px; color: #999;">Plate 데이터가 없습니다.</td></tr>';
+                return;
+            }
+
+            // 작성일 표시
+            const now = new Date();
+            document.getElementById('reportDate').textContent = 
+                `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+
+            // 총계 계산
+            let totalCount = 0;
+            let totalArea = 0;
+            let totalWeight = 0;
+            let totalColumnAmount = 0;
+            // 저장된 주부재 단가 불러오기 (기본값: SM420 1,900,000원/톤, SM355 1,830,000원/톤)
+            const savedPrices = JSON.parse(localStorage.getItem('boqUnitPrices')) || {};
+            const columnUnitPriceSM420 = savedPrices.mainMaterialSM420 || 1900000; // SM420 톤당 단가 (원)
+            const columnUnitPriceSM355 = savedPrices.mainMaterialSM355 || 1830000; // SM355 톤당 단가 (원)
+            const steelDensity = 7850; // kg/m³
+
+            const tbody = document.getElementById('boqTableBody');
+            tbody.innerHTML = '';
+
+            // 물량 기준 그룹핑 적용 여부 확인
+            const applyGrouping = document.getElementById('quantityGroupingCheckbox')?.checked || false;
+            let itemsToDisplay = boqData.items;
+
+            // 그룹핑이 활성화된 경우
+            if (applyGrouping) {
+                itemsToDisplay = groupBOQItemsByQuantity(boqData.items);
+            } else {
+                // 그룹핑이 비활성화된 경우 원본 순서 유지
+                itemsToDisplay = boqData.items;
+            }
+
+            itemsToDisplay.forEach((item, index) => {
+                const totalWeightItem = item.unitWeight * item.length * item.count;
+                totalCount += item.count;
+                totalArea += item.area * item.count;
+                totalWeight += totalWeightItem;
+
+                // 기둥 금액 계산: 중량(톤) × 단가 (강종별)
+                const weightInTon = totalWeightItem / 1000; // kg to ton
+                let columnUnitPrice = 0;
+                if (item.steelGrade === 'SM420' || item.steelGrade.includes('SM420')) {
+                    columnUnitPrice = columnUnitPriceSM420;
+                } else if (item.steelGrade === 'SM355' || item.steelGrade.includes('SM355')) {
+                    columnUnitPrice = columnUnitPriceSM355;
+                } else {
+                    columnUnitPrice = columnUnitPriceSM420; // 기본값
+                }
+                const columnAmount = weightInTon * columnUnitPrice;
+                totalColumnAmount += columnAmount;
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td class="text-left">${item.names.join(', ')}</td>
+                    <td>${item.combination}</td>
+                    <td>${item.h}</td>
+                    <td>${item.b}</td>
+                    <td>${item.tw}</td>
+                    <td>${item.tf}</td>
+                    <td class="text-right">${item.area.toFixed(2)}</td>
+                    <td class="text-right">${item.unitWeight.toFixed(2)}</td>
+                    <td class="text-right">${item.length.toFixed(2)}</td>
+                    <td>Type${item.lengthType || ''}</td>
+                    <td>${item.count}</td>
+                    <td class="text-right">${parseFloat(totalWeightItem.toFixed(2)).toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                    <td>${item.steelGrade}</td>
+                    <td class="text-right">${columnAmount > 0 ? Math.round(columnAmount).toLocaleString('ko-KR') : '-'}</td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            // 총계 표시
+            document.getElementById('totalCount').textContent = totalCount;
+            document.getElementById('totalArea').textContent = totalArea.toFixed(2) + ' mm²';
+            document.getElementById('totalWeight').textContent = parseFloat(totalWeight.toFixed(2)).toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' kg';
+            document.getElementById('totalCountFooter').textContent = totalCount;
+            document.getElementById('totalWeightFooter').textContent = parseFloat(totalWeight.toFixed(2)).toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            document.getElementById('totalColumnAmountFooter').textContent = totalColumnAmount > 0 ? Math.round(totalColumnAmount).toLocaleString('ko-KR') + '원' : '0원';
+
+            // 조합1/2(Built-UP)와 조합3(Rolled H) 분리 (그룹핑 적용된 items 사용)
+            const comb3Names = ['H400×B200', 'H450×B200', 'H500×B200', 'H506×B201', 'H482×B300', 'H488×B300', 'H582×B300', 'H588×B300', 'H600×B200'];
+            const rolledHItems = itemsToDisplay.filter(item => {
+                return comb3Names.some(name => item.combination === name);
+            });
+            const builtUpItems = itemsToDisplay.filter(item => {
+                return !comb3Names.some(name => item.combination === name);
+            });
+            
+            // 조합1/2와 조합3이 함께 있는지 확인
+            const hasComb1_2 = builtUpItems.length > 0;
+            const hasComb3 = rolledHItems.length > 0;
+            const hasBoth = hasComb1_2 && hasComb3;
+            
+            // Built-UP 부재 Plate 물량 정리 (조합1/2만 처리)
+            if (hasComb1_2) {
+                generatePlateBOQ(builtUpItems);
+            }
+            
+            // 조합1/2와 조합3이 함께 있을 때만 Rolled H 물량 정리 표시
+            if (hasBoth) {
+                generateRolledHBOQ(rolledHItems);
+                // 소부재 물량 정리 제목을 "4. 소부재 물량 정리"로 변경
+                document.getElementById('subMaterialTitle').textContent = '4. 소부재 물량 정리';
+            } else {
+                // 조합3만 있거나 없으면 Rolled H 섹션 숨김
+                document.getElementById('rolledHSection').style.display = 'none';
+                // 소부재 물량 정리 제목을 "3. 소부재 물량 정리"로 유지
+                document.getElementById('subMaterialTitle').textContent = '3. 소부재 물량 정리';
+            }
+            
+            // 총 금액 계산 및 표시 (기둥 금액 + 소부재 금액)
+            updateTotalAmount();
+        }
+
+        // 총 금액 업데이트
+        function updateTotalAmount() {
+            // 기둥 금액 합계
+            const totalColumnAmount = parseFloat(
+                document.getElementById('totalColumnAmountFooter').textContent.replace(/[^0-9.]/g, '')
+            ) || 0;
+            
+            // 소부재 금액 합계
+            const subMaterialTotalAmount = parseFloat(
+                document.getElementById('subMaterialTotalAmountFooter').textContent.replace(/[^0-9.]/g, '')
+            ) || 0;
+            
+            // 총 금액 = 기둥 금액 + 소부재 금액
+            const totalAmount = totalColumnAmount + subMaterialTotalAmount;
+            
+            // 총 금액 표시 (소수점 제거)
+            document.getElementById('totalAmount').textContent = Math.round(totalAmount).toLocaleString('ko-KR') + '원';
+        }
+
+        // Plate 물량 기준 그룹핑 함수
+        function groupPlateItemsByQuantity(plates) {
+            if (!plates || plates.length === 0) return plates;
+
+            // 물량 순으로 정렬 (큰 것부터)
+            plates.sort((a, b) => (b.totalWeight || 0) - (a.totalWeight || 0));
+
+            // 전체 물량 합계 계산
+            const totalQuantity = plates.reduce((sum, plate) => sum + (plate.totalWeight || 0), 0);
+
+            // 물량이 적은 항목 기준 설정 (전체의 5% 이하)
+            const smallQuantityThreshold = totalQuantity * 0.05;
+
+            // 큰 물량 항목과 작은 물량 항목 분리
+            const largeQuantityItems = [];
+            const smallQuantityItems = [];
+
+            plates.forEach(plate => {
+                if (plate.totalWeight >= smallQuantityThreshold) {
+                    largeQuantityItems.push(plate);
+                } else {
+                    smallQuantityItems.push(plate);
+                }
+            });
+
+            // 작은 물량 항목들을 유사한 단면(두께, 폭)끼리 그룹핑
+            const groupedSmallItems = [];
+            const tolerance = 0.15; // 15% 오차 허용
+            
+            // 저장된 두께 통합 규칙 사용 (최신 값 로드)
+            const thicknessMapping = JSON.parse(localStorage.getItem('thicknessMergeRules')) || {};
+
+            smallQuantityItems.forEach(plate => {
+                if (!plate.thickness_mm || !plate.avgWidth) {
+                    largeQuantityItems.push(plate);
+                    return;
+                }
+
+                // 원본 두께 저장 (매핑 전)
+                const originalThickness = plate.thickness_mm;
+
+                // 두께 매핑 적용 (사용자가 설정한 규칙 사용) - 데이터 값 자체를 변경
+                if (thicknessMapping[plate.thickness_mm]) {
+                    plate.thickness_mm = thicknessMapping[plate.thickness_mm];
+                    plate.thickness = thicknessMapping[plate.thickness_mm];
+                }
+                const adjustedThickness = plate.thickness_mm;
+                
+                // 원본 두께 정보를 plate 객체에 저장
+                plate._originalThickness = originalThickness;
+
+                // 기존 그룹에서 유사한 단면 찾기
+                let foundGroup = false;
+                for (let group of groupedSmallItems) {
+                    const groupPlate = group.items[0];
+                    if (!groupPlate.thickness_mm || !groupPlate.avgWidth) continue;
+
+                    // 두께가 같거나, 두께와 폭이 ±15% 이내인지 확인
+                    const thicknessMatch = adjustedThickness === groupPlate.thickness_mm;
+                    const thicknessDiff = Math.abs(adjustedThickness - groupPlate.thickness_mm) / groupPlate.thickness_mm;
+                    const widthDiff = Math.abs(plate.avgWidth - groupPlate.avgWidth) / groupPlate.avgWidth;
+
+                    if (thicknessMatch || (thicknessDiff <= tolerance && widthDiff <= tolerance)) {
+                        // 유사한 단면 그룹에 추가
+                        group.items.push(plate);
+                        group.totalWeight += plate.totalWeight || 0;
+                        group.totalCount += plate.totalCount || 0;
+                        group.totalLength += plate.totalLength || 0;
+                        group.usageParts = [...new Set([...group.usageParts.split(', '), ...plate.usageParts.split(', ')])].join(', ');
+                        
+                        // 원본 두께 정보 저장
+                        if (!group.originalThicknessMap) {
+                            group.originalThicknessMap = {};
+                        }
+                        const originalThick = plate._originalThickness || plate.thickness_mm;
+                        if (!group.originalThicknessMap[originalThick]) {
+                            group.originalThicknessMap[originalThick] = 0;
+                        }
+                        group.originalThicknessMap[originalThick] += plate.totalWeight || 0;
+                        
+                        foundGroup = true;
+                        break;
+                    }
+                }
+
+                if (!foundGroup) {
+                    // 새로운 그룹 생성 (원본 두께 정보 저장)
+                    const originalThick = plate._originalThickness || plate.thickness_mm;
+                    const newGroup = {
+                        items: [plate],
+                        totalWeight: plate.totalWeight || 0,
+                        totalCount: plate.totalCount || 0,
+                        totalLength: plate.totalLength || 0,
+                        usageParts: plate.usageParts,
+                        representative: plate,  // 매핑된 두께가 적용된 plate 사용
+                        originalThicknessMap: {}
+                    };
+                    newGroup.originalThicknessMap[originalThick] = plate.totalWeight || 0;
+                    groupedSmallItems.push(newGroup);
+                }
+            });
+
+            // 통합 전 물량 정보를 저장하기 위한 원본 데이터 복사
+            const originalPlatesMap = {};
+            smallQuantityItems.forEach(plate => {
+                // 원본 두께 정보 저장 (매핑 전)
+                const originalThickness = thicknessMapping[plate.thickness_mm] ? 
+                    Object.keys(thicknessMapping).find(k => thicknessMapping[k] === plate.thickness_mm) || plate.thickness_mm :
+                    plate.thickness_mm;
+                const key = `${plate.thickness_mm}_${plate.avgWidth}_${plate.usageParts}`;
+                originalPlatesMap[key] = {
+                    originalThickness: originalThickness,
+                    weight: plate.totalWeight
+                };
+            });
+
+            // 그룹핑된 작은 물량 항목들을 하나의 아이템으로 변환
+            const groupedItems = groupedSmallItems.map(group => {
+                const rep = group.representative;
+                const avgUnitWeight = group.totalLength > 0 ? group.totalWeight / group.totalLength : rep.unitWeight;
+                
+                // 통합 전 물량 정보 수집 (그룹의 items에서 원본 두께 확인)
+                const thicknessBeforeMerge = group.originalThicknessMap || {};
+                
+                // group.items의 원본 두께 정보로 추가 보정
+                group.items.forEach(item => {
+                    // 원본 두께 사용 (_originalThickness가 저장되어 있으면 사용)
+                    const originalThickness = item._originalThickness || item.thickness_mm;
+                    
+                    if (!thicknessBeforeMerge[originalThickness]) {
+                        thicknessBeforeMerge[originalThickness] = 0;
+                    }
+                    thicknessBeforeMerge[originalThickness] += item.totalWeight || 0;
+                });
+                
+                // 통합 정보 텍스트 생성
+                const mergeInfoParts = [];
+                Object.keys(thicknessBeforeMerge).sort((a, b) => parseFloat(a) - parseFloat(b)).forEach(thick => {
+                    const weight = thicknessBeforeMerge[thick];
+                    mergeInfoParts.push(`${thick}mm: ${parseFloat(weight.toFixed(2)).toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}kg`);
+                });
+                const mergeInfo = mergeInfoParts.join(', ');
+                const mergedThickness = rep.thickness_mm;
+                const mergedWeight = group.totalWeight;
+                
+                // 매핑된 두께가 적용된 객체 생성 (데이터 값 자체를 변경)
+                const mappedPlate = {
+                    ...rep,
+                    thickness_mm: rep.thickness_mm,  // 이미 매핑이 적용된 값
+                    thickness: rep.thickness_mm,     // 이미 매핑이 적용된 값
+                    usageParts: group.usageParts,
+                    totalWeight: group.totalWeight,
+                    totalCount: group.totalCount,
+                    totalLength: group.totalLength,
+                    unitWeight: avgUnitWeight,
+                    isGrouped: true,
+                    originalCount: group.items.length,
+                    mergeInfo: mergeInfoParts.length > 0 ? `${mergeInfo} → ${mergedThickness}mm: ${parseFloat(mergedWeight.toFixed(2)).toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}kg` : ''
+                };
+                
+                return mappedPlate;
+            });
+
+            // 큰 물량 항목 + 그룹핑된 작은 물량 항목 (그룹핑된 항목도 물량순 정렬)
+            groupedItems.sort((a, b) => (b.totalWeight || 0) - (a.totalWeight || 0));
+
+            return [...largeQuantityItems, ...groupedItems];
+        }
+
+        // Built-UP 부재 Plate 물량 정리 생성
+        function generatePlateBOQ(items) {
+            const plateData = {}; // { "tw8-H1-Web": {...}, "tf13-H1-Flange": {...} }
+            const steelDensity = 7850; // kg/m³
+            
+            // 조합3(Rolled H) 제외: Built-UP 부재 물량 정리에서는 조합3을 빼고 처리
+            const comb3Names = ['H400×B200', 'H450×B200', 'H500×B200', 'H506×B201', 'H482×B300', 'H488×B300', 'H582×B300', 'H588×B300', 'H600×B200'];
+            const builtUpItemsOnly = items.filter(item => {
+                return !comb3Names.some(name => item.combination === name);
+            });
+            
+            // 저장된 두께 통합 규칙 사용 (최신 값 로드)
+            const thicknessMapping = JSON.parse(localStorage.getItem('thicknessMergeRules')) || {};
+
+            builtUpItemsOnly.forEach(item => {
+                // Auto Find Section에서 저장된 H1, H2, B1, B2 사용 (없으면 h, b 사용)
+                const H1 = item.H1 || item.h;
+                const H2 = item.H2 || item.h;
+                const B1 = item.B1 || item.b;
+                const B2 = item.B2 || item.b;
+                
+                // 디버깅: H1, H2, B1, B2 값 확인
+                if (!item.H1 || !item.H2 || !item.B1 || !item.B2) {
+                    console.warn('[BOQ Plate] H1/H2/B1/B2가 없어서 h/b 사용:', {
+                        name: item.names?.[0] || 'unknown',
+                        H1: item.H1, H2: item.H2, B1: item.B1, B2: item.B2,
+                        h: item.h, b: item.b,
+                        사용값: { H1, H2, B1, B2 }
+                    });
+                }
+                
+                // 원본 두께 저장
+                const originalTw1 = item.tw;
+                const originalTw2 = item.tw;
+                const originalTf1 = item.tf;
+                const originalTf2 = item.tf;
+                
+                // 원본 폭 저장 (원본 tf로 계산)
+                const originalH1WebWidth = H1 - 2 * originalTf1;
+                const originalH2WebWidth = H2 - 2 * originalTf2;
+                
+                // 두께 매핑 적용 (8mm → 9mm 등)
+                let tw1 = item.tw;
+                let tw2 = item.tw;
+                let tf1 = item.tf;
+                let tf2 = item.tf;
+                
+                if (thicknessMapping[tw1]) {
+                    tw1 = thicknessMapping[tw1];
+                }
+                if (thicknessMapping[tw2]) {
+                    tw2 = thicknessMapping[tw2];
+                }
+                if (thicknessMapping[tf1]) {
+                    tf1 = thicknessMapping[tf1];
+                }
+                if (thicknessMapping[tf2]) {
+                    tf2 = thicknessMapping[tf2];
+                }
+
+                // H1 Web Plate (tw1)
+                const h1WebKey = `tw${tw1}-H1-Web`;
+                if (!plateData[h1WebKey]) {
+                    const webWidth = H1 - 2 * tf1; // Web 실제 폭 (통합 후)
+                    plateData[h1WebKey] = {
+                        thickness: tw1,
+                        type: 'Web',
+                        section: 'H1',
+                        width: webWidth,
+                        thickness_mm: tw1,
+                        originalThickness: originalTw1, // 원본 두께 저장
+                        originalWidth: originalH1WebWidth, // 원본 폭 저장
+                        unitWeight: 0,
+                        totalLength: 0,
+                        totalCount: 0,
+                        totalWeight: 0,
+                        steelGrade: item.steelGrade
+                    };
+                }
+                plateData[h1WebKey].totalLength += item.length * item.count;
+                plateData[h1WebKey].totalCount += item.count;
+
+                // H1 Flange Plate (tf1) - 상하 2개
+                const h1FlangeKey = `tf${tf1}-H1-Flange`;
+                if (!plateData[h1FlangeKey]) {
+                    plateData[h1FlangeKey] = {
+                        thickness: tf1,
+                        type: 'Flange',
+                        section: 'H1',
+                        width: B1,
+                        thickness_mm: tf1,
+                        originalThickness: originalTf1, // 원본 두께 저장
+                        unitWeight: 0,
+                        totalLength: 0,
+                        totalCount: 0,
+                        totalWeight: 0,
+                        steelGrade: item.steelGrade
+                    };
+                }
+                plateData[h1FlangeKey].totalLength += item.length * item.count * 2;
+                plateData[h1FlangeKey].totalCount += item.count * 2;
+
+                // H2 Web Plate (tw2)
+                const h2WebKey = `tw${tw2}-H2-Web`;
+                if (!plateData[h2WebKey]) {
+                    const webWidth = H2 - 2 * tf2; // Web 실제 폭 (통합 후)
+                    plateData[h2WebKey] = {
+                        thickness: tw2,
+                        type: 'Web',
+                        section: 'H2',
+                        width: webWidth,
+                        thickness_mm: tw2,
+                        originalThickness: originalTw2, // 원본 두께 저장
+                        originalWidth: originalH2WebWidth, // 원본 폭 저장
+                        unitWeight: 0,
+                        totalLength: 0,
+                        totalCount: 0,
+                        totalWeight: 0,
+                        steelGrade: item.steelGrade
+                    };
+                }
+                plateData[h2WebKey].totalLength += item.length * item.count;
+                plateData[h2WebKey].totalCount += item.count;
+
+                // H2 Flange Plate (tf2) - 좌우 2개
+                const h2FlangeKey = `tf${tf2}-H2-Flange`;
+                if (!plateData[h2FlangeKey]) {
+                    plateData[h2FlangeKey] = {
+                        thickness: tf2,
+                        type: 'Flange',
+                        section: 'H2',
+                        width: B2,
+                        thickness_mm: tf2,
+                        originalThickness: originalTf2, // 원본 두께 저장
+                        unitWeight: 0,
+                        totalLength: 0,
+                        totalCount: 0,
+                        totalWeight: 0,
+                        steelGrade: item.steelGrade
+                    };
+                }
+                plateData[h2FlangeKey].totalLength += item.length * item.count * 2;
+                plateData[h2FlangeKey].totalCount += item.count * 2;
+            });
+
+            // 단중 계산 및 총 중량 계산
+            Object.keys(plateData).forEach(key => {
+                const plate = plateData[key];
+                
+                // 원본 두께로 단중 계산 (통합 전 물량) - 원본 폭 사용
+                const originalThickness = plate.originalThickness || plate.thickness_mm;
+                const originalWidth = plate.originalWidth || plate.width; // 원본 폭 (통합 전)
+                const originalUnitWeight = (originalWidth * originalThickness * steelDensity) / 1000000;
+                const originalTotalWeight = originalUnitWeight * plate.totalLength;
+                
+                // 통합 후 두께로 단중 계산 (통합 후 물량)
+                plate.unitWeight = (plate.width * plate.thickness_mm * steelDensity) / 1000000;
+                plate.totalWeight = plate.unitWeight * plate.totalLength;
+                
+                // 원본 물량 저장 (통합 규칙 확인용)
+                plate.originalTotalWeight = originalTotalWeight;
+                plate.originalThicknessValue = originalThickness; // 원본 두께 값 저장
+                
+                // 디버깅: 두께 통합이 적용된 경우 콘솔에 출력
+                if (originalThickness !== plate.thickness_mm) {
+                    console.log(`[두께 통합] ${key}: ${originalThickness}mm → ${plate.thickness_mm}mm`, {
+                        원본물량: originalTotalWeight.toFixed(2) + 'kg',
+                        통합후물량: plate.totalWeight.toFixed(2) + 'kg',
+                        길이: plate.totalLength.toFixed(2) + 'm',
+                        폭: plate.width.toFixed(2) + 'mm'
+                    });
+                }
+            });
+
+            // 두께별로 그룹화하여 합산
+            const plateByThickness = {}; // { "8": [...], "13": [...] }
+            
+            Object.keys(plateData).forEach(key => {
+                const plate = plateData[key];
+                const thickness = plate.thickness_mm;
+                
+                if (!plateByThickness[thickness]) {
+                    plateByThickness[thickness] = [];
+                }
+                plateByThickness[thickness].push(plate);
+            });
+
+            // 두께별 합산 데이터 생성
+            const aggregatedPlates = [];
+            Object.keys(plateByThickness).sort((a, b) => parseFloat(a) - parseFloat(b)).forEach(thickness => {
+                const plates = plateByThickness[thickness];
+                
+                // 사용부위 정보 수집 (중복 제거)
+                const usageParts = plates.map(p => `${p.section} ${p.type}`).join(', ');
+                
+                // 폭 정보 (평균 또는 대표값, 실제로는 각각 다를 수 있음)
+                // 합산 시에는 각 Plate의 중량을 합산하므로 폭은 표시용으로 평균 사용
+                const avgWidth = plates.reduce((sum, p) => sum + p.width, 0) / plates.length;
+                
+                // 총 길이, 개수, 중량 합산
+                const totalLength = plates.reduce((sum, p) => sum + p.totalLength, 0);
+                const totalCount = plates.reduce((sum, p) => sum + p.totalCount, 0);
+                const totalWeight = plates.reduce((sum, p) => sum + p.totalWeight, 0);
+                
+                // 평균 단중 계산 (총 중량 / 총 길이)
+                const avgUnitWeight = totalLength > 0 ? totalWeight / totalLength : 0;
+                
+                // 강종 (모두 동일하다고 가정)
+                const steelGrade = plates[0].steelGrade;
+                
+                // 원본 두께 정보 수집 (매핑 전 두께)
+                // originalThickness 또는 originalThicknessValue를 사용
+                const originalThicknesses = plates.map(p => {
+                    return p.originalThickness || p.originalThicknessValue || p.thickness_mm;
+                }).filter((t, i, arr) => arr.indexOf(t) === i);
+                
+                // 원본 물량 합산 (통합 전 물량) - 각 Plate의 originalTotalWeight 합산
+                const originalTotalWeight = plates.reduce((sum, p) => sum + (p.originalTotalWeight || p.totalWeight), 0);
+                
+                // 디버깅: 모든 두께별 합산 정보 출력 (8mm, 9mm, 11mm, 12mm 포함)
+                console.log(`[테이블 두께별 합산] ${thickness}mm:`, {
+                    원본두께: originalThicknesses.join(', ') + 'mm',
+                    원본물량: originalTotalWeight.toFixed(2) + 'kg',
+                    통합후물량: totalWeight.toFixed(2) + 'kg',
+                    차이: (totalWeight - originalTotalWeight).toFixed(2) + 'kg',
+                    총길이: totalLength.toFixed(2) + 'm',
+                    총개수: totalCount + '개',
+                    plate개수: plates.length + '개'
+                });
+                
+                aggregatedPlates.push({
+                    thickness: parseFloat(thickness),
+                    usageParts: usageParts,
+                    avgWidth: avgWidth,
+                    thickness_mm: parseFloat(thickness),
+                    originalThicknesses: originalThicknesses, // 원본 두께 목록
+                    originalTotalWeight: originalTotalWeight, // 원본 물량 (통합 전)
+                    unitWeight: avgUnitWeight,
+                    totalLength: totalLength,
+                    totalCount: totalCount,
+                    totalWeight: totalWeight, // 통합 후 물량
+                    steelGrade: steelGrade
+                });
+            });
+
+            // 물량 기준 그룹핑 적용 여부 확인
+            const applyPlateGrouping = document.getElementById('plateGroupingCheckbox')?.checked || false;
+            let platesToDisplay = aggregatedPlates;
+
+            // 그룹핑이 활성화된 경우
+            if (applyPlateGrouping) {
+                platesToDisplay = groupPlateItemsByQuantity(aggregatedPlates);
+            }
+
+            // Plate 테이블 렌더링
+            const plateTbody = document.getElementById('plateTableBody');
+            plateTbody.innerHTML = '';
+
+            let plateTotalCount = 0;
+            let plateTotalWeight = 0;
+            let rowNo = 1;
+
+            // 두께 매핑 규칙: 테이블 표시용 (11mm → 12mm)
+            const thicknessDisplayMapping = {
+                11: 12  // 11mm를 12mm로 표시
+            };
+
+            platesToDisplay.forEach(plate => {
+                plateTotalCount += plate.totalCount;
+                plateTotalWeight += plate.totalWeight;
+
+                // 25톤(25,000kg) 미만인 경우 "후판주문" 노트 추가
+                const weightInTon = plate.totalWeight / 1000;
+                const note = weightInTon < 25 ? '후판주문' : '';
+                
+                // 통합 정보가 있으면 비고에 표시
+                let mergeNote = '';
+                const thicknessMapping = JSON.parse(localStorage.getItem('thicknessMergeRules')) || {};
+                
+                if (plate.mergeInfo) {
+                    // 그룹핑된 항목의 통합 정보
+                    mergeNote = plate.mergeInfo;
+                } else {
+                    // 그룹핑되지 않은 항목: 두께 통합 규칙 확인
+                    // 현재 두께가 통합 규칙의 결과인지 확인
+                    const mergedFromThicknesses = Object.keys(thicknessMapping)
+                        .map(from => parseFloat(from))
+                        .filter(from => thicknessMapping[from] === plate.thickness_mm);
+                    
+                    // 원본 두께 목록에서 통합 규칙이 적용된 것 찾기
+                    if (plate.originalThicknesses && plate.originalThicknesses.length > 0) {
+                        // originalThicknesses에서 현재 thickness_mm와 다른 것들 중, 통합 규칙에 해당하는 것 찾기
+                        const appliedMerges = plate.originalThicknesses
+                            .filter(t => t !== plate.thickness_mm && mergedFromThicknesses.includes(t));
+                        
+                        if (appliedMerges.length > 0) {
+                            // 원본 물량과 통합 후 물량 비교
+                            const originalWeight = plate.originalTotalWeight || plate.totalWeight;
+                            const mergedWeight = plate.totalWeight;
+                            const weightDiff = Math.abs(mergedWeight - originalWeight);
+                            const isWeightMatch = weightDiff < 0.01; // 0.01kg 이하 차이는 일치로 간주
+                            
+                            if (isWeightMatch) {
+                                mergeNote = appliedMerges.map(t => `${t}mm → ${plate.thickness_mm}mm`).join(', ');
+                            } else {
+                                // 물량 불일치 시 원본 물량 표시
+                                mergeNote = appliedMerges.map(t => `${t}mm → ${plate.thickness_mm}mm`).join(', ') + 
+                                    ` (원본: ${parseFloat(originalWeight.toFixed(2)).toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}kg)`;
+                            }
+                        } else if (mergedFromThicknesses.length > 0) {
+                            // originalThicknesses에 없지만 통합 규칙이 있는 경우 (다른 두께가 같은 두께로 통합된 경우)
+                            mergeNote = mergedFromThicknesses.map(t => `${t}mm → ${plate.thickness_mm}mm`).join(', ');
+                        }
+                    } else if (mergedFromThicknesses.length > 0) {
+                        // originalThicknesses가 없으면 통합 규칙만으로 표시
+                        mergeNote = mergedFromThicknesses.map(t => `${t}mm → ${plate.thickness_mm}mm`).join(', ');
+                    }
+                }
+                
+                // 비고 컬럼에 통합 정보와 후판주문 정보 모두 표시
+                const noteParts = [mergeNote, note].filter(n => n);
+                let noteTextHtml = noteParts.join(' | ');
+                
+                // 후판주문을 빨간색으로 표시
+                if (note === '후판주문') {
+                    noteTextHtml = noteParts.map(part => {
+                        if (part === '후판주문') {
+                            return `<span style="color: #e53e3e; font-weight: 600;">${part}</span>`;
+                        }
+                        return part;
+                    }).join(' | ');
+                }
+                
+                const noteTextColor = noteTextHtml ? (note === '후판주문' ? '#4a5568' : '#4a5568') : '#666';
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${rowNo++}</td>
+                    <td>${plate.thickness_mm}mm</td>
+                    <td>${plate.usageParts}</td>
+                    <td class="text-right">${plate.avgWidth.toFixed(2)}</td>
+                    <td class="text-right">${plate.thickness_mm}</td>
+                    <td class="text-right">${plate.unitWeight.toFixed(2)}</td>
+                    <td class="text-right">${plate.totalLength.toFixed(2)}</td>
+                    <td>${plate.totalCount}</td>
+                    <td class="text-right">${parseFloat(plate.totalWeight.toFixed(2)).toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                    <td>${plate.steelGrade}</td>
+                    <td class="text-left" style="color: ${noteTextColor}; font-weight: ${mergeNote ? '600' : 'normal'}; font-size: ${mergeNote ? '12px' : '11px'}; line-height: 1.5;">${noteTextHtml || '-'}</td>
+                `;
+                plateTbody.appendChild(row);
+            });
+
+            // Plate 합계에 대한 노트 (전체 합계가 25톤 미만인 경우)
+            // Built-UP 항목만의 총중량 계산 (조합3 제외)
+            const builtUpTotalWeight = builtUpItemsOnly.reduce((sum, item) => {
+                return sum + (item.unitWeight * item.length * item.count);
+            }, 0);
+            
+            // Built-UP 항목만의 총중량을 Plate 총중량으로 사용 (조합3 제외)
+            const plateTotalWeightForDisplay = builtUpTotalWeight;
+            const totalWeightInTon = plateTotalWeightForDisplay / 1000;
+            const totalNote = totalWeightInTon < 25 ? '후판주문' : '';
+
+            // Plate 합계 표시 (Built-UP 항목만의 총중량)
+            document.getElementById('plateTotalCountFooter').textContent = plateTotalCount;
+            document.getElementById('plateTotalWeightFooter').textContent = parseFloat(plateTotalWeightForDisplay.toFixed(2)).toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            document.getElementById('plateTotalNoteFooter').textContent = totalNote;
+            if (totalNote) {
+                document.getElementById('plateTotalNoteFooter').style.color = '#e53e3e';
+                document.getElementById('plateTotalNoteFooter').style.fontWeight = '600';
+            }
+
+            // 소부재 물량 정리 생성 (조합3 제외된 Built-UP 항목만)
+            generateSubMaterialBOQ(builtUpItemsOnly);
+            
+            // 기둥 TYPE별 길이 테이블 생성
+            console.log('loadBOQData - boqData.typeLengths:', boqData.typeLengths);
+            console.log('loadBOQData - boqData.columnLengthData:', boqData.columnLengthData);
+        }
+
+        // Rolled H 물량 기준 그룹핑 함수
+        function groupRolledHItemsByQuantity(groups) {
+            if (!groups || groups.length === 0) return groups;
+
+            // 물량 순으로 정렬 (큰 것부터)
+            groups.sort((a, b) => (b.totalWeight || 0) - (a.totalWeight || 0));
+
+            // 전체 물량 합계 계산
+            const totalQuantity = groups.reduce((sum, group) => sum + (group.totalWeight || 0), 0);
+
+            // 물량이 적은 항목 기준 설정 (전체의 5% 이하)
+            const smallQuantityThreshold = totalQuantity * 0.05;
+
+            // 큰 물량 항목과 작은 물량 항목 분리
+            const largeQuantityItems = [];
+            const smallQuantityItems = [];
+
+            groups.forEach(group => {
+                if (group.totalWeight >= smallQuantityThreshold) {
+                    largeQuantityItems.push(group);
+                } else {
+                    smallQuantityItems.push(group);
+                }
+            });
+
+            // 작은 물량 항목들을 유사한 단면(조합, 길이)끼리 그룹핑
+            const groupedSmallItems = [];
+            const tolerance = 0.15; // 15% 오차 허용
+
+            smallQuantityItems.forEach(group => {
+                if (!group.combination || !group.length) {
+                    largeQuantityItems.push(group);
+                    return;
+                }
+
+                // 기존 그룹에서 유사한 단면 찾기
+                let foundGroup = false;
+                for (let g of groupedSmallItems) {
+                    const gGroup = g.items[0];
+                    if (!gGroup.combination || !gGroup.length) continue;
+
+                    // 조합이 같고 길이가 ±15% 이내인지 확인
+                    const sameCombination = group.combination === gGroup.combination;
+                    const lengthDiff = Math.abs(group.length - gGroup.length) / gGroup.length;
+
+                    if (sameCombination && lengthDiff <= tolerance) {
+                        // 유사한 단면 그룹에 추가
+                        g.items.push(group);
+                        g.totalWeight += group.totalWeight || 0;
+                        g.totalCount += group.count || 0;
+                        g.names = [...new Set([...g.names, ...group.names])];
+                        foundGroup = true;
+                        break;
+                    }
+                }
+
+                if (!foundGroup) {
+                    // 새로운 그룹 생성
+                    groupedSmallItems.push({
+                        items: [group],
+                        totalWeight: group.totalWeight || 0,
+                        totalCount: group.count || 0,
+                        names: [...group.names],
+                        representative: group
+                    });
+                }
+            });
+
+            // 그룹핑된 작은 물량 항목들을 하나의 아이템으로 변환
+            const groupedItems = groupedSmallItems.map(g => {
+                const rep = g.representative;
+                const avgLength = g.totalCount > 0 ? rep.length : rep.length; // 평균 길이 계산 필요시 수정
+                
+                return {
+                    ...rep,
+                    names: g.names.length > 1 ? 
+                        [`${g.names[0]} 외 ${g.names.length - 1}개`] : 
+                        g.names,
+                    totalWeight: g.totalWeight,
+                    count: g.totalCount,
+                    length: rep.length,
+                    isGrouped: true,
+                    originalNames: g.names,
+                    originalCount: g.items.length
+                };
+            });
+
+            // 큰 물량 항목 + 그룹핑된 작은 물량 항목 (그룹핑된 항목도 물량순 정렬)
+            groupedItems.sort((a, b) => (b.totalWeight || 0) - (a.totalWeight || 0));
+
+            return [...largeQuantityItems, ...groupedItems];
+        }
+
+        // Rolled H 물량 정리 생성 (조합3)
+        function generateRolledHBOQ(items) {
+            // Rolled H 섹션 표시
+            document.getElementById('rolledHSection').style.display = 'block';
+            
+            const tbody = document.getElementById('rolledHTableBody');
+            tbody.innerHTML = '';
+            
+            let totalCount = 0;
+            let totalWeight = 0;
+            let rowNo = 1;
+            
+            // 조합별로 그룹화하여 합산
+            const groupedData = {}; // { "H400×B200-26.478": {...} }
+            
+            items.forEach(item => {
+                const key = `${item.combination}-${item.length.toFixed(2)}`;
+                if (!groupedData[key]) {
+                    groupedData[key] = {
+                        combination: item.combination,
+                        length: item.length,
+                        count: 0,
+                        unitWeight: item.unitWeight,
+                        totalWeight: 0,
+                        names: [],
+                        steelGrade: item.steelGrade
+                    };
+                }
+                groupedData[key].count += item.count;
+                groupedData[key].totalWeight += item.unitWeight * item.length * item.count;
+                groupedData[key].names.push(...item.names);
+            });
+            
+            // 물량 기준 그룹핑 적용 여부 확인
+            const applyRolledHGrouping = document.getElementById('rolledHGroupingCheckbox')?.checked || false;
+            let groupsToDisplay = Object.values(groupedData);
+
+            // 그룹핑이 활성화된 경우
+            if (applyRolledHGrouping) {
+                groupsToDisplay = groupRolledHItemsByQuantity(Object.values(groupedData));
+            }
+
+            // 그룹화된 데이터를 테이블에 표시
+            groupsToDisplay.forEach(group => {
+                totalCount += group.count;
+                totalWeight += group.totalWeight;
+                
+                const row = document.createElement('tr');
+                // 그룹핑된 항목인 경우 기둥명 표시
+                let displayNames = [...new Set(group.names)].join(', ');
+                if (group.isGrouped && group.originalCount > 1) {
+                    displayNames = group.names[0] || displayNames;
+                }
+                
+                row.innerHTML = `
+                    <td>${rowNo++}</td>
+                    <td class="text-left">${displayNames}</td>
+                    <td>${group.combination}</td>
+                    <td class="text-right">${group.length.toFixed(2)}</td>
+                    <td>${group.count}</td>
+                    <td class="text-right">${group.unitWeight.toFixed(2)}</td>
+                    <td class="text-right">${parseFloat(group.totalWeight.toFixed(2)).toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                    <td>${group.steelGrade}</td>
+                    <td>-</td>
+                `;
+                tbody.appendChild(row);
+            });
+            
+            // 합계 표시
+            document.getElementById('rolledHTotalCountFooter').textContent = totalCount;
+            document.getElementById('rolledHTotalWeightFooter').textContent = parseFloat(totalWeight.toFixed(2)).toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            document.getElementById('rolledHTotalNoteFooter').textContent = '-';
+        }
+
+        // 소부재 물량 정리 생성
+        function generateSubMaterialBOQ(items) {
+            const subMaterialData = [];
+            const surchargeRate = 0.15; // 할증률 15%
+
+            // 전체 철골 물량 계산 (기둥 + Plate)
+            // 기둥 물량: 1번 기둥 물량 정리 테이블의 합계 사용 (조합3 포함 전체)
+            const columnTotalWeightText = document.getElementById('totalWeightFooter').textContent || '0';
+            const columnTotalWeight = parseFloat(columnTotalWeightText.replace(/[^0-9.]/g, '')) || 0;
+            
+            // Plate 물량: Plate 물량 정리 테이블의 합계 사용 (모든 비숫자 문자 제거 후 파싱)
+            const plateTotalWeightText = document.getElementById('plateTotalWeightFooter').textContent || '0';
+            const plateTotalWeight = parseFloat(plateTotalWeightText.replace(/[^0-9.]/g, '')) || 0;
+            
+            // 전체 철골물량 = 기둥 물량 + Plate 물량
+            const totalSteelWeight = columnTotalWeight + plateTotalWeight;
+
+            // 소부재 종류별로 정리
+            // 1. 3 PLATE (접합부) - 전체 철골물량의 15%
+            const plate3Weight = totalSteelWeight * 0.15; // 전체 철골물량의 15%
+            const plate3Surcharge = columnTotalWeight * surchargeRate; // 할증 15% (주기둥 총중량 기준)
+            
+            // 저장된 소부재 단가 불러오기 (기본값: 1,900,000원/톤)
+            const savedPrices = JSON.parse(localStorage.getItem('boqUnitPrices')) || {};
+            const plate3UnitPrice = savedPrices.subMaterial || 1900000; // 톤당 단가
+            console.log('소부재 단가:', plate3UnitPrice, '저장된 값:', savedPrices);
+            
+            // 소부재 금액 계산: 할증 × 단가
+            const plate3SurchargeInTon = plate3Surcharge / 1000; // 할증을 톤 단위로 변환
+            const plate3Amount = plate3SurchargeInTon * plate3UnitPrice; // 할증 × 단가
+
+            if (plate3Weight > 0) {
+                // SM355/SM420 강종 표시
+                const plate3SteelGrade = 'SM355/SM420';
+                
+                subMaterialData.push({
+                    type: '3 PLATE',
+                    spec: '접합부',
+                    unit: 'Ton',
+                    quantity: '', // 수량 빈 문자열
+                    steelGrade: plate3SteelGrade,
+                    totalSteelWeight: columnTotalWeight.toFixed(2), // 주기둥의 총중량과 동일
+                    surcharge: plate3Surcharge.toFixed(2),
+                    amount: plate3Amount, // 총중량 × 단가
+                    remark: '전체 철골물량의 15%'
+                });
+            }
+
+            // 2. 사용자가 추가한 소부재 항목 (페이지 로드 시 복원된 데이터 사용)
+            if (typeof subMaterialItems !== 'undefined' && subMaterialItems.length > 0) {
+                subMaterialItems.forEach(item => {
+                    // 사용자가 추가한 소부재 항목의 금액 계산: 할증 × 단가
+                    const itemSurcharge = parseFloat(item.surcharge) || 0;
+                    const itemSurchargeInTon = itemSurcharge / 1000;
+                    
+                    // 금액 = 할증 × 단가
+                    const itemTotalAmount = itemSurchargeInTon * plate3UnitPrice;
+                    
+                    subMaterialData.push({
+                        type: item.type,
+                        spec: item.spec,
+                        unit: item.unit,
+                        quantity: item.quantity || 0,
+                        steelGrade: item.steelGrade || 'SM420',
+                        totalSteelWeight: columnTotalWeight.toFixed(2), // 주기둥 총중량과 동일
+                        surcharge: itemSurcharge.toFixed(2),
+                        amount: itemTotalAmount, // 할증 × 단가
+                        remark: item.remark || ''
+                    });
+                });
+            }
+
+            // 소부재 테이블 렌더링
+            const subMaterialTbody = document.getElementById('subMaterialTableBody');
+            subMaterialTbody.innerHTML = '';
+
+            if (subMaterialData.length === 0) {
+                subMaterialTbody.innerHTML = 
+                    '<tr><td colspan="11" style="text-align: center; padding: 30px; color: #999;">소부재 데이터가 없습니다.</td></tr>';
+                document.getElementById('subMaterialTotalQtyFooter').textContent = '0';
+                document.getElementById('subMaterialTotalWeightFooter').textContent = '0';
+                document.getElementById('subMaterialTotalSurchargeFooter').textContent = '0';
+                document.getElementById('subMaterialTotalUnitPriceFooter').textContent = '0';
+                document.getElementById('subMaterialTotalAmountFooter').textContent = '0';
+                return;
+            }
+
+            let subMaterialTotalQty = 0;
+            let subMaterialTotalWeight = 0;
+            let subMaterialTotalSurcharge = 0;
+            let subMaterialTotalSubMaterialWeight = 0;
+            let subMaterialTotalAmount = 0;
+
+            subMaterialData.forEach((item, index) => {
+                const qty = parseFloat(item.quantity) || 0;
+                // 주기둥부재물량은 주기둥 총중량과 동일하게 표시
+                const weight = columnTotalWeight; // 주기둥 총중량 사용
+                const surcharge = parseFloat(item.surcharge) || 0;
+                const amount = parseFloat(item.amount) || 0;
+
+                subMaterialTotalQty += qty;
+                // 주기둥부재물량 합계는 각 행마다 주기둥 총중량을 더하는 것이 아니라, 마지막에 주기둥 총중량으로 설정
+                subMaterialTotalSurcharge += surcharge;
+                subMaterialTotalAmount += amount;
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td class="text-left">${item.type}</td>
+                    <td class="text-left">${item.spec}</td>
+                    <td>${item.unit}</td>
+                    <td class="text-right">${item.quantity === '' || item.quantity === null || item.quantity === undefined ? '' : (qty > 0 ? qty.toFixed(2) : '')}</td>
+                    <td>${item.steelGrade}</td>
+                    <td class="text-right">${parseFloat(weight.toFixed(2)).toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                    <td class="text-right">${parseFloat(surcharge.toFixed(2)).toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                    <td class="text-right">${plate3UnitPrice.toLocaleString()}</td>
+                    <td class="text-right">${amount > 0 ? Math.round(amount).toLocaleString('ko-KR') : '-'}</td>
+                    <td class="text-left" style="font-size: 11px; color: #666;">${item.remark || ''}</td>
+                `;
+                subMaterialTbody.appendChild(row);
+            });
+
+            // 소부재 합계 표시
+            document.getElementById('subMaterialTotalQtyFooter').textContent = subMaterialTotalQty.toFixed(2);
+            // 총 중량 = 주기둥의 총중량 (기둥 물량만)
+            document.getElementById('subMaterialTotalWeightFooter').textContent = columnTotalWeight > 0 ? parseFloat(columnTotalWeight.toFixed(2)).toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0';
+            document.getElementById('subMaterialTotalSurchargeFooter').textContent = subMaterialTotalSurcharge > 0 ? parseFloat(subMaterialTotalSurcharge.toFixed(2)).toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0';
+            // 소부재 단가 표시
+            document.getElementById('subMaterialTotalUnitPriceFooter').textContent = plate3UnitPrice.toLocaleString();
+            document.getElementById('subMaterialTotalAmountFooter').textContent = subMaterialTotalAmount > 0 ? Math.round(subMaterialTotalAmount).toLocaleString('ko-KR') + '원' : '-';
+            
+            // 총 금액 업데이트
+            updateTotalAmount();
+        }
+
+        // Auto Find Selection Table 생성
+        function generateAutoFindTable(autoFindResults) {
+            const tbody = document.getElementById('autoFindTableBody');
+            tbody.innerHTML = '';
+            
+            console.log('generateAutoFindTable 호출됨, autoFindResults:', autoFindResults);
+            
+            if (!autoFindResults || autoFindResults.length === 0) {
+                console.log('autoFindResults가 비어있음');
+                tbody.innerHTML = '<tr><td colspan="16" style="text-align: center; padding: 30px; color: #999;">Auto Find Selection 데이터가 없습니다.</td></tr>';
+                return;
+            }
+            
+            let rowNo = 1;
+            autoFindResults.forEach((result) => {
+                // 경고 메시지가 있는 경우 건너뛰기
+                if (result.warning) {
+                    console.log('경고 메시지가 있는 항목 건너뛰기:', result.name || result.no);
+                    return;
+                }
+                
+                console.log('행 추가:', rowNo, result.name || result.no, result);
+                
+                const currentRowNo = rowNo++;
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${currentRowNo}</td>
+                    <td class="text-left" style="font-weight: 600; color: #667eea;">${result.name || `KC${result.no}`}</td>
+                    <td class="text-right">${result.pu !== undefined && result.pu !== null ? result.pu.toFixed(2) : '-'}</td>
+                    <td class="text-right">${result.mux !== undefined && result.mux !== null ? result.mux.toFixed(2) : '-'}</td>
+                    <td class="text-right">${result.muy !== undefined && result.muy !== null ? result.muy.toFixed(2) : '-'}</td>
+                    <td class="text-right" style="${result.pmm > 1.0 ? 'color: #e53e3e; font-weight: 600;' : 'color: #38a169;'}">${result.pmm !== undefined && result.pmm !== null && result.pmm > 0 ? result.pmm.toFixed(2) : '-'}</td>
+                    <td>${result.steelGrade || '-'}</td>
+                    <td style="font-weight: 600; color: #667eea;">${result.combination || '-'}</td>
+                    <td>${result.h || '-'}</td>
+                    <td>${result.b || '-'}</td>
+                    <td>${result.tw || '-'}</td>
+                    <td>${result.tf || '-'}</td>
+                    <td class="text-right">${result.area !== undefined && result.area !== null ? result.area.toFixed(2) : '-'}</td>
+                    <td class="text-right">${result.unitWeight !== undefined && result.unitWeight !== null ? result.unitWeight.toFixed(2) : '-'}</td>
+                    <td class="text-right" style="color: #667eea; font-weight: 600;">${result.unitPrice !== undefined && result.unitPrice !== null ? result.unitPrice.toLocaleString('ko-KR') : '-'}</td>
+                    <td class="text-right" style="color: #38a169; font-weight: 600;">${result.costPerMeter !== undefined && result.costPerMeter !== null ? result.costPerMeter.toFixed(2) : '-'}</td>
+                `;
+                tbody.appendChild(row);
+            });
+            
+            console.log('generateAutoFindTable 완료, 추가된 행 수:', rowNo - 1);
+        }
+
+
+        // CSV 다운로드
+        function exportToCSV() {
+            const boqData = JSON.parse(localStorage.getItem('boqData')) || null;
+            
+            if (!boqData || !boqData.items || boqData.items.length === 0) {
+                alert('내보낼 데이터가 없습니다.');
+                return;
+            }
+
+            let csv = 'No.,기둥명,조합,H(mm),B(mm),tw(mm),tf(mm),단면적(mm²),단중(kg/m),길이(m),길이타입,개수,총 중량(kg),강종\n';
+
+            boqData.items.forEach((item, index) => {
+                const totalWeightItem = item.unitWeight * item.length * item.count;
+                csv += `${index + 1},"${item.names.join(', ')}",${item.combination},${item.h},${item.b},${item.tw},${item.tf},${item.area.toFixed(2)},${item.unitWeight.toFixed(2)},${item.length.toFixed(2)},Type${item.lengthType || ''},${item.count},${totalWeightItem.toFixed(2)},${item.steelGrade}\n`;
+            });
+
+            // 총계 추가
+            let totalCount = 0;
+            let totalWeight = 0;
+            boqData.items.forEach(item => {
+                totalCount += item.count;
+                totalWeight += item.unitWeight * item.length * item.count;
+            });
+            csv += `합계,,,,,,,,,,,,${totalCount},${totalWeight.toFixed(2)},\n`;
+
+            // BOM 추가 (한글 깨짐 방지)
+            const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', `BOQ_${new Date().toISOString().split('T')[0]}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // 페이지 로드 시 데이터 로드
+        // 두께 통합 규칙 저장 (localStorage)
+        let thicknessMergeRules = JSON.parse(localStorage.getItem('thicknessMergeRules')) || {};
+
+        // 두께 통합 모달 표시
+        function showThicknessMergeModal() {
+            const modal = document.getElementById('thicknessMergeModal');
+            if (!modal) return;
+
+            // 현재 두께별 물량 표시
+            updateCurrentThicknessList();
+            
+            // 통합 규칙 목록 표시
+            updateMergeRulesList();
+
+            modal.style.display = 'flex';
+        }
+
+        // 두께 통합 모달 닫기
+        function closeThicknessMergeModal() {
+            const modal = document.getElementById('thicknessMergeModal');
+            if (modal) {
+                modal.style.display = 'none';
+            }
+        }
+
+        // 현재 두께별 물량 목록 업데이트
+        function updateCurrentThicknessList() {
+            const boqData = JSON.parse(localStorage.getItem('boqData')) || null;
+            if (!boqData || !boqData.items) {
+                document.getElementById('currentThicknessList').innerHTML = '<p style="color: #999;">데이터가 없습니다.</p>';
+                return;
+            }
+
+            // Built-UP 항목만 필터링
+            const comb3Names = ['H400×B200', 'H450×B200', 'H500×B200', 'H506×B201', 'H482×B300', 'H488×B300', 'H582×B300', 'H588×B300', 'H600×B200'];
+            const builtUpItems = boqData.items.filter(item => {
+                return !comb3Names.some(name => item.combination === name);
+            });
+
+            // Plate 단위로 물량 계산 (generatePlateBOQ와 동일한 방식)
+            const steelDensity = 7850; // kg/m³
+            const plateData = {}; // { "tw8-H1-Web": {...}, "tf13-H1-Flange": {...} }
+            
+            // generatePlateBOQ와 동일하게 plateData 생성
+            builtUpItems.forEach(item => {
+                const H1 = item.H1 || item.h;
+                const H2 = item.H2 || item.h;
+                const B1 = item.B1 || item.b;
+                const B2 = item.B2 || item.b;
+                const tw = item.tw;
+                const tf = item.tf;
+                
+                // H1 Web Plate (tw)
+                const h1WebKey = `tw${tw}-H1-Web`;
+                if (!plateData[h1WebKey]) {
+                    const webWidth = H1 - 2 * tf;
+                    plateData[h1WebKey] = {
+                        thickness: tw,
+                        thickness_mm: tw,
+                        width: webWidth,
+                        totalLength: 0,
+                        totalCount: 0,
+                        totalWeight: 0
+                    };
+                }
+                plateData[h1WebKey].totalLength += item.length * item.count;
+                plateData[h1WebKey].totalCount += item.count;
+                
+                // H1 Flange Plate (tf) - 상하 2개
+                const h1FlangeKey = `tf${tf}-H1-Flange`;
+                if (!plateData[h1FlangeKey]) {
+                    plateData[h1FlangeKey] = {
+                        thickness: tf,
+                        thickness_mm: tf,
+                        width: B1,
+                        totalLength: 0,
+                        totalCount: 0,
+                        totalWeight: 0
+                    };
+                }
+                plateData[h1FlangeKey].totalLength += item.length * item.count * 2;
+                plateData[h1FlangeKey].totalCount += item.count * 2;
+                
+                // H2 Web Plate (tw)
+                const h2WebKey = `tw${tw}-H2-Web`;
+                if (!plateData[h2WebKey]) {
+                    const webWidth = H2 - 2 * tf;
+                    plateData[h2WebKey] = {
+                        thickness: tw,
+                        thickness_mm: tw,
+                        width: webWidth,
+                        totalLength: 0,
+                        totalCount: 0,
+                        totalWeight: 0
+                    };
+                }
+                plateData[h2WebKey].totalLength += item.length * item.count;
+                plateData[h2WebKey].totalCount += item.count;
+                
+                // H2 Flange Plate (tf) - 좌우 2개
+                const h2FlangeKey = `tf${tf}-H2-Flange`;
+                if (!plateData[h2FlangeKey]) {
+                    plateData[h2FlangeKey] = {
+                        thickness: tf,
+                        thickness_mm: tf,
+                        width: B2,
+                        totalLength: 0,
+                        totalCount: 0,
+                        totalWeight: 0
+                    };
+                }
+                plateData[h2FlangeKey].totalLength += item.length * item.count * 2;
+                plateData[h2FlangeKey].totalCount += item.count * 2;
+            });
+            
+            // 단중 계산 및 총 중량 계산 (generatePlateBOQ와 동일)
+            Object.keys(plateData).forEach(key => {
+                const plate = plateData[key];
+                plate.unitWeight = (plate.width * plate.thickness_mm * steelDensity) / 1000000;
+                plate.totalWeight = plate.unitWeight * plate.totalLength;
+            });
+            
+            // 두께별로 그룹화하여 합산 (generatePlateBOQ와 동일)
+            const thicknessData = {};
+            Object.keys(plateData).forEach(key => {
+                const plate = plateData[key];
+                const thickness = plate.thickness_mm;
+                
+                if (!thicknessData[thickness]) {
+                    thicknessData[thickness] = { weight: 0, count: 0 };
+                }
+                thicknessData[thickness].weight += plate.totalWeight;
+                thicknessData[thickness].count += plate.totalCount;
+            });
+
+            // 통합 규칙 확인 (From 두께에 취소선 표시)
+            const thicknessMergeRules = JSON.parse(localStorage.getItem('thicknessMergeRules')) || {};
+            const mergedFromThicknesses = Object.keys(thicknessMergeRules).map(from => parseFloat(from));
+            
+            // 두께별로 정렬하여 표시 (물량 제외)
+            const sortedThickness = Object.keys(thicknessData).sort((a, b) => parseFloat(a) - parseFloat(b));
+            let html = '<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; font-size: 13px;">';
+            sortedThickness.forEach(thickness => {
+                const thicknessValue = parseFloat(thickness);
+                const isMerged = mergedFromThicknesses.includes(thicknessValue);
+                const textDecoration = isMerged ? 'text-decoration: line-through;' : '';
+                const textColor = isMerged ? '#999' : '#667eea';
+                
+                html += `
+                    <div style="padding: 10px; background: white; border-radius: 6px; border: 1px solid #e2e8f0;">
+                        <div style="font-weight: 600; color: ${textColor}; ${textDecoration}">${thickness}mm</div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            document.getElementById('currentThicknessList').innerHTML = html || '<p style="color: #999;">두께 데이터가 없습니다.</p>';
+        }
+
+        // 통합 규칙 목록 업데이트
+        function updateMergeRulesList() {
+            const rulesList = document.getElementById('mergeRulesList');
+            const rules = thicknessMergeRules;
+
+            if (Object.keys(rules).length === 0) {
+                rulesList.innerHTML = '<p style="color: #999; text-align: center; padding: 20px;">통합 규칙이 없습니다.</p>';
+                return;
+            }
+
+            let html = '<div style="display: flex; flex-direction: column; gap: 8px;">';
+            Object.keys(rules).forEach(from => {
+                const to = rules[from];
+                html += `
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; background: #f7fafc; border-radius: 6px;">
+                        <span style="font-weight: 600; color: #4a5568;">${from}mm → ${to}mm</span>
+                        <button onclick="removeThicknessMergeRule(${from})" style="padding: 4px 12px; background: #e53e3e; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">삭제</button>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            rulesList.innerHTML = html;
+        }
+
+        // 통합 규칙 추가
+        function addThicknessMergeRule() {
+            const from = parseInt(document.getElementById('mergeFromThickness').value);
+            const to = parseInt(document.getElementById('mergeToThickness').value);
+
+            if (!from || !to) {
+                alert('From과 To 값을 모두 입력해주세요.');
+                return;
+            }
+
+            if (from === to) {
+                alert('From과 To 값이 같을 수 없습니다.');
+                return;
+            }
+
+            thicknessMergeRules[from] = to;
+            localStorage.setItem('thicknessMergeRules', JSON.stringify(thicknessMergeRules));
+            
+            document.getElementById('mergeFromThickness').value = '';
+            document.getElementById('mergeToThickness').value = '';
+            
+            updateMergeRulesList();
+        }
+
+        // 통합 규칙 삭제
+        function removeThicknessMergeRule(from) {
+            delete thicknessMergeRules[from];
+            localStorage.setItem('thicknessMergeRules', JSON.stringify(thicknessMergeRules));
+            updateMergeRulesList();
+        }
+
+        // 통합 규칙 적용
+        function applyThicknessMerge() {
+            localStorage.setItem('thicknessMergeRules', JSON.stringify(thicknessMergeRules));
+            closeThicknessMergeModal();
+            loadBOQData(); // 데이터 다시 로드하여 통합 규칙 적용
+        }
+
+        // 페이지 로드 시 데이터 로드 및 소부재 항목 복원
+        window.addEventListener('load', function() {
+            loadBOQData();
+            
+            // 저장된 소부재 항목 복원
+            const boqData = JSON.parse(localStorage.getItem('boqData')) || null;
+            if (boqData && boqData.subMaterials) {
+                subMaterialItems = boqData.subMaterials;
+            }
+
+            // 저장된 두께 통합 규칙 복원
+            thicknessMergeRules = JSON.parse(localStorage.getItem('thicknessMergeRules')) || {};
+
+            // 모달 외부 클릭 시 닫기
+            document.addEventListener('click', function(e) {
+                const subMaterialModal = document.getElementById('subMaterialModal');
+                if (subMaterialModal && e.target === subMaterialModal) {
+                    closeSubMaterialModal();
+                }
+                const thicknessMergeModal = document.getElementById('thicknessMergeModal');
+                if (thicknessMergeModal && e.target === thicknessMergeModal) {
+                    closeThicknessMergeModal();
+                }
+            });
+        });
+    </script>
+    <!-- Auth handled by Edge Function, no client-side guard needed -->
+    <script src="/js/auth-config.js"></script>
+    <script src="/js/auth.js"></script>
+</body>
+</html>

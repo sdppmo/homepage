@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consulting - SongDoPartners</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <style>
+        html, body {
+            overflow: auto !important;
+            overflow-x: hidden !important;
+            height: auto !important;
+            min-height: 100vh;
+        }
+
+        .consulting-container {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 25%, #4facfe 50%, #00f2fe 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+            padding: 60px 20px;
+            position: relative;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .consulting-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 20% 50%, rgba(240, 147, 251, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 80%, rgba(79, 172, 254, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        .consulting-wrapper {
+            max-width: 1400px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .consulting-header {
+            text-align: center;
+            color: white;
+            margin-bottom: 60px;
+        }
+
+        .consulting-header h1 {
+            font-size: 56px;
+            font-weight: 800;
+            margin-bottom: 15px;
+            letter-spacing: -1px;
+            text-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            background: linear-gradient(135deg, #ffffff 0%, #e0e7ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .consulting-header .subtitle {
+            font-size: 24px;
+            opacity: 0.95;
+            font-weight: 400;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        .consulting-header .home-link {
+            display: inline-block;
+            margin-top: 25px;
+            padding: 12px 28px;
+            background: rgba(255,255,255,0.15);
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px);
+            color: white;
+            text-decoration: none;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            border: 2px solid rgba(255,255,255,0.3);
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .consulting-header .home-link:hover {
+            background: rgba(255,255,255,0.25);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+
+        .consulting-sections {
+            display: flex;
+            flex-direction: column;
+            gap: 60px;
+            margin-top: 40px;
+        }
+
+        .consulting-section {
+            background: rgba(255, 255, 255, 0.95);
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 50px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+
+        .consulting-section-title {
+            font-size: 42px;
+            font-weight: 800;
+            color: #1a1a2e;
+            margin-bottom: 30px;
+            text-align: center;
+            padding-bottom: 20px;
+            border-bottom: 4px solid #4facfe;
+        }
+
+        .consulting-section-number {
+            display: inline-block;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 50%, #4facfe 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .consulting-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+            gap: 35px;
+            margin-top: 30px;
+        }
+
+        .consulting-panel {
+            background: rgba(255, 255, 255, 0.95);
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 2px solid rgba(255,255,255,0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .consulting-panel::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, #f093fb 0%, #f5576c 50%, #4facfe 100%);
+            transform: scaleX(0);
+            transition: transform 0.4s ease;
+        }
+
+        .consulting-panel:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+        }
+
+        .consulting-panel:hover::before {
+            transform: scaleX(1);
+        }
+
+        .consulting-icon {
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 64px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 20px;
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .consulting-icon::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+        }
+
+        .consulting-panel:nth-of-type(1) .consulting-icon {
+            background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+            box-shadow: 0 8px 20px rgba(2, 132, 199, 0.3);
+        }
+
+        .consulting-panel:nth-of-type(2) .consulting-icon {
+            background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+            box-shadow: 0 8px 20px rgba(22, 163, 74, 0.3);
+        }
+
+        .consulting-panel:nth-of-type(3) .consulting-icon {
+            background: linear-gradient(135deg, #9333ea 0%, #7e22ce 100%);
+            box-shadow: 0 8px 20px rgba(147, 51, 234, 0.3);
+        }
+
+        .consulting-panel:hover .consulting-icon {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        .consulting-panel:nth-of-type(1):hover .consulting-icon {
+            box-shadow: 0 12px 30px rgba(2, 132, 199, 0.4);
+        }
+
+        .consulting-panel:nth-of-type(2):hover .consulting-icon {
+            box-shadow: 0 12px 30px rgba(22, 163, 74, 0.4);
+        }
+
+        .consulting-panel:nth-of-type(3):hover .consulting-icon {
+            box-shadow: 0 12px 30px rgba(147, 51, 234, 0.4);
+        }
+
+        .consulting-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .consulting-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #1a1a2e;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .consulting-description {
+            font-size: 16px;
+            color: #4a5568;
+            line-height: 1.7;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        .consulting-details {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .consulting-details li {
+            padding: 12px 0;
+            padding-left: 30px;
+            position: relative;
+            color: #2d3748;
+            font-size: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .consulting-details li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: #4facfe;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .consulting-details li:hover {
+            color: #1a1a2e;
+            padding-left: 35px;
+        }
+
+        .contact-section {
+            background: rgba(255, 255, 255, 0.95);
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 50px;
+            margin-top: 50px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+            border: 2px solid rgba(255,255,255,0.3);
+            text-align: center;
+        }
+
+        .contact-section h2 {
+            font-size: 36px;
+            font-weight: 700;
+            color: #1a1a2e;
+            margin-bottom: 30px;
+        }
+
+        .contact-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        .contact-item {
+            padding: 25px;
+            background: rgba(79, 172, 254, 0.1);
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .contact-item:hover {
+            background: rgba(79, 172, 254, 0.2);
+            transform: translateY(-5px);
+        }
+
+        .contact-item h3 {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1a1a2e;
+            margin-bottom: 10px;
+        }
+
+        .contact-item p {
+            font-size: 16px;
+            color: #4a5568;
+            margin: 5px 0;
+        }
+
+        .contact-item a {
+            color: #4facfe;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+
+        .contact-item a:hover {
+            color: #f5576c;
+        }
+
+        @media (max-width: 768px) {
+            .consulting-header h1 {
+                font-size: 36px;
+            }
+
+            .consulting-sections {
+                gap: 40px;
+            }
+
+            .consulting-section {
+                padding: 30px;
+            }
+
+            .consulting-section-title {
+                font-size: 32px;
+            }
+
+            .consulting-grid {
+                grid-template-columns: 1fr;
+                gap: 25px;
+            }
+
+            .consulting-panel {
+                padding: 30px;
+            }
+
+            .contact-info {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="consulting-container">
+        <div class="consulting-wrapper">
+            <div class="consulting-header">
+                <h1>💼 Consulting</h1>
+                <div class="subtitle">Web Tool 기반 구조공법개발</div>
+                <a href="../index.html" class="home-link">🏠 홈으로 돌아가기</a>
+            </div>
+
+            <div class="consulting-sections">
+                <!-- 1. 엔지니어링 컨설팅 -->
+                <div class="consulting-section">
+                    <h2 class="consulting-section-title">
+                        <span class="consulting-section-number">1.</span> 엔지니어링 컨설팅
+                    </h2>
+                    <div class="consulting-grid">
+                        <div class="consulting-panel">
+                            <div class="consulting-icon">🏢</div>
+                            <h2 class="consulting-title">장스팬 구조 컨설팅</h2>
+                            <p class="consulting-description">
+                                스피드 강합성보 공기단축
+                            </p>
+                            <ul class="consulting-details">
+                                <li>건물특성에 맞는 장스팬보적용</li>
+                                <li>시공하중반영 가설 안정성확보</li>
+                            </ul>
+                        </div>
+
+                        <div class="consulting-panel">
+                            <div class="consulting-icon">⬇️</div>
+                            <h2 class="consulting-title">대심도 탑다운 컨설팅</h2>
+                            <p class="consulting-description">
+                                대심도 시공 기술 및 품질 관리 컨설팅
+                            </p>
+                            <ul class="consulting-details">
+                                <li>역레이커 삭제 공법</li>
+                                <li>역레이커 설치현장 공기단축 방안제시</li>
+                                <li>CFT기둥대체 공법</li>
+                            </ul>
+                        </div>
+
+                        <div class="consulting-panel">
+                            <div class="consulting-icon">🏗️</div>
+                            <h2 class="consulting-title">내진 SRC기둥<br>설계컨설팅</h2>
+                            <p class="consulting-description">
+                                내진 설계를 고려한 SRC 기둥 구조 설계 컨설팅
+                            </p>
+                            <ul class="consulting-details">
+                                <li>SRC 기둥 구조 설계</li>
+                                <li>수직철근사용절감으로 공기단축</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. Product 개발 -->
+                <div class="consulting-section">
+                    <h2 class="consulting-section-title">
+                        <span class="consulting-section-number">2.</span> Product 개발
+                    </h2>
+                    <div class="consulting-grid">
+                        <div class="consulting-panel">
+                            <div class="consulting-icon">
+                                <img src="../assets/images/K-COL.jpg" alt="K-COL" style="width: 100%; height: 100%; object-fit: contain;">
+                            </div>
+                            <h2 class="consulting-title">K-COL</h2>
+                            <p class="consulting-description">
+                                Cross H형 강재 기둥 설계 및 제작 관리 시스템
+                            </p>
+                            <ul class="consulting-details">
+                                <li>Cross H형 단면 설계</li>
+                                <li>구조 계산 자동화</li>
+                                <li>BOQ 산출 및 물량 관리</li>
+                            </ul>
+                        </div>
+
+                        <div class="consulting-panel">
+                            <div class="consulting-icon">
+                                <img src="../assets/images/product-2.png" alt="Slim-BOX" style="width: 100%; height: 100%; object-fit: contain;">
+                            </div>
+                            <h2 class="consulting-title">Slim-BOX</h2>
+                            <p class="consulting-description">
+                                흙막이용 CIP에 설치되는 H형강 강합성파일
+                            </p>
+                            <ul class="consulting-details">
+                                <li>흙막이용 CIP 설치</li>
+                                <li>구조적 성능 향상</li>
+                                <li>지하공사 안정성 확보</li>
+                            </ul>
+                        </div>
+
+                        <div class="consulting-panel">
+                            <div class="consulting-icon">
+                                <img src="../assets/images/product-3.png" alt="Slim-Beam" style="width: 100%; height: 100%; object-fit: contain;">
+                            </div>
+                            <h2 class="consulting-title">Slim-Beam</h2>
+                            <p class="consulting-description">
+                                확장 가능한 슬림 빔 구조로 대형 공간 설계 최적화
+                            </p>
+                            <ul class="consulting-details">
+                                <li>단순한 보-기둥 접합부 적용</li>
+                                <li>대형 경간 지원</li>
+                                <li>슬림한 단면 구조</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. 철골공정 Web software 개발 -->
+                <div class="consulting-section">
+                    <h2 class="consulting-section-title">
+                        <span class="consulting-section-number">3.</span> 철골공정 Web software 개발
+                    </h2>
+                    <div class="consulting-grid">
+                        <div class="consulting-panel">
+                            <div class="consulting-icon">⚙️</div>
+                            <h2 class="consulting-title">신설공장 철골기둥<br>공정관리개발</h2>
+                            <p class="consulting-description">
+                                프로젝트 특성에 맞는 맞춤형 웹 소프트웨어 개발 서비스를 제공합니다.
+                            </p>
+                            <ul class="consulting-details">
+                                <li>시스템 설계 및 개발</li>
+                                <li>테스트 및 품질 관리</li>
+                            </ul>
+                        </div>
+
+                        <div class="consulting-panel">
+                            <div class="consulting-icon">🌐</div>
+                            <h2 class="consulting-title">구조계산자동화<br>프로그램개발</h2>
+                            <p class="consulting-description">
+                                해외 철골공장 기둥설계 컨설팅
+                            </p>
+                            <ul class="consulting-details">
+                                <li>복잡하고 시간이 걸리는 구조계산을 단순화</li>
+                                <li>Web Version으로 구조계산시간 절약</li>
+                            </ul>
+                        </div>
+
+                        <div class="consulting-panel">
+                            <div class="consulting-icon">🌍</div>
+                            <h2 class="consulting-title">해외기반 공장건설<br>철골물량관리 TOOL 개발</h2>
+                            <p class="consulting-description">
+                                기둥철골물량의 정확한 물량산정 툴 개발
+                            </p>
+                            <ul class="consulting-details">
+                                <!-- 세부내용 추가 예정 -->
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. 지반안정성검토 자동화 TOOL 개발 -->
+                <div class="consulting-section">
+                    <h2 class="consulting-section-title">
+                        <span class="consulting-section-number">4.</span> 지반안정성검토 자동화 TOOL 개발
+                    </h2>
+                    <div class="consulting-grid">
+                        <div class="consulting-panel">
+                            <div class="consulting-icon">🏗️</div>
+                            <h2 class="consulting-title">지반안정성검토 자동화 TOOL 개발</h2>
+                            <p class="consulting-description">
+                                AI를 이용한 지반안정성 검토 자동화 TOOL 개발
+                            </p>
+                            <ul class="consulting-details">
+                                <!-- 세부내용 추가 예정 -->
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="contact-section">
+                <h2>📞 컨설팅 문의</h2>
+                <p style="font-size: 18px; color: #4a5568; margin-bottom: 20px;">
+                    전문 컨설팅 서비스에 대한 문의사항이 있으시면 언제든지 연락주세요.
+                </p>
+                <div class="contact-info">
+                    <div class="contact-item">
+                        <h3>이메일</h3>
+                        <p><a href="mailto:sbd_pmo@naver.com">sbd_pmo@naver.com</a></p>
+                    </div>
+                    <div class="contact-item">
+                        <h3>본사 주소</h3>
+                        <p>77-bungi, 42-bungil, Conventia Daero</p>
+                        <p>Yeonsu-ku, Incheon, KOREA</p>
+                    </div>
+                    <div class="contact-item">
+                        <h3>홈페이지</h3>
+                        <p><a href="http://www.kcol.kr" target="_blank">www.kcol.kr</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

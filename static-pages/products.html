@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Products - SongDoPartners</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <style>
+        html, body {
+            overflow: auto !important;
+            overflow-x: hidden !important;
+            height: auto !important;
+            min-height: 100vh;
+        }
+
+        .products-container {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #1a1a2e 50%, #16213e 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+            padding: 60px 20px;
+            position: relative;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .products-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 20% 50%, rgba(102, 126, 234, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 80%, rgba(118, 75, 162, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        .products-wrapper {
+            max-width: 1400px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .products-header {
+            text-align: center;
+            color: white;
+            margin-bottom: 60px;
+        }
+
+        .products-header h1 {
+            font-size: 56px;
+            font-weight: 800;
+            margin-bottom: 15px;
+            letter-spacing: -1px;
+            text-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            background: linear-gradient(135deg, #ffffff 0%, #e0e7ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .products-header .subtitle {
+            font-size: 24px;
+            opacity: 0.95;
+            font-weight: 400;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        .products-header .home-link {
+            display: inline-block;
+            margin-top: 25px;
+            padding: 12px 28px;
+            background: rgba(255,255,255,0.15);
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px);
+            color: white;
+            text-decoration: none;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            border: 2px solid rgba(255,255,255,0.3);
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .products-header .home-link:hover {
+            background: rgba(255,255,255,0.25);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+            gap: 35px;
+            margin-top: 40px;
+        }
+
+        .small-panels-container {
+            grid-column: 1 / -1;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .product-panel.small-panel {
+            width: 100%;
+            max-width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+        }
+
+        .product-panel.small-panel:nth-child(1) {
+            background: linear-gradient(135deg, #fff5f5 0%, #ffffff 100%);
+        }
+
+        .product-panel.small-panel:nth-child(2) {
+            background: linear-gradient(135deg, #f0fff4 0%, #ffffff 100%);
+        }
+
+        .product-panel.small-panel:nth-child(3) {
+            background: linear-gradient(135deg, #f0f9ff 0%, #ffffff 100%);
+        }
+
+        .product-panel.small-panel:nth-child(4) {
+            background: linear-gradient(135deg, #fef3c7 0%, #ffffff 100%);
+        }
+
+        .product-panel.small-panel:nth-child(5) {
+            background: linear-gradient(135deg, #e0c0d0 0%, #d0d0d0 100%);
+            opacity: 0.6;
+        }
+
+        /* 작은 패널의 준비중 패널 - hover 효과 비활성화 */
+        .product-panel.small-panel:nth-child(5) {
+            transition: none !important;
+            cursor: default !important;
+        }
+
+        .product-panel.small-panel:nth-child(5):hover {
+            transform: none !important;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2) !important;
+        }
+
+        .product-panel.small-panel:nth-child(5) .product-icon {
+            transition: none !important;
+        }
+
+        .product-panel.small-panel:nth-child(5):hover .product-icon {
+            transform: none !important;
+        }
+
+        .product-panel.small-panel .product-icon {
+            font-size: 24px;
+            margin: 0;
+            padding: 0;
+            width: auto;
+            height: auto;
+            min-width: auto;
+            min-height: auto;
+        }
+
+        .product-panel.small-panel .product-title {
+            font-size: 18px;
+            margin-bottom: 8px;
+        }
+
+        .product-panel.small-panel .product-description {
+            font-size: 13px;
+            margin-bottom: 10px;
+            line-height: 1.4;
+        }
+
+        .product-panel.small-panel .product-details {
+            padding: 12px;
+            margin-top: 8px;
+            max-width: 70%;
+            flex: 0 1 auto;
+        }
+
+        .product-panel.small-panel .product-details ul {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            list-style: none;
+            padding: 0;
+        }
+
+        .product-panel.small-panel .product-details li {
+            padding: 5px 10px;
+            padding-left: 22px;
+            font-size: 13px;
+            line-height: 1.4;
+            flex: 0 0 auto;
+        }
+
+        .product-panel.small-panel .product-details li:before {
+            font-size: 14px;
+            left: 4px;
+        }
+
+        @media (max-width: 768px) {
+            .small-panels-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .product-panel {
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            border-radius: 24px;
+            padding: 45px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15),
+                        0 0 0 1px rgba(255,255,255,0.5);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 2px solid rgba(255,255,255,0.8);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* 준비중 패널 - transition 비활성화 */
+        .products-grid > div.product-panel:nth-of-type(1),
+        .products-grid > div.product-panel:nth-of-type(2) {
+            transition: none !important;
+        }
+
+        /* K-COL 패널 - 파란색 계열 */
+        .products-grid > a:first-child .product-panel {
+            background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 50%, #ffffff 100%);
+            border: 2px solid #0284c7;
+        }
+
+        /* Slim-Box 패널 - 초록색 계열 (준비중 - 어둡게) */
+        .products-grid > div.product-panel:nth-of-type(1) {
+            background: linear-gradient(135deg, #b0d4bf 0%, #90c4a0 50%, #d0d0d0 100%);
+            border: 2px solid #16a34a;
+            opacity: 0.6;
+        }
+
+        /* EX_Slim-Beam 패널 - 보라색 계열 (준비중 - 어둡게) */
+        .products-grid > div.product-panel:nth-of-type(2) {
+            background: linear-gradient(135deg, #c8b8d8 0%, #b098c0 50%, #d0d0d0 100%);
+            border: 2px solid #9333ea;
+            opacity: 0.6;
+        }
+
+        .product-panel::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            opacity: 1;
+            transition: opacity 0.3s ease;
+        }
+
+        /* 각 패널의 상단 테두리 색상 */
+        .products-grid > a:first-child .product-panel::before {
+            background: linear-gradient(90deg, #0284c7 0%, #0369a1 100%);
+        }
+
+        .products-grid > div.product-panel:nth-of-type(1)::before {
+            background: linear-gradient(90deg, #16a34a 0%, #15803d 100%);
+        }
+
+        .products-grid > div.product-panel:nth-of-type(2)::before {
+            background: linear-gradient(90deg, #9333ea 0%, #7e22ce 100%);
+        }
+
+        .product-panel:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 30px 80px rgba(0,0,0,0.25),
+                        0 0 0 1px rgba(255,255,255,0.8);
+        }
+
+        /* 준비중 패널은 hover 효과 없음 */
+        .products-grid > div.product-panel:nth-of-type(1),
+        .products-grid > div.product-panel:nth-of-type(2) {
+            cursor: default !important;
+        }
+
+        /* 각 패널 hover 효과 */
+        .products-grid > a:first-child .product-panel:hover {
+            background: linear-gradient(135deg, #dbeafe 0%, #93c5fd 50%, #e0f2fe 100%);
+            border-color: #0284c7;
+        }
+
+        .products-grid > div.product-panel:nth-of-type(1):hover {
+            background: linear-gradient(135deg, #d1fae5 0%, #86efac 50%, #dcfce7 100%);
+            border-color: #16a34a;
+        }
+
+        .products-grid > div.product-panel:nth-of-type(2):hover {
+            background: linear-gradient(135deg, #ede9fe 0%, #c4b5fd 50%, #f3e8ff 100%);
+            border-color: #9333ea;
+        }
+
+        /* 준비중 패널 - hover 효과 비활성화 */
+        .products-grid > div.product-panel:nth-of-type(1):hover,
+        .products-grid > div.product-panel:nth-of-type(2):hover {
+            transform: none !important;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15),
+                        0 0 0 1px rgba(255,255,255,0.5) !important;
+        }
+
+        .products-grid > div.product-panel:nth-of-type(1):hover {
+            background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 50%, #ffffff 100%) !important;
+        }
+
+        .products-grid > div.product-panel:nth-of-type(2):hover {
+            background: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 50%, #ffffff 100%) !important;
+        }
+
+        .products-grid > div.product-panel:nth-of-type(1) .product-icon,
+        .products-grid > div.product-panel:nth-of-type(2) .product-icon {
+            transition: none !important;
+        }
+
+        .products-grid > div.product-panel:nth-of-type(1):hover .product-icon,
+        .products-grid > div.product-panel:nth-of-type(2):hover .product-icon {
+            transform: none !important;
+        }
+
+        .product-panel:hover::before {
+            opacity: 1;
+        }
+
+        /* 준비중 패널의 ::before hover 효과 비활성화 */
+        .products-grid > div.product-panel:nth-of-type(1):hover::before,
+        .products-grid > div.product-panel:nth-of-type(2):hover::before {
+            opacity: 1 !important;
+        }
+
+        .product-icon {
+            font-size: 72px;
+            text-align: center;
+            margin-bottom: 25px;
+            transition: transform 0.4s ease;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .product-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .product-panel:hover .product-icon {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        .product-title {
+            font-size: 34px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #1e3a5f 0%, #667eea 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-align: center;
+            margin-bottom: 20px;
+            letter-spacing: -0.5px;
+        }
+
+        .product-description {
+            font-size: 18px;
+            color: #4a5568;
+            line-height: 1.8;
+            text-align: center;
+            margin-bottom: 30px;
+            font-weight: 400;
+        }
+
+        .product-details {
+            background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+            border-radius: 16px;
+            padding: 28px;
+            margin-top: 25px;
+            border: 1px solid #e2e8f0;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .product-details ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .product-details li {
+            padding: 14px 0;
+            padding-left: 35px;
+            position: relative;
+            font-size: 18px;
+            color: #2d3748;
+            line-height: 1.7;
+            transition: all 0.2s ease;
+            border-radius: 8px;
+            margin: 4px 0;
+        }
+
+        .product-details li:hover {
+            background: rgba(102, 126, 234, 0.08);
+            transform: translateX(5px);
+            padding-left: 40px;
+        }
+
+        .product-details li:before {
+            content: "✓";
+            position: absolute;
+            left: 8px;
+            color: #667eea;
+            font-weight: bold;
+            font-size: 22px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            transition: transform 0.2s ease;
+        }
+
+        .product-details li:hover:before {
+            transform: scale(1.2);
+        }
+
+        @media (max-width: 768px) {
+            .products-container {
+                padding: 40px 15px;
+            }
+
+            .products-grid {
+                grid-template-columns: 1fr;
+                gap: 25px;
+            }
+
+            .products-header {
+                margin-bottom: 40px;
+            }
+
+            .products-header h1 {
+                font-size: 40px;
+            }
+
+            .products-header .subtitle {
+                font-size: 20px;
+            }
+
+            .product-panel {
+                padding: 35px 25px;
+            }
+
+            .product-title {
+                font-size: 28px;
+            }
+
+            .product-icon {
+                font-size: 60px;
+            }
+
+            .small-panels-container {
+                grid-template-columns: 1fr;
+                gap: 25px;
+            }
+
+            .product-panel.small-panel {
+                padding: 25px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="products-container">
+        <div class="products-wrapper">
+            <div class="products-header">
+                <h1>SongDoPartners<br>New Methodology</h1>
+                <a href="../index.html" class="home-link">🏠 홈으로 돌아가기</a>
+            </div>
+
+            <div class="products-grid">
+                <!-- Panel 1: K-COL (공개) -->
+                <a href="k-col web software/k-col-user-guide.html" style="text-decoration: none; color: inherit;" id="kcol-panel">
+                    <div class="product-panel" style="cursor: pointer;" id="kcol-user-panel">
+                        <div class="product-icon">
+                            <img src="../assets/images/K-COL.jpg" alt="K-COL" style="width: 100%; height: 100%; object-fit: contain;">
+                        </div>
+                        <h2 class="product-title">K-COL</h2>
+                        <p class="product-description">
+                            K-COL은 Cross H형 강재 기둥 설계 및 제작 관리 시스템입니다. 
+                            TOP-DOWN 공법에 최적화된 구조 설계를 지원합니다.
+                        </p>
+                        <div class="product-details">
+                            <ul>
+                                <li>Cross H형 단면 설계</li>
+                                <li>TOP-DOWN 공법 지원</li>
+                                <li>구조 계산 자동화</li>
+                                <li>공정 관리 시스템</li>
+                                <li>현장 Mapping 기능</li>
+                            </ul>
+                        </div>
+                    </div>
+                </a>
+
+                <!-- Panel 2: Slim-Box -->
+                <div class="product-panel">
+                    <div class="product-icon">
+                        <img src="../assets/images/product-2.png" alt="Slim-Box" style="width: 100%; height: 100%; object-fit: contain;">
+                    </div>
+                    <h2 class="product-title">Slim-Box 실험 <span style="background: #fbbf24; color: #92400e; padding: 4px 12px; border-radius: 12px; font-size: 14px; font-weight: 600; margin-left: 10px; -webkit-text-fill-color: #92400e !important; background-clip: border-box !important;">준비중</span></h2>
+                    <p class="product-description">
+                        Slim-Box는 흙막이용 CIP에 설치되는 H형강을 강합성파일로 구조적성능을 발휘하기 위해 특별히 제작된 흙막이 가시설 파일입니다.
+                    </p>
+                    <div class="product-details">
+                        <ul>
+                            <li>흙막이용 CIP 설치 적용</li>
+                            <li>H형강 강합성파일 구조</li>
+                            <li>구조적 성능 향상</li>
+                            <li>가시설 파일 특수 제작</li>
+                            <li>지하공사 안정성 확보</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Panel 3: EX_Slim-Beam -->
+                <div class="product-panel">
+                    <div class="product-icon">
+                        <img src="../assets/images/product-3.png" alt="EX_Slim-Beam" style="width: 100%; height: 100%; object-fit: contain;">
+                    </div>
+                    <h2 class="product-title">EX_Slim-Beam <span style="background: #fbbf24; color: #92400e; padding: 4px 12px; border-radius: 12px; font-size: 14px; font-weight: 600; margin-left: 10px; -webkit-text-fill-color: #92400e !important; background-clip: border-box !important;">준비중</span></h2>
+                    <p class="product-description">
+                        EX_Slim-Beam은 확장 가능한 슬림 빔 구조로 대형 공간 설계에 최적화된 제품입니다. 
+                        긴 경간 구조에 효율적으로 적용할 수 있습니다.
+                    </p>
+                    <div class="product-details">
+                        <ul>
+                            <li>확장 가능한 설계</li>
+                            <li>대형 경간 지원</li>
+                            <li>슬림한 단면</li>
+                            <li>구조 효율성</li>
+                            <li>시공 용이성</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Small Panels Container (사진, 논문, 동영상) -->
+                <div class="small-panels-container">
+                    <!-- Panel 4: 개발자용 설명서 (운영자 전용) -->
+                    <a href="k-col web software/k-col-developer-guide.html" style="text-decoration: none; color: inherit;" id="developer-guide-link" data-requires-auth="true" data-required-role="admin">
+                        <div class="product-panel" id="developer-guide-panel" style="display: none; cursor: pointer;">
+                            <div style="display: flex; align-items: center; justify-content: flex-start; gap: 20px;">
+                                <div class="product-icon" style="width: 60px; height: 60px; min-width: 60px; min-height: 60px; margin: 0;">
+                                    <img src="../assets/images/K-COL.jpg" alt="K-COL" style="width: 100%; height: 100%; object-fit: contain;">
+                                </div>
+                                <div style="display: flex; flex-direction: column; gap: 4px;">
+                                    <h2 class="product-title" style="margin: 0; font-size: 18px;">K-COL 개발자 안내서</h2>
+                                    <p style="margin: 0; font-size: 13px; color: #666;">운영자 전용 개발자 메뉴얼입니다.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                    <a href="photo-gallery.html" style="text-decoration: none; color: inherit;">
+                        <div class="product-panel small-panel" style="cursor: pointer;">
+                            <div style="display: flex; align-items: flex-start; gap: 10px;">
+                                <div style="display: flex; flex-direction: column; align-items: center;">
+                                    <div class="product-icon">📸</div>
+                                    <h2 class="product-title" style="margin-top: 4px; margin-bottom: 0;">K-COL 사진</h2>
+                                </div>
+                                <div class="product-details" style="flex: 0 1 auto; max-width: 70%;">
+                                    <ul>
+                                        <li>제품 상세 이미지</li>
+                                        <li>현장 시공 사진</li>
+                                        <li>프로젝트 갤러리</li>
+                                        <li>구조 상세 사진</li>
+                                        <li>시공 과정 기록</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+
+                    <!-- Panel 5: 논문 -->
+                    <a href="papers.html" style="text-decoration: none; color: inherit;">
+                        <div class="product-panel small-panel" style="cursor: pointer;">
+                            <div style="display: flex; align-items: flex-start; gap: 10px;">
+                                <div style="display: flex; flex-direction: column; align-items: center;">
+                                    <div class="product-icon">📄</div>
+                                    <h2 class="product-title" style="margin-top: 4px; margin-bottom: 0;">Cross H 논문</h2>
+                                </div>
+                                <div class="product-details" style="flex: 0 1 auto; max-width: 70%;">
+                                    <ul>
+                                        <li>구조 설계 연구</li>
+                                        <li>성능 분석 논문</li>
+                                        <li>시공 사례 연구</li>
+                                        <li>기술 자료</li>
+                                        <li>학술 논문</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+
+                    <!-- Panel 6: 동영상 -->
+                    <a href="videos.html" style="text-decoration: none; color: inherit;">
+                        <div class="product-panel small-panel" style="cursor: pointer;">
+                            <div style="display: flex; align-items: flex-start; gap: 10px;">
+                                <div style="display: flex; flex-direction: column; align-items: center;">
+                                    <div class="product-icon">🎬</div>
+                                    <h2 class="product-title" style="margin-top: 4px; margin-bottom: 0;">K-COL 동영상</h2>
+                                </div>
+                                <div class="product-details" style="flex: 0 1 auto; max-width: 70%;">
+                                    <ul>
+                                        <li>제품 소개 동영상</li>
+                                        <li>시공 과정 영상</li>
+                                        <li>기술 설명 영상</li>
+                                        <li>프로젝트 하이라이트</li>
+                                        <li>교육 자료 영상</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+
+                    <!-- Panel 7: CAD-File -->
+                    <a href="cad-files.html" style="text-decoration: none; color: inherit;">
+                        <div class="product-panel small-panel" style="cursor: pointer;">
+                            <div style="display: flex; align-items: flex-start; gap: 10px;">
+                                <div style="display: flex; flex-direction: column; align-items: center;">
+                                    <div class="product-icon">📐</div>
+                                    <h2 class="product-title" style="margin-top: 4px; margin-bottom: 0;">K-COL CAD-Files</h2>
+                                </div>
+                                <div class="product-details" style="flex: 0 1 auto; max-width: 70%;">
+                                    <ul>
+                                        <li>구조 설계 도면</li>
+                                        <li>제작 상세도</li>
+                                        <li>시공 도면</li>
+                                        <li>표준 도면 라이브러리</li>
+                                        <li>2D/3D CAD 파일</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+
+                    <!-- Panel 8: Slim-Box 실험 -->
+                    <div class="product-panel small-panel" style="cursor: default;">
+                        <div style="display: flex; align-items: flex-start; gap: 10px;">
+                            <div style="display: flex; flex-direction: column; align-items: center;">
+                                <div class="product-icon">🔬</div>
+                                <h2 class="product-title" style="margin-top: 4px; margin-bottom: 0;">Slim-Box 실험 <span style="background: #fbbf24; color: #92400e; padding: 2px 8px; border-radius: 8px; font-size: 11px; font-weight: 600; margin-left: 8px; -webkit-text-fill-color: #92400e !important; background-clip: border-box !important;">준비중</span></h2>
+                            </div>
+                            <div class="product-details" style="flex: 0 1 auto; max-width: 70%;">
+                                <ul>
+                                    <li>구조 성능 실험</li>
+                                    <li>시공 특성 분석</li>
+                                    <li>내구성 시험</li>
+                                    <li>실험 데이터 자료</li>
+                                    <li>연구 결과 보고서</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="../js/auth-config.js"></script>
+    <script src="../js/auth.js"></script>
+    <script src="../js/feature-guard.js"></script>
+    <script>
+        // 페이지 로드 시 권한 체크
+        document.addEventListener('DOMContentLoaded', function() {
+            // K-COL 패널 (공개 - 로그인 불필요)
+            const kcolPanel = document.getElementById('kcol-user-panel');
+            if (kcolPanel) {
+                // 로그인 없이도 항상 표시
+                kcolPanel.style.display = 'block';
+            }
+
+            // 개발자 안내서 패널 (운영자 전용)
+            const developerPanel = document.getElementById('developer-guide-panel');
+            const developerLink = document.getElementById('developer-guide-link');
+            if (developerPanel && developerLink) {
+                if (window.SDP && window.SDP.auth) {
+                    window.SDP.auth.getSession().then(function(session) {
+                        if (!session) {
+                            developerPanel.style.display = 'none';
+                            developerLink.style.display = 'none';
+                            return;
+                        }
+                        return window.SDP.auth.getProfile().then(function(profile) {
+                            if (profile && window.SDP.auth.isAdmin()) {
+                                developerPanel.style.display = 'block';
+                                developerLink.style.display = 'block';
+                            } else {
+                                developerPanel.style.display = 'none';
+                                developerLink.style.display = 'none';
+                            }
+                        });
+                    }).catch(function(err) {
+                        console.error('권한 확인 오류:', err);
+                        developerPanel.style.display = 'none';
+                        developerLink.style.display = 'none';
+                    });
+                } else {
+                    developerPanel.style.display = 'none';
+                    developerLink.style.display = 'none';
+                }
+            }
+        });
+    </script>
+</body>
+</html>
