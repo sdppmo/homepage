@@ -1,5 +1,6 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
+import { timingSafeEqual } from 'crypto';
 
 const CLEANUP_THRESHOLD_MS = 48 * 60 * 60 * 1000;
 
@@ -8,6 +9,15 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
+
+function constantTimeCompare(a: string, b: string): boolean {
+  if (a.length !== b.length) {
+    return false;
+  }
+  const bufA = Buffer.from(a);
+  const bufB = Buffer.from(b);
+  return timingSafeEqual(bufA, bufB);
+}
 
 function createAdminClient(): SupabaseClient {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -43,7 +53,7 @@ export async function POST(request: Request) {
     }
 
     const expectedAuth = `Bearer ${cronSecret}`;
-    if (authHeader !== expectedAuth) {
+    if (!authHeader || !constantTimeCompare(authHeader, expectedAuth)) {
       console.error('[cleanup] Unauthorized request');
       return NextResponse.json(
         { error: 'Unauthorized' },
