@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   title: "주식회사 송도파트너스피엠오",
   description: "K-COL 철골기둥 설계 플랫폼 - Cross H형 강재 기둥 설계 및 제작 관리 시스템",
   icons: {
-    icon: '/images/sdppmo_logo.png',
+    icon: '/images/favicon.png',
   },
 };
 
