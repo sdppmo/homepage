@@ -1,5 +1,4 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { createClient as createBrowserClient } from '@/lib/supabase/client';
 
 vi.mock('next/headers', () => ({
   cookies: vi.fn(() => ({
@@ -8,9 +7,19 @@ vi.mock('next/headers', () => ({
   })),
 }));
 
+vi.mock('@/lib/config', () => ({
+  config: {
+    supabase: {
+      url: 'https://test.supabase.co',
+      anonKey: 'test-anon-key',
+    },
+  },
+}));
+
 describe('Supabase Clients', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.resetModules();
   });
 
   describe('Server Client', () => {
@@ -31,14 +40,18 @@ describe('Supabase Clients', () => {
   });
 
   describe('Browser Client', () => {
-    it('should initialize without error', () => {
+    it('should initialize without error', async () => {
+      const { createClient: createBrowserClient } = await import('@/lib/supabase/client');
+      
       expect(() => {
         createBrowserClient();
       }).not.toThrow();
     });
 
-    it('should return client with auth methods', () => {
+    it('should return client with auth methods', async () => {
+      const { createClient: createBrowserClient } = await import('@/lib/supabase/client');
       const client = createBrowserClient();
+      
       expect(client).toBeDefined();
       expect(client.auth).toBeDefined();
       expect(client.from).toBeDefined();

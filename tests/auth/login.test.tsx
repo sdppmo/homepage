@@ -77,12 +77,7 @@ describe('LoginPage', () => {
       expect(signupLink.closest('a')).toHaveAttribute('href', '/signup');
     });
 
-    it('should render terms and privacy links', async () => {
-      await renderAndWait(<LoginPage />);
-
-      expect(screen.getByText('이용약관')).toBeInTheDocument();
-      expect(screen.getByText('개인정보처리방침')).toBeInTheDocument();
-    });
+    // Terms and privacy links were removed per user request (2026-01-25)
 
     it('should NOT show email form by default', async () => {
       await renderAndWait(<LoginPage />);

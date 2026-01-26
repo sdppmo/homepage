@@ -149,8 +149,8 @@ describe('SignupPage', () => {
           emailRedirectTo: expect.stringContaining('/pending'),
         },
       });
+      // Security: password no longer stored in sessionStorage
       expect(window.sessionStorage.setItem).toHaveBeenCalledWith('pending_email', 'test@example.com');
-      expect(window.sessionStorage.setItem).toHaveBeenCalledWith('pending_password', 'Strong123!');
       expect(mockPush).toHaveBeenCalledWith('/pending');
     });
   });
