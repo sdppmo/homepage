@@ -129,6 +129,28 @@ The remaining cleanup tasks are deferred for safety - no action required until 2
 
 ## Session Log
 
+### 2026-01-26 (Session 7 - OAuth Localhost Fix)
+
+**Bug fix committed:** `0398d47` - OAuth redirect uses http for localhost
+
+**Issue:** Google OAuth login on localhost:8080 was redirecting to production (kcol.kr) instead of back to localhost.
+
+**Root cause:** `getBaseUrl()` defaulted to `https` protocol, but localhost needs `http`.
+
+**Fix:** Added localhost detection to use `http` protocol in:
+- `src/app/(auth)/login/actions.ts`
+- `src/app/auth/callback/route.ts`
+
+**Note:** OAuth still requires `http://localhost:8080/**` to be added to Supabase Dashboard → Authentication → URL Configuration → Redirect URLs.
+
+**Removed incomplete Session 6 files:**
+- `src/components/HomeClient.tsx` (had type errors)
+- `src/components/layout/AuthSectionServer.tsx` (had type errors)
+
+**Migration plan status:** 170/173 complete. 3 cleanup tasks BLOCKED until 2026-02-01.
+
+---
+
 ### 2026-01-25 (K-COL Calculator Bug Fixes Committed)
 
 **Commit f3be6ff** - K-COL Calculator bug fixes:
