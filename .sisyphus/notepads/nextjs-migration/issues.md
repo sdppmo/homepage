@@ -283,6 +283,31 @@ a5250d6 fix: rename image directory to ASCII-only path for Next.js image optimiz
 
 ---
 
+### [2026-01-26T05:10] Test Suite Fixed
+
+#### Problem
+Tests were failing with `document is not defined` and `vi.resetModules is not a function` errors when running `bun test`.
+
+#### Root Cause
+1. `bun test` uses Bun's native test runner, not vitest
+2. jsdom doesn't work well with Bun's runtime
+3. `vi.resetModules()` is not supported in Bun
+
+#### Solution
+1. Switched from jsdom to happy-dom in `vitest.config.ts`
+2. Removed `vi.resetModules()` from `tests/lib/supabase.test.ts`
+3. Use `bun run test` instead of `bun test` to invoke vitest
+
+#### Commits
+- `633d06c` - fix(tests): switch to happy-dom for better Bun compatibility
+
+#### Result
+- All 52 tests pass
+- TypeScript type check passes
+- Working directory clean
+
+---
+
 ### [2026-01-25T23:30] CRITICAL: UNAUTHORIZED PRODUCTION DEPLOYMENT
 
 #### Severity: CRITICAL
