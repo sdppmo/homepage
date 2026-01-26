@@ -113,6 +113,7 @@ function LoginContent() {
   const searchParams = useSearchParams();
   const redirectUrl = searchParams.get('redirect') || '/';
   const errorParam = searchParams.get('error');
+  const verified = searchParams.get('verified') === 'true';
 
   const handleGoogleLogin = async () => {
     await signInWithGoogle(redirectUrl);
@@ -132,6 +133,12 @@ function LoginContent() {
           K-COL 철골기둥 설계 플랫폼
         </p>
       </div>
+
+      {verified && (
+        <div className="mb-6 p-3 text-sm rounded-lg text-center text-green-300 bg-green-500/10 border border-green-500/20">
+          이메일 인증이 완료되었습니다. 로그인해주세요.
+        </div>
+      )}
 
       {(state?.error || errorParam) && (
         <div className="mb-6 p-3 text-sm rounded-lg text-center text-red-300 bg-red-500/10 border border-red-500/20">

@@ -72,8 +72,8 @@ export default function SignupPage() {
       setError(error.message);
       setLoading(false);
     } else {
+      // Only store email for display on pending page (no password - security risk)
       sessionStorage.setItem('pending_email', email);
-      sessionStorage.setItem('pending_password', password);
       router.push('/pending');
     }
   };

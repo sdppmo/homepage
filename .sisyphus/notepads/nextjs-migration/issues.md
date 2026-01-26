@@ -339,3 +339,37 @@ e51041d fix: faster AuthSection loading + stricter production deployment rules
 
 #### Conclusion
 **NO FURTHER WORK IS POSSIBLE.** The 3 remaining tasks have a hard time-based dependency (rollback safety period) that cannot be bypassed. Resume on 2026-02-01.
+
+---
+
+### [2026-01-25T16:40] Session 5 - Bug Fixes Committed
+
+#### Actions Completed
+1. ✅ Fixed 99 invalid Tailwind `color-[#...]` → `text-[#...]` classes
+   - `pending/page.tsx` (1 instance)
+   - `user-guide/page.tsx` (39 instances)
+   - `developer-guide/page.tsx` (59 instances)
+2. ✅ Added server-side logout API (`/api/auth/logout`)
+3. ✅ Fixed calculator input text colors (added explicit `text-[#333]`)
+4. ✅ Created AUTHENTICATION.md documentation
+5. ✅ Updated learnings.md with fixes
+
+#### Commits This Session
+```
+a95f8e5 fix: invalid Tailwind color classes and add server-side logout
+ac193c6 docs: add learnings for Tailwind color fix and server-side logout
+b5b464d fix: add explicit text colors to calculator input fields
+```
+
+#### Local Server Status
+- Running at http://localhost:8080
+- All fixes verified working
+
+#### Remaining Tasks (BLOCKED)
+| Task | Blocker | Unblock Date |
+|------|---------|--------------|
+| Delete Supabase Edge Functions | Rollback safety | 2026-02-01 |
+| Delete `protected-pages` Storage bucket | Rollback safety | 2026-02-01 |
+| Remove old HTML/JS/CSS files | Rollback safety | 2026-02-01 |
+
+**NO FURTHER WORK POSSIBLE UNTIL 2026-02-01.**

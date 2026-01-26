@@ -39,7 +39,7 @@ export default function PendingPage() {
       if (data.verified) {
         clearInterval(interval);
         setVerified(true);
-        handleAutoLogin(storedEmail);
+        handleVerificationComplete();
       }
     }, 3000);
 
@@ -53,25 +53,9 @@ export default function PendingPage() {
     }
   }, [countdown]);
 
-  const handleAutoLogin = async (email: string) => {
-    const password = sessionStorage.getItem('pending_password');
-    if (!password) {
-      router.push('/login');
-      return;
-    }
-
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    if (!error) {
-      sessionStorage.removeItem('pending_email');
-      sessionStorage.removeItem('pending_password');
-      router.push('/');
-    } else {
-      router.push('/login');
-    }
+  const handleVerificationComplete = () => {
+    sessionStorage.removeItem('pending_email');
+    router.push('/login?verified=true');
   };
 
   const handleResendEmail = async () => {
@@ -134,7 +118,7 @@ export default function PendingPage() {
           이메일 인증 완료!
         </h1>
         <p className="text-[14px] text-slate-400 leading-relaxed">
-          메인 페이지로 이동합니다...
+          로그인 페이지로 이동합니다...
         </p>
       </div>
     );
@@ -201,7 +185,6 @@ export default function PendingPage() {
         <button
           onClick={() => {
             sessionStorage.removeItem('pending_email');
-            sessionStorage.removeItem('pending_password');
             router.push('/signup');
           }}
           className="w-full px-6 py-3 text-[14px] font-medium font-inherit text-slate-400 bg-slate-600/20 border border-slate-600/20 rounded-lg cursor-pointer transition-all hover:bg-slate-600/30"
