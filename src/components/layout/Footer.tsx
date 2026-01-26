@@ -49,37 +49,33 @@ const Footer = () => {
             Seoul Office Address : TBD
           </div>
         </div>
-        <div className="bg-gradient-to-b from-[#ffd700] to-[#cc9900] border-2 border-[#996600] p-3 text-center cursor-pointer flex-shrink-0 w-full order-2 md:p-1.5 md:w-auto md:order-none lg:p-1.5 xs:p-3">
-          <div className="text-[10px] text-[#333] xs:text-[10px]">CLICK</div>
-          <div className="text-xs text-black font-bold lg:text-[11px] xs:text-xs">Go to<br />SDP Projects</div>
-        </div>
-        <div className="grid grid-cols-3 grid-rows-2 gap-1.5 h-auto flex-shrink-0 items-center w-full order-3 md:gap-0.5 md:w-auto md:order-none lg:gap-0.5 xs:gap-1">
-          <div className="bg-white p-1 flex items-center justify-center border border-[#ddd] rounded-sm overflow-hidden h-[40px] w-auto md:h-[38px] md:w-[55px] md:p-0.5 lg:w-[50px] lg:h-[34px] lg:p-0.5 xs:h-[35px]">
+        <div className="hidden md:grid grid-cols-3 grid-rows-2 gap-0.5 h-auto flex-shrink-0 items-center w-auto lg:gap-0.5">
+          <div className="bg-white p-0.5 flex items-center justify-center border border-[#ddd] rounded-sm overflow-hidden h-[38px] w-[55px] lg:w-[50px] lg:h-[34px]">
             <a href="https://dystec.co.kr/new/" target="_blank" rel="noopener noreferrer" className="flex w-full h-full items-center justify-center">
               <Image src="/images/network-1.png" alt="DONG YANG S·Tec" width={55} height={38} className="max-w-full max-h-full object-contain" />
             </a>
           </div>
-          <div className="bg-white p-1 flex items-center justify-center border border-[#ddd] rounded-sm overflow-hidden h-[40px] w-auto md:h-[38px] md:w-[55px] md:p-0.5 lg:w-[50px] lg:h-[34px] lg:p-0.5 xs:h-[35px]">
+          <div className="bg-white p-0.5 flex items-center justify-center border border-[#ddd] rounded-sm overflow-hidden h-[38px] w-[55px] lg:w-[50px] lg:h-[34px]">
             <a href="https://www.posco.co.kr" target="_blank" rel="noopener noreferrer" className="flex w-full h-full items-center justify-center">
               <Image src="/images/network-2.png" alt="POSCO" width={55} height={38} className="max-w-full max-h-full object-contain" />
             </a>
           </div>
-          <div className="bg-white p-1 flex items-center justify-center border border-[#ddd] rounded-sm overflow-hidden h-[40px] w-auto md:h-[38px] md:w-[55px] md:p-0.5 lg:w-[50px] lg:h-[34px] lg:p-0.5 xs:h-[35px]">
+          <div className="bg-white p-0.5 flex items-center justify-center border border-[#ddd] rounded-sm overflow-hidden h-[38px] w-[55px] lg:w-[50px] lg:h-[34px]">
             <a href="https://www.steelall.co.kr" target="_blank" rel="noopener noreferrer" className="flex w-full h-full items-center justify-center">
               <Image src="/images/network-3.png" alt="Steel Ball" width={55} height={38} className="max-w-full max-h-full object-contain" />
             </a>
           </div>
-          <div className="bg-white p-1 flex items-center justify-center border border-[#ddd] rounded-sm overflow-hidden h-[40px] w-auto md:h-[38px] md:w-[55px] md:p-0.5 lg:w-[50px] lg:h-[34px] lg:p-0.5 xs:h-[35px]">
+          <div className="bg-white p-0.5 flex items-center justify-center border border-[#ddd] rounded-sm overflow-hidden h-[38px] w-[55px] lg:w-[50px] lg:h-[34px]">
             <a href="https://www.p6ix.co.kr" target="_blank" rel="noopener noreferrer" className="flex w-full h-full items-center justify-center">
               <Image src="/images/network-6.png" alt="p6sc" width={55} height={38} className="max-w-full max-h-full object-contain" />
             </a>
           </div>
-          <div className="bg-white p-1 flex items-center justify-center border border-[#ddd] rounded-sm overflow-hidden h-[40px] w-auto md:h-[38px] md:w-[55px] md:p-0.5 lg:w-[50px] lg:h-[34px] lg:p-0.5 xs:h-[35px]">
+          <div className="bg-white p-0.5 flex items-center justify-center border border-[#ddd] rounded-sm overflow-hidden h-[38px] w-[55px] lg:w-[50px] lg:h-[34px]">
             <a href="https://www.clbs.co.kr/main.jsp" target="_blank" rel="noopener noreferrer" className="flex w-full h-full items-center justify-center">
               <Image src="/images/network-5.png" alt="CLBS" width={55} height={38} className="max-w-full max-h-full object-contain" />
             </a>
           </div>
-          <div className="bg-white p-1 flex items-center justify-center border border-[#ddd] rounded-sm overflow-hidden h-[40px] w-auto md:h-[38px] md:w-[55px] md:p-0.5 lg:w-[50px] lg:h-[34px] lg:p-0.5 xs:h-[35px]">
+          <div className="bg-white p-0.5 flex items-center justify-center border border-[#ddd] rounded-sm overflow-hidden h-[38px] w-[55px] lg:w-[50px] lg:h-[34px]">
             <a href="https://www.hyundai-steel.com" target="_blank" rel="noopener noreferrer" className="flex w-full h-full items-center justify-center">
               <Image src="/images/network-4.jfif" alt="HYUNDAI STEEL" width={55} height={38} className="max-w-full max-h-full object-contain" />
             </a>

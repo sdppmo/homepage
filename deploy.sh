@@ -610,7 +610,14 @@ log_success "Image pushed: $IMAGE_URI"
 # ============================================================
 log_step "Creating Deployment ($TARGET_ENV)"
 
-# Create containers JSON
+# Load environment variables from .env.local if it exists
+if [ -f ".env.local" ]; then
+    SUPABASE_SERVICE_ROLE_KEY=$(grep "^SUPABASE_SERVICE_ROLE_KEY=" .env.local | cut -d'=' -f2-)
+    NEXT_PUBLIC_SUPABASE_URL=$(grep "^NEXT_PUBLIC_SUPABASE_URL=" .env.local | cut -d'=' -f2-)
+    NEXT_PUBLIC_SUPABASE_ANON_KEY=$(grep "^NEXT_PUBLIC_SUPABASE_ANON_KEY=" .env.local | cut -d'=' -f2-)
+fi
+
+# Create containers JSON with environment variables
 CONTAINERS_JSON=$(cat <<EOF
 {
     "${CONTAINER_NAME}": {
@@ -619,7 +626,10 @@ CONTAINERS_JSON=$(cat <<EOF
             "3000": "HTTP"
         },
         "environment": {
-            "TZ": "Asia/Seoul"
+            "TZ": "Asia/Seoul",
+            "NEXT_PUBLIC_SUPABASE_URL": "${NEXT_PUBLIC_SUPABASE_URL:-}",
+            "NEXT_PUBLIC_SUPABASE_ANON_KEY": "${NEXT_PUBLIC_SUPABASE_ANON_KEY:-}",
+            "SUPABASE_SERVICE_ROLE_KEY": "${SUPABASE_SERVICE_ROLE_KEY:-}"
         }
     }
 }
