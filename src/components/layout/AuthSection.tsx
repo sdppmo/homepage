@@ -94,13 +94,23 @@ const AuthSection = () => {
   }, [supabase, handleUserSession, router]);
 
   const handleLogout = async () => {
+    // Immediately update UI to show logged-out state
+    setUser(null);
+    setProfile(null);
+    
     try {
-      await fetch('/api/auth/logout', { method: 'POST' });
-      await supabase.auth.signOut();
+      // Fire both logout calls in parallel for speed
+      await Promise.all([
+        fetch('/api/auth/logout', { method: 'POST' }),
+        supabase.auth.signOut()
+      ]);
     } catch (error) {
       console.error('Logout error:', error);
     }
-    window.location.href = '/';
+    
+    // Use Next.js router for faster client-side navigation
+    router.push('/');
+    router.refresh();
   };
 
   if (isLoading) {
