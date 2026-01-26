@@ -21,7 +21,7 @@ const BLOCKED_PATTERNS = [
   /\.php$/,
 ];
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
   for (const pattern of BLOCKED_PATTERNS) {

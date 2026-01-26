@@ -106,7 +106,7 @@ Server Actions provide excellent performance:
 │  1. User visits protected page (e.g., /k-col/calculator)        │
 │                              │                                   │
 │                              ▼                                   │
-│  2. Middleware checks session (src/middleware.ts)               │
+│  2. Proxy checks session (src/proxy.ts)                        │
 │     - Calls supabase.auth.getUser()                             │
 │     - Validates JWT token                                       │
 │                              │                                   │
@@ -132,7 +132,7 @@ Server Actions provide excellent performance:
 
 ### Protected Routes
 
-Defined in `src/middleware.ts`:
+Defined in `src/proxy.ts`:
 
 ```typescript
 const PROTECTED_PATTERNS = [
@@ -188,10 +188,10 @@ export function rateLimit(ip: string, limit: number = 60): boolean
 | Default limit | 60 requests/second |
 | Cleanup interval | 5 minutes |
 
-### Middleware Integration
+### Proxy Integration
 
 ```typescript
-// src/middleware.ts
+// src/proxy.ts
 const ip = request.headers.get('x-forwarded-for') || 
            request.headers.get('x-real-ip') || 
            'unknown';

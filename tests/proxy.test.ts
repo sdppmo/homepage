@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { NextRequest, NextResponse } from 'next/server';
-import { middleware } from '@/middleware';
+import { proxy } from '@/proxy';
 
 vi.mock('@/lib/supabase/middleware', () => ({
   updateSession: vi.fn(async (request: NextRequest) => ({
@@ -13,7 +13,7 @@ vi.mock('@/lib/rate-limit', () => ({
   rateLimit: vi.fn(() => true),
 }));
 
-describe('Middleware', () => {
+describe('Proxy', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -21,7 +21,7 @@ describe('Middleware', () => {
   describe('Protected Routes', () => {
     it('should redirect to login when accessing protected route without session', async () => {
       const request = new NextRequest('http://localhost:3000/k-col/auto-find-section');
-      const response = await middleware(request);
+      const response = await proxy(request);
 
       expect(response.status).toBe(307);
       expect(response.headers.get('location')).toContain('/login');
@@ -30,7 +30,7 @@ describe('Middleware', () => {
 
     it('should redirect to login for calculator route', async () => {
       const request = new NextRequest('http://localhost:3000/k-col/calculator');
-      const response = await middleware(request);
+      const response = await proxy(request);
 
       expect(response.status).toBe(307);
       expect(response.headers.get('location')).toContain('/login');
@@ -38,7 +38,7 @@ describe('Middleware', () => {
 
     it('should redirect to login for admin route', async () => {
       const request = new NextRequest('http://localhost:3000/admin');
-      const response = await middleware(request);
+      const response = await proxy(request);
 
       expect(response.status).toBe(307);
       expect(response.headers.get('location')).toContain('/login');
@@ -48,28 +48,28 @@ describe('Middleware', () => {
   describe('Blocked Patterns', () => {
     it('should return 404 for .git paths', async () => {
       const request = new NextRequest('http://localhost:3000/.git/config');
-      const response = await middleware(request);
+      const response = await proxy(request);
 
       expect(response.status).toBe(404);
     });
 
     it('should return 404 for .env files', async () => {
       const request = new NextRequest('http://localhost:3000/.env');
-      const response = await middleware(request);
+      const response = await proxy(request);
 
       expect(response.status).toBe(404);
     });
 
     it('should return 404 for wp-admin paths', async () => {
       const request = new NextRequest('http://localhost:3000/wp-admin/index.php');
-      const response = await middleware(request);
+      const response = await proxy(request);
 
       expect(response.status).toBe(404);
     });
 
     it('should return 404 for .php files', async () => {
       const request = new NextRequest('http://localhost:3000/test.php');
-      const response = await middleware(request);
+      const response = await proxy(request);
 
       expect(response.status).toBe(404);
     });
@@ -82,7 +82,7 @@ describe('Middleware', () => {
       mockRateLimit.mockReturnValueOnce(false);
 
       const request = new NextRequest('http://localhost:3000/');
-      const response = await middleware(request);
+      const response = await proxy(request);
 
       expect(response.status).toBe(429);
       mockRateLimit.mockRestore();

@@ -268,7 +268,7 @@ homepage/
 │   │   └── calculations/       # Server-side calculation logic (PROTECTED)
 │   │
 │   ├── actions/                # Server Actions
-│   └── middleware.ts           # Auth middleware for protected routes
+│   └── proxy.ts                # Auth proxy for protected routes (Next.js 16+)
 │
 ├── public/                     # Static assets
 │   ├── images/                 # Product logos, backgrounds
@@ -348,7 +348,7 @@ homepage/
 **Rewrites:**
 - `/health` → `/api/health` (for Lightsail health checks)
 
-### `src/middleware.ts` - Auth Middleware
+### `src/proxy.ts` - Auth Proxy (Next.js 16+)
 
 **Protected route patterns:**
 - `/k-col/*` - K-COL calculators (requires `access_column`)
@@ -358,6 +358,8 @@ homepage/
 - Checks Supabase session via `@supabase/ssr`
 - Redirects unauthenticated users to `/login?redirect={originalUrl}`
 - Refreshes session tokens automatically
+
+> Note: Next.js 16 renamed `middleware.ts` to `proxy.ts`. The function export is now `proxy` instead of `middleware`.
 
 ---
 
@@ -646,14 +648,14 @@ After deploying:
 
 ### Session Management
 - Sessions managed by `@supabase/ssr` package
-- Middleware (`src/middleware.ts`) checks session on every request
+- Proxy (`src/proxy.ts`) checks session on every request
 - If valid token exists → allow access to protected routes
-- If token expired → middleware refreshes automatically
+- If token expired → proxy refreshes automatically
 - If refresh fails → redirect to login page
 
 ### Protected Pages
 - Protected pages are React Server Components in `src/app/(protected)/`
-- Middleware checks authentication BEFORE page renders
+- Proxy checks authentication BEFORE page renders
 - No client-side loading or waterfall
 - Permission checks (`access_column`, `access_beam`) in layout.tsx
 - Calculation logic runs server-side via Server Actions

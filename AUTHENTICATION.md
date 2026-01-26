@@ -39,7 +39,7 @@ src/
 │   ├── server.ts          # Server client (createServerClient) + Admin client
 │   └── middleware.ts      # Middleware client for session refresh
 │
-├── middleware.ts          # Route protection + rate limiting
+├── proxy.ts               # Route protection + rate limiting (Next.js 16+)
 │
 ├── app/
 │   ├── (auth)/            # Auth pages (public)
@@ -275,9 +275,9 @@ User                    Reset Page              Supabase Auth
 
 ## Route Protection
 
-### Middleware (`src/middleware.ts`)
+### Proxy (`src/proxy.ts`)
 
-Runs on every request (except static files).
+Runs on every request (except static files). Next.js 16 renamed middleware to proxy.
 
 ```typescript
 const PROTECTED_PATTERNS = [
@@ -291,7 +291,7 @@ const PROTECTED_PATTERNS = [
   '/admin',
 ];
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   // 1. Block malicious paths (.git, .env, wp-admin)
   // 2. Rate limiting (60 req/s per IP)
   // 3. Session refresh via updateSession()
