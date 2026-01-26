@@ -224,7 +224,7 @@ node_modules/
 # ======================
 
 # SENSITIVE - Admin folder with credentials (NEVER commit)
-admin/
+/admin/
 assets/images/*_original.*
 
 # Supabase CLI temp files
