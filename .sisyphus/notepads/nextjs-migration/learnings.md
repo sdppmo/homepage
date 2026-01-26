@@ -640,3 +640,90 @@ Generated `security_fix.md` documenting all 29 bugs and 26 fixes.
 5. **Error Messages**: Sanitize to prevent information leakage
 6. **TypeScript**: Replace `any` with proper interfaces for type safety
 7. **.gitignore**: Use absolute paths (`/lib/`) to avoid accidentally ignoring nested directories
+
+## 2026-01-25: K-COL Calculator Bug Fixes (Session 5 Continuation)
+
+### Issues Fixed (5 total)
+
+1. **Rolled H / Pos-H Button Styling**
+   - **Problem**: Active button text was invisible (white on white)
+   - **File**: `src/app/(protected)/k-col/calculator/page.tsx`
+   - **Fix**: Restructured conditional classes to properly apply `bg-white text-[#1e3a5f]` when active
+
+2. **Bending X/Y and Shear X/Y Results Not Showing**
+   - **Problem**: Results grid showed `undefined` for Bending and Shear values
+   - **File**: `src/app/(protected)/k-col/calculator/page.tsx`
+   - **Fix**: Connected results to actual calculation values:
+     - `Mux / result.phi_Mnx` for Bending X
+     - `Muy / result.phi_Mny` for Bending Y
+     - `Vux / result.phi_Vnx` for Shear X
+     - `Vuy / result.phi_Vny` for Shear Y
+   - Added proper OK/NG status based on ratio > 1.0
+
+3. **Print Page Not Loading**
+   - **Problem**: `/k-col/print` expected data via URL searchParams but calculator didn't pass it
+   - **File**: `src/app/(protected)/k-col/calculator/page.tsx`
+   - **Fix**: 
+     - Changed Link to button with `handlePrintNavigation` function
+     - Passes all inputs and results via URL searchParams as JSON
+     - Opens print page in new tab with complete data
+     - Button disabled until calculation is performed
+
+4. **Multi Column Calculation Sheet Not Working**
+   - **Problem**: Table inputs didn't trigger calculations
+   - **File**: `src/app/(protected)/k-col/calculator/page.tsx`
+   - **Fix**:
+     - Added `multiColumnData` state for 6 rows
+     - Added `handleMultiColumnChange` for input handling
+     - Added `handleMultiColumnCalculate` to run calculations for all rows
+     - Results show Compressive and P-M-M ratios with color coding (red if > 1.0)
+
+5. **KS H-beam Auto-fill & Pos-H Mode**
+   - **Problem**: Missing feature parity with main branch
+   - **File**: `src/app/(protected)/k-col/calculator/page.tsx`
+   - **Fix**:
+     - Added `ksHBeamData` constant with all 13 KS standard H-beam dimensions
+     - When H1/H2 is selected, auto-fills B, tw, tf, and r values
+     - Added `handleTypeChange` for Rolled H / Pos-H toggle
+     - In Pos-H mode, r1 and r2 are automatically set to 0
+     - Switching back to Rolled H restores KS standard r values
+
+### KS H-beam Standard Data Reference
+```typescript
+const ksHBeamData = {
+  400: { B: 200, tw: 8, tf: 13, r: 16 },   // H400x200
+  450: { B: 200, tw: 9, tf: 14, r: 18 },   // H450x200
+  500: { B: 200, tw: 10, tf: 16, r: 20 },  // H500x200
+  506: { B: 201, tw: 11, tf: 19, r: 20 },  // H506x201
+  600: { B: 200, tw: 11, tf: 17, r: 22 },  // H600x200
+  606: { B: 201, tw: 12, tf: 20, r: 22 },  // H606x201
+  582: { B: 300, tw: 12, tf: 17, r: 28 },  // H582x300
+  588: { B: 300, tw: 12, tf: 20, r: 28 },  // H588x300
+  692: { B: 300, tw: 13, tf: 20, r: 28 },  // H692x300
+  700: { B: 300, tw: 13, tf: 24, r: 28 },  // H700x300
+  800: { B: 300, tw: 14, tf: 26, r: 28 },  // H800x300
+  900: { B: 300, tw: 16, tf: 28, r: 28 },  // H900x300
+  912: { B: 302, tw: 18, tf: 34, r: 28 },  // H912x302
+};
+```
+
+### Key Learnings
+
+1. **Conditional Tailwind Classes**: When using ternary operators for conditional classes, ensure the full class string is in each branch, not concatenated:
+   ```tsx
+   // ✅ Correct
+   className={`${active ? 'bg-white text-blue' : 'bg-transparent text-white'}`}
+   
+   // ❌ Wrong (can cause issues)
+   className={`bg-transparent text-white ${active ? 'bg-white text-blue' : ''}`}
+   ```
+
+2. **URL Data Passing**: For complex data between pages, use `encodeURIComponent(JSON.stringify(data))` in URL params and parse with `JSON.parse(decodeURIComponent(param))` on the receiving page.
+
+3. **Multi-row Calculations**: Use `Promise.all()` with `map()` for parallel async calculations across multiple rows.
+
+4. **Feature Parity**: When migrating from HTML/JS to React, always compare with the original source to ensure all features are ported (auto-fill, mode toggles, etc.)
+
+### Verification
+- TypeScript: `bun run typecheck` passes with no errors
+- Build: Ready for deployment

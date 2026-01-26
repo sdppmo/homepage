@@ -1,22 +1,39 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { calculateCrossHColumn } from '@/actions/calculate';
 import type { CrossHSectionCalcInput, CrossHSectionCalcResult } from '@/lib/calculations/cross-h-column';
 
+// KS 표준 H형강 치수 데이터 (Roll H) - 사용 규격만
+const ksHBeamData: Record<number, { B: number; tw: number; tf: number; r: number }> = {
+  400: { B: 200, tw: 8, tf: 13, r: 16 },     // H400x200
+  450: { B: 200, tw: 9, tf: 14, r: 18 },     // H450x200 (기본값)
+  500: { B: 200, tw: 10, tf: 16, r: 20 },    // H500x200
+  506: { B: 201, tw: 11, tf: 19, r: 20 },    // H506x201
+  600: { B: 200, tw: 11, tf: 17, r: 22 },    // H600x200
+  606: { B: 201, tw: 12, tf: 20, r: 22 },    // H606x201
+  582: { B: 300, tw: 12, tf: 17, r: 28 },    // H582x300
+  588: { B: 300, tw: 12, tf: 20, r: 28 },    // H588x300
+  692: { B: 300, tw: 13, tf: 20, r: 28 },    // H692x300
+  700: { B: 300, tw: 13, tf: 24, r: 28 },    // H700x300
+  800: { B: 300, tw: 14, tf: 26, r: 28 },    // H800x300
+  900: { B: 300, tw: 16, tf: 28, r: 28 },    // H900x300
+  912: { B: 302, tw: 18, tf: 34, r: 28 },    // H912x302
+};
+
 const defaultValues = {
   H1: 500,
-  B1: 300,
-  tw1: 12,
+  B1: 200,
+  tw1: 10,
   tf1: 16,
-  r1: 18,
+  r1: 20,
   H2: 500,
-  B2: 300,
-  tw2: 12,
+  B2: 200,
+  tw2: 10,
   tf2: 16,
-  r2: 18,
+  r2: 20,
   steelGrade: 'SM355',
   Fy: 355,
   E: 205000,
@@ -41,13 +58,158 @@ export default function CrossHColumnCalculatorPage() {
   const [result, setResult] = useState<CrossHSectionCalcResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [activeType, setActiveType] = useState<'kcol' | 'posh'>('kcol');
+  const [multiColumnData, setMultiColumnData] = useState<Array<{
+    Pu: string;
+    Mux: string;
+    Muy: string;
+    compressive: string;
+    pmm: string;
+  }>>(Array(6).fill({ Pu: '', Mux: '', Muy: '', compressive: '-', pmm: '-' }));
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
+    
+    if (name === 'H1') {
+      const h1Value = parseInt(value);
+      const data = ksHBeamData[h1Value];
+      if (data) {
+        setInputs((prev) => ({
+          ...prev,
+          H1: h1Value,
+          B1: data.B,
+          tw1: data.tw,
+          tf1: data.tf,
+          r1: activeType === 'posh' ? 0 : data.r,
+        }));
+        return;
+      }
+    }
+    
+    if (name === 'H2') {
+      const h2Value = parseInt(value);
+      const data = ksHBeamData[h2Value];
+      if (data) {
+        setInputs((prev) => ({
+          ...prev,
+          H2: h2Value,
+          B2: data.B,
+          tw2: data.tw,
+          tf2: data.tf,
+          r2: activeType === 'posh' ? 0 : data.r,
+        }));
+        return;
+      }
+    }
+    
     setInputs((prev) => ({
       ...prev,
       [name]: name === 'steelGrade' || name === 'projectName' ? value : parseFloat(value) || 0,
     }));
+  };
+
+  const handleTypeChange = (type: 'kcol' | 'posh') => {
+    setActiveType(type);
+    if (type === 'posh') {
+      setInputs((prev) => ({
+        ...prev,
+        r1: 0,
+        r2: 0,
+      }));
+    } else {
+      const data1 = ksHBeamData[inputs.H1];
+      const data2 = ksHBeamData[inputs.H2];
+      setInputs((prev) => ({
+        ...prev,
+        r1: data1?.r || 0,
+        r2: data2?.r || 0,
+      }));
+    }
+  };
+
+  const handleMultiColumnChange = (index: number, field: 'Pu' | 'Mux' | 'Muy', value: string) => {
+    setMultiColumnData((prev) => {
+      const newData = [...prev];
+      newData[index] = { ...newData[index], [field]: value };
+      return newData;
+    });
+  };
+
+  const handleMultiColumnCalculate = async () => {
+    setLoading(true);
+    try {
+      const newData = await Promise.all(
+        multiColumnData.map(async (row) => {
+          const Pu = parseFloat(row.Pu) || 0;
+          const Mux = parseFloat(row.Mux) || 0;
+          const Muy = parseFloat(row.Muy) || 0;
+          
+          if (Pu === 0 && Mux === 0 && Muy === 0) {
+            return { ...row, compressive: '-', pmm: '-' };
+          }
+          
+          const calcInput: CrossHSectionCalcInput = {
+            thickness: { tw: inputs.tw1, tf: inputs.tf1 },
+            material: { Fy: inputs.Fy, E: inputs.E, nu: inputs.nu },
+            factors: { Kx: inputs.Kx, Ky: inputs.Ky, Kz: inputs.Kz },
+            lengths: { Lx: inputs.Lx, Ly: inputs.Ly },
+            loads: { Pu, Mux, Muy },
+            dims: { h1: inputs.H1, h2: inputs.H2, b1: inputs.B1, b2: inputs.B2 },
+          };
+          
+          const calcResult = await calculateCrossHColumn(calcInput);
+          const compressive = Pu / calcResult.phi_Pn;
+          
+          return {
+            ...row,
+            compressive: compressive.toFixed(3),
+            pmm: calcResult.ratio_pmm.toFixed(3),
+          };
+        })
+      );
+      setMultiColumnData(newData);
+    } catch (error) {
+      console.error('Multi-column calculation failed:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePrintNavigation = () => {
+    if (!result) return;
+    
+    const printData = {
+      H1: inputs.H1,
+      B1: inputs.B1,
+      tw1: inputs.tw1,
+      tf1: inputs.tf1,
+      r1: inputs.r1,
+      H2: inputs.H2,
+      B2: inputs.B2,
+      tw2: inputs.tw2,
+      tf2: inputs.tf2,
+      r2: inputs.r2,
+      steelGrade: inputs.steelGrade,
+      Fy: inputs.Fy,
+      E: inputs.E,
+      nu: inputs.nu,
+      Lx: inputs.Lx,
+      Ly: inputs.Ly,
+      Lb: inputs.Lb,
+      Kx: inputs.Kx,
+      Ky: inputs.Ky,
+      Kz: inputs.Kz,
+      Cb: inputs.Cb,
+      Pu: inputs.Pu,
+      Mux: inputs.Mux,
+      Muy: inputs.Muy,
+      Vux: inputs.Vux,
+      Vuy: inputs.Vuy,
+      name: inputs.projectName,
+      results: result,
+    };
+    
+    const dataParam = encodeURIComponent(JSON.stringify(printData));
+    window.open(`/k-col/print?data=${dataParam}`, '_blank');
   };
 
   const copyMajorToMinor = () => {
@@ -112,18 +274,22 @@ export default function CrossHColumnCalculatorPage() {
           </div>
           <div className="flex gap-[8px]">
             <button
-              className={`px-[20px] py-[8px] border-2 border-white/50 bg-transparent text-white rounded-[20px] text-[13px] font-medium cursor-pointer transition-all duration-200 ${
-                activeType === 'kcol' ? 'bg-white text-[#1e3a5f] border-white' : 'hover:bg-white hover:text-[#1e3a5f] hover:border-white'
+              className={`px-[20px] py-[8px] border-2 rounded-[20px] text-[13px] font-medium cursor-pointer transition-all duration-200 ${
+                activeType === 'kcol' 
+                  ? 'bg-white text-[#1e3a5f] border-white' 
+                  : 'bg-transparent text-white border-white/50 hover:bg-white hover:text-[#1e3a5f] hover:border-white'
               }`}
-              onClick={() => setActiveType('kcol')}
+              onClick={() => handleTypeChange('kcol')}
             >
               Rolled H
             </button>
             <button
-              className={`px-[20px] py-[8px] border-2 border-white/50 bg-transparent text-white rounded-[20px] text-[13px] font-medium cursor-pointer transition-all duration-200 ${
-                activeType === 'posh' ? 'bg-white text-[#1e3a5f] border-white' : 'hover:bg-white hover:text-[#1e3a5f] hover:border-white'
+              className={`px-[20px] py-[8px] border-2 rounded-[20px] text-[13px] font-medium cursor-pointer transition-all duration-200 ${
+                activeType === 'posh' 
+                  ? 'bg-white text-[#1e3a5f] border-white' 
+                  : 'bg-transparent text-white border-white/50 hover:bg-white hover:text-[#1e3a5f] hover:border-white'
               }`}
-              onClick={() => setActiveType('posh')}
+              onClick={() => handleTypeChange('posh')}
             >
               Pos-H / Built-UP H
             </button>
@@ -276,12 +442,13 @@ export default function CrossHColumnCalculatorPage() {
                 </div>
               </div>
               <div className="grid grid-cols-2 grid-rows-2 gap-[8px] w-full">
-                <Link 
-                  href="/k-col/print"
-                  className="w-full p-[12px] bg-[#6b7280] text-white border-none rounded-md text-[13px] cursor-pointer transition-all duration-200 text-center whitespace-normal leading-[1.4] font-semibold flex flex-col items-center justify-center hover:bg-[#4b5563] hover:-translate-y-[1px] hover:shadow-[0_2px_6px_rgba(0,0,0,0.2)] no-underline"
+                <button 
+                  onClick={handlePrintNavigation}
+                  disabled={!result}
+                  className="w-full p-[12px] bg-[#6b7280] text-white border-none rounded-md text-[13px] cursor-pointer transition-all duration-200 text-center whitespace-normal leading-[1.4] font-semibold flex flex-col items-center justify-center hover:bg-[#4b5563] hover:-translate-y-[1px] hover:shadow-[0_2px_6px_rgba(0,0,0,0.2)] disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   📄 전체계산서<br />(1-Column)
-                </Link>
+                </button>
                 <Link 
                   href="/k-col/auto-find-section"
                   className="w-full p-[12px] bg-[#38a169] text-white border-none rounded-md text-[13px] cursor-pointer transition-all duration-200 text-center whitespace-normal leading-[1.4] font-semibold flex flex-col items-center justify-center hover:bg-[#2f855a] hover:-translate-y-[1px] hover:shadow-[0_2px_6px_rgba(0,0,0,0.2)] no-underline"
@@ -446,12 +613,42 @@ export default function CrossHColumnCalculatorPage() {
               </div>
               <div className="grid grid-cols-3 gap-[10px]">
                 {[
-                  { name: 'Compressive', value: result?.phi_Pn, check: 'Pu/φPn', isNG: result?.isCompressiveNG },
-                  { name: 'Bending X', value: undefined, check: 'Mux/φMnx', isNG: undefined },
-                  { name: 'Bending Y', value: undefined, check: 'Muy/φMny', isNG: undefined },
-                  { name: 'P-M-M', value: result?.ratio_pmm, check: 'Combined', isNG: result ? result.ratio_pmm > 1.0 : undefined },
-                  { name: 'Shear X', value: undefined, check: 'Vux/φVnx', isNG: undefined },
-                  { name: 'Shear Y', value: undefined, check: 'Vuy/φVny', isNG: undefined },
+                  { 
+                    name: 'Compressive', 
+                    value: result ? inputs.Pu / result.phi_Pn : undefined, 
+                    check: 'Pu/φPn', 
+                    isNG: result?.isCompressiveNG 
+                  },
+                  { 
+                    name: 'Bending X', 
+                    value: result && result.phi_Mnx > 0 ? inputs.Mux / result.phi_Mnx : undefined, 
+                    check: 'Mux/φMnx', 
+                    isNG: result && result.phi_Mnx > 0 ? inputs.Mux / result.phi_Mnx > 1.0 : undefined 
+                  },
+                  { 
+                    name: 'Bending Y', 
+                    value: result && result.phi_Mny > 0 ? inputs.Muy / result.phi_Mny : undefined, 
+                    check: 'Muy/φMny', 
+                    isNG: result && result.phi_Mny > 0 ? inputs.Muy / result.phi_Mny > 1.0 : undefined 
+                  },
+                  { 
+                    name: 'P-M-M', 
+                    value: result?.ratio_pmm, 
+                    check: 'Combined', 
+                    isNG: result ? result.ratio_pmm > 1.0 : undefined 
+                  },
+                  { 
+                    name: 'Shear X', 
+                    value: result && result.phi_Vnx > 0 ? inputs.Vux / result.phi_Vnx : undefined, 
+                    check: 'Vux/φVnx', 
+                    isNG: result && result.phi_Vnx > 0 ? inputs.Vux / result.phi_Vnx > 1.0 : undefined 
+                  },
+                  { 
+                    name: 'Shear Y', 
+                    value: result && result.phi_Vny > 0 ? inputs.Vuy / result.phi_Vny : undefined, 
+                    check: 'Vuy/φVny', 
+                    isNG: result && result.phi_Vny > 0 ? inputs.Vuy / result.phi_Vny > 1.0 : undefined 
+                  },
                 ].map((item) => (
                   <div key={item.name} className="bg-white rounded-md p-[10px] border border-[#e2e8f0]">
                     <div className="text-[11px] font-semibold text-[#1e3a5f] mb-[5px]">{item.name}</div>
@@ -484,22 +681,51 @@ export default function CrossHColumnCalculatorPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {[1, 2, 3, 4, 5, 6].map((row) => (
-                      <tr key={row} className="hover:bg-[#f8fafc]">
-                        <td className="p-[6px] text-center border border-[#e2e8f0] font-semibold text-[#1e3a5f] bg-[#f8fafc]">{row}</td>
-                        <td className="p-[6px] text-center border border-[#e2e8f0]"><input type="text" className="w-full p-[4px] border border-[#ddd] rounded-[4px] text-center text-[11px] text-[#333] focus:outline-none focus:border-[#667eea] focus:shadow-[0_0_0_2px_rgba(102,126,234,0.1)]" /></td>
-                        <td className="p-[6px] text-center border border-[#e2e8f0]"><input type="text" className="w-full p-[4px] border border-[#ddd] rounded-[4px] text-center text-[11px] text-[#333] focus:outline-none focus:border-[#667eea] focus:shadow-[0_0_0_2px_rgba(102,126,234,0.1)]" /></td>
-                        <td className="p-[6px] text-center border border-[#e2e8f0]"><input type="text" className="w-full p-[4px] border border-[#ddd] rounded-[4px] text-center text-[11px] text-[#333] focus:outline-none focus:border-[#667eea] focus:shadow-[0_0_0_2px_rgba(102,126,234,0.1)]" /></td>
-                        <td className="p-[6px] text-center border border-[#e2e8f0] font-medium text-[#555]">-</td>
-                        <td className="p-[6px] text-center border border-[#e2e8f0] font-medium text-[#555]">-</td>
+                    {multiColumnData.map((row, index) => (
+                      <tr key={index} className="hover:bg-[#f8fafc]">
+                        <td className="p-[6px] text-center border border-[#e2e8f0] font-semibold text-[#1e3a5f] bg-[#f8fafc]">{index + 1}</td>
+                        <td className="p-[6px] text-center border border-[#e2e8f0]">
+                          <input 
+                            type="text" 
+                            value={row.Pu}
+                            onChange={(e) => handleMultiColumnChange(index, 'Pu', e.target.value)}
+                            className="w-full p-[4px] border border-[#ddd] rounded-[4px] text-center text-[11px] text-[#333] focus:outline-none focus:border-[#667eea] focus:shadow-[0_0_0_2px_rgba(102,126,234,0.1)]" 
+                          />
+                        </td>
+                        <td className="p-[6px] text-center border border-[#e2e8f0]">
+                          <input 
+                            type="text" 
+                            value={row.Mux}
+                            onChange={(e) => handleMultiColumnChange(index, 'Mux', e.target.value)}
+                            className="w-full p-[4px] border border-[#ddd] rounded-[4px] text-center text-[11px] text-[#333] focus:outline-none focus:border-[#667eea] focus:shadow-[0_0_0_2px_rgba(102,126,234,0.1)]" 
+                          />
+                        </td>
+                        <td className="p-[6px] text-center border border-[#e2e8f0]">
+                          <input 
+                            type="text" 
+                            value={row.Muy}
+                            onChange={(e) => handleMultiColumnChange(index, 'Muy', e.target.value)}
+                            className="w-full p-[4px] border border-[#ddd] rounded-[4px] text-center text-[11px] text-[#333] focus:outline-none focus:border-[#667eea] focus:shadow-[0_0_0_2px_rgba(102,126,234,0.1)]" 
+                          />
+                        </td>
+                        <td className={`p-[6px] text-center border border-[#e2e8f0] font-medium ${
+                          row.compressive !== '-' && parseFloat(row.compressive) > 1 ? 'text-red-500' : 'text-[#555]'
+                        }`}>{row.compressive}</td>
+                        <td className={`p-[6px] text-center border border-[#e2e8f0] font-medium ${
+                          row.pmm !== '-' && parseFloat(row.pmm) > 1 ? 'text-red-500' : 'text-[#555]'
+                        }`}>{row.pmm}</td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
               <div className="flex justify-center mt-[12px] pt-[12px] border-t border-[#e2e8f0]">
-                <button className="w-full max-w-[400px] p-[12px_24px] border-none rounded-lg text-[14px] font-semibold cursor-pointer transition-all duration-200 bg-gradient-to-br from-[#667eea] to-[#764ba2] text-white shadow-[0_4px_15px_rgba(102,126,234,0.4)] hover:bg-gradient-to-br hover:from-[#5568d3] hover:to-[#6b3fa0] hover:-translate-y-[2px] hover:shadow-[0_6px_20px_rgba(102,126,234,0.5)] active:translate-y-0">
-                  ⚡ Multi Column Execution
+                <button 
+                  onClick={handleMultiColumnCalculate}
+                  disabled={loading}
+                  className="w-full max-w-[400px] p-[12px_24px] border-none rounded-lg text-[14px] font-semibold cursor-pointer transition-all duration-200 bg-gradient-to-br from-[#667eea] to-[#764ba2] text-white shadow-[0_4px_15px_rgba(102,126,234,0.4)] hover:bg-gradient-to-br hover:from-[#5568d3] hover:to-[#6b3fa0] hover:-translate-y-[2px] hover:shadow-[0_6px_20px_rgba(102,126,234,0.5)] active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {loading ? '계산 중...' : '⚡ Multi Column Execution'}
                 </button>
               </div>
             </div>
