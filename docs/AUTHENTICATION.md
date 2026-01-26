@@ -488,5 +488,5 @@ Custom Korean templates for:
 ## Related Files
 
 - `AGENTS.md` - Project context for AI agents
-- `SECURITY.md` - Security checklist
+- `docs/SECURITY.md` - Security checklist
 - `.env.local` - Environment variables (git-ignored)

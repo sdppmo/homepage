@@ -57,7 +57,7 @@
 
 **Before implementing ANY feature involving authentication, authorization, or database access:**
 
-1. **READ `/SECURITY.md`** - Contains mandatory security checklist
+1. **READ `/docs/SECURITY.md`** - Contains mandatory security checklist
 2. **Verify RLS is enabled** on all tables (especially `user_profiles`)
 3. **Never expose `SERVICE_ROLE_KEY`** in client-side code
 4. **Run `./deploy.sh --test-security`** before deployment
@@ -288,7 +288,9 @@ homepage/
 ├── # Documentation
 ├── README.md                   # User documentation
 ├── AGENTS.md                   # This file - AI agent context
-├── SECURITY.md                 # Security checklist
+├── docs/                       # Documentation
+│   ├── SECURITY.md             # Security checklist
+│   └── AUTHENTICATION.md       # Auth flow documentation
 │
 ├── # Environment (git-ignored)
 ├── .env.local                  # Supabase secrets

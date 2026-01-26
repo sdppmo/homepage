@@ -224,7 +224,7 @@ if [ "$TEST_SECURITY" = true ]; then
     
     log_success "Security test instructions displayed"
     echo ""
-    echo "See SECURITY.md for full security checklist."
+    echo "See docs/SECURITY.md for full security checklist."
     exit 0
 fi
 

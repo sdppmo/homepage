@@ -1,50 +1,48 @@
 # Next.js Migration Status
 
-## Final Status: 170/173 Tasks Complete (98.3%)
+## Final Status: 171/173 Tasks Complete (98.8%)
 
-**Last Updated**: 2026-01-26 (Session 10)
+**Last Updated**: 2026-01-26 (Session 11)
 
-## ⏸️ WORK PAUSED - TIME-BLOCKED UNTIL 2026-02-01
+## ⏸️ WORK PAUSED - 2 MANUAL TASKS REQUIRE SUPABASE DASHBOARD
 
-### Session 10 (2026-01-26) - UI Improvements
+### Session 11 (2026-01-26) - Project Cleanup
 
-**User-requested UI changes (not part of migration plan):**
+**Completed project organization:**
 
-1. **운영자 Control visibility** - Now only visible to users with `access_beam` permission
-   - File: `src/app/(protected)/k-col/calculator/page.tsx`
-   - Added useEffect to check `user_profiles.access_beam`
-   - Conditionally renders the operator control section
+1. **Removed outdated markdown files (7 files):**
+   - `TODO.md`, `BETA_README.md`, `BETA_DNS_SETUP.md`
+   - `PHASE_0.3_HANDOFF.md`, `NEXTJS_POC_COMPLETE.md`
+   - `phase-4.3-completion-report.md`, `security_fix.md`
 
-2. **Product logos bar redesign** - Better desktop experience
-   - File: `src/components/layout/Footer.tsx`
-   - Gradient background, centered with max-width container
-   - Consistent sizing (64px mobile, 80px desktop)
-   - Hover scale effect
+2. **Removed obsolete scripts (6 files):**
+   - `scripts/deploy-edge-functions.py`
+   - `scripts/upload-protected-pages.py`
+   - `scripts/download-protected-pages.ts`
+   - `scripts/list-storage.ts`
+   - `scripts/start-server.bat`, `scripts/start-server.ps1`
 
-3. **WorldClocks layout** - Responsive grid
-   - File: `src/components/widgets/WorldClocks.tsx`
-   - Mobile: 2×2 grid
-   - Desktop: 1×4 horizontal row, left-aligned
+3. **Removed obsolete root files (5 files):**
+   - `index.html` (46KB old static homepage)
+   - `nginx.conf` (no longer using nginx)
+   - `deploy-beta.sh` (merged into deploy.sh)
+   - `bugcheck.sh` (outdated)
+   - `docker-compose.yml` (outdated)
 
-**Status:** ✅ Changes committed and pushed to remote.
-
-**Commits:**
-- `2a00824` - feat: UI improvements - operator control visibility, footer redesign, worldclocks layout
-- `4996f97` - test: fix test environment - jsdom to happy-dom, add supabase mocks
+**Commit:** `b2b7c0b` - chore: clean up obsolete files after Next.js migration (18 files, ~3,500 lines deleted)
 
 ---
 
-### Migration Plan Remaining Tasks (TIME-BLOCKED)
+### Migration Plan Remaining Tasks (MANUAL - BLOCKED)
 
-| Task | Status | Unblock Date |
-|------|--------|--------------|
-| Delete Supabase Edge Functions | ⏸️ BLOCKED | 2026-02-01 |
-| Delete `protected-pages` Storage bucket | ⏸️ BLOCKED | 2026-02-01 |
-| Remove old HTML/JS/CSS files | ⏸️ BLOCKED | 2026-02-01 |
+| Task | Status | Blocker |
+|------|--------|---------|
+| Delete Supabase Edge Functions | ⏸️ BLOCKED | Requires Supabase Dashboard access |
+| Delete `protected-pages` Storage bucket | ⏸️ BLOCKED | Requires Supabase Dashboard access |
 
-**Days until unblock:** 5 days (today is 2026-01-26)
+**These tasks cannot be automated.** They require manual action in the Supabase Dashboard.
 
-**No executable migration work remains.** All 170 code/deployment tasks are complete.
+**No executable migration work remains.** All 171 code/deployment tasks are complete.
 
 ---
 
