@@ -6,11 +6,13 @@
 # ============================================================
 #
 # Usage:
-#   ./deploy.sh                    # Full build + security checks + deploy
+#   ./deploy.sh                    # Full build + security checks + deploy to PRODUCTION
+#   ./deploy.sh --beta             # Full build + deploy to BETA
 #   ./deploy.sh --local            # Build + run local test server (NO AWS deploy)
 #   ./deploy.sh --stop             # Stop local test server
 #   ./deploy.sh --build-only       # Only build Docker image
-#   ./deploy.sh --deploy-only      # Only deploy existing image
+#   ./deploy.sh --deploy-only      # Only deploy existing image (to production)
+#   ./deploy.sh --deploy-only --beta  # Only deploy existing image to BETA
 #   ./deploy.sh --quick            # Skip security scans (faster)
 #   ./deploy.sh --test-security    # Run security tests (RLS verification)
 #   ./deploy.sh --supabase-start   # Start local Supabase (Docker)
@@ -33,6 +35,7 @@ set -euo pipefail
 # Configuration
 # ============================================================
 SERVICE_NAME="sdppmo-container-service-1"
+BETA_SERVICE_NAME="sdppmo-beta-container"
 CONTAINER_NAME="homepage"
 IMAGE_NAME="sdppmo-homepage"
 IMAGE_TAG="latest"
@@ -79,6 +82,7 @@ QUICK_MODE=false
 LOCAL_MODE=false
 STOP_LOCAL=false
 TEST_SECURITY=false
+BETA_MODE=false
 SUPABASE_START=false
 SUPABASE_STOP=false
 SUPABASE_TEST=false
@@ -96,6 +100,9 @@ for arg in "$@"; do
             ;;
         --quick)
             QUICK_MODE=true
+            ;;
+        --beta)
+            BETA_MODE=true
             ;;
         --test-security)
             TEST_SECURITY=true
@@ -125,8 +132,9 @@ for arg in "$@"; do
             echo "  --local        Build + run local test server at http://localhost:$LOCAL_PORT (NO AWS deploy)"
             echo "  --stop         Stop local test server"
             echo "  --build-only   Only build Docker image, don't deploy"
-            echo "  --deploy-only      Only deploy existing image to Lightsail"
-            echo "  --quick            Skip security scans for faster deployment"
+            echo "  --deploy-only  Only deploy existing image to Lightsail"
+            echo "  --beta         Deploy to beta environment (sdppmo-beta-container)"
+            echo "  --quick        Skip security scans for faster deployment"
             echo "  --test-security    Run security tests (RLS verification)"
             echo "  --supabase-start   Start local Supabase (Docker)"
             echo "  --supabase-stop    Stop local Supabase"
@@ -330,12 +338,27 @@ if [ "$SUPABASE_RESET" = true ]; then
 fi
 
 # ============================================================
+# Select target service based on --beta flag
+# ============================================================
+if [ "$BETA_MODE" = true ]; then
+    TARGET_SERVICE="$BETA_SERVICE_NAME"
+    TARGET_ENV="BETA"
+else
+    TARGET_SERVICE="$SERVICE_NAME"
+    TARGET_ENV="PRODUCTION"
+fi
+
+# ============================================================
 # Banner
 # ============================================================
 echo ""
 echo -e "${GREEN}╔════════════════════════════════════════════╗${NC}"
 echo -e "${GREEN}║  Lightsail Next.js Deployment              ║${NC}"
-echo -e "${GREEN}║  Service: ${YELLOW}${SERVICE_NAME}${GREEN}  ║${NC}"
+if [ "$BETA_MODE" = true ]; then
+echo -e "${GREEN}║  Target: ${YELLOW}BETA${GREEN} (${BETA_SERVICE_NAME})    ║${NC}"
+else
+echo -e "${GREEN}║  Target: ${YELLOW}PRODUCTION${GREEN} (${SERVICE_NAME})  ║${NC}"
+fi
 echo -e "${GREEN}╚════════════════════════════════════════════╝${NC}"
 
 # ============================================================
@@ -562,18 +585,18 @@ fi
 # ============================================================
 # Push to Lightsail
 # ============================================================
-log_step "Pushing Image to Lightsail"
+log_step "Pushing Image to Lightsail ($TARGET_ENV)"
 
 PUSH_OUTPUT=$(aws lightsail push-container-image \
     --region "$AWS_REGION" \
-    --service-name "$SERVICE_NAME" \
+    --service-name "$TARGET_SERVICE" \
     --label "$CONTAINER_NAME" \
     --image "${IMAGE_NAME}:${IMAGE_TAG}" 2>&1)
 
 echo "$PUSH_OUTPUT"
 
 # Extract the image URI from the output
-IMAGE_URI=$(echo "$PUSH_OUTPUT" | grep -oE ":${SERVICE_NAME}\.[^\"[:space:]]+" | head -1)
+IMAGE_URI=$(echo "$PUSH_OUTPUT" | grep -oE ":${TARGET_SERVICE}\.[^\"[:space:]]+" | head -1)
 
 if [ -z "$IMAGE_URI" ]; then
     log_error "Failed to extract image URI from push output"
@@ -585,7 +608,7 @@ log_success "Image pushed: $IMAGE_URI"
 # ============================================================
 # Deploy to Lightsail
 # ============================================================
-log_step "Creating Deployment"
+log_step "Creating Deployment ($TARGET_ENV)"
 
 # Create containers JSON
 CONTAINERS_JSON=$(cat <<EOF
@@ -621,7 +644,7 @@ EOF
 
 aws lightsail create-container-service-deployment \
     --region "$AWS_REGION" \
-    --service-name "$SERVICE_NAME" \
+    --service-name "$TARGET_SERVICE" \
     --containers "$CONTAINERS_JSON" \
     --public-endpoint "$ENDPOINT_JSON"
 
@@ -633,7 +656,7 @@ log_success "Deployment initiated!"
 log_step "Deployment Status"
 
 SERVICE_INFO=$(aws lightsail get-container-services \
-    --service-name "$SERVICE_NAME" \
+    --service-name "$TARGET_SERVICE" \
     --region "$AWS_REGION" \
     --query "containerServices[0]" \
     --output json)
@@ -651,15 +674,15 @@ echo -e "Service URL:   ${GREEN}${URL}${NC}"
 # ============================================================
 echo ""
 echo -e "${GREEN}╔════════════════════════════════════════════╗${NC}"
-echo -e "${GREEN}║  ✓ Deployment Complete!                    ║${NC}"
+echo -e "${GREEN}║  ✓ Deployment Complete! ($TARGET_ENV)${NC}"
 echo -e "${GREEN}╚════════════════════════════════════════════╝${NC}"
 echo ""
 echo "Useful commands:"
 echo "  # Monitor deployment"
-echo "  aws lightsail get-container-services --service-name $SERVICE_NAME --region $AWS_REGION"
+echo "  aws lightsail get-container-services --service-name $TARGET_SERVICE --region $AWS_REGION"
 echo ""
 echo "  # View logs"
-echo "  aws lightsail get-container-log --service-name $SERVICE_NAME --container-name $CONTAINER_NAME --region $AWS_REGION"
+echo "  aws lightsail get-container-log --service-name $TARGET_SERVICE --container-name $CONTAINER_NAME --region $AWS_REGION"
 echo ""
 echo -e "${YELLOW}Security Reminders:${NC}"
 echo "  1. Enable HTTPS via Custom Domains in Lightsail Console"
