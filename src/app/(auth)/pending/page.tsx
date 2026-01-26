@@ -167,7 +167,7 @@ export default function PendingPage() {
       <p className="text-[14px] text-slate-400 leading-relaxed mb-2">
         아래 이메일로 인증 링크를 발송했습니다.
       </p>
-      <div className="font-medium color-[#60a5fa] bg-blue-500/10 px-4 py-2 rounded-md inline-block my-3">
+      <div className="font-medium text-[#60a5fa] bg-blue-500/10 px-4 py-2 rounded-md inline-block my-3">
         {email}
       </div>
       <p className="text-[14px] text-slate-400 leading-relaxed mb-2">

@@ -65,14 +65,14 @@ export default function DeveloperGuidePage() {
               </h2>
             </div>
 
-            <div className="text-[20.8px] leading-[1.9] color-[#4a5568] mb-[25px]">
+            <div className="text-[20.8px] leading-[1.9] text-[#4a5568] mb-[25px]">
               <p className="mb-[18px] pl-[10px]">
                 TOP-DOWN 공법은 지하 구조물과 지상 구조물을 동시에 시공하는 공법으로, K-COL 시스템에 최적화된 시공
                 방법입니다.
               </p>
             </div>
 
-            <div className="text-[20.8px] leading-[1.9] color-[#4a5568] mb-[25px]">
+            <div className="text-[20.8px] leading-[1.9] text-[#4a5568] mb-[25px]">
               <h3 className="text-[28.08px] font-bold text-[#2d5a87] mb-5 p-[15px_20px] bg-gradient-to-br from-[#f0f4ff] to-[#e8f0fe] rounded-xl border-l-4 border-[#667eea]">
                 K-COL의 TOP-DOWN공법의 주요 특징
               </h3>
@@ -99,7 +99,7 @@ export default function DeveloperGuidePage() {
                     key={index}
                     className="relative pl-[35px] mb-[15px] leading-[1.8] before:content-['✓'] before:absolute before:left-0 before:top-0 before:w-6 before:h-6 before:bg-gradient-to-br before:from-[#667eea] before:to-[#764ba2] before:text-white before:rounded-full before:flex before:items-center before:justify-center before:text-sm before:font-bold"
                   >
-                    <strong className="color-[#1e3a5f] font-bold bg-gradient-to-br from-[#f0f4ff] to-transparent p-[2px_6px] rounded">
+                    <strong className="text-[#1e3a5f] font-bold bg-gradient-to-br from-[#f0f4ff] to-transparent p-[2px_6px] rounded">
                       {item.title}
                     </strong>{' '}
                     {item.desc}
@@ -108,13 +108,13 @@ export default function DeveloperGuidePage() {
               </ul>
             </div>
 
-            <div className="text-[20.8px] leading-[1.9] color-[#4a5568] mb-[25px]">
+            <div className="text-[20.8px] leading-[1.9] text-[#4a5568] mb-[25px]">
               <h3 className="text-[28.08px] font-bold text-[#2d5a87] mb-5 p-[15px_20px] bg-gradient-to-br from-[#f0f4ff] to-[#e8f0fe] rounded-xl border-l-4 border-[#667eea]">
                 TOP-DOWN 공법과 K-COL의 관계
               </h3>
               <p className="mb-[18px] pl-[10px]">
                 K-COL은 TOP-DOWN 공법의 특성에 맞춰 설계되었습니다.{' '}
-                <span className="color-[#92400e] font-bold bg-gradient-to-br from-[#fbbf24] to-[#f59e0b] p-[2px_6px] rounded inline-block shadow-[0_2px_4px_rgba(251,191,36,0.3)]">
+                <span className="text-[#92400e] font-bold bg-gradient-to-br from-[#fbbf24] to-[#f59e0b] p-[2px_6px] rounded inline-block shadow-[0_2px_4px_rgba(251,191,36,0.3)]">
                   Cross H
                 </span>
                 형 단면을 활용하여 X방향과 Y방향 모두에서 동일한 구조 성능을 발휘하며, 볼트 체결을 통한 빠른 시공이
@@ -123,10 +123,10 @@ export default function DeveloperGuidePage() {
             </div>
 
             <div className="bg-gradient-to-br from-[#f0f4ff] to-[#e8f0fe] border-l-[6px] border-[#667eea] p-[30px] rounded-2xl m-[30px_0] shadow-[0_4px_16px_rgba(102,126,234,0.15)] relative overflow-hidden before:content-[''] before:absolute before:-top-1/2 before:-right-1/2 before:w-[200%] before:h-[200%] before:bg-[radial-gradient(circle,rgba(102,126,234,0.1)_0%,transparent_70%)] before:pointer-events-none">
-              <strong className="text-[22.88px] color-[#1e3a5f] block mb-[15px] relative z-10">
+              <strong className="text-[22.88px] text-[#1e3a5f] block mb-[15px] relative z-10">
                 💡 K-COL의 TOP-DOWN공법의 최적화
               </strong>
-              <p className="text-[20.8px] leading-[1.8] color-[#4a5568] m-0 relative z-10">
+              <p className="text-[20.8px] leading-[1.8] text-[#4a5568] m-0 relative z-10">
                 K-COL은 TOP-DOWN 공법의 장점을 극대화하기 위해 설계되었습니다. 공장 제작, 볼트 체결, 콘크리트 타설
                 불필요 등의 특징을 통해 공기 단축과 품질 향상을 동시에 달성할 수 있습니다.
               </p>
@@ -143,10 +143,10 @@ export default function DeveloperGuidePage() {
               </h2>
             </div>
 
-            <div className="text-[20.8px] leading-[1.9] color-[#4a5568] mb-[25px]">
+            <div className="text-[20.8px] leading-[1.9] text-[#4a5568] mb-[25px]">
               <p className="mb-[18px] pl-[10px]">
                 K-COL 구조 계산 기능은{' '}
-                <span className="color-[#92400e] font-bold bg-gradient-to-br from-[#fbbf24] to-[#f59e0b] p-[2px_6px] rounded inline-block shadow-[0_2px_4px_rgba(251,191,36,0.3)]">
+                <span className="text-[#92400e] font-bold bg-gradient-to-br from-[#fbbf24] to-[#f59e0b] p-[2px_6px] rounded inline-block shadow-[0_2px_4px_rgba(251,191,36,0.3)]">
                   Cross H
                 </span>
                 형 단면의 구조 설계를 자동화하여 정확한 구조 계산을 수행합니다.
@@ -164,7 +164,7 @@ export default function DeveloperGuidePage() {
               <p className="mt-[15px] text-base text-[#666] italic">SRC (Cross H) Design Calculator 인터페이스</p>
             </div>
 
-            <div className="text-[20.8px] leading-[1.9] color-[#4a5568] mb-[25px]">
+            <div className="text-[20.8px] leading-[1.9] text-[#4a5568] mb-[25px]">
               <h3 className="text-[28.08px] font-bold text-[#2d5a87] mb-5 p-[15px_20px] bg-gradient-to-br from-[#f0f4ff] to-[#e8f0fe] rounded-xl border-l-4 border-[#667eea]">
                 SRC (Cross H) Design Calculator 주요 기능
               </h3>
@@ -207,7 +207,7 @@ export default function DeveloperGuidePage() {
                     key={index}
                     className="relative pl-[35px] mb-[15px] leading-[1.8] before:content-['✓'] before:absolute before:left-0 before:top-0 before:w-6 before:h-6 before:bg-gradient-to-br before:from-[#667eea] before:to-[#764ba2] before:text-white before:rounded-full before:flex before:items-center before:justify-center before:text-sm before:font-bold"
                   >
-                    <strong className="color-[#1e3a5f] font-bold bg-gradient-to-br from-[#f0f4ff] to-transparent p-[2px_6px] rounded">
+                    <strong className="text-[#1e3a5f] font-bold bg-gradient-to-br from-[#f0f4ff] to-transparent p-[2px_6px] rounded">
                       {item.title}
                     </strong>{' '}
                     {item.desc}
@@ -216,7 +216,7 @@ export default function DeveloperGuidePage() {
               </ul>
             </div>
 
-            <div className="text-[20.8px] leading-[1.9] color-[#4a5568] mb-[25px]">
+            <div className="text-[20.8px] leading-[1.9] text-[#4a5568] mb-[25px]">
               <h3 className="text-[28.08px] font-bold text-[#2d5a87] mb-5 p-[15px_20px] bg-gradient-to-br from-[#f0f4ff] to-[#e8f0fe] rounded-xl border-l-4 border-[#667eea]">
                 계산 결과 항목
               </h3>
@@ -243,7 +243,7 @@ export default function DeveloperGuidePage() {
                     key={index}
                     className="relative pl-[35px] mb-[15px] leading-[1.8] before:content-['✓'] before:absolute before:left-0 before:top-0 before:w-6 before:h-6 before:bg-gradient-to-br before:from-[#667eea] before:to-[#764ba2] before:text-white before:rounded-full before:flex before:items-center before:justify-center before:text-sm before:font-bold"
                   >
-                    <strong className="color-[#1e3a5f] font-bold bg-gradient-to-br from-[#f0f4ff] to-transparent p-[2px_6px] rounded">
+                    <strong className="text-[#1e3a5f] font-bold bg-gradient-to-br from-[#f0f4ff] to-transparent p-[2px_6px] rounded">
                       {item.title}
                     </strong>{' '}
                     {item.desc}
@@ -252,7 +252,7 @@ export default function DeveloperGuidePage() {
               </ul>
             </div>
 
-            <div className="text-[20.8px] leading-[1.9] color-[#4a5568] mb-[25px]">
+            <div className="text-[20.8px] leading-[1.9] text-[#4a5568] mb-[25px]">
               <h3 className="text-[28.08px] font-bold text-[#2d5a87] mb-5 p-[15px_20px] bg-gradient-to-br from-[#f0f4ff] to-[#e8f0fe] rounded-xl border-l-4 border-[#667eea]">
                 사용 방법
               </h3>
@@ -261,7 +261,7 @@ export default function DeveloperGuidePage() {
                   '메인 페이지에서 "K-COL Web Software" 메뉴를 클릭합니다.',
                   '구조 계산 페이지에서 단면 타입을 선택합니다 (Rolled H 또는 Pos-H / Built-UP H).',
                   <>
-                    <span className="color-[#92400e] font-bold bg-gradient-to-br from-[#fbbf24] to-[#f59e0b] p-[2px_6px] rounded inline-block shadow-[0_2px_4px_rgba(251,191,36,0.3)]">
+                    <span className="text-[#92400e] font-bold bg-gradient-to-br from-[#fbbf24] to-[#f59e0b] p-[2px_6px] rounded inline-block shadow-[0_2px_4px_rgba(251,191,36,0.3)]">
                       Cross H
                     </span>
                     형 단면의 치수를 입력합니다 (H1, B1, tw1, tf1, H2, B2, tw2, tf2 등).
@@ -284,10 +284,10 @@ export default function DeveloperGuidePage() {
             </div>
 
             <div className="bg-gradient-to-br from-[#f0f4ff] to-[#e8f0fe] border-l-[6px] border-[#667eea] p-[30px] rounded-2xl m-[30px_0] shadow-[0_4px_16px_rgba(102,126,234,0.15)] relative overflow-hidden before:content-[''] before:absolute before:-top-1/2 before:-right-1/2 before:w-[200%] before:h-[200%] before:bg-[radial-gradient(circle,rgba(102,126,234,0.1)_0%,transparent_70%)] before:pointer-events-none">
-              <strong className="text-[22.88px] color-[#1e3a5f] block mb-[15px] relative z-10">
+              <strong className="text-[22.88px] text-[#1e3a5f] block mb-[15px] relative z-10">
                 💡 운영자 Control 기능
               </strong>
-              <p className="text-[20.8px] leading-[1.8] color-[#4a5568] m-0 relative z-10">
+              <p className="text-[20.8px] leading-[1.8] text-[#4a5568] m-0 relative z-10">
                 운영자 권한이 있는 사용자는 <strong>"운영자 Control"</strong> 섹션을 통해 전체 계산서 출력, A.F.S.
                 Function, SRC (Cross H), A. D. C. Function 등의 고급 기능을 사용할 수 있습니다.
               </p>
@@ -304,17 +304,17 @@ export default function DeveloperGuidePage() {
               </h2>
             </div>
 
-            <div className="text-[20.8px] leading-[1.9] color-[#4a5568] mb-[25px]">
+            <div className="text-[20.8px] leading-[1.9] text-[#4a5568] mb-[25px]">
               <p className="mb-[18px] pl-[10px]">
                 Auto Find Section 기능은 입력된 하중 조건에 맞는 최적의{' '}
-                <span className="color-[#92400e] font-bold bg-gradient-to-br from-[#fbbf24] to-[#f59e0b] p-[2px_6px] rounded inline-block shadow-[0_2px_4px_rgba(251,191,36,0.3)]">
+                <span className="text-[#92400e] font-bold bg-gradient-to-br from-[#fbbf24] to-[#f59e0b] p-[2px_6px] rounded inline-block shadow-[0_2px_4px_rgba(251,191,36,0.3)]">
                   Cross H
                 </span>
                 형 단면을 자동으로 찾아줍니다.
               </p>
             </div>
 
-            <div className="text-[20.8px] leading-[1.9] color-[#4a5568] mb-[25px]">
+            <div className="text-[20.8px] leading-[1.9] text-[#4a5568] mb-[25px]">
               <h3 className="text-[28.08px] font-bold text-[#2d5a87] mb-5 p-[15px_20px] bg-gradient-to-br from-[#f0f4ff] to-[#e8f0fe] rounded-xl border-l-4 border-[#667eea]">
                 사용 방법
               </h3>
@@ -361,17 +361,17 @@ export default function DeveloperGuidePage() {
               </h2>
             </div>
 
-            <div className="text-[20.8px] leading-[1.9] color-[#4a5568] mb-[25px]">
+            <div className="text-[20.8px] leading-[1.9] text-[#4a5568] mb-[25px]">
               <p className="mb-[18px] pl-[10px]">
                 BOQ(Bill of Quantities) 계산 기능은 프로젝트에 필요한{' '}
-                <span className="color-[#92400e] font-bold bg-gradient-to-br from-[#fbbf24] to-[#f59e0b] p-[2px_6px] rounded inline-block shadow-[0_2px_4px_rgba(251,191,36,0.3)]">
+                <span className="text-[#92400e] font-bold bg-gradient-to-br from-[#fbbf24] to-[#f59e0b] p-[2px_6px] rounded inline-block shadow-[0_2px_4px_rgba(251,191,36,0.3)]">
                   Cross H
                 </span>
                 형 기둥의 물량을 자동으로 산출합니다.
               </p>
             </div>
 
-            <div className="text-[20.8px] leading-[1.9] color-[#4a5568] mb-[25px]">
+            <div className="text-[20.8px] leading-[1.9] text-[#4a5568] mb-[25px]">
               <h3 className="text-[28.08px] font-bold text-[#2d5a87] mb-5 p-[15px_20px] bg-gradient-to-br from-[#f0f4ff] to-[#e8f0fe] rounded-xl border-l-4 border-[#667eea]">
                 사용 방법
               </h3>
@@ -425,7 +425,7 @@ export default function DeveloperGuidePage() {
               </h2>
             </div>
 
-            <div className="text-[20.8px] leading-[1.9] color-[#4a5568] mb-[25px]">
+            <div className="text-[20.8px] leading-[1.9] text-[#4a5568] mb-[25px]">
               <p className="mb-[18px] pl-[10px]">
                 기둥평면도와 기둥번호를 입력하여 프로젝트의 구조 정보를 관리합니다.
               </p>
@@ -438,7 +438,7 @@ export default function DeveloperGuidePage() {
               </p>
             </div>
 
-            <div className="text-[20.8px] leading-[1.9] color-[#4a5568] mb-[25px]">
+            <div className="text-[20.8px] leading-[1.9] text-[#4a5568] mb-[25px]">
               <h3 className="text-[28.08px] font-bold text-[#2d5a87] mb-5 p-[15px_20px] bg-gradient-to-br from-[#f0f4ff] to-[#e8f0fe] rounded-xl border-l-4 border-[#667eea]">
                 주요 기능
               </h3>
@@ -459,7 +459,7 @@ export default function DeveloperGuidePage() {
               </ul>
             </div>
 
-            <div className="text-[20.8px] leading-[1.9] color-[#4a5568] mb-[25px]">
+            <div className="text-[20.8px] leading-[1.9] text-[#4a5568] mb-[25px]">
               <h3 className="text-[28.08px] font-bold text-[#2d5a87] mb-5 p-[15px_20px] bg-gradient-to-br from-[#f0f4ff] to-[#e8f0fe] rounded-xl border-l-4 border-[#667eea]">
                 사용 방법
               </h3>
@@ -507,14 +507,14 @@ export default function DeveloperGuidePage() {
               </h2>
             </div>
 
-            <div className="text-[20.8px] leading-[1.9] color-[#4a5568] mb-[25px]">
+            <div className="text-[20.8px] leading-[1.9] text-[#4a5568] mb-[25px]">
               <p className="mb-[18px] pl-[10px]">
                 공정 관리 시스템은 제작자와 현장 간 실시간으로 제작 공정을 공유하여 효율적인 프로젝트 관리를
                 지원합니다.
               </p>
             </div>
 
-            <div className="text-[20.8px] leading-[1.9] color-[#4a5568] mb-[25px]">
+            <div className="text-[20.8px] leading-[1.9] text-[#4a5568] mb-[25px]">
               <h3 className="text-[28.08px] font-bold text-[#2d5a87] mb-5 p-[15px_20px] bg-gradient-to-br from-[#f0f4ff] to-[#e8f0fe] rounded-xl border-l-4 border-[#667eea]">
                 주요 기능
               </h3>
@@ -541,7 +541,7 @@ export default function DeveloperGuidePage() {
                     key={index}
                     className="relative pl-[35px] mb-[15px] leading-[1.8] before:content-['✓'] before:absolute before:left-0 before:top-0 before:w-6 before:h-6 before:bg-gradient-to-br before:from-[#667eea] before:to-[#764ba2] before:text-white before:rounded-full before:flex before:items-center before:justify-center before:text-sm before:font-bold"
                   >
-                    <strong className="color-[#1e3a5f] font-bold bg-gradient-to-br from-[#f0f4ff] to-transparent p-[2px_6px] rounded">
+                    <strong className="text-[#1e3a5f] font-bold bg-gradient-to-br from-[#f0f4ff] to-transparent p-[2px_6px] rounded">
                       {item.title}
                     </strong>{' '}
                     {item.desc}
@@ -571,7 +571,7 @@ export default function DeveloperGuidePage() {
               </h2>
             </div>
 
-            <div className="text-[20.8px] leading-[1.9] color-[#4a5568] mb-[25px]">
+            <div className="text-[20.8px] leading-[1.9] text-[#4a5568] mb-[25px]">
               <p className="mb-[18px] pl-[10px]">
                 현장 Mapping 기능은 현장에서 기둥 설치 위치를 시각적으로 관리하고 추적할 수 있는 기능입니다. 설치가
                 완료된 기둥과 미완료된 기둥의 설치완료율을 확인하고 완료된 기둥을 Web Page상에서 시각적으로 확인할 수
@@ -579,7 +579,7 @@ export default function DeveloperGuidePage() {
               </p>
             </div>
 
-            <div className="text-[20.8px] leading-[1.9] color-[#4a5568] mb-[25px]">
+            <div className="text-[20.8px] leading-[1.9] text-[#4a5568] mb-[25px]">
               <h3 className="text-[28.08px] font-bold text-[#2d5a87] mb-5 p-[15px_20px] bg-gradient-to-br from-[#f0f4ff] to-[#e8f0fe] rounded-xl border-l-4 border-[#667eea]">
                 사용 방법
               </h3>
@@ -624,13 +624,13 @@ export default function DeveloperGuidePage() {
               </h2>
             </div>
 
-            <div className="text-[20.8px] leading-[1.9] color-[#4a5568] mb-[25px]">
+            <div className="text-[20.8px] leading-[1.9] text-[#4a5568] mb-[25px]">
               <p className="mb-[18px] pl-[10px]">
-                <span className="color-[#92400e] font-bold bg-gradient-to-br from-[#fbbf24] to-[#f59e0b] p-[2px_6px] rounded inline-block shadow-[0_2px_4px_rgba(251,191,36,0.3)]">
+                <span className="text-[#92400e] font-bold bg-gradient-to-br from-[#fbbf24] to-[#f59e0b] p-[2px_6px] rounded inline-block shadow-[0_2px_4px_rgba(251,191,36,0.3)]">
                   Cross H
                 </span>
                 형 강재 기둥은 전 세계적으로 다양한 건물 유형에 적용되고 있습니다.{' '}
-                <span className="color-[#92400e] font-bold bg-gradient-to-br from-[#fbbf24] to-[#f59e0b] p-[2px_6px] rounded inline-block shadow-[0_2px_4px_rgba(251,191,36,0.3)]">
+                <span className="text-[#92400e] font-bold bg-gradient-to-br from-[#fbbf24] to-[#f59e0b] p-[2px_6px] rounded inline-block shadow-[0_2px_4px_rgba(251,191,36,0.3)]">
                   Cross H
                 </span>
                 를 이용한 건물은 <strong>X방향과 Y방향의 동일한 구조 성능</strong>으로 설계가 용이하며,{' '}
@@ -677,14 +677,14 @@ export default function DeveloperGuidePage() {
               </h2>
             </div>
 
-            <div className="text-[20.8px] leading-[1.9] color-[#4a5568] mb-[25px]">
+            <div className="text-[20.8px] leading-[1.9] text-[#4a5568] mb-[25px]">
               <div className="text-center mb-[30px]">
                 <h3 className="text-[32px] font-bold text-[#1e3a5f] mb-[15px]">
                   🏢 라흐타 센터 (Lakhta Center)
                 </h3>
-                <p className="text-[20px] color-[#4a5568] leading-[1.7] max-w-[900px] mx-auto m-0">
+                <p className="text-[20px] text-[#4a5568] leading-[1.7] max-w-[900px] mx-auto m-0">
                   러시아 상트페테르부르크에 위치한 <strong>유럽에서 가장 높은 건물</strong>로,{' '}
-                  <span className="color-[#92400e] font-bold bg-gradient-to-br from-[#fbbf24] to-[#f59e0b] p-[2px_6px] rounded inline-block shadow-[0_2px_4px_rgba(251,191,36,0.3)]">
+                  <span className="text-[#92400e] font-bold bg-gradient-to-br from-[#fbbf24] to-[#f59e0b] p-[2px_6px] rounded inline-block shadow-[0_2px_4px_rgba(251,191,36,0.3)]">
                     Cross H
                   </span>
                   형 강재 기둥이 적용된 대표적인 초고층 건물 사례입니다.
@@ -704,7 +704,7 @@ export default function DeveloperGuidePage() {
                   >
                     <div className="text-[36px] mb-[10px]">{item.icon}</div>
                     <div className="text-[16px] font-bold text-[#1e3a5f] mb-2">{item.title}</div>
-                    <div className="text-[15px] color-[#2d3748] whitespace-pre-line">{item.desc}</div>
+                    <div className="text-[15px] text-[#2d3748] whitespace-pre-line">{item.desc}</div>
                   </div>
                 ))}
               </div>
@@ -802,14 +802,14 @@ export default function DeveloperGuidePage() {
               </h2>
             </div>
 
-            <div className="text-[20.8px] leading-[1.9] color-[#4a5568] mb-[25px]">
+            <div className="text-[20.8px] leading-[1.9] text-[#4a5568] mb-[25px]">
               <p className="mb-[18px] pl-[10px]">
-                <span className="color-[#92400e] font-bold bg-gradient-to-br from-[#fbbf24] to-[#f59e0b] p-[2px_6px] rounded inline-block shadow-[0_2px_4px_rgba(251,191,36,0.3)]">
+                <span className="text-[#92400e] font-bold bg-gradient-to-br from-[#fbbf24] to-[#f59e0b] p-[2px_6px] rounded inline-block shadow-[0_2px_4px_rgba(251,191,36,0.3)]">
                   Cross H
                 </span>
                 형 강재 기둥이 적용된 공장 건물의 실제 사진을 확인하실 수 있습니다. <strong>장경간 내부공간</strong>이
                 필요한 공장기둥에{' '}
-                <span className="color-[#92400e] font-bold bg-gradient-to-br from-[#fbbf24] to-[#f59e0b] p-[2px_6px] rounded inline-block shadow-[0_2px_4px_rgba(251,191,36,0.3)]">
+                <span className="text-[#92400e] font-bold bg-gradient-to-br from-[#fbbf24] to-[#f59e0b] p-[2px_6px] rounded inline-block shadow-[0_2px_4px_rgba(251,191,36,0.3)]">
                   Cross H
                 </span>
                 형 강재 기둥이 효과적으로 활용되고 있습니다.
@@ -837,7 +837,7 @@ export default function DeveloperGuidePage() {
                       height={400}
                       className="w-full h-[400px] object-contain block bg-gradient-to-br from-[#f8fafc] to-white p-[10px]"
                     />
-                    <div className="p-5 text-center text-[18px] font-semibold color-[#2d3748]">{item.title}</div>
+                    <div className="p-5 text-center text-[18px] font-semibold text-[#2d3748]">{item.title}</div>
                   </div>
                 ))}
               </div>
@@ -854,10 +854,10 @@ export default function DeveloperGuidePage() {
               </h2>
             </div>
 
-            <div className="text-[20.8px] leading-[1.9] color-[#4a5568] mb-[25px]">
+            <div className="text-[20.8px] leading-[1.9] text-[#4a5568] mb-[25px]">
               <p className="mb-[18px] pl-[10px]">
                 가설건축공사는{' '}
-                <span className="color-[#92400e] font-bold bg-gradient-to-br from-[#fbbf24] to-[#f59e0b] p-[2px_6px] rounded inline-block shadow-[0_2px_4px_rgba(251,191,36,0.3)]">
+                <span className="text-[#92400e] font-bold bg-gradient-to-br from-[#fbbf24] to-[#f59e0b] p-[2px_6px] rounded inline-block shadow-[0_2px_4px_rgba(251,191,36,0.3)]">
                   Cross H
                 </span>
                 형 강재 기둥을 활용한 임시 구조물 및 가설 건축물에 적용되는 공법입니다. <strong>빠른 시공</strong>과{' '}
@@ -866,7 +866,7 @@ export default function DeveloperGuidePage() {
             </div>
 
             <div className="mt-[60px] pt-[40px] border-t-2 border-[#e2e8f0]">
-              <h3 className="text-[28.8px] font-bold color-[#2d3748] mb-[30px] text-center border-b-[3px] border-[#667eea] pb-[15px]">
+              <h3 className="text-[28.8px] font-bold text-[#2d3748] mb-[30px] text-center border-b-[3px] border-[#667eea] pb-[15px]">
                 🏗️ 가설건축공사 사진
               </h3>
               <div className="grid grid-cols-1 gap-[30px] mt-[30px]">
@@ -885,7 +885,7 @@ export default function DeveloperGuidePage() {
                       height={800}
                       className="w-full h-[800px] object-contain block bg-gradient-to-br from-[#f8fafc] to-white p-[10px]"
                     />
-                    <div className="p-5 text-center text-[18px] font-semibold color-[#2d3748]">{item.title}</div>
+                    <div className="p-5 text-center text-[18px] font-semibold text-[#2d3748]">{item.title}</div>
                   </div>
                 ))}
               </div>
@@ -902,7 +902,7 @@ export default function DeveloperGuidePage() {
               </h2>
             </div>
 
-            <div className="text-[20.8px] leading-[1.9] color-[#4a5568] mb-[25px]">
+            <div className="text-[20.8px] leading-[1.9] text-[#4a5568] mb-[25px]">
               <p className="mb-[18px] pl-[10px]">
                 Cross H형 강재 기둥의 구조적 특징을 분석하고, CFT(Concrete Filled Tube) 기둥과 비교하여 각 공법의
                 특성과 적용 범위를 명확히 파악할 수 있습니다.
@@ -910,14 +910,14 @@ export default function DeveloperGuidePage() {
             </div>
 
             <div className="bg-gradient-to-br from-[#f0f4ff] to-[#e8f0fe] border-l-[6px] border-[#667eea] p-[30px] rounded-2xl m-[30px_0] shadow-[0_4px_16px_rgba(102,126,234,0.15)] relative overflow-hidden before:content-[''] before:absolute before:-top-1/2 before:-right-1/2 before:w-[200%] before:h-[200%] before:bg-[radial-gradient(circle,rgba(102,126,234,0.1)_0%,transparent_70%)] before:pointer-events-none">
-              <strong className="text-[22.88px] color-[#1e3a5f] block mb-[15px] relative z-10">
-                <span className="color-[#92400e] font-bold bg-gradient-to-br from-[#fbbf24] to-[#f59e0b] p-[2px_6px] rounded inline-block shadow-[0_2px_4px_rgba(251,191,36,0.3)]">
+              <strong className="text-[22.88px] text-[#1e3a5f] block mb-[15px] relative z-10">
+                <span className="text-[#92400e] font-bold bg-gradient-to-br from-[#fbbf24] to-[#f59e0b] p-[2px_6px] rounded inline-block shadow-[0_2px_4px_rgba(251,191,36,0.3)]">
                   Cross H
                 </span>{' '}
                 구조적 특징
               </strong>
-              <p className="text-[20.8px] leading-[1.8] color-[#4a5568] m-0 relative z-10">
-                <span className="color-[#92400e] font-bold bg-gradient-to-br from-[#fbbf24] to-[#f59e0b] p-[2px_6px] rounded inline-block shadow-[0_2px_4px_rgba(251,191,36,0.3)]">
+              <p className="text-[20.8px] leading-[1.8] text-[#4a5568] m-0 relative z-10">
+                <span className="text-[#92400e] font-bold bg-gradient-to-br from-[#fbbf24] to-[#f59e0b] p-[2px_6px] rounded inline-block shadow-[0_2px_4px_rgba(251,191,36,0.3)]">
                   Cross H
                 </span>
                 형 단면의 구조설계시 일반 H형강과 동일하고 X방향과 Y방향의 단면 2차모멘트가 증가하므로 장주에
@@ -925,9 +925,9 @@ export default function DeveloperGuidePage() {
               </p>
             </div>
 
-            <div className="text-[20.8px] leading-[1.9] color-[#4a5568] mb-[25px]">
+            <div className="text-[20.8px] leading-[1.9] text-[#4a5568] mb-[25px]">
               <h3 className="text-[28.08px] font-bold text-[#2d5a87] mb-5 p-[15px_20px] bg-gradient-to-br from-[#f0f4ff] to-[#e8f0fe] rounded-xl border-l-4 border-[#667eea]">
-                <span className="color-[#92400e] font-bold bg-gradient-to-br from-[#fbbf24] to-[#f59e0b] p-[2px_6px] rounded inline-block shadow-[0_2px_4px_rgba(251,191,36,0.3)]">
+                <span className="text-[#92400e] font-bold bg-gradient-to-br from-[#fbbf24] to-[#f59e0b] p-[2px_6px] rounded inline-block shadow-[0_2px_4px_rgba(251,191,36,0.3)]">
                   Cross H
                 </span>{' '}
                 기둥의 시공적 장점
@@ -959,7 +959,7 @@ export default function DeveloperGuidePage() {
                     key={index}
                     className="relative pl-[35px] mb-[15px] leading-[1.8] before:content-['✓'] before:absolute before:left-0 before:top-0 before:w-6 before:h-6 before:bg-gradient-to-br before:from-[#667eea] before:to-[#764ba2] before:text-white before:rounded-full before:flex before:items-center before:justify-center before:text-sm before:font-bold"
                   >
-                    <strong className="color-[#1e3a5f] font-bold bg-gradient-to-br from-[#f0f4ff] to-transparent p-[2px_6px] rounded">
+                    <strong className="text-[#1e3a5f] font-bold bg-gradient-to-br from-[#f0f4ff] to-transparent p-[2px_6px] rounded">
                       {item.title}
                     </strong>{' '}
                     {item.desc}
@@ -971,7 +971,7 @@ export default function DeveloperGuidePage() {
             <div className="m-[30px_0] p-[30px] bg-gradient-to-br from-[#f8fafc] to-white rounded-2xl shadow-[0_8px_24px_rgba(0,0,0,0.1)] border-2 border-[#e2e8f0]">
               <h3 className="mb-[25px] p-[20px] bg-gradient-to-br from-[#1e3a5f] to-[#2d5a87] text-white rounded-xl text-center text-[26px] shadow-[0_4px_12px_rgba(30,58,95,0.3)]">
                 ⚖️{' '}
-                <span className="color-[#92400e] font-bold bg-gradient-to-br from-[#fbbf24] to-[#f59e0b] p-[2px_6px] rounded inline-block shadow-[0_2px_4px_rgba(251,191,36,0.3)]">
+                <span className="text-[#92400e] font-bold bg-gradient-to-br from-[#fbbf24] to-[#f59e0b] p-[2px_6px] rounded inline-block shadow-[0_2px_4px_rgba(251,191,36,0.3)]">
                   Cross H
                 </span>{' '}
                 vs CFT 비교
@@ -984,7 +984,7 @@ export default function DeveloperGuidePage() {
                     </th>
                     <th className="bg-gradient-to-br from-[#667eea] to-[#764ba2] text-white p-[18px_20px] text-left font-bold uppercase tracking-[0.5px] text-[19.2px] relative w-[37.5%]">
                       🏗️{' '}
-                      <span className="color-[#92400e] font-bold bg-gradient-to-br from-[#fbbf24] to-[#f59e0b] p-[2px_6px] rounded inline-block shadow-[0_2px_4px_rgba(251,191,36,0.3)]">
+                      <span className="text-[#92400e] font-bold bg-gradient-to-br from-[#fbbf24] to-[#f59e0b] p-[2px_6px] rounded inline-block shadow-[0_2px_4px_rgba(251,191,36,0.3)]">
                         Cross H
                       </span>
                     </th>
@@ -1048,19 +1048,19 @@ export default function DeveloperGuidePage() {
                   ].map((row, index, arr) => (
                     <tr key={index} className="hover:bg-gray-50 transition-all duration-200">
                       <td
-                        className={`p-5 border-b border-[#e2e8f0] color-[#4a5568] text-[20.8px] transition-all duration-200 align-middle bg-gradient-to-br from-[#f8fafc] to-white font-semibold color-[#1e3a5f] w-1/4 ${
+                        className={`p-5 border-b border-[#e2e8f0] text-[#4a5568] text-[20.8px] transition-all duration-200 align-middle bg-gradient-to-br from-[#f8fafc] to-white font-semibold text-[#1e3a5f] w-1/4 ${
                           index === arr.length - 1 ? 'rounded-bl-xl' : ''
                         }`}
                       >
-                        <strong className="color-[#1e3a5f] font-bold inline-block p-[4px_8px] bg-[rgba(30,58,95,0.1)] rounded-md">
+                        <strong className="text-[#1e3a5f] font-bold inline-block p-[4px_8px] bg-[rgba(30,58,95,0.1)] rounded-md">
                           {row.item}
                         </strong>
                       </td>
-                      <td className="p-5 border-b border-[#e2e8f0] color-[#4a5568] text-[20.8px] transition-all duration-200 align-middle bg-gradient-to-br from-[#f0f4ff] to-white border-l-[3px] border-[#667eea] w-[37.5%] hover:translate-x-[2px]">
+                      <td className="p-5 border-b border-[#e2e8f0] text-[#4a5568] text-[20.8px] transition-all duration-200 align-middle bg-gradient-to-br from-[#f0f4ff] to-white border-l-[3px] border-[#667eea] w-[37.5%] hover:translate-x-[2px]">
                         {row.crossH}
                       </td>
                       <td
-                        className={`p-5 border-b border-[#e2e8f0] color-[#4a5568] text-[20.8px] transition-all duration-200 align-middle bg-gradient-to-br from-[#fef3c7] to-white border-l-[3px] border-[#f59e0b] w-[37.5%] hover:translate-x-[2px] ${
+                        className={`p-5 border-b border-[#e2e8f0] text-[#4a5568] text-[20.8px] transition-all duration-200 align-middle bg-gradient-to-br from-[#fef3c7] to-white border-l-[3px] border-[#f59e0b] w-[37.5%] hover:translate-x-[2px] ${
                           index === arr.length - 1 ? 'rounded-br-xl' : ''
                         }`}
                       >
