@@ -2,87 +2,84 @@ import Image from 'next/image';
 
 const Footer = () => {
   return (
-    <div className="flex flex-col h-auto w-full md:flex-row md:flex-shrink-0 md:h-[100px]">
-      <div className="w-full p-2.5 h-auto bg-[#d0d0d0] flex justify-evenly items-center border-t-4 border-[#333] flex-shrink-0 md:w-[360px] md:p-0">
-        <Image
-          src="/images/product-1.png"
-          alt="K-COL"
-          width={90}
-          height={90}
-          className="w-[22%] h-auto object-contain mix-blend-multiply contrast-[1.3] saturate-[1.5] md:w-1/4 md:scale-100 md:translate-x-5"
-        />
-        <Image
-          src="/images/product-2.png"
-          alt="SLiM-BOX"
-          width={90}
-          height={90}
-          className="w-[22%] h-auto object-contain mix-blend-multiply contrast-[1.3] saturate-[1.5] md:w-1/4 md:scale-75"
-        />
-        <Image
-          src="/images/product-3.png"
-          alt="ExSlim-Beam"
-          width={90}
-          height={90}
-          className="w-[22%] h-auto object-contain mix-blend-multiply contrast-[1.3] saturate-[1.5] md:w-1/4 md:scale-115"
-        />
-        <Image
-          src="/images/product-4.png"
-          alt="COL"
-          width={90}
-          height={90}
-          className="w-[22%] h-auto object-contain mix-blend-multiply contrast-[1.3] saturate-[1.5] md:w-1/4 md:scale-85 md:translate-y-1"
-        />
-      </div>
+    <footer className="bg-[#1a1a1a] border-t-4 border-[#333] w-full">
+      <div className="max-w-6xl mx-auto px-4 py-6 md:py-8">
+        <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-6">
+          {/* Company Information - Left side */}
+          <div className="text-[#999] text-xs leading-relaxed space-y-1 md:flex-1">
+            <p className="text-white font-semibold text-sm mb-2">주식회사 송도파트너스피엠오</p>
+            <p><span className="text-[#666]">대표자:</span> 김대근</p>
+            <p><span className="text-[#666]">사업자등록번호:</span> 899-87-01996</p>
+            <p><span className="text-[#666]">주소:</span> 인천광역시 연수구 컨벤시아대로42번길 77, 903동 401호(송도동, 더샵 엑스포)</p>
+            <p><span className="text-[#666]">이메일:</span> <a href="mailto:sbd_pmo@naver.com" className="text-[#6af] hover:underline">sbd_pmo@naver.com</a></p>
+          </div>
 
-      <footer className="flex-1 bg-[#1a1a1a] flex flex-col h-auto p-4 gap-2.5 items-stretch z-20 relative border-t-4 border-[#333] overflow-hidden min-w-0 md:flex-row md:items-center md:justify-between md:p-2 md:gap-3 md:h-full">
-        <div className="flex-1 min-w-0 text-sm text-[#ccc] leading-relaxed overflow-visible text-center whitespace-normal mb-1.5 order-1 md:overflow-hidden md:text-left md:whitespace-nowrap md:mb-0 md:order-none md:text-xs lg:text-[11px] xs:text-sm">
-          <div className="whitespace-normal overflow-visible md:whitespace-nowrap md:overflow-hidden md:text-ellipsis md:max-w-full">
-            Homepage : http://www.kcol.kr
+          {/* Product Logos - Center on mobile, middle on desktop */}
+          <div className="flex justify-center items-center gap-4 md:gap-6 py-2">
+            <Image
+              src="/images/product-1.png"
+              alt="K-COL"
+              width={60}
+              height={60}
+              className="w-12 h-12 md:w-14 md:h-14 object-contain opacity-80 hover:opacity-100 transition-opacity duration-200"
+            />
+            <Image
+              src="/images/product-2.png"
+              alt="SLiM-BOX"
+              width={60}
+              height={60}
+              className="w-12 h-12 md:w-14 md:h-14 object-contain opacity-80 hover:opacity-100 transition-opacity duration-200"
+            />
+            <Image
+              src="/images/product-3.png"
+              alt="ExSlim-Beam"
+              width={60}
+              height={60}
+              className="w-12 h-12 md:w-14 md:h-14 object-contain opacity-80 hover:opacity-100 transition-opacity duration-200"
+            />
+            <Image
+              src="/images/product-4.png"
+              alt="COL"
+              width={60}
+              height={60}
+              className="w-12 h-12 md:w-14 md:h-14 object-contain opacity-80 hover:opacity-100 transition-opacity duration-200"
+            />
           </div>
-          <div className="whitespace-normal overflow-visible md:whitespace-nowrap md:overflow-hidden md:text-ellipsis md:max-w-full">
-            E-Mail Address : If any problems, contact me : <a href="mailto:sbd_pmo@naver.com" className="text-[#6af] no-underline hover:underline">sbd_pmo@naver.com</a>
-          </div>
-          <div className="whitespace-normal overflow-visible md:whitespace-nowrap md:overflow-hidden md:text-ellipsis md:max-w-full">
-            HQ. Address : 77-bungi, 42-bungil, Conventia Daero, Yeonsu-ku, Incheon, KOREA
-          </div>
-          <div className="whitespace-normal overflow-visible md:whitespace-nowrap md:overflow-hidden md:text-ellipsis md:max-w-full">
-            Seoul Office Address : TBD
+
+          {/* Partners - Right side, compact inline on desktop */}
+          <div className="hidden md:flex md:flex-col md:items-end md:flex-shrink-0">
+            <p className="text-[#555] text-[10px] mb-2 uppercase tracking-wider">Partners</p>
+            <div className="flex gap-1.5">
+              <a href="https://dystec.co.kr/new/" target="_blank" rel="noopener noreferrer" className="bg-white/90 p-1 rounded flex items-center justify-center w-10 h-7 hover:bg-white transition-colors">
+                <Image src="/images/network-1.png" alt="DONG YANG S·Tec" width={32} height={20} className="max-h-full object-contain" />
+              </a>
+              <a href="https://www.posco.co.kr" target="_blank" rel="noopener noreferrer" className="bg-white/90 p-1 rounded flex items-center justify-center w-10 h-7 hover:bg-white transition-colors">
+                <Image src="/images/network-2.png" alt="POSCO" width={32} height={20} className="max-h-full object-contain" />
+              </a>
+              <a href="https://www.steelall.co.kr" target="_blank" rel="noopener noreferrer" className="bg-white/90 p-1 rounded flex items-center justify-center w-10 h-7 hover:bg-white transition-colors">
+                <Image src="/images/network-3.png" alt="Steel Ball" width={32} height={20} className="max-h-full object-contain" />
+              </a>
+              <a href="https://www.p6ix.co.kr" target="_blank" rel="noopener noreferrer" className="bg-white/90 p-1 rounded flex items-center justify-center w-10 h-7 hover:bg-white transition-colors">
+                <Image src="/images/network-6.png" alt="p6sc" width={32} height={20} className="max-h-full object-contain" />
+              </a>
+              <a href="https://www.clbs.co.kr/main.jsp" target="_blank" rel="noopener noreferrer" className="bg-white/90 p-1 rounded flex items-center justify-center w-10 h-7 hover:bg-white transition-colors">
+                <Image src="/images/network-5.png" alt="CLBS" width={32} height={20} className="max-h-full object-contain" />
+              </a>
+              <a href="https://www.hyundai-steel.com" target="_blank" rel="noopener noreferrer" className="bg-white/90 p-1 rounded flex items-center justify-center w-10 h-7 hover:bg-white transition-colors">
+                <Image src="/images/network-4.jfif" alt="HYUNDAI STEEL" width={32} height={20} className="max-h-full object-contain" />
+              </a>
+            </div>
           </div>
         </div>
-        <div className="hidden md:grid grid-cols-3 grid-rows-2 gap-0.5 h-auto flex-shrink-0 items-center w-auto lg:gap-0.5">
-          <div className="bg-white p-0.5 flex items-center justify-center border border-[#ddd] rounded-sm overflow-hidden h-[38px] w-[55px] lg:w-[50px] lg:h-[34px]">
-            <a href="https://dystec.co.kr/new/" target="_blank" rel="noopener noreferrer" className="flex w-full h-full items-center justify-center">
-              <Image src="/images/network-1.png" alt="DONG YANG S·Tec" width={55} height={38} className="max-w-full max-h-full object-contain" />
-            </a>
-          </div>
-          <div className="bg-white p-0.5 flex items-center justify-center border border-[#ddd] rounded-sm overflow-hidden h-[38px] w-[55px] lg:w-[50px] lg:h-[34px]">
-            <a href="https://www.posco.co.kr" target="_blank" rel="noopener noreferrer" className="flex w-full h-full items-center justify-center">
-              <Image src="/images/network-2.png" alt="POSCO" width={55} height={38} className="max-w-full max-h-full object-contain" />
-            </a>
-          </div>
-          <div className="bg-white p-0.5 flex items-center justify-center border border-[#ddd] rounded-sm overflow-hidden h-[38px] w-[55px] lg:w-[50px] lg:h-[34px]">
-            <a href="https://www.steelall.co.kr" target="_blank" rel="noopener noreferrer" className="flex w-full h-full items-center justify-center">
-              <Image src="/images/network-3.png" alt="Steel Ball" width={55} height={38} className="max-w-full max-h-full object-contain" />
-            </a>
-          </div>
-          <div className="bg-white p-0.5 flex items-center justify-center border border-[#ddd] rounded-sm overflow-hidden h-[38px] w-[55px] lg:w-[50px] lg:h-[34px]">
-            <a href="https://www.p6ix.co.kr" target="_blank" rel="noopener noreferrer" className="flex w-full h-full items-center justify-center">
-              <Image src="/images/network-6.png" alt="p6sc" width={55} height={38} className="max-w-full max-h-full object-contain" />
-            </a>
-          </div>
-          <div className="bg-white p-0.5 flex items-center justify-center border border-[#ddd] rounded-sm overflow-hidden h-[38px] w-[55px] lg:w-[50px] lg:h-[34px]">
-            <a href="https://www.clbs.co.kr/main.jsp" target="_blank" rel="noopener noreferrer" className="flex w-full h-full items-center justify-center">
-              <Image src="/images/network-5.png" alt="CLBS" width={55} height={38} className="max-w-full max-h-full object-contain" />
-            </a>
-          </div>
-          <div className="bg-white p-0.5 flex items-center justify-center border border-[#ddd] rounded-sm overflow-hidden h-[38px] w-[55px] lg:w-[50px] lg:h-[34px]">
-            <a href="https://www.hyundai-steel.com" target="_blank" rel="noopener noreferrer" className="flex w-full h-full items-center justify-center">
-              <Image src="/images/network-4.jfif" alt="HYUNDAI STEEL" width={55} height={38} className="max-w-full max-h-full object-contain" />
-            </a>
-          </div>
+
+        {/* Copyright */}
+        <div className="border-t border-[#333] mt-6 pt-4 text-center">
+          <p className="text-[#555] text-[10px]">
+            © {new Date().getFullYear()} 주식회사 송도파트너스피엠오. All rights reserved.
+          </p>
         </div>
-      </footer>
-    </div>
+      </div>
+    </footer>
   );
 };
 

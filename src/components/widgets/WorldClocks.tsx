@@ -84,52 +84,55 @@ const WorldClocks = () => {
   }, []);
 
   return (
-    <div className="world-clocks absolute top-[15px] left-[15px] flex gap-5 z-10 md:relative md:top-0 md:left-0 md:justify-center md:p-4 md:bg-transparent md:gap-3 md:w-full md:max-w-full md:overflow-hidden xs:gap-2 xs:p-2">
-      {ZONES.map((z) => {
-        const state = clockStates[z.id];
-        if (!state) return null;
+    <div className="world-clocks w-full p-2 md:p-4">
+      {/* Mobile: 2x2 grid, Desktop: 1x4 row left-aligned */}
+      <div className="grid grid-cols-2 gap-3 md:flex md:flex-row md:gap-4 md:justify-start">
+        {ZONES.map((z) => {
+          const state = clockStates[z.id];
+          if (!state) return null;
 
-        return (
-          <div key={z.id} className="clock-container flex flex-col items-center flex-shrink-0 md:flex-shrink">
-            <div
-              className={`clock w-24 h-24 rounded-full bg-gradient-to-br from-[#f5f5f5] to-[#d0d0d0] border-4 border-[#8b7355] relative transition-all duration-500 ease-in-out shadow-[0_0_0_2px_#c9a96e,inset_0_2px_4px_rgba(0,0,0,0.2),0_4px_8px_rgba(0,0,0,0.3)] md:w-16 md:h-16 md:border-[3px] xs:w-14 xs:h-14 xs:border-2 ${
-                state.isNight
-                  ? 'night bg-gradient-to-br from-[#1a1a2e] via-[#16213e] to-[#0f3460] border-[#4a4a6a] shadow-[0_0_0_2px_#5a5a8a,inset_0_2px_4px_rgba(0,0,0,0.4),0_4px_8px_rgba(0,0,0,0.5),0_0_15px_rgba(100,149,237,0.3)]'
-                  : ''
-              }`}
-            >
-              <div className="clock-face w-full h-full relative rounded-full">
-                <div
-                  className={`hand hour-hand absolute bottom-1/2 left-1/2 origin-bottom z-[5] w-1.5 h-[22px] bg-[#222] -ml-[3px] rounded-[2px] md:h-[14px] md:w-1 xs:h-[12px] ${
-                    state.isNight ? 'bg-[#e0e0e0]' : ''
-                  }`}
-                  style={{ transform: `rotate(${state.hourDeg}deg)` }}
-                ></div>
-                <div
-                  className={`hand minute-hand absolute bottom-1/2 left-1/2 origin-bottom z-[5] w-1 h-7 bg-[#222] -ml-[2px] rounded-[2px] md:h-5 md:w-[3px] xs:h-4 ${
-                    state.isNight ? 'bg-[#e0e0e0]' : ''
-                  }`}
-                  style={{ transform: `rotate(${state.minDeg}deg)` }}
-                ></div>
-                <div
-                  className={`hand second-hand absolute bottom-1/2 left-1/2 origin-bottom z-[6] w-[2px] h-8 bg-[#e74c3c] -ml-[1px] md:h-6 md:w-[1px] xs:h-5 ${
-                    state.isNight ? 'bg-[#ff6b6b]' : ''
-                  }`}
-                  style={{ transform: `rotate(${state.secDeg}deg)` }}
-                ></div>
-                <div
-                  className={`clock-center absolute top-1/2 left-1/2 w-2.5 h-2.5 bg-[#e74c3c] rounded-full -translate-x-1/2 -translate-y-1/2 z-10 md:w-2 md:h-2 xs:w-1.5 xs:h-1.5 ${
-                    state.isNight ? 'bg-[#ff6b6b] shadow-[0_0_5px_rgba(255,107,107,0.5)]' : ''
-                  }`}
-                ></div>
+          return (
+            <div key={z.id} className="clock-container flex flex-col items-center">
+              <div
+                className={`clock w-16 h-16 md:w-20 md:h-20 rounded-full bg-gradient-to-br from-[#f5f5f5] to-[#d0d0d0] border-[3px] md:border-4 border-[#8b7355] relative transition-all duration-500 ease-in-out shadow-[0_0_0_2px_#c9a96e,inset_0_2px_4px_rgba(0,0,0,0.2),0_4px_8px_rgba(0,0,0,0.3)] ${
+                  state.isNight
+                    ? 'night bg-gradient-to-br from-[#1a1a2e] via-[#16213e] to-[#0f3460] border-[#4a4a6a] shadow-[0_0_0_2px_#5a5a8a,inset_0_2px_4px_rgba(0,0,0,0.4),0_4px_8px_rgba(0,0,0,0.5),0_0_15px_rgba(100,149,237,0.3)]'
+                    : ''
+                }`}
+              >
+                <div className="clock-face w-full h-full relative rounded-full">
+                  <div
+                    className={`hand hour-hand absolute bottom-1/2 left-1/2 origin-bottom z-[5] w-1 md:w-1.5 h-[14px] md:h-[18px] bg-[#222] -ml-[2px] md:-ml-[3px] rounded-[2px] ${
+                      state.isNight ? 'bg-[#e0e0e0]' : ''
+                    }`}
+                    style={{ transform: `rotate(${state.hourDeg}deg)` }}
+                  ></div>
+                  <div
+                    className={`hand minute-hand absolute bottom-1/2 left-1/2 origin-bottom z-[5] w-[3px] md:w-1 h-5 md:h-6 bg-[#222] -ml-[1.5px] md:-ml-[2px] rounded-[2px] ${
+                      state.isNight ? 'bg-[#e0e0e0]' : ''
+                    }`}
+                    style={{ transform: `rotate(${state.minDeg}deg)` }}
+                  ></div>
+                  <div
+                    className={`hand second-hand absolute bottom-1/2 left-1/2 origin-bottom z-[6] w-[1px] md:w-[2px] h-6 md:h-7 bg-[#e74c3c] -ml-[0.5px] md:-ml-[1px] ${
+                      state.isNight ? 'bg-[#ff6b6b]' : ''
+                    }`}
+                    style={{ transform: `rotate(${state.secDeg}deg)` }}
+                  ></div>
+                  <div
+                    className={`clock-center absolute top-1/2 left-1/2 w-2 h-2 md:w-2.5 md:h-2.5 bg-[#e74c3c] rounded-full -translate-x-1/2 -translate-y-1/2 z-10 ${
+                      state.isNight ? 'bg-[#ff6b6b] shadow-[0_0_5px_rgba(255,107,107,0.5)]' : ''
+                    }`}
+                  ></div>
+                </div>
+              </div>
+              <div className="clock-label mt-1.5 text-[10px] md:text-xs font-bold text-white shadow-[1px_1px_2px_#000] bg-black/60 px-2 py-0.5 rounded">
+                {z.label} <span className="ampm-indicator text-[9px] md:text-[10px] font-bold text-yellow-300 tracking-[1px] ml-0.5">{state.ampm}</span>
               </div>
             </div>
-            <div className="clock-label mt-2 text-sm font-bold text-white shadow-[1px_1px_2px_#000] bg-black/60 px-3 py-1 rounded md:text-[10px] md:px-1.5 md:py-0.5 md:mt-1 xs:text-[9px] xs:px-1">
-              {z.label} <span className="ampm-indicator text-xs font-bold text-yellow-300 tracking-[1px] ml-1 md:text-[9px] xs:text-[8px] xs:ml-0.5">{state.ampm}</span>
-            </div>
-          </div>
-        );
-      })}
+          );
+        })}
+      </div>
     </div>
   );
 };

@@ -5,6 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { calculateCrossHColumn } from '@/actions/calculate';
 import type { CrossHSectionCalcInput, CrossHSectionCalcResult } from '@/lib/calculations/cross-h-column';
+import { createClient } from '@/lib/supabase/client';
 
 // KS 표준 H형강 치수 데이터 (Roll H) - 사용 규격만
 const ksHBeamData: Record<number, { B: number; tw: number; tf: number; r: number }> = {
@@ -65,6 +66,27 @@ export default function CrossHColumnCalculatorPage() {
     compressive: string;
     pmm: string;
   }>>(Array(6).fill({ Pu: '', Mux: '', Muy: '', compressive: '-', pmm: '-' }));
+  const [hasAccessBeam, setHasAccessBeam] = useState(false);
+
+  useEffect(() => {
+    const checkAccessBeam = async () => {
+      try {
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data: profile } = await supabase
+            .from('user_profiles')
+            .select('access_beam')
+            .eq('id', user.id)
+            .single();
+          setHasAccessBeam(profile?.access_beam === true);
+        }
+      } catch {
+        setHasAccessBeam(false);
+      }
+    };
+    checkAccessBeam();
+  }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -434,6 +456,7 @@ export default function CrossHColumnCalculatorPage() {
               </button>
             </div>
 
+            {hasAccessBeam && (
             <div className="bg-gradient-to-br from-[#fff7ed] to-[#fef3c7] border-2 border-[#f59e0b] rounded-lg p-[15px] mt-[15px] mb-[15px] shadow-[0_2px_8px_rgba(245,158,11,0.15)]">
               <div className="flex items-center justify-between gap-[8px] mb-[12px] pb-[8px] border-b-2 border-[#f59e0b]">
                 <div className="flex items-center gap-[8px]">
@@ -469,6 +492,7 @@ export default function CrossHColumnCalculatorPage() {
                 </Link>
               </div>
             </div>
+            )}
           </div>
 
           <div className="p-[20px]">
