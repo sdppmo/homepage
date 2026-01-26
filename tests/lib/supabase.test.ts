@@ -19,7 +19,6 @@ vi.mock('@/lib/config', () => ({
 describe('Supabase Clients', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.resetModules();
   });
 
   describe('Server Client', () => {
