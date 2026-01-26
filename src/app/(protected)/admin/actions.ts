@@ -4,6 +4,46 @@ import { createAdminClient } from '@/lib/supabase/server';
 import { UserProfile } from '@/lib/db/types';
 import { revalidatePath } from 'next/cache';
 
+export interface CreateUserData {
+  email: string;
+  password: string;
+  business_name?: string;
+  phone?: string;
+  is_approved?: boolean;
+  is_admin?: boolean;
+  access_column?: boolean;
+  access_beam?: boolean;
+}
+
+export interface UsageStatsSummary {
+  total_users: number;
+  active_today: number;
+  total_accesses: number;
+}
+
+export interface FeatureUsage {
+  feature_name: string;
+  total_count: number;
+}
+
+export interface DailyUsage {
+  date: string;
+  count: number;
+}
+
+export interface UserActivity {
+  email: string;
+  business_name: string;
+  access_count: number;
+}
+
+export interface UsageStats {
+  summary: UsageStatsSummary;
+  feature_usage: FeatureUsage[];
+  daily_usage: DailyUsage[];
+  user_activity: UserActivity[];
+}
+
 export async function listUsers() {
   const supabase = createAdminClient();
   const { data: users, error } = await supabase
@@ -32,7 +72,7 @@ export async function updateUser(userId: string, updates: Partial<UserProfile>) 
   revalidatePath('/admin');
 }
 
-export async function createUser(data: any) {
+export async function createUser(data: CreateUserData) {
   const supabase = createAdminClient();
   
   const { data: authData, error: authError } = await supabase.auth.admin.createUser({
@@ -78,7 +118,7 @@ export async function deleteUser(userId: string) {
   revalidatePath('/admin');
 }
 
-export async function getUsageStats(period: string) {
+export async function getUsageStats(period: string): Promise<UsageStats> {
   return {
     summary: {
       total_users: 120,

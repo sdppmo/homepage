@@ -10,13 +10,15 @@ import {
   createUser,
   deleteUser,
   getUsageStats,
+  UsageStats,
+  UserActivity,
 } from './actions';
 
 export default function AdminPage() {
   const [activeTab, setActiveTab] = useState('users');
   const [adminProfile, setAdminProfile] = useState<UserProfile | null>(null);
   const [users, setUsers] = useState<UserProfile[]>([]);
-  const [usageStats, setUsageStats] = useState<any>(null);
+  const [usageStats, setUsageStats] = useState<UsageStats | null>(null);
   const [isPending, startTransition] = useTransition();
   const supabase = createClient();
 
@@ -130,8 +132,9 @@ export default function AdminPage() {
         await createUser(data);
         e.currentTarget.reset();
         setActiveTab('users');
-      } catch (error: any) {
-        alert(error.message);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : '사용자 생성 실패';
+        alert(message);
       }
     });
   };
@@ -530,7 +533,7 @@ export default function AdminPage() {
                         </tr>
                       </thead>
                       <tbody>
-                        {usageStats.user_activity.map((user: any) => (
+                        {usageStats.user_activity.map((user: UserActivity) => (
                           <tr
                             key={user.email}
                             className="border-b border-slate-700/30 hover:bg-slate-800/30"
@@ -553,7 +556,7 @@ export default function AdminPage() {
                                       (user.access_count /
                                         Math.max(
                                           ...usageStats.user_activity.map(
-                                            (u: any) => u.access_count
+                                            (u: UserActivity) => u.access_count
                                           )
                                         )) *
                                       100

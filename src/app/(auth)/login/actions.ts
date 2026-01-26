@@ -20,7 +20,11 @@ function getBaseUrl(headersList: Headers): string {
   return 'https://kcol.kr';
 }
 
-export async function login(prevState: any, formData: FormData) {
+interface LoginState {
+  error?: string;
+}
+
+export async function login(prevState: LoginState | null, formData: FormData): Promise<LoginState> {
   const email = formData.get('email') as string;
   const password = formData.get('password') as string;
   const redirectUrl = (formData.get('redirect') as string) || '/';
