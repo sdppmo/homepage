@@ -1,11 +1,21 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+import { rateLimit } from '@/lib/rate-limit';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
+
+const SIGNUP_RATE_LIMIT = 3;
+const SIGNUP_WINDOW_MS = 60 * 1000;
+
+function getClientIP(request: NextRequest): string {
+  return request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() 
+    || request.headers.get('x-real-ip') 
+    || 'unknown';
+}
 
 interface SignupRequest {
   email: string;
@@ -92,7 +102,16 @@ export async function OPTIONS() {
   return new NextResponse(null, { headers: corsHeaders });
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
+  const ip = getClientIP(request);
+  
+  if (!rateLimit(`signup:${ip}`, SIGNUP_RATE_LIMIT, SIGNUP_WINDOW_MS)) {
+    return NextResponse.json(
+      { error: 'Too many signup attempts. Please try again later.' },
+      { status: 429, headers: corsHeaders }
+    );
+  }
+
   try {
     console.log('[signup] Starting request processing');
 
@@ -288,7 +307,7 @@ export async function POST(request: Request) {
     return NextResponse.json(
       {
         error: 'server_error',
-        message: error instanceof Error ? error.message : '서버 오류가 발생했습니다',
+        message: '서버 오류가 발생했습니다',
       },
       { status: 500, headers: corsHeaders }
     );
