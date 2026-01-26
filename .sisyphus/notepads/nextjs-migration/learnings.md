@@ -557,3 +557,86 @@ This gives users instant visual feedback while cleanup happens in background.
 
 ### Commit
 - `2ec02d0` - fix: instant logout UI feedback - update state before async calls
+
+## 2026-01-25: Security Bug Fixes (Session 7-8)
+
+### Summary
+Comprehensive security audit and bug fixes for the Next.js migration.
+
+| Severity | Found | Fixed |
+|----------|-------|-------|
+| CRITICAL | 7 | 7 |
+| HIGH | 8 | 8 |
+| MEDIUM | 6 | 6 |
+| LOW | 8 | 5 |
+
+### CRITICAL Fixes
+
+1. **KOSIS Proxy Auth** (`src/app/api/proxy/kosis/route.ts`)
+   - Added Supabase session check
+   - Added 30s timeout to prevent hanging requests
+   - Commit: `a443ff1`
+
+2. **Verify-Status Rate Limiting** (`src/app/api/auth/verify-status/route.ts`)
+   - Added 5 req/s rate limit per IP
+   - Added email format validation
+   - Sanitized error messages
+   - Commit: `032f3f1`
+
+3. **Password in sessionStorage** (`src/app/(auth)/pending/page.tsx`)
+   - Removed password storage (XSS risk)
+   - Redirect to login after verification instead
+   - Commit: `21bbaad`
+
+4. **Server Actions Auth** (`src/actions/calculate.ts`, `src/actions/boq.ts`)
+   - Added `requireAuth()` helper
+   - All Server Actions now check authentication
+   - Commit: `4f6c6fd`
+
+5. **Signup Rate Limiting** (`src/app/api/auth/signup/route.ts`)
+   - Added 3 req/min rate limit per IP
+   - Sanitized error messages
+   - Commit: `8b26425`
+
+6. **CRON_SECRET Timing Attack** (`src/app/api/cron/cleanup/route.ts`)
+   - Used `crypto.timingSafeEqual()` for constant-time comparison
+   - Commit: `e82277a`
+
+### HIGH Fixes
+- Division-by-zero guards in `boq.ts`
+- Empty array checks before `[0]` access
+- 30s timeout on external API calls (KOSIS, Resend)
+- Error message sanitization
+
+### MEDIUM Fixes
+- Created `src/app/error.tsx` - Root error boundary
+- Created `src/app/loading.tsx` - Root loading spinner
+- Fixed `useEffect` dependencies with `useCallback`
+- Changed `router.push()` to `router.replace()` for auth redirects
+
+### LOW Fixes
+- Replaced `any` types with proper TypeScript interfaces
+- `CreateUserData`, `UsageStats`, `UserActivity` interfaces in admin module
+- Commit: `eb4adc2`
+
+### Major Discovery: .gitignore Issues
+The `.gitignore` had overly broad patterns ignoring critical directories:
+- `lib/` was ignoring `src/lib/` (19 files, 2492 lines)
+- `admin/` was ignoring `src/app/api/admin/` (8 files, 2113 lines)
+
+Fixed by changing to absolute paths (`/lib/`, `/admin/`).
+- Commits: `7bde0e1`, `41abdc2`
+
+### Security Report
+Generated `security_fix.md` documenting all 29 bugs and 26 fixes.
+- Commit: `ea56a8d`
+
+### Key Learnings
+
+1. **Rate Limiting**: Use in-memory rate limiting for API routes to prevent abuse
+2. **Timing Attacks**: Always use `crypto.timingSafeEqual()` for secret comparison
+3. **sessionStorage**: Never store passwords client-side, even temporarily
+4. **Server Actions**: Must have explicit auth checks - middleware doesn't protect them
+5. **Error Messages**: Sanitize to prevent information leakage
+6. **TypeScript**: Replace `any` with proper interfaces for type safety
+7. **.gitignore**: Use absolute paths (`/lib/`) to avoid accidentally ignoring nested directories
