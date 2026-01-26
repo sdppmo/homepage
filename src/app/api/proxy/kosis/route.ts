@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { createClient } from '@/lib/supabase/server';
 
 // KOSIS OpenAPI endpoints:
 // - kosis.kr (official KOSIS OpenAPI; uses apiKey)
@@ -161,10 +162,24 @@ async function handleKosisRequest(payload: KosisRequest): Promise<NextResponse> 
     });
   }
 
-  const upstream = await fetch(url.toString(), {
-    method: 'GET',
-    headers: { Accept: 'application/json' },
-  });
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 30000);
+  
+  let upstream: Response;
+  try {
+    upstream = await fetch(url.toString(), {
+      method: 'GET',
+      headers: { Accept: 'application/json' },
+      signal: controller.signal,
+    });
+  } catch (err) {
+    clearTimeout(timeoutId);
+    if (err instanceof Error && err.name === 'AbortError') {
+      return jsonResponse({ error: 'timeout', message: 'Upstream request timed out' }, 504);
+    }
+    return jsonResponse({ error: 'fetch_error', message: 'Failed to fetch from upstream' }, 502);
+  }
+  clearTimeout(timeoutId);
 
   const text = await upstream.text();
 
@@ -194,13 +209,39 @@ export async function OPTIONS(): Promise<NextResponse> {
   return new NextResponse('ok', { headers: corsHeaders });
 }
 
+async function verifyAuth(): Promise<{ authenticated: boolean; error?: NextResponse }> {
+  try {
+    const supabase = await createClient();
+    const { data: { user }, error } = await supabase.auth.getUser();
+    
+    if (error || !user) {
+      return {
+        authenticated: false,
+        error: jsonResponse({ error: 'unauthorized', message: 'Authentication required' }, 401)
+      };
+    }
+    return { authenticated: true };
+  } catch {
+    return {
+      authenticated: false,
+      error: jsonResponse({ error: 'auth_error', message: 'Failed to verify authentication' }, 500)
+    };
+  }
+}
+
 export async function GET(request: NextRequest): Promise<NextResponse> {
+  const auth = await verifyAuth();
+  if (!auth.authenticated) return auth.error!;
+  
   const { searchParams } = new URL(request.url);
   const payload = parsePayloadFromSearchParams(searchParams);
   return handleKosisRequest(payload);
 }
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
+  const auth = await verifyAuth();
+  if (!auth.authenticated) return auth.error!;
+  
   try {
     const payload: KosisRequest = await request.json();
     return handleKosisRequest(payload);
