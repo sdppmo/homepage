@@ -36,7 +36,7 @@ open http://localhost:3000
 
 ```bash
 # 로컬 테스트 (Docker 필요)
-./deploy.sh --local
+./deploy.sh --local --quick
 
 # 브라우저에서 확인
 open http://localhost:3000
@@ -50,10 +50,13 @@ open http://localhost:3000
 ## 배포
 
 ```bash
-# AWS Lightsail로 배포 (보안 스캔 포함)
+# Beta 배포
+./deploy.sh --beta --quick
+
+# Production 배포 (보안 스캔 포함)
 ./deploy.sh
 
-# 빠른 배포 (보안 스캔 생략)
+# Production 빠른 배포 (보안 스캔 생략)
 ./deploy.sh --quick
 ```
 
@@ -68,24 +71,38 @@ open http://localhost:3000
 
 ```
 homepage/
-├── src/
-│   ├── app/                # Next.js App Router 페이지
-│   │   ├── (auth)/         # 인증 페이지 (login, signup, pending)
-│   │   ├── (protected)/    # 보호된 페이지 (로그인 필요)
-│   │   │   ├── admin/      # 관리자 대시보드
-│   │   │   └── k-col/      # K-COL 계산기
-│   │   └── api/            # API 라우트
-│   ├── components/         # React 컴포넌트
-│   ├── lib/                # 유틸리티 함수
-│   │   ├── supabase/       # Supabase 클라이언트
-│   │   ├── db/             # 데이터베이스 쿼리
-│   │   └── calculations/   # 서버사이드 계산 로직
-│   └── actions/            # Server Actions
+├── src/                     # 소스 코드
+│   ├── app/                 # Next.js App Router 페이지
+│   │   ├── (auth)/          # 인증 페이지 (login, signup, pending)
+│   │   ├── (protected)/     # 보호된 페이지 (로그인 필요)
+│   │   │   ├── admin/       # 관리자 대시보드
+│   │   │   └── k-col/       # K-COL 계산기
+│   │   └── api/             # API 라우트
+│   ├── components/          # React 컴포넌트
+│   ├── lib/                 # 유틸리티 함수
+│   │   ├── supabase/        # Supabase 클라이언트
+│   │   ├── db/              # 데이터베이스 쿼리
+│   │   └── calculations/    # 서버사이드 계산 로직
+│   └── actions/             # Server Actions
 │
-├── public/                 # 정적 파일 (이미지, PDF)
-├── deploy.sh               # 배포 스크립트
-├── Dockerfile              # Docker 빌드 설정
-└── next.config.ts          # Next.js 설정
+├── docs/                    # 문서
+│   ├── SECURITY.md          # 보안 체크리스트
+│   └── AUTHENTICATION.md    # 인증 플로우 문서
+│
+├── public/                  # 정적 파일 (이미지, PDF, CAD)
+├── scripts/                 # 유틸리티 스크립트
+├── tests/                   # 테스트 파일
+│
+├── README.md                # 프로젝트 문서 (이 파일)
+├── AGENTS.md                # AI 에이전트 컨텍스트
+├── package.json             # 의존성
+├── bun.lock                 # Bun 락 파일
+├── tsconfig.json            # TypeScript 설정
+├── next.config.ts           # Next.js 설정
+├── tailwind.config.ts       # Tailwind CSS 설정
+├── vitest.config.ts         # 테스트 설정
+├── Dockerfile               # Docker 빌드 설정
+└── deploy.sh                # 배포 스크립트
 ```
 
 ---
@@ -94,7 +111,8 @@ homepage/
 
 | 옵션 | 설명 |
 |------|------|
-| (없음) | 전체 배포: 빌드 → 보안 스캔 → Lightsail 푸시 |
+| (없음) | Production 배포: 빌드 → 보안 스캔 → Lightsail 푸시 |
+| `--beta` | Beta 환경으로 배포 |
 | `--local` | 로컬 테스트만 (AWS 배포 안함) |
 | `--stop` | 로컬 컨테이너 중지 및 정리 |
 | `--quick` | 보안 스캔 생략 |
@@ -133,20 +151,22 @@ Next.js에 적용된 보호:
 - **Server Actions:** 계산 로직 서버사이드 실행 (클라이언트 노출 방지)
 - **Rate Limiting:** API 라우트 요청 제한
 
+자세한 내용은 [docs/SECURITY.md](docs/SECURITY.md) 참조.
+
 테스트:
 ```bash
 # 헤더 확인
 curl -I http://localhost:3000/
 
 # 보호된 페이지 테스트 (로그인 없이)
-curl -I http://localhost:3000/k-col/calculator  # 302 redirect to /login
+curl -I http://localhost:3000/k-col/calculator  # 307 redirect to /login
 ```
 
 ---
 
 ## 환경 변수
 
-`.env.local` 파일 생성:
+`.env.local` 파일 생성 (`.env.example` 참조):
 
 ```bash
 # Supabase
@@ -159,6 +179,14 @@ RESEND_API_KEY=xxx
 ADMIN_ALERT_EMAIL=xxx
 CRON_SECRET=xxx
 ```
+
+---
+
+## 문서
+
+- [AGENTS.md](AGENTS.md) - AI 에이전트 컨텍스트
+- [docs/SECURITY.md](docs/SECURITY.md) - 보안 체크리스트
+- [docs/AUTHENTICATION.md](docs/AUTHENTICATION.md) - 인증 플로우 문서
 
 ---
 
