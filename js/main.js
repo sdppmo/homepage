@@ -337,12 +337,12 @@
           <div class="castellated-beam-modal-content">
             <div class="castellated-beam-option" onclick="selectCastellatedBeamType('without-slab')">
               <div class="castellated-beam-option-icon">🏗️</div>
-              <div class="castellated-beam-option-title">Castellated Beam<br>without top-slab</div>
+              <div class="castellated-beam-option-title">Non Composite Castillated Beam<br>(Beam Only)</div>
               <div class="castellated-beam-option-desc">상부 슬래브가 없는 Castellated Beam 설계</div>
             </div>
             <div class="castellated-beam-option" onclick="selectCastellatedBeamType('with-slab')">
               <div class="castellated-beam-option-icon">🏢</div>
-              <div class="castellated-beam-option-title">Castellated Beam<br>with top-slab</div>
+              <div class="castellated-beam-option-title">Composite Castillated Beam<br>with Top-Slab</div>
               <div class="castellated-beam-option-desc">상부 슬래브가 있는 Castellated Beam 설계</div>
             </div>
           </div>

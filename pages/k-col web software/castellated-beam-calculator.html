@@ -355,7 +355,7 @@
                 </div>
 
                 <div class="input-group">
-                    <label for="openingSpacing">개구부 간격 (p, m) - p = e + H (자동계산)</label>
+                    <label for="openingSpacing">개구부 간격 (p, m) - p = W_open + e (자동계산)</label>
                     <input type="number" id="openingSpacing" class="input-field" value="0.9" step="0.01" min="0.1" readonly style="background: #f1f5f9;">
                 </div>
 
@@ -370,7 +370,7 @@
                 </div>
 
                 <div class="input-group full-width">
-                    <label for="openingWidth">개구부 폭 (e, mm)</label>
+                    <label for="openingWidth">웹포스트폭 (Web Post width : e, mm) = 두 개구부 사이 남는 웹 두께 방향 폭</label>
                     <input type="number" id="openingWidth" class="input-field" value="200" step="1" min="0">
                     <div id="openingWidthRange" style="font-size: 11px; color: #64748b; margin-top: 4px;">
                         최소값(H/2)= <span id="openingWidthMin">-</span>mm ~ 최대값(1.5*ho)= <span id="openingWidthMax">-</span>mm
@@ -665,13 +665,32 @@
         function initializeType() {
             const typeBadge = document.getElementById('typeBadge');
             const typeInfo = document.getElementById('typeInfo');
+            const headerH1 = document.querySelector('.header h1');
 
             if (beamType === 'with-slab') {
                 typeBadge.textContent = 'with top-slab';
                 typeInfo.innerHTML = '<strong>Castellated Beam with top-slab</strong><br>상부 슬래브가 있는 Castellated Beam 설계 계산기입니다.';
+                if (headerH1) {
+                    // h1의 텍스트 노드 찾기
+                    for (let node of headerH1.childNodes) {
+                        if (node.nodeType === 3) { // Text node
+                            node.textContent = 'Castellated Beam Design Calculator ';
+                            break;
+                        }
+                    }
+                }
             } else {
                 typeBadge.textContent = 'without top-slab';
                 typeInfo.innerHTML = '<strong>Castellated Beam without top-slab</strong><br>상부 슬래브가 없는 Castellated Beam 설계 계산기입니다.';
+                if (headerH1) {
+                    // h1의 텍스트 노드 찾기
+                    for (let node of headerH1.childNodes) {
+                        if (node.nodeType === 3) { // Text node
+                            node.textContent = 'Non Composite Castillated Beam Design Calculator ';
+                            break;
+                        }
+                    }
+                }
             }
         }
 
@@ -776,22 +795,22 @@
                 const delta_allow_construction = 60; // mm (콘크리트 타설 시공성 고려)
                 const I_req_construction = (5 * w_DL_construction * Math.pow(L * 1000, 4)) / (384 * Es * delta_allow_construction); // mm⁴
                 
-                // 원단면(H형강) 단면2차모멘트 계산
-                // 원단면 높이 = dc / 1.5 (Castellated beam은 원단면의 1.5배 높이)
-                const d_original = (dc * 1000) / 1.5; // mm (원단면 높이)
-                const hw_original = d_original - 2 * tf; // mm
+                // Castellated beam 단면2차모멘트 계산
+                // Castellated beam 높이 = dc (이미 castellated beam으로 제작됨)
+                const d_castellated = dc * 1000; // mm (Castellated beam 높이)
+                const hw_castellated = d_castellated - 2 * tf; // mm
                 
                 // 필렛 반경 (r값) 가져오기
                 const r = parseFloat(document.getElementById('filletRadius')?.value) || 0; // mm
                 
-                // H형강 단면 2차 모멘트: Ix = I_flange + I_web - I_fillet (r값 고려)
+                // Castellated beam 단면 2차 모멘트: Ix = I_flange + I_web - I_fillet (r값 고려)
                 // 플랜지: (bf * tf^3) / 12 + (bf * tf) * ((d - tf) / 2)^2 (상하 각각)
                 // 웹: (tw * hw^3) / 12
                 const I_flange = (bf * Math.pow(tf, 3)) / 12; // 플랜지 자체 모멘트
                 const A_flange = bf * tf; // 플랜지 단면적
-                const y_flange = (d_original - tf) / 2; // 플랜지 중심까지 거리
+                const y_flange = (d_castellated - tf) / 2; // 플랜지 중심까지 거리
                 const I_flange_parallel = A_flange * Math.pow(y_flange, 2); // 평행축 정리
-                const I_web = (tw * Math.pow(hw_original, 3)) / 12; // 웹 모멘트
+                const I_web = (tw * Math.pow(hw_castellated, 3)) / 12; // 웹 모멘트
                 
                 // r값을 고려한 필렛 부분 모멘트 감소 (근사 계산)
                 // 필렛은 1/4 원형으로 근사, 각 모서리에서 제거되는 면적: A_fillet = r²(1 - π/4) ≈ 0.2146r²
@@ -802,11 +821,54 @@
                     // 필렛 부분 면적 (4개 모서리)
                     const A_fillet_total = 4 * (r * r - Math.PI * r * r / 4); // mm²
                     // 필렛 부분의 모멘트 감소 (근사: 필렛 중심까지 거리를 평균적으로 고려)
-                    const y_fillet = (d_original - tf) / 2; // 필렛 중심까지 거리 (플랜지 중심과 동일)
+                    const y_fillet = (d_castellated - tf) / 2; // 필렛 중심까지 거리 (플랜지 중심과 동일)
                     I_fillet_correction = A_fillet_total * Math.pow(y_fillet, 2); // mm⁴
                 }
                 
                 const Ix_steel = I_flange * 2 + I_flange_parallel * 2 + I_web - I_fillet_correction; // mm⁴
+                
+                // 원단면(H형강) 단면2차모멘트 계산 (비교용)
+                const d_original = d_castellated / 1.5; // mm (원단면 높이)
+                const hw_original = d_original - 2 * tf; // mm
+                const I_flange_original = (bf * Math.pow(tf, 3)) / 12; // 플랜지 자체 모멘트
+                const A_flange_original = bf * tf; // 플랜지 단면적
+                const y_flange_original = (d_original - tf) / 2; // 플랜지 중심까지 거리
+                const I_flange_parallel_original = A_flange_original * Math.pow(y_flange_original, 2); // 평행축 정리
+                const I_web_original = (tw * Math.pow(hw_original, 3)) / 12; // 웹 모멘트
+                let I_fillet_correction_original = 0;
+                if (r > 0) {
+                    const A_fillet_total_original = 4 * (r * r - Math.PI * r * r / 4); // mm²
+                    const y_fillet_original = (d_original - tf) / 2;
+                    I_fillet_correction_original = A_fillet_total_original * Math.pow(y_fillet_original, 2); // mm⁴
+                }
+                const Ix_original = I_flange_original * 2 + I_flange_parallel_original * 2 + I_web_original - I_fillet_correction_original; // mm⁴
+                
+                // 단면적 계산 (원 beam과 castellated beam 동일)
+                const A_total = bf * tf * 2 + hw_castellated * tw; // mm²
+                if (r > 0) {
+                    const A_fillet_total = 4 * (r * r - Math.PI * r * r / 4); // mm²
+                    // 단면적에서 필렛 부분 제거는 하지 않음 (근사적으로 무시)
+                }
+                
+                // 단면계수 계산
+                const Sx_original = Ix_original / (d_original / 2); // mm³
+                const Sx_castellated = Ix_steel / (d_castellated / 2); // mm³
+                
+                // 회전반경 계산
+                const rx_original = Math.sqrt(Ix_original / A_total); // mm
+                const rx_castellated = Math.sqrt(Ix_steel / A_total); // mm
+                
+                // Iy 계산 (Y축 단면2차모멘트)
+                const Iy_flange = (tf * Math.pow(bf, 3)) / 12; // 플랜지 Y축 모멘트
+                const Iy_web = (hw_castellated * Math.pow(tw, 3)) / 12; // 웹 Y축 모멘트
+                const Iy_original = Iy_flange * 2 + Iy_web; // mm⁴
+                const Iy_castellated = Iy_original; // Y축은 높이 변화 없으므로 동일
+                const ry_original = Math.sqrt(Iy_original / A_total); // mm
+                const ry_castellated = ry_original; // Y축 회전반경도 동일
+                
+                // #region agent log
+                fetch('http://127.0.0.1:7242/ingest/f6b33b86-5eb3-41dd-83f7-9e0a0382507b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'castellated-beam-calculator.html:809',message:'Castellated beam Ix 계산',data:{dc:dc,d_castellated:d_castellated,bf:bf,tf:tf,tw:tw,hw_castellated:hw_castellated,r:r,I_flange:I_flange,A_flange:A_flange,y_flange:y_flange,I_flange_parallel:I_flange_parallel,I_web:I_web,I_fillet_correction:I_fillet_correction,Ix_steel:Ix_steel,Ix_steel_M6:Ix_steel/1e6},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+                // #endregion
 
                 // Service stage calculations (사용단계 계산)
                 // 합성 전 고정하중: 슬래브 자중 + 철골보 자중
@@ -837,13 +899,25 @@
                 }
 
                 // Calculate opening parameters
+                // e = 웹 포스트 폭 (개구부 사이 남는 웹 두께 방향 폭) - 입력값
+                // W_rect = 개구부 폭 (직사각형 부분) - 계산 필요
+                // W_open = 개구부 전체 폭 (직사각형 + 삼각형 부분)
+                // p = 개구부 간격 = W_open + e
                 const delta_x = (ho * 1000.0) / (2.0 * Math.sqrt(3.0));  // mm
-                const W_open = e + 2.0 * delta_x;  // mm
-                const b_wp = p * 1000.0 - W_open;  // mm
+                // p에서 e를 빼면 W_open이 됨: W_open = p - e
+                const W_open = p * 1000.0 - e;  // mm (개구부 전체 폭)
+                const W_rect = W_open - 2.0 * delta_x;  // mm (개구부 폭, 직사각형 부분)
+                const b_wp = e;  // mm (웹 포스트 폭 = e)
 
                 // Number of openings
+                // 웹 포스트 폭(e)이 커지면 p = W_open + e가 커지고, 따라서 N = L_open / p가 작아짐
                 const L_open = L - 2.0 * end_post;
                 const N = Math.round(L_open / p);
+                
+                // #region agent log
+                fetch('http://127.0.0.1:7242/ingest/f6b33b86-5eb3-41dd-83f7-9e0a0382507b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'castellated-beam-calculator.html:889',message:'개구부 개수 계산',data:{L:L,end_post:end_post,L_open:L_open,p:p,N:N,e:e,W_open:W_open,W_rect:W_rect,b_wp:b_wp},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+                // #endregion
+                
                 const x1 = end_post + 0.5 * p;
                 const xs = [];
                 for (let i = 0; i < N; i++) {
@@ -856,20 +930,35 @@
                 const phiMn = 21.47;   // kN·m (placeholder - should be calculated)
                 const d_eff = 0.8379;  // m (placeholder - should be calculated)
                 const h_top = 0.4189;  // m (placeholder - should be calculated)
-                const e_over_4 = (e / 4.0) / 1000.0;  // m
+                // Mtee 계산: 개구부 폭(W_rect)의 1/4 사용
+                // Python 코드의 e는 개구부 폭을 의미하며, 웹포스트 폭(e)이 증가해도
+                // 개구부 폭(W_rect)은 변하지 않으므로 UR이 안정적으로 유지됨
+                const W_rect_over_4 = (W_rect / 4.0) / 1000.0;  // m (개구부 폭 사용)
 
                 // Calculate for each opening
                 const openingResults = [];
                 let maxUR = 0;
                 let maxURIndex = 0;
                 
+                // #region agent log
+                fetch('http://127.0.0.1:7242/ingest/f6b33b86-5eb3-41dd-83f7-9e0a0382507b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'castellated-beam-calculator.html:915',message:'UR 계산 시작 (수정 후: W_rect 사용)',data:{N:N,e:e,W_rect:W_rect,W_rect_over_4:W_rect_over_4,phiPn:phiPn,phiMn:phiMn,d_eff:d_eff},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix',hypothesisId:'A'})}).catch(()=>{});
+                // #endregion
+                
                 for (let i = 0; i < xs.length; i++) {
                     const x = xs[i];
                     const V = Vx(x);
                     const M = Mx(x);
                     const P = M / d_eff;
-                    const Mtee = Math.abs(V) * e_over_4;
+                    // Mtee 계산: 개구부 폭(W_rect) 사용 (로그 분석 결과 올바른 방법)
+                    // Python 코드의 e는 개구부 폭을 의미하며, 웹포스트 폭(e)이 증가해도
+                    // 개구부 폭(W_rect)은 변하지 않으므로 UR이 안정적으로 유지됨
+                    const Mtee = Math.abs(V) * W_rect_over_4;  // 개구부 폭 사용
                     const UR = Math.abs(P) / phiPn + Mtee / phiMn;
+                    
+                    // #region agent log
+                    // 수정 후 검증을 위한 로그 (W_rect 사용)
+                    fetch('http://127.0.0.1:7242/ingest/f6b33b86-5eb3-41dd-83f7-9e0a0382507b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'castellated-beam-calculator.html:957',message:'개구부별 UR 계산 (수정 후: W_rect 사용)',data:{i:i+1,x:x,V:V,M:M,P:P,e:e,W_rect:W_rect,W_open:W_open,W_rect_over_4:W_rect_over_4,Mtee:Mtee,UR:UR,phiPn:phiPn,phiMn:phiMn},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix',hypothesisId:'A'})}).catch(()=>{});
+                    // #endregion
                     
                     openingResults.push({
                         i: i + 1,
@@ -904,8 +993,9 @@
                 const webPostPair = [openingResults[maxDPIndex - 1].i, openingResults[maxDPIndex].i];
 
                 // Web-post buckling (DG31)
-                const Mp = (0.25 * tw * Math.pow(e + 2 * delta_x, 2) * Fy) / 1e6;  // kN·m
-                const etw = e / tw;
+                // Mp 계산: 개구부 전체 폭(W_open) 사용
+                const Mp = (0.25 * tw * Math.pow(W_open, 2) * Fy) / 1e6;  // kN·m
+                const etw = e / tw;  // 웹 포스트 폭비
                 const r10 = 0.408;
                 const r20 = 0.437;
                 let ratio;
@@ -950,10 +1040,11 @@
                     p: p,
                     theta: theta,
                     end_post: end_post,
-                    e: e,
+                    e: e,  // 웹 포스트 폭
                     delta_x: delta_x,
-                    W_open: W_open,
-                    b_wp: b_wp,
+                    W_open: W_open,  // 개구부 전체 폭
+                    W_rect: W_rect,  // 개구부 폭 (직사각형 부분)
+                    b_wp: b_wp,  // 웹 포스트 폭 (= e)
                     N: N,
                     openingResults: openingResults,
                     govOpening: govOpening,
@@ -980,6 +1071,19 @@
                     I_req_construction: I_req_construction,
                     Ix_steel: Ix_steel,
                     delta_allow_construction: delta_allow_construction,
+                    // Section properties
+                    d_original: d_original,
+                    Ix_original: Ix_original,
+                    Sx_original: Sx_original,
+                    rx_original: rx_original,
+                    Iy_original: Iy_original,
+                    ry_original: ry_original,
+                    d_castellated: d_castellated,
+                    Sx_castellated: Sx_castellated,
+                    rx_castellated: rx_castellated,
+                    Iy_castellated: Iy_castellated,
+                    ry_castellated: ry_castellated,
+                    A_total: A_total,
                     // Service stage results
                     w_DL_service: w_DL_service,
                     w_SIDL_service: w_SIDL_service,
@@ -1101,25 +1205,99 @@
                             <td class="result-value">${formatNumber(results.ho, 2)}</td>
                             <td>m</td>
                         </tr>
+                    </table>
+                </div>
+
+                <!-- 원단면 Section Properties -->
+                <div class="result-section">
+                    <div class="result-section-title">원단면 (H형강) Section Properties</div>
+                    <table class="result-table">
                         <tr>
-                            <td>개구부 간격 (p)</td>
-                            <td class="result-value">${formatNumber(results.p, 2)}</td>
-                            <td>m</td>
+                            <th>항목</th>
+                            <th>값</th>
+                            <th>단위</th>
                         </tr>
                         <tr>
-                            <td>개구부 각도 (θ)</td>
-                            <td class="result-value">${formatNumber(results.theta, 0)}</td>
-                            <td>deg</td>
-                        </tr>
-                        <tr>
-                            <td>개구부 폭 (e)</td>
-                            <td class="result-value">${formatNumber(results.e, 0)}</td>
+                            <td>높이 (d)</td>
+                            <td class="result-value">${formatNumber(results.d_original, 1)}</td>
                             <td>mm</td>
                         </tr>
                         <tr>
-                            <td>개구부 개수 (N)</td>
-                            <td class="result-value">${results.N}</td>
-                            <td>개</td>
+                            <td>단면적 (A)</td>
+                            <td class="result-value">${formatNumber(results.A_total, 1)}</td>
+                            <td>mm²</td>
+                        </tr>
+                        <tr>
+                            <td>단면2차모멘트 (Ix)</td>
+                            <td class="result-value">${formatNumber(results.Ix_original / 1e6, 2)}</td>
+                            <td>×10⁶ mm⁴</td>
+                        </tr>
+                        <tr>
+                            <td>단면2차모멘트 (Iy)</td>
+                            <td class="result-value">${formatNumber(results.Iy_original / 1e6, 2)}</td>
+                            <td>×10⁶ mm⁴</td>
+                        </tr>
+                        <tr>
+                            <td>단면계수 (Sx)</td>
+                            <td class="result-value">${formatNumber(results.Sx_original / 1e3, 1)}</td>
+                            <td>×10³ mm³</td>
+                        </tr>
+                        <tr>
+                            <td>회전반경 (rx)</td>
+                            <td class="result-value">${formatNumber(results.rx_original, 1)}</td>
+                            <td>mm</td>
+                        </tr>
+                        <tr>
+                            <td>회전반경 (ry)</td>
+                            <td class="result-value">${formatNumber(results.ry_original, 1)}</td>
+                            <td>mm</td>
+                        </tr>
+                    </table>
+                </div>
+
+                <!-- Castellated Beam Section Properties -->
+                <div class="result-section">
+                    <div class="result-section-title">Castellated Beam Section Properties</div>
+                    <table class="result-table">
+                        <tr>
+                            <th>항목</th>
+                            <th>값</th>
+                            <th>단위</th>
+                        </tr>
+                        <tr>
+                            <td>높이 (dc)</td>
+                            <td class="result-value">${formatNumber(results.d_castellated, 1)}</td>
+                            <td>mm</td>
+                        </tr>
+                        <tr>
+                            <td>단면적 (A)</td>
+                            <td class="result-value">${formatNumber(results.A_total, 1)}</td>
+                            <td>mm²</td>
+                        </tr>
+                        <tr>
+                            <td>단면2차모멘트 (Ix)</td>
+                            <td class="result-value">${formatNumber(results.Ix_steel / 1e6, 2)}</td>
+                            <td>×10⁶ mm⁴</td>
+                        </tr>
+                        <tr>
+                            <td>단면2차모멘트 (Iy)</td>
+                            <td class="result-value">${formatNumber(results.Iy_castellated / 1e6, 2)}</td>
+                            <td>×10⁶ mm⁴</td>
+                        </tr>
+                        <tr>
+                            <td>단면계수 (Sx)</td>
+                            <td class="result-value">${formatNumber(results.Sx_castellated / 1e3, 1)}</td>
+                            <td>×10³ mm³</td>
+                        </tr>
+                        <tr>
+                            <td>회전반경 (rx)</td>
+                            <td class="result-value">${formatNumber(results.rx_castellated, 1)}</td>
+                            <td>mm</td>
+                        </tr>
+                        <tr>
+                            <td>회전반경 (ry)</td>
+                            <td class="result-value">${formatNumber(results.ry_castellated, 1)}</td>
+                            <td>mm</td>
                         </tr>
                     </table>
                 </div>
@@ -1311,6 +1489,7 @@
                             <div style="margin-top: 8px;">시공 중 소요단면2차모멘트: I_req = (5 × w_DL × l⁴) / (384 × E × Δ)</div>
                             <div style="margin-left: 20px;">I_req = (5 × ${formatNumber(results.w_DL_construction, 3)} × ${formatNumber(results.L * 1000, 0)}⁴) / (384 × ${formatNumber(200000 / 1000, 0)} × ${formatNumber(results.delta_allow_construction, 0)})</div>
                             <div style="margin-left: 20px;">I_req = ${formatNumber(results.I_req_construction / 1e6, 2)} × 10⁶ mm⁴</div>
+                            <div style="margin-top: 8px; font-size: 11px; color: #64748b; font-style: italic;">※ 시공단계에서 이미 Castellated beam으로 제작되었으므로, Castellated beam의 단면2차모멘트를 사용합니다.</div>
                         </div>
                     </div>
 
@@ -1346,7 +1525,7 @@
                             <td>×10⁶ mm⁴</td>
                         </tr>
                         <tr>
-                            <td>강재보 단면2차모멘트 (Ix_steel)</td>
+                            <td>강재보 단면2차모멘트 (Ix_steel)<br><span style="font-size: 11px; color: #64748b; font-weight: normal;">Castellated beam</span></td>
                             <td class="result-value">${formatNumber(results.Ix_steel / 1e6, 2)}</td>
                             <td>×10⁶ mm⁴</td>
                         </tr>
@@ -1406,30 +1585,64 @@
             }
         }
 
-        // 개구부 간격 자동 계산 함수 (p = e + H)
-        // e는 openingWidth (mm), H는 원치수 (mm)
+        // 개구부 간격 자동 계산 함수 (p = W_open + e)
+        // e는 openingWidth (웹 포스트 폭, mm)
+        // W_open = 개구부 전체 폭 = W_rect + 2*delta_x
+        // W_rect는 개구부 폭 (직사각형 부분)으로, 일반적으로 원단면 높이(H)와 관련됨
         // 원치수 = beamDepth / 1.5
-        // p = (e + 원치수) / 1000 (m 단위)
+        // W_rect의 최소값은 H/2, 최대값은 1.5*ho
+        // p = W_open + e = (W_rect + 2*delta_x) + e
+        // 하지만 간단하게: p = (원치수 + 2*delta_x) + e (W_rect를 원치수로 근사)
         function updateOpeningSpacing() {
             const beamDepthEl = document.getElementById('beamDepth');
+            const openingHeightEl = document.getElementById('openingHeight');
             const openingWidthEl = document.getElementById('openingWidth');
             const openingSpacingEl = document.getElementById('openingSpacing');
             
-            if (!beamDepthEl || !openingWidthEl || !openingSpacingEl) {
+            if (!beamDepthEl || !openingHeightEl || !openingWidthEl || !openingSpacingEl) {
                 return;
             }
             
             const dc = parseFloat(beamDepthEl.value) || 0;  // mm 단위
-            const e = parseFloat(openingWidthEl.value) || 0;  // mm 단위
+            const ho = parseFloat(openingHeightEl.value) || 0;  // m 단위
+            const e = parseFloat(openingWidthEl.value) || 0;  // mm 단위 (웹 포스트 폭)
             
-            if (dc > 0 && e > 0) {
+            if (dc > 0 && ho > 0 && e > 0) {
                 // 원치수 = dc / 1.5
                 const originalHeight = dc / 1.5;  // mm
                 
-                // p = e + 원치수
-                const p = (e + originalHeight) / 1000;  // mm → m 변환
+                // delta_x 계산
+                const hoMm = ho * 1000;  // m → mm
+                const delta_x = hoMm / (2.0 * Math.sqrt(3.0));  // mm
+                
+                // W_rect는 일반적으로 원치수와 관련이 있지만, 정확한 값은 사용자 입력에 따라 달라짐
+                // 여기서는 W_rect를 원치수로 근사 (실제로는 개구부 폭 입력이 필요하지만, 현재는 범위만 제공)
+                // W_open = W_rect + 2*delta_x ≈ 원치수 + 2*delta_x
+                const W_open = originalHeight + 2.0 * delta_x;  // mm (개구부 전체 폭)
+                
+                // p = W_open + e
+                const p = (W_open + e) / 1000;  // mm → m 변환
                 openingSpacingEl.value = p.toFixed(3);
+                
+                // 개구부 개수는 calculateBeam()에서 자동으로 재계산됨
+                // p가 커지면 N = (L - 2*end_post) / p가 작아짐
             }
+        }
+        
+        // 개구부 개수 계산 함수 (참고용)
+        // N = (L - 2 * end_post) / p
+        // openingWidth(e)가 커지면 p가 커지고, 따라서 N이 줄어듦
+        function calculateOpeningCount() {
+            const L = parseFloat(document.getElementById('beamSpan')?.value) || 0;  // m
+            const end_post = parseFloat(document.getElementById('endPost')?.value) || 0;  // m
+            const p = parseFloat(document.getElementById('openingSpacing')?.value) || 0;  // m
+            
+            if (L > 0 && end_post >= 0 && p > 0) {
+                const L_open = L - 2.0 * end_post;
+                const N = Math.round(L_open / p);
+                return N;
+            }
+            return 0;
         }
 
         // End Post 길이 자동 계산 함수 (endPost = dc)
@@ -1448,7 +1661,8 @@
             }
         }
 
-        // 개구부 폭 범위 및 기본값 업데이트 함수
+        // 웹 포스트 폭(e) 범위 및 기본값 업데이트 함수
+        // e = 웹 포스트 폭 (개구부 사이 남는 웹 두께 방향 폭)
         // 최소값: H/2 (원치수/2)
         // 최대값: 1.5 × ho
         // 기본값: 최소값
@@ -1550,7 +1764,7 @@
             });
         }
         
-        // openingHeight 변경 시 개구부 폭 범위 업데이트
+        // openingHeight 변경 시 웹 포스트 폭(e) 범위 업데이트
         const openingHeightEl = document.getElementById('openingHeight');
         if (openingHeightEl) {
             openingHeightEl.addEventListener('input', updateOpeningWidth);
