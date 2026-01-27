@@ -761,9 +761,9 @@
         }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <!-- Firebase SDK (Firestore) -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
     <div class="container">
@@ -1292,23 +1292,23 @@
         // Firebase Configuration
         // ⚠️ 실제 사용 시 아래 설정을 Firebase Console에서 생성한 프로젝트 설정으로 교체하세요
         const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_PROJECT.firebaseapp.com",
-            databaseURL: "https://YOUR_PROJECT-default-rtdb.firebaseio.com",
-            projectId: "YOUR_PROJECT",
-            storageBucket: "YOUR_PROJECT.appspot.com",
-            messagingSenderId: "YOUR_SENDER_ID",
-            appId: "YOUR_APP_ID"
+            apiKey: "AIzaSyDIuTX7eQVscRl5GJxtKVWHeF7MCfCbFPc",
+            authDomain: "hakdong-a80b8.firebaseapp.com",
+            projectId: "hakdong-a80b8",
+            storageBucket: "hakdong-a80b8.firebasestorage.app",
+            messagingSenderId: "578179103785",
+            appId: "1:578179103785:web:b8daecb0ac24924e30b038"
         };
 
-        // Firebase 초기화
+        // Firebase 초기화 (Firestore)
         let db = null;
         let isFirebaseEnabled = false;
         
         try {
             firebase.initializeApp(firebaseConfig);
-            db = firebase.database();
+            db = firebase.firestore();
             isFirebaseEnabled = firebaseConfig.apiKey !== "YOUR_API_KEY";
+            console.log('[Firebase] Firestore 초기화 완료');
         } catch (e) {
             console.log('Firebase 초기화 실패, localStorage 모드로 전환:', e);
         }
@@ -1342,8 +1342,22 @@
         }
 
         function kcolRef(pathSuffix) {
-            // Firebase path: kcolumn/{projectId}/{suffix}
-            return `kcolumn/${PROJECT_ID}/${pathSuffix}`;
+            // Firestore: collection 'kcolumn', document '{projectId}_{suffix}'
+            return db.collection('kcolumn').doc(`${PROJECT_ID}_${pathSuffix}`);
+        }
+        
+        // Firestore 데이터 저장 헬퍼
+        function firestoreSet(docRef, data) {
+            return docRef.set({ data: data, updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
+        }
+        
+        // Firestore 데이터 읽기 헬퍼
+        function firestoreGet(snapshot) {
+            if (snapshot.exists) {
+                const doc = snapshot.data();
+                return doc.data || {};
+            }
+            return {};
         }
         
         // 휴무일 정의 (설날 연휴)
@@ -1460,25 +1474,25 @@
             }
         }
 
-        // Firebase 실시간 리스너
+        // Firebase 실시간 리스너 (Firestore)
         function setupFirebaseListeners() {
             // columnData 실시간 리스너
-            db.ref(kcolRef('columnData')).on('value', (snapshot) => {
-                columnData = snapshot.val() || {};
+            kcolRef('columnData').onSnapshot((snapshot) => {
+                columnData = firestoreGet(snapshot);
                 renderColumnGrid('column-grid-overview');
                 renderColumnGrid('column-grid-input');
                 updateProgressBars();
             });
 
             // dailyData 실시간 리스너
-            db.ref(kcolRef('dailyData')).on('value', (snapshot) => {
-                dailyData = snapshot.val() || {};
+            kcolRef('dailyData').onSnapshot((snapshot) => {
+                dailyData = firestoreGet(snapshot);
             });
 
             // transportPlan 실시간 리스너
-            db.ref(kcolRef('transportPlan')).on('value', (snapshot) => {
-                const data = snapshot.val();
-                if (data) {
+            kcolRef('transportPlan').onSnapshot((snapshot) => {
+                const data = firestoreGet(snapshot);
+                if (data && Object.keys(data).length > 0) {
                     transportPlan = data;
                     // 운송차수계획을 dailyData의 현장배송(process 5)에 동기화
                     // 초기 로드이므로 확인 없이 자동 동기화
@@ -3990,18 +4004,18 @@
                 
                 if (isFirebaseEnabled && db) {
                     // Firebase에 저장
-                    db.ref(kcolRef('columnData')).set(columnData)
+                    firestoreSet(kcolRef('columnData'), columnData)
                         .then(() => {
-                            return db.ref(kcolRef('dailyData')).set(dailyData);
+                            return firestoreSet(kcolRef('dailyData'), dailyData);
                         })
                         .then(() => {
-                            return db.ref(kcolRef('columnCoordinates')).set(columnCoordinates);
+                            return firestoreSet(kcolRef('columnCoordinates'), columnCoordinates);
                         })
                         .then(() => {
-                            return db.ref(kcolRef('deliveryConfirmed')).set(deliveryConfirmed);
+                            return firestoreSet(kcolRef('deliveryConfirmed'), deliveryConfirmed);
                         })
                         .then(() => {
-                            return db.ref(kcolRef('actualDeliveryDate')).set(actualDeliveryDate);
+                            return firestoreSet(kcolRef('actualDeliveryDate'), actualDeliveryDate);
                         })
                         .then(() => {
                             console.log('✅ Firebase 저장 완료');
@@ -5871,7 +5885,7 @@
                     
                     // Firebase에 저장 (활성화된 경우)
                     if (isFirebaseEnabled && db) {
-                        db.ref(kcolRef('transportPlan')).set(transportPlan).catch((error) => {
+                        firestoreSet(kcolRef('transportPlan'), transportPlan).catch((error) => {
                             console.error('Firebase 저장 오류:', error);
                         });
                     }
@@ -6372,7 +6386,7 @@
             
             // Firebase에 저장 (활성화된 경우)
             if (isFirebaseEnabled && db) {
-                db.ref(kcolRef('transportPlan')).set(transportPlan)
+                firestoreSet(kcolRef('transportPlan'), transportPlan)
                     .then(() => {
                         alert('✅ 운송차수계획이 저장되었습니다. (현장배송 데이터 자동 동기화 완료)');
                         // 화면 업데이트
@@ -6489,22 +6503,22 @@
             
             // Firebase에 저장 (활성화된 경우)
             if (isFirebaseEnabled && db) {
-                db.ref(kcolRef('columnData')).set(columnData)
+                firestoreSet(kcolRef('columnData'), columnData)
                     .then(() => {
-                        return db.ref(kcolRef('dailyData')).set(dailyData);
+                        return firestoreSet(kcolRef('dailyData'), dailyData);
                     })
                     .then(() => {
-                        return db.ref(kcolRef('transportPlan')).set(transportPlan);
+                        return firestoreSet(kcolRef('transportPlan'), transportPlan);
                     })
                     .then(() => {
-                        return db.ref(kcolRef('deliveryConfirmed')).set(deliveryConfirmed);
+                        return firestoreSet(kcolRef('deliveryConfirmed'), deliveryConfirmed);
                     })
                     .then(() => {
-                        return db.ref(kcolRef('actualDeliveryDate')).set(actualDeliveryDate);
+                        return firestoreSet(kcolRef('actualDeliveryDate'), actualDeliveryDate);
                     })
                     .then(() => {
                         // columnCoordinates는 유지하므로 Firebase에서도 삭제하지 않음
-                        // return db.ref(kcolRef('columnCoordinates')).set(columnCoordinates);
+                        // return firestoreSet(kcolRef('columnCoordinates'), columnCoordinates);
                         return Promise.resolve();
                     })
                     .then(() => {
@@ -6571,5 +6585,6 @@
     <script src="../../js/auth-config.js"></script>
     <script src="../../js/auth.js"></script>
     <script src="../../js/auth-guard.js"></script>
+    
 </body>
 </html>
