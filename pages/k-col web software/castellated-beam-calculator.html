@@ -365,7 +365,7 @@
                 </div>
 
                 <div class="input-group">
-                    <label for="endPost">양단 End Post 길이 (m) - endPost = dc (자동계산)</label>
+                    <label for="endPost">양단 End Post 길이 (m) - endPost = dc × 1.5 (자동계산)</label>
                     <input type="number" id="endPost" class="input-field" value="0.9" step="0.01" min="0" readonly style="background: #f1f5f9;">
                 </div>
 
@@ -450,26 +450,44 @@
 
         // KS 단면 옵션 생성 함수
         function populateKsSectionOptions() {
+            // #region agent log
+            fetch('http://127.0.0.1:7242/ingest/f6b33b86-5eb3-41dd-83f7-9e0a0382507b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'castellated-beam-calculator.html:populateKsSectionOptions',message:'populateKsSectionOptions called',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+            // #endregion
             try {
                 const ksSectionSelect = document.getElementById('ksSection');
                 if (!ksSectionSelect) {
+                    // #region agent log
+                    fetch('http://127.0.0.1:7242/ingest/f6b33b86-5eb3-41dd-83f7-9e0a0382507b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'castellated-beam-calculator.html:populateKsSectionOptions',message:'ksSection select element not found',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
+                    // #endregion
                     console.log('[DEBUG] populateKsSectionOptions: ksSection select element not found');
                     return false;
                 }
                 
                 if (typeof ksSections === 'undefined' || !ksSections) {
+                    // #region agent log
+                    fetch('http://127.0.0.1:7242/ingest/f6b33b86-5eb3-41dd-83f7-9e0a0382507b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'castellated-beam-calculator.html:populateKsSectionOptions',message:'ksSections is not defined',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+                    // #endregion
                     console.error('[ERROR] populateKsSectionOptions: ksSections is not defined');
                     return false;
                 }
                 
                 const sectionsCount = Object.keys(ksSections).length;
                 if (sectionsCount === 0) {
+                    // #region agent log
+                    fetch('http://127.0.0.1:7242/ingest/f6b33b86-5eb3-41dd-83f7-9e0a0382507b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'castellated-beam-calculator.html:populateKsSectionOptions',message:'ksSections is empty',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
+                    // #endregion
                     console.error('[ERROR] populateKsSectionOptions: ksSections is empty');
                     return false;
                 }
                 
+                // #region agent log
+                fetch('http://127.0.0.1:7242/ingest/f6b33b86-5eb3-41dd-83f7-9e0a0382507b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'castellated-beam-calculator.html:populateKsSectionOptions',message:'Starting to populate options',data:{sectionsCount:sectionsCount},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
+                console.log('[DEBUG] populateKsSectionOptions: Starting to populate', sectionsCount, 'options');
+                // #endregion
+                
                 // 모든 옵션 제거 후 직접 입력 옵션만 다시 추가
                 ksSectionSelect.innerHTML = '<option value="">직접 입력</option>';
+                console.log('[DEBUG] populateKsSectionOptions: Cleared and added default option');
                 
                 // 높이(d) 순으로 정렬
                 const sortedKeys = Object.keys(ksSections).sort((a, b) => {
@@ -522,6 +540,12 @@
                     }
                 });
                 
+                // #region agent log
+                const finalOptionsCount = ksSectionSelect.options.length;
+                fetch('http://127.0.0.1:7242/ingest/f6b33b86-5eb3-41dd-83f7-9e0a0382507b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'castellated-beam-calculator.html:populateKsSectionOptions',message:'Options populated',data:{finalOptionsCount:finalOptionsCount,selectedValue:ksSectionSelect.value},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'F'})}).catch(()=>{});
+                console.log('[DEBUG] populateKsSectionOptions: Completed. Total options:', finalOptionsCount, 'Selected:', ksSectionSelect.value);
+                // #endregion
+                
                 // 기본값이 설정된 경우 관련 필드 자동 업데이트
                 if (ksSections[defaultSection]) {
                     setTimeout(() => {
@@ -540,6 +564,7 @@
         function onKsSectionChange() {
             // #region agent log
             fetch('http://127.0.0.1:7242/ingest/f6b33b86-5eb3-41dd-83f7-9e0a0382507b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'castellated-beam-calculator.html:477',message:'onKsSectionChange called',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+            console.log('[DEBUG] onKsSectionChange called');
             // #endregion
             
             try {
@@ -553,9 +578,11 @@
                 }
                 
                 const selectedValue = ksSectionSelect.value;
+                console.log('[DEBUG] onKsSectionChange: selectedValue =', selectedValue);
                 
                 if (!selectedValue || selectedValue === '') {
                     // 직접 입력 모드
+                    console.log('[DEBUG] onKsSectionChange: Direct input mode, returning');
                     return;
                 }
                 
@@ -570,6 +597,7 @@
                 
                 // #region agent log
                 fetch('http://127.0.0.1:7242/ingest/f6b33b86-5eb3-41dd-83f7-9e0a0382507b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'castellated-beam-calculator.html:500',message:'Setting section values',data:{section:section,selectedValue:selectedValue},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+                console.log('[DEBUG] onKsSectionChange: Setting values for section', selectedValue, section);
                 // #endregion
                 
                 // 치수 입력 (mm 단위) - null 체크 추가
@@ -637,11 +665,11 @@
                 // (openingWidth가 먼저 설정되어야 함)
                 setTimeout(updateOpeningSpacing, 100);
                 
-                // End Post 길이 자동 계산 (endPost = dc)
+                // End Post 길이 자동 계산 (endPost = dc × 1.5)
                 // dc는 mm 단위, endPost는 m 단위로 표시
                 const endPostEl = document.getElementById('endPost');
                 if (endPostEl) {
-                    const endPostValue = beamDepthValue / 1000;  // mm → m 변환
+                    const endPostValue = (beamDepthValue * 1.5) / 1000;  // mm → m 변환 (1.5배 적용)
                     endPostEl.value = endPostValue.toFixed(3);
                 }
                 
@@ -716,6 +744,10 @@
                 // #region agent log
                 fetch('http://127.0.0.1:7242/ingest/f6b33b86-5eb3-41dd-83f7-9e0a0382507b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'castellated-beam-calculator.html:669',message:'calculateBeam 함수 시작',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
                 // #endregion
+                
+                // 공통 상수 정의
+                const phi_b = 0.90;  // AISC 360 저감계수 (휨강도)
+                const phi_v = 0.90;  // AISC 360 저감계수 (전단강도)
                 
                 // Get input values
                 const L = parseFloat(document.getElementById('beamSpan').value) || 0;
@@ -927,7 +959,7 @@
                 // Tee section properties (these would normally be calculated from section geometry)
                 // For now, using placeholder values - these should be calculated based on actual Tee section
                 const phiPn = 1553.7;  // kN (placeholder - should be calculated)
-                const phiMn = 21.47;   // kN·m (placeholder - should be calculated)
+                const phiMn_tee_placeholder = 21.47;   // kN·m (placeholder - should be calculated, for opening UR calculation)
                 const d_eff = 0.8379;  // m (placeholder - should be calculated)
                 const h_top = 0.4189;  // m (placeholder - should be calculated)
                 // Mtee 계산: 개구부 폭(W_rect)의 1/4 사용
@@ -941,7 +973,7 @@
                 let maxURIndex = 0;
                 
                 // #region agent log
-                fetch('http://127.0.0.1:7242/ingest/f6b33b86-5eb3-41dd-83f7-9e0a0382507b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'castellated-beam-calculator.html:915',message:'UR 계산 시작 (수정 후: W_rect 사용)',data:{N:N,e:e,W_rect:W_rect,W_rect_over_4:W_rect_over_4,phiPn:phiPn,phiMn:phiMn,d_eff:d_eff},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix',hypothesisId:'A'})}).catch(()=>{});
+                fetch('http://127.0.0.1:7242/ingest/f6b33b86-5eb3-41dd-83f7-9e0a0382507b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'castellated-beam-calculator.html:915',message:'UR 계산 시작 (수정 후: W_rect 사용)',data:{N:N,e:e,W_rect:W_rect,W_rect_over_4:W_rect_over_4,phiPn:phiPn,phiMn_tee_placeholder:phiMn_tee_placeholder,d_eff:d_eff},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix',hypothesisId:'A'})}).catch(()=>{});
                 // #endregion
                 
                 for (let i = 0; i < xs.length; i++) {
@@ -953,11 +985,11 @@
                     // Python 코드의 e는 개구부 폭을 의미하며, 웹포스트 폭(e)이 증가해도
                     // 개구부 폭(W_rect)은 변하지 않으므로 UR이 안정적으로 유지됨
                     const Mtee = Math.abs(V) * W_rect_over_4;  // 개구부 폭 사용
-                    const UR = Math.abs(P) / phiPn + Mtee / phiMn;
+                    const UR = Math.abs(P) / phiPn + Mtee / phiMn_tee_placeholder;
                     
                     // #region agent log
                     // 수정 후 검증을 위한 로그 (W_rect 사용)
-                    fetch('http://127.0.0.1:7242/ingest/f6b33b86-5eb3-41dd-83f7-9e0a0382507b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'castellated-beam-calculator.html:957',message:'개구부별 UR 계산 (수정 후: W_rect 사용)',data:{i:i+1,x:x,V:V,M:M,P:P,e:e,W_rect:W_rect,W_open:W_open,W_rect_over_4:W_rect_over_4,Mtee:Mtee,UR:UR,phiPn:phiPn,phiMn:phiMn},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix',hypothesisId:'A'})}).catch(()=>{});
+                    fetch('http://127.0.0.1:7242/ingest/f6b33b86-5eb3-41dd-83f7-9e0a0382507b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'castellated-beam-calculator.html:957',message:'개구부별 UR 계산 (수정 후: W_rect 사용)',data:{i:i+1,x:x,V:V,M:M,P:P,e:e,W_rect:W_rect,W_open:W_open,W_rect_over_4:W_rect_over_4,Mtee:Mtee,UR:UR,phiPn:phiPn,phiMn_tee_placeholder:phiMn_tee_placeholder},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix',hypothesisId:'A'})}).catch(()=>{});
                     // #endregion
                     
                     openingResults.push({
@@ -994,7 +1026,7 @@
 
                 // Web-post buckling (DG31)
                 // Mp 계산: 개구부 전체 폭(W_open) 사용
-                const Mp = (0.25 * tw * Math.pow(W_open, 2) * Fy) / 1e6;  // kN·m
+                const Mp_webpost = (0.25 * tw * Math.pow(W_open, 2) * Fy) / 1e6;  // kN·m
                 const etw = e / tw;  // 웹 포스트 폭비
                 const r10 = 0.408;
                 const r20 = 0.437;
@@ -1006,12 +1038,324 @@
                 } else {
                     ratio = r10 + (r20 - r10) * ((etw - 10) / 10);
                 }
-                const Mocr = ratio * Mp;
-                const phi_b = 0.90;
+                const Mocr = ratio * Mp_webpost;
                 const phiMocr = phi_b * Mocr;
                 const Mrh = Vrh * h_top;
                 const buckling_ok = Mrh <= phiMocr;
 
+                // ===== 1. 전단강도 및 Vierendeel 거동검토 =====
+                
+                // 1.1 전체 전단 강도 검토 (AISC 360 Ch. G)
+                // 최대 전단력 (단순지지보)
+                const Vu_max = wu * L / 2;  // kN
+                
+                // 전단 면적
+                const Aw = d_castellated * tw;  // mm²
+                
+                // 전단 좌굴 계수 Cv 계산 (AISC 360 G2)
+                const h_tw = hw_castellated / tw;
+                const kv = 5.0;  // 웹 판재 좌굴 계수 (stiffener 없음)
+                const h_tw_limit = 1.10 * Math.sqrt(kv * Es / Fy);
+                
+                let Cv = 1.0;
+                if (h_tw <= h_tw_limit) {
+                    Cv = 1.0;  // 전단 좌굴 없음
+                } else {
+                    const h_tw_r = 1.37 * Math.sqrt(kv * Es / Fy);
+                    if (h_tw <= h_tw_r) {
+                        // 비탄성 전단 좌굴
+                        Cv = 1.10 * Math.sqrt(kv * Es / Fy) / h_tw;
+                    } else {
+                        // 탄성 전단 좌굴
+                        Cv = 1.51 * kv * Es / (Math.pow(h_tw, 2) * Fy);
+                    }
+                }
+                
+                // 공칭 전단 강도 (AISC 360 G2-1)
+                const Vn = 0.6 * Fy * Aw * Cv / 1000;  // kN
+                
+                // 설계 전단 강도 (phi_v는 함수 상단에서 선언됨)
+                const phiVn = phi_v * Vn;  // kN
+                
+                // 전체 전단 강도 판정
+                const shear_global_ok = Vu_max <= phiVn;
+                const shear_global_UR = Vu_max / phiVn;  // 사용률
+                
+                // 1.2 Web Post 전단 강도 (DG31)
+                // Web post의 전단 면적
+                const Aw_webpost = e * tw;  // mm² (Web post 전단 면적)
+                
+                // Web post 전단 강도 (AISC 360 G2, 웹 post에 적용)
+                // Web post는 짧은 구간이므로 전단 좌굴은 고려하지 않음 (보수적)
+                const Vn_webpost = 0.6 * Fy * Aw_webpost / 1000;  // kN
+                const phiVn_webpost = phi_v * Vn_webpost;  // kN
+                
+                // Web post 전단 강도 판정
+                const shear_webpost_ok = Vrh <= phiVn_webpost;
+                const shear_webpost_UR = Vrh / phiVn_webpost;  // 사용률
+                
+                // ===== 2. 전단파괴모드 검토 (Web Post Failure) =====
+                
+                // 2.1 Web Post 전단 파괴 모드 분석 (AISC DG31)
+                // Web Post의 전단 파괴는 전단 강도와 좌굴에 의해 결정됨
+                // 파괴 모드: 1) 전단 강도 파괴, 2) 좌굴 파괴
+                
+                // Web Post 전단 파괴 모드 판정
+                // 전단 강도 파괴: Vrh > φVn_webpost
+                // 좌굴 파괴: Mrh > φMocr
+                const webpost_shear_failure = Vrh > phiVn_webpost;
+                const webpost_buckling_failure = Mrh > phiMocr;
+                
+                // 지배 파괴 모드 결정
+                let webpost_failure_mode = 'None';
+                let webpost_failure_mode_kr = '파괴 없음';
+                if (webpost_shear_failure && webpost_buckling_failure) {
+                    // 두 모드 모두 파괴
+                    if (shear_webpost_UR > (Mrh / phiMocr)) {
+                        webpost_failure_mode = 'Shear';
+                        webpost_failure_mode_kr = '전단 강도 파괴 (지배)';
+                    } else {
+                        webpost_failure_mode = 'Buckling';
+                        webpost_failure_mode_kr = '좌굴 파괴 (지배)';
+                    }
+                } else if (webpost_shear_failure) {
+                    webpost_failure_mode = 'Shear';
+                    webpost_failure_mode_kr = '전단 강도 파괴';
+                } else if (webpost_buckling_failure) {
+                    webpost_failure_mode = 'Buckling';
+                    webpost_failure_mode_kr = '좌굴 파괴';
+                }
+                
+                // Web Post 안전성 종합 판정
+                const webpost_failure_ok = !webpost_shear_failure && !webpost_buckling_failure;
+                
+                // Web Post 전단 파괴 모드별 사용률
+                const webpost_shear_UR = Vrh / phiVn_webpost;
+                const webpost_buckling_UR = Mrh / phiMocr;
+                const webpost_max_UR = Math.max(webpost_shear_UR, webpost_buckling_UR);
+                
+                // Web Post 치수 검토
+                // e/tw 비율 검토 (DG31 권장: e/tw ≤ 20)
+                const etw_ratio = e / tw;
+                const etw_limit = 20.0;
+                const etw_ok = etw_ratio <= etw_limit;
+                
+                // Web Post 높이비 검토 (ho/e 비율, DG31 권장: ho/e ≤ 1.5)
+                const ho_e_ratio = (ho * 1000) / e;  // ho는 m 단위이므로 mm로 변환
+                const ho_e_limit = 1.5;
+                const ho_e_ok = ho_e_ratio <= ho_e_limit;
+                
+                // ===== 3. 글로벌 휨강도 검토 (Overall Flexural Strength) =====
+                // AISC 360 Ch. F + DG31
+                
+                // 3.1 검토 단면 선정
+                // Opening 구간과 Solid web 구간 중 지배 구간 선정
+                // Opening 구간: 개구부 중심에서의 모멘트 (지배 개구부 사용)
+                const M_opening = govOpening.M;  // kN·m (Opening 구간 모멘트)
+                // Solid web 구간: 개구부 사이 중간점에서의 모멘트 (최대 모멘트 구간)
+                const M_solid = wu * Math.pow(L, 2) / 8;  // kN·m (단순지지보 최대 모멘트)
+                // 지배 구간: 더 큰 모멘트를 받는 구간
+                const M_max = Math.max(M_opening, M_solid);  // kN·m
+                const governing_section = M_opening > M_solid ? 'Opening 구간' : 'Solid web 구간';
+                
+                // 3.2 단면 분류 (AISC 360 Table B4.1)
+                // 플랜지 slenderness
+                const lambda_f = bf / (2 * tf);  // 플랜지 slenderness
+                const lambda_pf = 0.38 * Math.sqrt(Es / Fy);  // Compact limit
+                const lambda_rf = 1.0 * Math.sqrt(Es / Fy);  // Noncompact limit
+                
+                const flange_compact = lambda_f <= lambda_pf;
+                const flange_noncompact = lambda_f > lambda_pf && lambda_f <= lambda_rf;
+                const flange_slender = lambda_f > lambda_rf;
+                
+                // 웹 slenderness (Castellated beam 전체 높이 기준)
+                const lambda_w = hw_castellated / tw;  // 웹 slenderness
+                const lambda_pw = 3.76 * Math.sqrt(Es / Fy);  // Compact limit
+                const lambda_rw = 5.70 * Math.sqrt(Es / Fy);  // Noncompact limit
+                
+                const web_compact = lambda_w <= lambda_pw;
+                const web_noncompact = lambda_w > lambda_pw && lambda_w <= lambda_rw;
+                const web_slender = lambda_w > lambda_rw;
+                
+                // 단면 분류 결정
+                let section_class = 'Compact';
+                if (flange_slender || web_slender) {
+                    section_class = 'Slender';
+                } else if (flange_noncompact || web_noncompact) {
+                    section_class = 'Noncompact';
+                }
+                
+                // 3.3 횡비틀림좌굴 검토 (AISC 360 F2)
+                // Lp, Lr 계산
+                // rts (effective radius of gyration for LTB)
+                const rts = Math.sqrt(Math.sqrt(Iy_castellated * Ix_steel) / (Sx_castellated / (d_castellated / 2)));  // mm (근사)
+                // ho (flange center-to-center distance)
+                const ho_flexural = d_castellated - tf;  // mm
+                // J (torsional constant)
+                const J = (2 * bf * Math.pow(tf, 3) + hw_castellated * Math.pow(tw, 3)) / 3;  // mm⁴
+                // Cw (warping constant)
+                const Cw = Iy_castellated * Math.pow(ho_flexural, 2) / 4;  // mm⁶
+                
+                // Lp (plastic LTB length)
+                const Lp = 1.76 * rts * Math.sqrt(Es / Fy) / 1000;  // m
+                // Lr (elastic LTB length)
+                const FL = 0.7 * Fy;  // MPa (for rolled shapes)
+                const Lr = 1.95 * rts * (Es / FL) * Math.sqrt((J / (Sx_castellated * ho_flexural)) + Math.sqrt(Math.pow(J / (Sx_castellated * ho_flexural), 2) + 6.76 * Math.pow(FL / Es, 2))) / 1000;  // m
+                
+                // Lb (unbraced length) - 보 스팬 전체 (보수적)
+                const Lb = L;  // m
+                
+                // LTB case 결정
+                let LTB_case = '';
+                if (Lb <= Lp) {
+                    LTB_case = 'LTB 비지배 (Lb ≤ Lp)';
+                } else if (Lb <= Lr) {
+                    LTB_case = '비탄성 LTB (Lp < Lb ≤ Lr)';
+                } else {
+                    LTB_case = '탄성 LTB (Lb > Lr)';
+                }
+                
+                // 3.4 공칭 휨강도 산정 (AISC 360 F2)
+                // 소성 단면계수 Zx 계산 (근사)
+                const Zx_castellated = 1.14 * Sx_castellated;  // mm³ (근사, 일반적으로 Zx ≈ 1.14Sx)
+                // Mp (plastic moment)
+                const Mp_flexural = Zx_castellated * Fy / 1e6;  // kN·m
+                
+                // Mn 계산 (LTB case에 따라)
+                let Mn = 0;
+                if (Lb <= Lp) {
+                    // LTB 비지배
+                    Mn = Mp_flexural;  // kN·m
+                } else if (Lb <= Lr) {
+                    // 비탄성 LTB
+                    const Cb = 1.0;  // 보수적으로 1.0 사용
+                    Mn = Cb * (Mp_flexural - (Mp_flexural - 0.7 * Fy * Sx_castellated / 1e6) * ((Lb - Lp) / (Lr - Lp)));  // kN·m
+                    Mn = Math.min(Mn, Mp_flexural);  // Mp를 초과할 수 없음
+                } else {
+                    // 탄성 LTB
+                    const Cb = 1.0;  // 보수적으로 1.0 사용
+                    const Fcr = (Cb * Math.PI * Math.PI * Es) / (Math.pow(Lb * 1000 / rts, 2));  // MPa
+                    Mn = Fcr * Sx_castellated / 1e6;  // kN·m
+                    Mn = Math.min(Mn, Mp_flexural);  // Mp를 초과할 수 없음
+                }
+                
+                // 저감계수 (이미 함수 상단에서 선언됨)
+                const phiMn = phi_b * Mn;  // kN·m
+                
+                // 3.5 휨강도 판정
+                // 사용단계 최대 모멘트 사용
+                const Mu = M_u_service;  // kN·m (사용단계 최대 모멘트)
+                const flexural_ok = Mu <= phiMn;
+                const flexural_UR = Mu / phiMn;  // 사용률
+                
+                // ===== 4. 전단 항복 및 전단 좌굴 (Gross Shear Strength) =====
+                // 개구부 없는 Web 부분의 전단 항복 및 전단 좌굴 검토 (AISC 360 Ch. G)
+                // 특히 지점부 인접 개구부 주의
+                
+                // 4.1 지점부 인접 개구부 위치 확인
+                // 첫 번째 개구부와 마지막 개구부의 위치
+                const firstOpeningX = xs.length > 0 ? xs[0] : 0;  // m
+                const lastOpeningX = xs.length > 0 ? xs[xs.length - 1] : L;  // m
+                const endPostDistance = Math.min(firstOpeningX, L - lastOpeningX);  // m (지점부에서 가장 가까운 개구부까지의 거리)
+                const endPostDistance_mm = endPostDistance * 1000;  // mm
+                
+                // 지점부 인접 개구부 경고 여부 (DG31 권장: 지점부에서 최소 0.5d 이상 이격)
+                const minEndPostDistance = 0.5 * d_castellated / 1000;  // m
+                const endPostDistance_ok = endPostDistance >= minEndPostDistance;
+                
+                // 4.2 개구부 없는 Web 부분의 전단 강도 계산
+                // Solid web 구간의 전단 면적 (개구부 없는 부분)
+                const Aw_solid = d_castellated * tw;  // mm² (전체 높이 기준)
+                
+                // 지점부에서의 전단력 (최대 전단력)
+                const Vu_end = Vu_max;  // kN
+                
+                // 전단 좌굴 계수 Cv 계산 (AISC 360 G2)
+                // h/tw 비율
+                const h_tw_solid = hw_castellated / tw;
+                const kv_solid = 5.0;  // 웹 판재 좌굴 계수 (stiffener 없음)
+                const h_tw_limit_solid = 1.10 * Math.sqrt(kv_solid * Es / Fy);
+                const h_tw_limit_elastic = 1.37 * Math.sqrt(kv_solid * Es / Fy);
+                
+                let Cv_solid = 1.0;
+                if (h_tw_solid <= h_tw_limit_solid) {
+                    // 전단 항복 지배 (AISC 360 G2-1)
+                    Cv_solid = 1.0;
+                } else if (h_tw_solid <= h_tw_limit_elastic) {
+                    // 전단 좌굴 (비탄성, AISC 360 G2-2)
+                    Cv_solid = 1.10 * Math.sqrt(kv_solid * Es / Fy) / h_tw_solid;
+                } else {
+                    // 전단 좌굴 (탄성, AISC 360 G2-3)
+                    Cv_solid = 1.51 * kv_solid * Es / (Fy * Math.pow(h_tw_solid, 2));
+                }
+                
+                // 공칭 전단 강도 (AISC 360 G2-1)
+                const Vn_solid = 0.6 * Fy * Aw_solid * Cv_solid / 1000;  // kN
+                
+                // 설계 전단 강도
+                const phiVn_solid = phi_v * Vn_solid;  // kN
+                
+                // 4.3 전단 강도 판정
+                const shear_solid_ok = Vu_end <= phiVn_solid;
+                const shear_solid_UR = Vu_end / phiVn_solid;  // 사용률
+                
+                // 전단 항복 여부 판정
+                const shear_yielding = h_tw_solid <= h_tw_limit_solid;
+                const shear_buckling = h_tw_solid > h_tw_limit_solid;
+                const shear_buckling_elastic = h_tw_solid > h_tw_limit_elastic;
+                
+                // ===== 5. 개구부 위치 제한 검토 (Geometric Limits) =====
+                // AISC Design Guide 31 권장사항
+                
+                // 5.1 개구부 높이 검토: 0.5h ≤ ho ≤ 0.75h
+                const h_total = d_castellated / 1000;  // m (전체 보 높이)
+                const ho_min_limit = 0.5 * h_total;  // m
+                const ho_max_limit = 0.75 * h_total;  // m
+                const ho_geometric_ok = ho >= ho_min_limit && ho <= ho_max_limit;
+                
+                // 5.2 Web Post 폭 검토: e ≥ 0.25ho
+                const e_min_limit = 0.25 * ho * 1000;  // mm (ho는 m 단위이므로 mm로 변환)
+                const e_geometric_ok = e >= e_min_limit;
+                
+                // 5.3 지점부 개구부 이격거리 검토: ≥ 1.5h
+                const endPostDistance_min_limit = 1.5 * h_total;  // m
+                const endPostDistance_geometric_ok = endPostDistance >= endPostDistance_min_limit;
+                
+                // 종합 판정
+                const geometric_limits_ok = ho_geometric_ok && e_geometric_ok && endPostDistance_geometric_ok;
+                
+                // 1.3 Vierendeel Bending 검토 (DG31)
+                // 지배 개구부에서의 Vierendeel 거동 검토
+                const V_tee = govOpening.V;  // kN (개구부 중심의 전단력)
+                const M_tee = govOpening.Mtee;  // kN·m (Tee section 모멘트)
+                
+                // Tee section 치수
+                const h_tee_web = ho * 1000;  // mm (Tee 웹 높이)
+                const h_tee_total = h_tee_web + tf;  // mm (Tee 전체 높이)
+                const A_tee = bf * tf + h_tee_web * tw;  // mm² (Tee 단면적)
+                
+                // Tee section 단면2차모멘트 (개구부 중심 기준)
+                const Ix_tee = (bf * Math.pow(tf, 3)) / 12 + bf * tf * Math.pow(h_tee_web + tf/2, 2) + (tw * Math.pow(h_tee_web, 3)) / 12;  // mm⁴
+                const Sx_tee = Ix_tee / (h_tee_total / 2);  // mm³
+                
+                // Tee section 휨강도 (AISC 360 F2, 단순화)
+                // 소성 단면계수 근사
+                const Zx_tee_approx = bf * tf * (h_tee_web + tf/2) + tw * Math.pow(h_tee_web, 2) / 4;  // mm³
+                const Mp_tee = Zx_tee_approx * Fy / 1e6;  // kN·m
+                const phiMn_tee = 0.9 * Mp_tee;  // kN·m
+                
+                // Tee section 전단강도
+                const Aw_tee = h_tee_web * tw;  // mm² (Tee 웹 전단 면적)
+                const Vn_tee = 0.6 * Fy * Aw_tee / 1000;  // kN
+                const phiVn_tee = phi_v * Vn_tee;  // kN
+                
+                // Vierendeel Bending 판정
+                const vierendeel_flexural_ok = M_tee <= phiMn_tee;
+                const vierendeel_flexural_UR = M_tee / phiMn_tee;
+                const vierendeel_shear_ok = V_tee <= phiVn_tee;
+                const vierendeel_shear_UR = V_tee / phiVn_tee;
+                const vierendeel_ok = vierendeel_flexural_ok && vierendeel_shear_ok;
+                
                 // Weld design
                 const Fexx = 490.0;  // MPa
                 const phi_w = 0.75;
@@ -1031,6 +1375,7 @@
                     self_w_kNm: self_w_kNm,  // kN/m
                     wu: wu,
                     Fy: Fy,
+                    Es: Es,  // 탄성계수
                     steelGrade: steelGrade,
                     dc: dc,
                     bf: bf,
@@ -1051,7 +1396,7 @@
                     Vrh: Vrh,
                     webPostPair: webPostPair,
                     Mrh: Mrh,
-                    Mp: Mp,
+                    Mp: Mp_webpost,
                     etw: etw,
                     ratio: ratio,
                     Mocr: Mocr,
@@ -1060,6 +1405,119 @@
                     w_req: w_req,
                     w_final: w_final,
                     ts: ts,
+                    // 전단강도 및 Vierendeel 거동검토
+                    Vu_max: Vu_max,
+                    Aw: Aw,
+                    h_tw: h_tw,
+                    Cv: Cv,
+                    Vn: Vn,
+                    phiVn: phiVn,
+                    shear_global_ok: shear_global_ok,
+                    shear_global_UR: shear_global_UR,
+                    Aw_webpost: Aw_webpost,
+                    Vn_webpost: Vn_webpost,
+                    phiVn_webpost: phiVn_webpost,
+                    shear_webpost_ok: shear_webpost_ok,
+                    shear_webpost_UR: shear_webpost_UR,
+                    V_tee: V_tee,
+                    M_tee: M_tee,
+                    h_tee_web: h_tee_web,
+                    h_tee_total: h_tee_total,
+                    A_tee: A_tee,
+                    Ix_tee: Ix_tee,
+                    Sx_tee: Sx_tee,
+                    Zx_tee_approx: Zx_tee_approx,
+                    Mp_tee: Mp_tee,
+                    phiMn_tee: phiMn_tee,
+                    Aw_tee: Aw_tee,
+                    Vn_tee: Vn_tee,
+                    phiVn_tee: phiVn_tee,
+                    vierendeel_flexural_ok: vierendeel_flexural_ok,
+                    vierendeel_flexural_UR: vierendeel_flexural_UR,
+                    vierendeel_shear_ok: vierendeel_shear_ok,
+                    vierendeel_shear_UR: vierendeel_shear_UR,
+                    vierendeel_ok: vierendeel_ok,
+                    // 전단파괴모드 검토 (Web Post Failure)
+                    webpost_shear_failure: webpost_shear_failure,
+                    webpost_buckling_failure: webpost_buckling_failure,
+                    webpost_failure_mode: webpost_failure_mode,
+                    webpost_failure_mode_kr: webpost_failure_mode_kr,
+                    webpost_failure_ok: webpost_failure_ok,
+                    webpost_shear_UR: webpost_shear_UR,
+                    webpost_buckling_UR: webpost_buckling_UR,
+                    webpost_max_UR: webpost_max_UR,
+                    etw_ratio: etw_ratio,
+                    etw_limit: etw_limit,
+                    etw_ok: etw_ok,
+                    ho_e_ratio: ho_e_ratio,
+                    ho_e_limit: ho_e_limit,
+                    ho_e_ok: ho_e_ok,
+                    // 글로벌 휨강도 검토
+                    M_opening: M_opening,
+                    M_solid: M_solid,
+                    M_max: M_max,
+                    governing_section: governing_section,
+                    lambda_f: lambda_f,
+                    lambda_pf: lambda_pf,
+                    lambda_rf: lambda_rf,
+                    flange_compact: flange_compact,
+                    flange_noncompact: flange_noncompact,
+                    flange_slender: flange_slender,
+                    lambda_w: lambda_w,
+                    lambda_pw: lambda_pw,
+                    lambda_rw: lambda_rw,
+                    web_compact: web_compact,
+                    web_noncompact: web_noncompact,
+                    web_slender: web_slender,
+                    section_class: section_class,
+                    rts: rts,
+                    ho_flexural: ho_flexural,
+                    J: J,
+                    Cw: Cw,
+                    Lp: Lp,
+                    Lr: Lr,
+                    Lb: Lb,
+                    LTB_case: LTB_case,
+                    Zx_castellated: Zx_castellated,
+                    Mp_flexural: Mp_flexural,
+                    Mn: Mn,
+                    phi_b: phi_b,
+                    phiMn: phiMn,
+                    Mu: Mu,
+                    flexural_ok: flexural_ok,
+                    flexural_UR: flexural_UR,
+                    // 전단 항복 및 전단 좌굴 (Gross Shear Strength)
+                    firstOpeningX: firstOpeningX,
+                    lastOpeningX: lastOpeningX,
+                    endPostDistance: endPostDistance,
+                    endPostDistance_mm: endPostDistance_mm,
+                    minEndPostDistance: minEndPostDistance,
+                    endPostDistance_ok: endPostDistance_ok,
+                    Aw_solid: Aw_solid,
+                    Vu_end: Vu_end,
+                    h_tw_solid: h_tw_solid,
+                    kv_solid: kv_solid,
+                    h_tw_limit_solid: h_tw_limit_solid,
+                    h_tw_limit_elastic: h_tw_limit_elastic,
+                    Cv_solid: Cv_solid,
+                    Vn_solid: Vn_solid,
+                    phiVn_solid: phiVn_solid,
+                    shear_solid_ok: shear_solid_ok,
+                    shear_solid_UR: shear_solid_UR,
+                    shear_yielding: shear_yielding,
+                    shear_buckling: shear_buckling,
+                    shear_buckling_elastic: shear_buckling_elastic,
+                    phi_v: phi_v,  // 저감계수 (전단강도)
+                    // 개구부 위치 제한 검토 (Geometric Limits)
+                    h_total: h_total,
+                    ho_min_limit: ho_min_limit,
+                    ho_max_limit: ho_max_limit,
+                    ho_geometric_ok: ho_geometric_ok,
+                    e_min_limit: e_min_limit,
+                    e_geometric_ok: e_geometric_ok,
+                    endPostDistance_min_limit: endPostDistance_min_limit,
+                    endPostDistance_geometric_ok: endPostDistance_geometric_ok,
+                    geometric_limits_ok: geometric_limits_ok,
                     // Construction stage results
                     qConst: qConst,
                     w_DL_construction: w_DL_construction,
@@ -1133,10 +1591,882 @@
                 `;
             });
 
+            // #region agent log - Debug NG display
+            fetch('http://127.0.0.1:7242/ingest/f6b33b86-5eb3-41dd-83f7-9e0a0382507b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'castellated-beam-calculator.html:1108',message:'displayResults called',data:{shear_webpost_ok:results.shear_webpost_ok,buckling_ok:results.buckling_ok,webpost_failure_ok:results.webpost_failure_ok},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+            // #endregion
+            
             container.innerHTML = `
-                <!-- 1. 입력 조건 -->
+                <!-- 1. 전단강도 및 Vierendeel 거동검토 -->
                 <div class="result-section">
-                    <div class="result-section-title">1. 입력 조건</div>
+                    <div class="result-section-title" style="font-size: 18px; font-weight: 700; color: #1e3a5f; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px solid #3b82f6;">1. 전단강도 및 Vierendeel 거동검토</div>
+                    
+                    <!-- 1.1 전체 전단 강도 검토 -->
+                    <div style="margin-bottom: 20px;">
+                        <h4 style="font-size: 14px; font-weight: 600; color: #1e3a5f; margin-bottom: 10px;">1.1 전체 전단 강도 검토 (AISC 360 Ch. G)</h4>
+                        <div style="font-size: 11px; color: #64748b; margin-bottom: 10px; padding: 8px; background: #f8fafc; border-radius: 4px; border-left: 3px solid #3b82f6;">
+                            <strong>검토 내용:</strong> Castellated beam의 전체 전단 강도를 검토합니다. (AISC 360 Ch. G)<br>
+                            <strong>계산식:</strong> V<sub>n</sub> = 0.6F<sub>y</sub>A<sub>w</sub>C<sub>v</sub>, 판정: V<sub>u</sub> ≤ φV<sub>n</sub> (φ = 0.90)
+                        </div>
+                        <table class="result-table">
+                            <tr>
+                                <th>항목</th>
+                                <th>값</th>
+                                <th>단위</th>
+                            </tr>
+                            <tr>
+                                <td>최대 전단력 (V<sub>u</sub>)</td>
+                                <td class="result-value">${formatNumber(results.Vu_max, 2)}</td>
+                                <td>kN</td>
+                            </tr>
+                            <tr>
+                                <td>전단 면적 (A<sub>w</sub>)</td>
+                                <td class="result-value">${formatNumber(results.Aw, 1)}</td>
+                                <td>mm²</td>
+                            </tr>
+                            <tr>
+                                <td>h/t<sub>w</sub></td>
+                                <td class="result-value">${formatNumber(results.h_tw, 2)}</td>
+                                <td>-</td>
+                            </tr>
+                            <tr>
+                                <td>전단 좌굴 계수 (C<sub>v</sub>)</td>
+                                <td class="result-value">${formatNumber(results.Cv, 3)}</td>
+                                <td>-</td>
+                            </tr>
+                            <tr>
+                                <td>공칭 전단 강도 (V<sub>n</sub>)</td>
+                                <td class="result-value">${formatNumber(results.Vn, 2)}</td>
+                                <td>kN</td>
+                            </tr>
+                            <tr>
+                                <td>설계 전단 강도 (φV<sub>n</sub>)</td>
+                                <td class="result-value" style="font-weight: 600;">${formatNumber(results.phiVn, 2)}</td>
+                                <td>kN</td>
+                            </tr>
+                            <tr>
+                                <td>사용률</td>
+                                <td class="result-value ${results.shear_global_ok ? 'status-ok' : 'status-ng'}">${formatNumber(results.shear_global_UR, 3)}</td>
+                                <td>-</td>
+                            </tr>
+                            <tr>
+                                <td>판정</td>
+                                <td class="result-value ${results.shear_global_ok ? 'status-ok' : 'status-ng'}" style="font-weight: 600;">
+                                    ${results.shear_global_ok ? '✅ 만족 (V<sub>u</sub> ≤ φV<sub>n</sub>)' : '❌ 불만족 (V<sub>u</sub> > φV<sub>n</sub>)'}
+                                </td>
+                                <td>-</td>
+                            </tr>
+                        </table>
+                    </div>
+                    
+                    <!-- 1.2 Web Post 전단 강도 검토 -->
+                    <div style="margin-bottom: 20px;">
+                        <h4 style="font-size: 14px; font-weight: 600; color: #1e3a5f; margin-bottom: 10px;">1.2 Web Post 전단 강도 검토 (AISC DG31)</h4>
+                        <div style="font-size: 11px; color: #64748b; margin-bottom: 10px; padding: 8px; background: #f8fafc; border-radius: 4px; border-left: 3px solid #3b82f6;">
+                            <strong>검토 내용:</strong> Web Post의 전단 강도를 검토합니다. (AISC DG31)<br>
+                            <strong>계산식:</strong> V<sub>n,webpost</sub> = 0.6F<sub>y</sub>A<sub>w,webpost</sub>, 판정: V<sub>rh</sub> ≤ φV<sub>n,webpost</sub>
+                        </div>
+                        <table class="result-table">
+                            <tr>
+                                <th>항목</th>
+                                <th>값</th>
+                                <th>단위</th>
+                            </tr>
+                            <tr>
+                                <td>Web Post 전단력 (V<sub>rh</sub>)</td>
+                                <td class="result-value">${formatNumber(results.Vrh, 2)}</td>
+                                <td>kN</td>
+                            </tr>
+                            <tr>
+                                <td>Web Post 전단 면적 (A<sub>w,webpost</sub>)</td>
+                                <td class="result-value">${formatNumber(results.Aw_webpost, 1)}</td>
+                                <td>mm²</td>
+                            </tr>
+                            <tr>
+                                <td>공칭 전단 강도 (V<sub>n,webpost</sub>)</td>
+                                <td class="result-value">${formatNumber(results.Vn_webpost, 2)}</td>
+                                <td>kN</td>
+                            </tr>
+                            <tr>
+                                <td>설계 전단 강도 (φV<sub>n,webpost</sub>)</td>
+                                <td class="result-value" style="font-weight: 600;">${formatNumber(results.phiVn_webpost, 2)}</td>
+                                <td>kN</td>
+                            </tr>
+                            <tr>
+                                <td>사용률</td>
+                                <td class="result-value ${results.shear_webpost_ok ? 'status-ok' : 'status-ng'}">${formatNumber(results.shear_webpost_UR, 3)}</td>
+                                <td>-</td>
+                            </tr>
+                            <tr>
+                                <td>판정</td>
+                                <td class="result-value ${results.shear_webpost_ok ? 'status-ok' : 'status-ng'}" style="font-weight: 600;">
+                                    ${results.shear_webpost_ok ? '✅ 만족 (V<sub>rh</sub> ≤ φV<sub>n,webpost</sub>)' : '❌ 불만족 (V<sub>rh</sub> > φV<sub>n,webpost</sub>)'}
+                                </td>
+                                <td>-</td>
+                            </tr>
+                        </table>
+                    </div>
+                    
+                    <!-- 1.3 Vierendeel Bending 검토 -->
+                    <div style="margin-bottom: 20px;">
+                        <h4 style="font-size: 14px; font-weight: 600; color: #1e3a5f; margin-bottom: 10px;">1.3 Vierendeel Bending 검토 (AISC DG31)</h4>
+                        <div style="font-size: 11px; color: #64748b; margin-bottom: 10px; padding: 8px; background: #f8fafc; border-radius: 4px; border-left: 3px solid #3b82f6;">
+                            <strong>검토 내용:</strong> Opening 상·하부 Tee section의 Vierendeel 거동을 검토합니다. (AISC DG31 Section 3.1)<br>
+                            <strong>검토 항목:</strong> Tee section의 휨강도 및 전단강도 검토
+                        </div>
+                        
+                        <h5 style="font-size: 13px; font-weight: 600; color: #475569; margin-top: 15px; margin-bottom: 8px;">Tee Section 휨강도 검토</h5>
+                        <table class="result-table">
+                            <tr>
+                                <th>항목</th>
+                                <th>값</th>
+                                <th>단위</th>
+                            </tr>
+                            <tr>
+                                <td>Tee 모멘트 (M<sub>tee</sub>)</td>
+                                <td class="result-value">${formatNumber(results.M_tee, 2)}</td>
+                                <td>kN·m</td>
+                            </tr>
+                            <tr>
+                                <td>Tee 단면적 (A<sub>tee</sub>)</td>
+                                <td class="result-value">${formatNumber(results.A_tee, 1)}</td>
+                                <td>mm²</td>
+                            </tr>
+                            <tr>
+                                <td>Tee 단면2차모멘트 (I<sub>x,tee</sub>)</td>
+                                <td class="result-value">${formatNumber(results.Ix_tee / 1e6, 2)}</td>
+                                <td>×10⁶ mm⁴</td>
+                            </tr>
+                            <tr>
+                                <td>Tee 단면계수 (S<sub>x,tee</sub>)</td>
+                                <td class="result-value">${formatNumber(results.Sx_tee / 1e3, 1)}</td>
+                                <td>×10³ mm³</td>
+                            </tr>
+                            <tr>
+                                <td>소성 단면계수 (Z<sub>x,tee</sub>)</td>
+                                <td class="result-value">${formatNumber(results.Zx_tee_approx / 1e3, 1)}</td>
+                                <td>×10³ mm³</td>
+                            </tr>
+                            <tr>
+                                <td>소성 모멘트 (M<sub>p,tee</sub>)</td>
+                                <td class="result-value">${formatNumber(results.Mp_tee, 2)}</td>
+                                <td>kN·m</td>
+                            </tr>
+                            <tr>
+                                <td>설계 휨강도 (φM<sub>n,tee</sub>)</td>
+                                <td class="result-value" style="font-weight: 600;">${formatNumber(results.phiMn_tee, 2)}</td>
+                                <td>kN·m</td>
+                            </tr>
+                            <tr>
+                                <td>사용률</td>
+                                <td class="result-value ${results.vierendeel_flexural_ok ? 'status-ok' : 'status-ng'}">${formatNumber(results.vierendeel_flexural_UR, 3)}</td>
+                                <td>-</td>
+                            </tr>
+                            <tr>
+                                <td>판정</td>
+                                <td class="result-value ${results.vierendeel_flexural_ok ? 'status-ok' : 'status-ng'}" style="font-weight: 600;">
+                                    ${results.vierendeel_flexural_ok ? '✅ 만족 (M<sub>tee</sub> ≤ φM<sub>n,tee</sub>)' : '❌ 불만족 (M<sub>tee</sub> > φM<sub>n,tee</sub>)'}
+                                </td>
+                                <td>-</td>
+                            </tr>
+                        </table>
+                        
+                        <h5 style="font-size: 13px; font-weight: 600; color: #475569; margin-top: 15px; margin-bottom: 8px;">Tee Section 전단강도 검토</h5>
+                        <table class="result-table">
+                            <tr>
+                                <th>항목</th>
+                                <th>값</th>
+                                <th>단위</th>
+                            </tr>
+                            <tr>
+                                <td>Tee 전단력 (V<sub>tee</sub>)</td>
+                                <td class="result-value">${formatNumber(results.V_tee, 2)}</td>
+                                <td>kN</td>
+                            </tr>
+                            <tr>
+                                <td>Tee 웹 전단 면적 (A<sub>w,tee</sub>)</td>
+                                <td class="result-value">${formatNumber(results.Aw_tee, 1)}</td>
+                                <td>mm²</td>
+                            </tr>
+                            <tr>
+                                <td>공칭 전단 강도 (V<sub>n,tee</sub>)</td>
+                                <td class="result-value">${formatNumber(results.Vn_tee, 2)}</td>
+                                <td>kN</td>
+                            </tr>
+                            <tr>
+                                <td>설계 전단 강도 (φV<sub>n,tee</sub>)</td>
+                                <td class="result-value" style="font-weight: 600;">${formatNumber(results.phiVn_tee, 2)}</td>
+                                <td>kN</td>
+                            </tr>
+                            <tr>
+                                <td>사용률</td>
+                                <td class="result-value ${results.vierendeel_shear_ok ? 'status-ok' : 'status-ng'}">${formatNumber(results.vierendeel_shear_UR, 3)}</td>
+                                <td>-</td>
+                            </tr>
+                            <tr>
+                                <td>판정</td>
+                                <td class="result-value ${results.vierendeel_shear_ok ? 'status-ok' : 'status-ng'}" style="font-weight: 600;">
+                                    ${results.vierendeel_shear_ok ? '✅ 만족 (V<sub>tee</sub> ≤ φV<sub>n,tee</sub>)' : '❌ 불만족 (V<sub>tee</sub> > φV<sub>n,tee</sub>)'}
+                                </td>
+                                <td>-</td>
+                            </tr>
+                        </table>
+                        
+                        <div style="margin-top: 15px; padding: 10px; background: ${results.vierendeel_ok ? '#d1fae5' : '#fee2e2'}; border-radius: 6px; border: 1px solid ${results.vierendeel_ok ? '#10b981' : '#ef4444'};">
+                            <div style="font-size: 12px; font-weight: 600; color: ${results.vierendeel_ok ? '#065f46' : '#991b1b'};">
+                                ${results.vierendeel_ok ? '✅ Vierendeel Bending 검토 만족' : '❌ Vierendeel Bending 검토 불만족'}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 2. 전단파괴모드 검토 (Web Post Failure) -->
+                <div class="result-section">
+                    <div class="result-section-title" style="font-size: 18px; font-weight: 700; color: #1e3a5f; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px solid #3b82f6;">2. 전단파괴모드 검토 (Web Post Failure)</div>
+                    
+                    <div style="font-size: 11px; color: #64748b; margin-bottom: 15px; padding: 8px; background: #f8fafc; border-radius: 4px; border-left: 3px solid #3b82f6;">
+                        <strong>검토 내용:</strong> Web Post의 전단 파괴 모드를 분석하고 검토합니다. (AISC DG31)<br>
+                        <strong>파괴 모드:</strong> 1) 전단 강도 파괴 (V<sub>rh</sub> > φV<sub>n,webpost</sub>), 2) 좌굴 파괴 (M<sub>rh</sub> > φM<sub>ocr</sub>)
+                    </div>
+                    
+                    <!-- 2.1 Web Post 전단 파괴 모드 분석 -->
+                    <div style="margin-bottom: 20px;">
+                        <h4 style="font-size: 14px; font-weight: 600; color: #1e3a5f; margin-bottom: 10px;">2.1 Web Post 전단 파괴 모드 분석</h4>
+                        <div style="font-size: 11px; color: #64748b; margin-bottom: 10px; padding: 8px; background: #f8fafc; border-radius: 4px; border-left: 3px solid #3b82f6;">
+                            <strong>검토 내용:</strong> Web Post의 전단 강도 파괴와 좌굴 파괴를 각각 검토하여 지배 파괴 모드를 결정합니다. (AISC DG31)
+                        </div>
+                        
+                        <table class="result-table">
+                            <tr>
+                                <th>검토 항목</th>
+                                <th>소요값</th>
+                                <th>설계값</th>
+                                <th>사용률</th>
+                                <th>판정</th>
+                            </tr>
+                            <tr>
+                                <td>전단 강도 파괴</td>
+                                <td class="result-value">V<sub>rh</sub> = ${formatNumber(results.Vrh, 2)}</td>
+                                <td class="result-value">φV<sub>n,webpost</sub> = ${formatNumber(results.phiVn_webpost, 2)}</td>
+                                <td class="result-value ${results.shear_webpost_ok ? 'status-ok' : 'status-ng'}">${formatNumber(results.webpost_shear_UR, 3)}</td>
+                                <td class="result-value ${results.shear_webpost_ok ? 'status-ok' : 'status-ng'}" style="font-weight: 600;">
+                                    ${results.shear_webpost_ok ? '✅ OK' : '❌ NG'}
+                                    ${!results.shear_webpost_ok ? '<div style="font-size: 10px; color: #ef4444; margin-top: 4px;">Web Post 보강필요</div>' : ''}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>좌굴 파괴</td>
+                                <td class="result-value">M<sub>rh</sub> = ${formatNumber(results.Mrh, 2)}</td>
+                                <td class="result-value">φM<sub>ocr</sub> = ${formatNumber(results.phiMocr, 2)}</td>
+                                <td class="result-value ${results.buckling_ok ? 'status-ok' : 'status-ng'}">${formatNumber(results.webpost_buckling_UR, 3)}</td>
+                                <td class="result-value ${results.buckling_ok ? 'status-ok' : 'status-ng'}" style="font-weight: 600;">
+                                    ${results.buckling_ok ? '✅ OK' : '❌ NG'}
+                                    ${!results.buckling_ok ? '<div style="font-size: 10px; color: #ef4444; margin-top: 4px;">Web Post 보강필요</div>' : ''}
+                                </td>
+                            </tr>
+                        </table>
+                        
+                        <div style="margin-top: 15px; padding: 15px; background: ${results.webpost_failure_ok ? '#d1fae5' : '#fee2e2'}; border-radius: 8px; border: 2px solid ${results.webpost_failure_ok ? '#10b981' : '#ef4444'};">
+                            <div style="font-size: 14px; font-weight: 700; color: ${results.webpost_failure_ok ? '#065f46' : '#991b1b'}; margin-bottom: 10px; text-align: center;">
+                                ${results.webpost_failure_ok ? '✅ Web Post 안전' : '❌ Web Post 파괴'}
+                            </div>
+                            <div style="font-size: 12px; color: ${results.webpost_failure_ok ? '#065f46' : '#991b1b'}; text-align: center;">
+                                지배 파괴 모드: <strong>${results.webpost_failure_mode_kr}</strong>
+                            </div>
+                            <div style="font-size: 11px; color: ${results.webpost_failure_ok ? '#065f46' : '#991b1b'}; text-align: center; margin-top: 8px;">
+                                최대 사용률: ${formatNumber(results.webpost_max_UR, 3)}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 2.2 Web Post 치수 검토 -->
+                    <div style="margin-bottom: 20px;">
+                        <h4 style="font-size: 14px; font-weight: 600; color: #1e3a5f; margin-bottom: 10px;">2.2 Web Post 치수 검토 (AISC DG31 권장사항)</h4>
+                        <div style="font-size: 11px; color: #64748b; margin-bottom: 10px; padding: 8px; background: #f8fafc; border-radius: 4px; border-left: 3px solid #3b82f6;">
+                            <strong>검토 내용:</strong> Web Post의 치수 비율을 검토하여 적정성을 확인합니다. (AISC DG31)<br>
+                            <strong>권장 기준:</strong> e/t<sub>w</sub> ≤ 20, h<sub>o</sub>/e ≤ 1.5
+                        </div>
+                        
+                        <table class="result-table">
+                            <tr>
+                                <th>검토 항목</th>
+                                <th>계산값</th>
+                                <th>권장 기준</th>
+                                <th>판정</th>
+                            </tr>
+                            <tr>
+                                <td>e/t<sub>w</sub> 비율</td>
+                                <td class="result-value">${formatNumber(results.etw_ratio, 2)}</td>
+                                <td class="result-value">≤ ${formatNumber(results.etw_limit, 1)}</td>
+                                <td class="result-value ${results.etw_ok ? 'status-ok' : 'status-ng'}" style="font-weight: 600;">
+                                    ${results.etw_ok ? '✅ OK' : '❌ NG'}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>h<sub>o</sub>/e 비율</td>
+                                <td class="result-value">${formatNumber(results.ho_e_ratio, 2)}</td>
+                                <td class="result-value">≤ ${formatNumber(results.ho_e_limit, 1)}</td>
+                                <td class="result-value ${results.ho_e_ok ? 'status-ok' : 'status-ng'}" style="font-weight: 600;">
+                                    ${results.ho_e_ok ? '✅ OK' : '❌ NG'}
+                                </td>
+                            </tr>
+                        </table>
+                        
+                        <div style="margin-top: 10px; padding: 10px; background: #f1f5f9; border-radius: 4px;">
+                            <div style="font-size: 12px; color: #64748b; line-height: 1.6;">
+                                <strong>참고:</strong> Web Post 치수 비율이 권장 기준을 초과하면 전단 강도나 좌굴 강도가 저하될 수 있습니다. 필요시 Web Post 폭(e)을 증가시키거나 웹 두께(t<sub>w</sub>)를 증가시켜야 합니다.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 3. 글로벌 휨강도 검토 (Overall Flexural Strength) -->
+                <div class="result-section">
+                    <div class="result-section-title" style="font-size: 18px; font-weight: 700; color: #1e3a5f; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px solid #3b82f6;">3. 글로벌 휨강도 검토 (Overall Flexural Strength)</div>
+                    
+                    <div style="font-size: 11px; color: #64748b; margin-bottom: 15px; padding: 8px; background: #f8fafc; border-radius: 4px; border-left: 3px solid #3b82f6;">
+                        <strong>검토 내용:</strong> Castellated beam의 전체 휨강도를 검토합니다. (AISC 360 Ch. F + DG31)<br>
+                        <strong>검토 항목:</strong> 검토 단면 선정, 단면 분류, 횡비틀림좌굴 검토, 공칭 휨강도 산정, 휨강도 판정
+                    </div>
+                    
+                    <!-- 3.1 검토 단면 선정 -->
+                    <div style="margin-bottom: 20px;">
+                        <h4 style="font-size: 14px; font-weight: 600; color: #1e3a5f; margin-bottom: 10px;">3.1 검토 단면 선정</h4>
+                        <div style="font-size: 11px; color: #64748b; margin-bottom: 10px; padding: 8px; background: #f8fafc; border-radius: 4px; border-left: 3px solid #3b82f6;">
+                            <strong>검토 내용:</strong> Opening 구간과 Solid web 구간 중 더 큰 모멘트를 받는 지배 구간을 선정합니다. (AISC 360 Ch. F)
+                        </div>
+                        <table class="result-table">
+                            <tr>
+                                <th>구간</th>
+                                <th>모멘트</th>
+                                <th>단위</th>
+                            </tr>
+                            <tr>
+                                <td>Opening 구간 (지배 개구부)</td>
+                                <td class="result-value">${formatNumber(results.M_opening, 2)}</td>
+                                <td>kN·m</td>
+                            </tr>
+                            <tr>
+                                <td>Solid web 구간 (최대 모멘트)</td>
+                                <td class="result-value">${formatNumber(results.M_solid, 2)}</td>
+                                <td>kN·m</td>
+                            </tr>
+                            <tr>
+                                <td style="font-weight: 600;">지배 구간</td>
+                                <td class="result-value" style="font-weight: 600; color: #3b82f6;">${results.governing_section}</td>
+                                <td>-</td>
+                            </tr>
+                            <tr>
+                                <td style="font-weight: 600;">최대 모멘트 (M<sub>max</sub>)</td>
+                                <td class="result-value" style="font-weight: 600;">${formatNumber(results.M_max, 2)}</td>
+                                <td>kN·m</td>
+                            </tr>
+                        </table>
+                    </div>
+                    
+                    <!-- 3.2 단면 분류 -->
+                    <div style="margin-bottom: 20px;">
+                        <h4 style="font-size: 14px; font-weight: 600; color: #1e3a5f; margin-bottom: 10px;">3.2 단면 분류 (AISC 360 Table B4.1)</h4>
+                        <div style="font-size: 11px; color: #64748b; margin-bottom: 10px; padding: 8px; background: #f8fafc; border-radius: 4px; border-left: 3px solid #3b82f6;">
+                            <strong>검토 내용:</strong> 플랜지 및 웹의 slenderness를 계산하여 단면을 Compact, Noncompact, Slender로 분류합니다. (AISC 360 Table B4.1)
+                        </div>
+                        
+                        <h5 style="font-size: 13px; font-weight: 600; color: #475569; margin-top: 15px; margin-bottom: 8px;">플랜지 Slenderness</h5>
+                        <table class="result-table">
+                            <tr>
+                                <th>항목</th>
+                                <th>값</th>
+                                <th>기준</th>
+                                <th>판정</th>
+                            </tr>
+                            <tr>
+                                <td>λ<sub>f</sub> = b<sub>f</sub>/(2t<sub>f</sub>)</td>
+                                <td class="result-value">${formatNumber(results.lambda_f, 2)}</td>
+                                <td class="result-value">-</td>
+                                <td class="result-value">-</td>
+                            </tr>
+                            <tr>
+                                <td>λ<sub>pf</sub> = 0.38√(E/F<sub>y</sub>)</td>
+                                <td class="result-value">${formatNumber(results.lambda_pf, 2)}</td>
+                                <td class="result-value">Compact limit</td>
+                                <td class="result-value">-</td>
+                            </tr>
+                            <tr>
+                                <td>λ<sub>rf</sub> = 1.0√(E/F<sub>y</sub>)</td>
+                                <td class="result-value">${formatNumber(results.lambda_rf, 2)}</td>
+                                <td class="result-value">Noncompact limit</td>
+                                <td class="result-value">-</td>
+                            </tr>
+                            <tr>
+                                <td>플랜지 분류</td>
+                                <td class="result-value ${results.flange_compact ? 'status-ok' : (results.flange_noncompact ? '' : 'status-ng')}" style="font-weight: 600;">
+                                    ${results.flange_compact ? '✅ Compact' : (results.flange_noncompact ? '⚠️ Noncompact' : '❌ Slender')}
+                                </td>
+                                <td class="result-value">-</td>
+                                <td class="result-value">-</td>
+                            </tr>
+                        </table>
+                        
+                        <h5 style="font-size: 13px; font-weight: 600; color: #475569; margin-top: 15px; margin-bottom: 8px;">웹 Slenderness</h5>
+                        <table class="result-table">
+                            <tr>
+                                <th>항목</th>
+                                <th>값</th>
+                                <th>기준</th>
+                                <th>판정</th>
+                            </tr>
+                            <tr>
+                                <td>λ<sub>w</sub> = h<sub>w</sub>/t<sub>w</sub></td>
+                                <td class="result-value">${formatNumber(results.lambda_w, 2)}</td>
+                                <td class="result-value">-</td>
+                                <td class="result-value">-</td>
+                            </tr>
+                            <tr>
+                                <td>λ<sub>pw</sub> = 3.76√(E/F<sub>y</sub>)</td>
+                                <td class="result-value">${formatNumber(results.lambda_pw, 2)}</td>
+                                <td class="result-value">Compact limit</td>
+                                <td class="result-value">-</td>
+                            </tr>
+                            <tr>
+                                <td>λ<sub>rw</sub> = 5.70√(E/F<sub>y</sub>)</td>
+                                <td class="result-value">${formatNumber(results.lambda_rw, 2)}</td>
+                                <td class="result-value">Noncompact limit</td>
+                                <td class="result-value">-</td>
+                            </tr>
+                            <tr>
+                                <td>웹 분류</td>
+                                <td class="result-value ${results.web_compact ? 'status-ok' : (results.web_noncompact ? '' : 'status-ng')}" style="font-weight: 600;">
+                                    ${results.web_compact ? '✅ Compact' : (results.web_noncompact ? '⚠️ Noncompact' : '❌ Slender')}
+                                </td>
+                                <td class="result-value">-</td>
+                                <td class="result-value">-</td>
+                            </tr>
+                        </table>
+                        
+                        <div style="margin-top: 15px; padding: 10px; background: ${results.section_class === 'Compact' ? '#d1fae5' : (results.section_class === 'Noncompact' ? '#fef3c7' : '#fee2e2')}; border-radius: 6px; border: 1px solid ${results.section_class === 'Compact' ? '#10b981' : (results.section_class === 'Noncompact' ? '#f59e0b' : '#ef4444')};">
+                            <div style="font-size: 12px; font-weight: 600; color: ${results.section_class === 'Compact' ? '#065f46' : (results.section_class === 'Noncompact' ? '#92400e' : '#991b1b')}; text-align: center;">
+                                단면 분류: <strong>${results.section_class}</strong>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 3.3 횡비틀림좌굴 검토 -->
+                    <div style="margin-bottom: 20px;">
+                        <h4 style="font-size: 14px; font-weight: 600; color: #1e3a5f; margin-bottom: 10px;">3.3 횡비틀림좌굴 검토 (AISC 360 F2)</h4>
+                        <div style="font-size: 11px; color: #64748b; margin-bottom: 10px; padding: 8px; background: #f8fafc; border-radius: 4px; border-left: 3px solid #3b82f6;">
+                            <strong>검토 내용:</strong> 횡비틀림좌굴(LTB) 길이 L<sub>p</sub>, L<sub>r</sub>을 산정하고 L<sub>b</sub>와 비교하여 LTB case를 결정합니다. (AISC 360 F2)
+                        </div>
+                        <table class="result-table">
+                            <tr>
+                                <th>항목</th>
+                                <th>값</th>
+                                <th>단위</th>
+                            </tr>
+                            <tr>
+                                <td>r<sub>ts</sub> (effective radius of gyration)</td>
+                                <td class="result-value">${formatNumber(results.rts, 1)}</td>
+                                <td>mm</td>
+                            </tr>
+                            <tr>
+                                <td>h<sub>o</sub> (flange center-to-center)</td>
+                                <td class="result-value">${formatNumber(results.ho_flexural, 1)}</td>
+                                <td>mm</td>
+                            </tr>
+                            <tr>
+                                <td>J (torsional constant)</td>
+                                <td class="result-value">${formatNumber(results.J / 1e6, 2)}</td>
+                                <td>×10⁶ mm⁴</td>
+                            </tr>
+                            <tr>
+                                <td>C<sub>w</sub> (warping constant)</td>
+                                <td class="result-value">${formatNumber(results.Cw / 1e12, 2)}</td>
+                                <td>×10¹² mm⁶</td>
+                            </tr>
+                            <tr>
+                                <td>L<sub>p</sub> (plastic LTB length)</td>
+                                <td class="result-value">${formatNumber(results.Lp, 2)}</td>
+                                <td>m</td>
+                            </tr>
+                            <tr>
+                                <td>L<sub>r</sub> (elastic LTB length)</td>
+                                <td class="result-value">${formatNumber(results.Lr, 2)}</td>
+                                <td>m</td>
+                            </tr>
+                            <tr>
+                                <td>L<sub>b</sub> (unbraced length)</td>
+                                <td class="result-value">${formatNumber(results.Lb, 2)}</td>
+                                <td>m</td>
+                            </tr>
+                            <tr>
+                                <td style="font-weight: 600;">LTB Case</td>
+                                <td class="result-value" style="font-weight: 600; color: #3b82f6;">${results.LTB_case}</td>
+                                <td>-</td>
+                            </tr>
+                        </table>
+                    </div>
+                    
+                    <!-- 3.4 공칭 휨강도 산정 -->
+                    <div style="margin-bottom: 20px;">
+                        <h4 style="font-size: 14px; font-weight: 600; color: #1e3a5f; margin-bottom: 10px;">3.4 공칭 휨강도 산정 (AISC 360 F2)</h4>
+                        <div style="font-size: 11px; color: #64748b; margin-bottom: 10px; padding: 8px; background: #f8fafc; border-radius: 4px; border-left: 3px solid #3b82f6;">
+                            <strong>검토 내용:</strong> LTB case에 따라 공칭 휨강도 M<sub>n</sub>을 산정합니다. (AISC 360 F2)<br>
+                            <strong>계산식:</strong> LTB 비지배: M<sub>n</sub> = M<sub>p</sub>, 비탄성 LTB: M<sub>n</sub> = C<sub>b</sub>[M<sub>p</sub> - (M<sub>p</sub> - 0.7F<sub>y</sub>S<sub>x</sub>)((L<sub>b</sub> - L<sub>p</sub>)/(L<sub>r</sub> - L<sub>p</sub>))], 탄성 LTB: M<sub>n</sub> = F<sub>cr</sub>S<sub>x</sub>
+                        </div>
+                        <table class="result-table">
+                            <tr>
+                                <th>항목</th>
+                                <th>값</th>
+                                <th>단위</th>
+                            </tr>
+                            <tr>
+                                <td>Z<sub>x</sub> (소성 단면계수)</td>
+                                <td class="result-value">${formatNumber(results.Zx_castellated / 1e3, 1)}</td>
+                                <td>×10³ mm³</td>
+                            </tr>
+                            <tr>
+                                <td>M<sub>p</sub> (소성 모멘트)</td>
+                                <td class="result-value">${formatNumber(results.Mp_flexural, 2)}</td>
+                                <td>kN·m</td>
+                            </tr>
+                            <tr>
+                                <td>M<sub>n</sub> (공칭 휨강도)</td>
+                                <td class="result-value" style="font-weight: 600;">${formatNumber(results.Mn, 2)}</td>
+                                <td>kN·m</td>
+                            </tr>
+                            <tr>
+                                <td>φ<sub>b</sub> (저감계수)</td>
+                                <td class="result-value">${formatNumber(results.phi_b, 2)}</td>
+                                <td>-</td>
+                            </tr>
+                            <tr>
+                                <td>φ<sub>b</sub>M<sub>n</sub> (설계 휨강도)</td>
+                                <td class="result-value" style="font-weight: 600; color: #3b82f6;">${formatNumber(results.phiMn, 2)}</td>
+                                <td>kN·m</td>
+                            </tr>
+                        </table>
+                    </div>
+                    
+                    <!-- 3.5 휨강도 판정 -->
+                    <div style="margin-bottom: 20px;">
+                        <h4 style="font-size: 14px; font-weight: 600; color: #1e3a5f; margin-bottom: 10px;">3.5 휨강도 판정 (AISC 360 F2)</h4>
+                        <div style="font-size: 11px; color: #64748b; margin-bottom: 10px; padding: 8px; background: #f8fafc; border-radius: 4px; border-left: 3px solid #3b82f6;">
+                            <strong>검토 내용:</strong> 소요 휨모멘트와 설계 휨강도를 비교하여 휨강도를 판정합니다. (AISC 360 F2)<br>
+                            <strong>판정 기준:</strong> M<sub>u</sub> ≤ φ<sub>b</sub>M<sub>n</sub>
+                        </div>
+                        <table class="result-table">
+                            <tr>
+                                <th>항목</th>
+                                <th>값</th>
+                                <th>단위</th>
+                            </tr>
+                            <tr>
+                                <td>소요 휨모멘트 (M<sub>u</sub>)</td>
+                                <td class="result-value">${formatNumber(results.Mu, 2)}</td>
+                                <td>kN·m</td>
+                            </tr>
+                            <tr>
+                                <td>설계 휨강도 (φ<sub>b</sub>M<sub>n</sub>)</td>
+                                <td class="result-value" style="font-weight: 600;">${formatNumber(results.phiMn, 2)}</td>
+                                <td>kN·m</td>
+                            </tr>
+                            <tr>
+                                <td>사용률</td>
+                                <td class="result-value ${results.flexural_ok ? 'status-ok' : 'status-ng'}">${formatNumber(results.flexural_UR, 3)}</td>
+                                <td>-</td>
+                            </tr>
+                            <tr>
+                                <td>판정</td>
+                                <td class="result-value ${results.flexural_ok ? 'status-ok' : 'status-ng'}" style="font-weight: 600;">
+                                    ${results.flexural_ok ? '✅ 만족 (M<sub>u</sub> ≤ φ<sub>b</sub>M<sub>n</sub>)' : '❌ 불만족 (M<sub>u</sub> > φ<sub>b</sub>M<sub>n</sub>)'}
+                                </td>
+                                <td>-</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- 4. 전단 항복 및 전단 좌굴 (Gross Shear Strength) -->
+                <div class="result-section">
+                    <div class="result-section-title" style="font-size: 18px; font-weight: 700; color: #1e3a5f; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px solid #3b82f6;">4. 전단 항복 및 전단 좌굴 (Gross Shear Strength)</div>
+                    
+                    <div style="font-size: 11px; color: #64748b; margin-bottom: 15px; padding: 8px; background: #f8fafc; border-radius: 4px; border-left: 3px solid #3b82f6;">
+                        <strong>검토 내용:</strong> 개구부 없는 Web 부분의 전단 항복 및 전단 좌굴을 검토합니다. (AISC 360 Ch. G)<br>
+                        <strong>주의사항:</strong> 특히 지점부 인접 개구부에 주의해야 합니다. (DG31 권장: 지점부에서 최소 0.5d 이상 이격)
+                    </div>
+                    
+                    <!-- 4.1 지점부 인접 개구부 위치 확인 -->
+                    <div style="margin-bottom: 20px;">
+                        <h4 style="font-size: 14px; font-weight: 600; color: #1e3a5f; margin-bottom: 10px;">4.1 지점부 인접 개구부 위치 확인</h4>
+                        <div style="font-size: 11px; color: #64748b; margin-bottom: 10px; padding: 8px; background: #f8fafc; border-radius: 4px; border-left: 3px solid #3b82f6;">
+                            <strong>검토 내용:</strong> 지점부에서 가장 가까운 개구부까지의 거리를 확인합니다. (DG31 권장: 지점부에서 최소 0.5d 이상 이격)
+                        </div>
+                        <table class="result-table">
+                            <tr>
+                                <th>항목</th>
+                                <th>값</th>
+                                <th>단위</th>
+                            </tr>
+                            <tr>
+                                <td>첫 번째 개구부 위치</td>
+                                <td class="result-value">${formatNumber(results.firstOpeningX, 2)}</td>
+                                <td>m</td>
+                            </tr>
+                            <tr>
+                                <td>마지막 개구부 위치</td>
+                                <td class="result-value">${formatNumber(results.lastOpeningX, 2)}</td>
+                                <td>m</td>
+                            </tr>
+                            <tr>
+                                <td>지점부에서 가장 가까운 개구부까지의 거리</td>
+                                <td class="result-value">${formatNumber(results.endPostDistance_mm, 1)}</td>
+                                <td>mm</td>
+                            </tr>
+                            <tr>
+                                <td>최소 권장 거리 (0.5d)</td>
+                                <td class="result-value">${formatNumber(results.minEndPostDistance * 1000, 1)}</td>
+                                <td>mm</td>
+                            </tr>
+                            <tr>
+                                <td>판정</td>
+                                <td class="result-value ${results.endPostDistance_ok ? 'status-ok' : 'status-ng'}" style="font-weight: 600;">
+                                    ${results.endPostDistance_ok ? '✅ 만족 (거리 ≥ 0.5d)' : '⚠️ 주의 필요 (거리 < 0.5d)'}
+                                </td>
+                                <td>-</td>
+                            </tr>
+                        </table>
+                    </div>
+                    
+                    <!-- 4.2 개구부 없는 Web 부분의 전단 강도 계산 -->
+                    <div style="margin-bottom: 20px;">
+                        <h4 style="font-size: 14px; font-weight: 600; color: #1e3a5f; margin-bottom: 10px;">4.2 개구부 없는 Web 부분의 전단 강도 계산 (AISC 360 Ch. G)</h4>
+                        <div style="font-size: 11px; color: #64748b; margin-bottom: 10px; padding: 8px; background: #f8fafc; border-radius: 4px; border-left: 3px solid #3b82f6;">
+                            <strong>검토 내용:</strong> Solid web 구간의 전단 항복 및 전단 좌굴을 검토합니다. (AISC 360 Ch. G)<br>
+                            <strong>계산식:</strong> V<sub>n</sub> = 0.6F<sub>y</sub>A<sub>w</sub>C<sub>v</sub>, C<sub>v</sub>는 h/t<sub>w</sub> 비율에 따라 결정
+                        </div>
+                        <table class="result-table">
+                            <tr>
+                                <th>항목</th>
+                                <th>값</th>
+                                <th>단위</th>
+                            </tr>
+                            <tr>
+                                <td>전단 면적 (A<sub>w</sub>)</td>
+                                <td class="result-value">${formatNumber(results.Aw_solid, 1)}</td>
+                                <td>mm²</td>
+                            </tr>
+                            <tr>
+                                <td>지점부 전단력 (V<sub>u</sub>)</td>
+                                <td class="result-value">${formatNumber(results.Vu_end, 2)}</td>
+                                <td>kN</td>
+                            </tr>
+                            <tr>
+                                <td>h/t<sub>w</sub> 비율</td>
+                                <td class="result-value">${formatNumber(results.h_tw_solid, 2)}</td>
+                                <td>-</td>
+                            </tr>
+                            <tr>
+                                <td>k<sub>v</sub> (웹 판재 좌굴 계수)</td>
+                                <td class="result-value">${formatNumber(results.kv_solid, 1)}</td>
+                                <td>-</td>
+                            </tr>
+                            <tr>
+                                <td>전단 항복 한계 (1.10√(k<sub>v</sub>E/F<sub>y</sub>))</td>
+                                <td class="result-value">${formatNumber(results.h_tw_limit_solid, 2)}</td>
+                                <td>-</td>
+                            </tr>
+                            <tr>
+                                <td>전단 좌굴 탄성 한계 (1.37√(k<sub>v</sub>E/F<sub>y</sub>))</td>
+                                <td class="result-value">${formatNumber(results.h_tw_limit_elastic, 2)}</td>
+                                <td>-</td>
+                            </tr>
+                            <tr>
+                                <td>전단 좌굴 계수 (C<sub>v</sub>)</td>
+                                <td class="result-value">${formatNumber(results.Cv_solid, 3)}</td>
+                                <td>-</td>
+                            </tr>
+                            <tr>
+                                <td>전단 거동 모드</td>
+                                <td class="result-value ${results.shear_yielding ? 'status-ok' : (results.shear_buckling_elastic ? 'status-ng' : '')}" style="font-weight: 600;">
+                                    ${results.shear_yielding ? '✅ 전단 항복 지배' : (results.shear_buckling_elastic ? '❌ 전단 좌굴 (탄성)' : '⚠️ 전단 좌굴 (비탄성)')}
+                                </td>
+                                <td>-</td>
+                            </tr>
+                            <tr>
+                                <td>공칭 전단 강도 (V<sub>n</sub>)</td>
+                                <td class="result-value" style="font-weight: 600;">${formatNumber(results.Vn_solid, 2)}</td>
+                                <td>kN</td>
+                            </tr>
+                            <tr>
+                                <td>φ<sub>v</sub> (저감계수)</td>
+                                <td class="result-value">${formatNumber(results.phi_v, 2)}</td>
+                                <td>-</td>
+                            </tr>
+                            <tr>
+                                <td>설계 전단 강도 (φ<sub>v</sub>V<sub>n</sub>)</td>
+                                <td class="result-value" style="font-weight: 600; color: #3b82f6;">${formatNumber(results.phiVn_solid, 2)}</td>
+                                <td>kN</td>
+                            </tr>
+                        </table>
+                    </div>
+                    
+                    <!-- 4.3 전단좌굴 검토 -->
+                    <div style="margin-bottom: 20px;">
+                        <h4 style="font-size: 14px; font-weight: 600; color: #1e3a5f; margin-bottom: 10px;">4.3 전단좌굴 검토 (AISC 360 G2)</h4>
+                        <div style="font-size: 11px; color: #64748b; margin-bottom: 10px; padding: 8px; background: #f8fafc; border-radius: 4px; border-left: 3px solid #3b82f6;">
+                            <strong>검토 내용:</strong> 웹의 h/t<sub>w</sub> 비율에 따른 전단 좌굴 계수 C<sub>v</sub>를 계산하고 전단 거동 모드를 판정합니다. (AISC 360 G2)<br>
+                            <strong>관련 식:</strong><br>
+                            • 전단 항복 지배: h/t<sub>w</sub> ≤ 1.10√(k<sub>v</sub>E/F<sub>y</sub>) → C<sub>v</sub> = 1.0 (AISC 360 G2-1)<br>
+                            • 전단 좌굴 (비탄성): 1.10√(k<sub>v</sub>E/F<sub>y</sub>) < h/t<sub>w</sub> ≤ 1.37√(k<sub>v</sub>E/F<sub>y</sub>) → C<sub>v</sub> = 1.10√(k<sub>v</sub>E/F<sub>y</sub>)/(h/t<sub>w</sub>) (AISC 360 G2-2)<br>
+                            • 전단 좌굴 (탄성): h/t<sub>w</sub> > 1.37√(k<sub>v</sub>E/F<sub>y</sub>) → C<sub>v</sub> = 1.51k<sub>v</sub>E/(F<sub>y</sub>(h/t<sub>w</sub>)²) (AISC 360 G2-3)
+                        </div>
+                        <table class="result-table">
+                            <tr>
+                                <th>항목</th>
+                                <th>값</th>
+                                <th>단위</th>
+                            </tr>
+                            <tr>
+                                <td>h/t<sub>w</sub> 비율</td>
+                                <td class="result-value">${formatNumber(results.h_tw_solid, 2)}</td>
+                                <td>-</td>
+                            </tr>
+                            <tr>
+                                <td>k<sub>v</sub> (웹 판재 좌굴 계수)</td>
+                                <td class="result-value">${formatNumber(results.kv_solid, 1)}</td>
+                                <td>-</td>
+                            </tr>
+                            <tr>
+                                <td>전단 항복 한계<br>1.10√(k<sub>v</sub>E/F<sub>y</sub>)</td>
+                                <td class="result-value">${formatNumber(results.h_tw_limit_solid, 2)}</td>
+                                <td>-</td>
+                            </tr>
+                            <tr>
+                                <td>전단 좌굴 탄성 한계<br>1.37√(k<sub>v</sub>E/F<sub>y</sub>)</td>
+                                <td class="result-value">${formatNumber(results.h_tw_limit_elastic, 2)}</td>
+                                <td>-</td>
+                            </tr>
+                            <tr>
+                                <td>전단 좌굴 계수 (C<sub>v</sub>)</td>
+                                <td class="result-value" style="font-weight: 600;">${formatNumber(results.Cv_solid, 3)}</td>
+                                <td>-</td>
+                            </tr>
+                            <tr>
+                                <td>전단 거동 모드</td>
+                                <td class="result-value ${results.shear_yielding ? 'status-ok' : (results.shear_buckling_elastic ? 'status-ng' : '')}" style="font-weight: 600;">
+                                    ${results.shear_yielding ? '✅ 전단 항복 지배<br><span style="font-size: 10px; color: #64748b;">(C<sub>v</sub> = 1.0, AISC 360 G2-1)</span>' : (results.shear_buckling_elastic ? '❌ 전단 좌굴 (탄성)<br><span style="font-size: 10px; color: #64748b;">(C<sub>v</sub> = 1.51k<sub>v</sub>E/(F<sub>y</sub>(h/t<sub>w</sub>)²), AISC 360 G2-3)</span>' : '⚠️ 전단 좌굴 (비탄성)<br><span style="font-size: 10px; color: #64748b;">(C<sub>v</sub> = 1.10√(k<sub>v</sub>E/F<sub>y</sub>)/(h/t<sub>w</sub>), AISC 360 G2-2)</span>')}
+                                </td>
+                                <td>-</td>
+                            </tr>
+                        </table>
+                        <div style="margin-top: 15px; padding: 10px; background: #f1f5f9; border-radius: 4px; border-left: 3px solid #64748b;">
+                            <div style="font-size: 11px; color: #475569; line-height: 1.6;">
+                                <strong>계산 과정:</strong><br>
+                                ${results.shear_yielding ? 
+                                    `h/t<sub>w</sub> = ${formatNumber(results.h_tw_solid, 2)} ≤ ${formatNumber(results.h_tw_limit_solid, 2)} (전단 항복 한계)<br>
+                                    → 전단 항복 지배, C<sub>v</sub> = 1.0` :
+                                    (results.shear_buckling_elastic ?
+                                        `h/t<sub>w</sub> = ${formatNumber(results.h_tw_solid, 2)} > ${formatNumber(results.h_tw_limit_elastic, 2)} (전단 좌굴 탄성 한계)<br>
+                                        → 전단 좌굴 (탄성)<br>
+                                        C<sub>v</sub> = 1.51 × ${formatNumber(results.kv_solid, 1)} × ${formatNumber(results.Es, 0)} / (${formatNumber(results.Fy, 0)} × ${formatNumber(results.h_tw_solid, 2)}²) = ${formatNumber(results.Cv_solid, 3)}` :
+                                        `${formatNumber(results.h_tw_limit_solid, 2)} < h/t<sub>w</sub> = ${formatNumber(results.h_tw_solid, 2)} ≤ ${formatNumber(results.h_tw_limit_elastic, 2)}<br>
+                                        → 전단 좌굴 (비탄성)<br>
+                                        C<sub>v</sub> = 1.10 × √(${formatNumber(results.kv_solid, 1)} × ${formatNumber(results.Es, 0)} / ${formatNumber(results.Fy, 0)}) / ${formatNumber(results.h_tw_solid, 2)} = ${formatNumber(results.Cv_solid, 3)}`
+                                    )
+                                }
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 4.4 전단 강도 판정 -->
+                    <div style="margin-bottom: 20px;">
+                        <h4 style="font-size: 14px; font-weight: 600; color: #1e3a5f; margin-bottom: 10px;">4.4 전단 강도 판정 (AISC 360 Ch. G)</h4>
+                        <div style="font-size: 11px; color: #64748b; margin-bottom: 10px; padding: 8px; background: #f8fafc; border-radius: 4px; border-left: 3px solid #3b82f6;">
+                            <strong>검토 내용:</strong> 소요 전단력과 설계 전단 강도를 비교하여 전단 강도를 판정합니다. (AISC 360 Ch. G)<br>
+                            <strong>판정 기준:</strong> V<sub>u</sub> ≤ φ<sub>v</sub>V<sub>n</sub>
+                        </div>
+                        <table class="result-table">
+                            <tr>
+                                <th>항목</th>
+                                <th>값</th>
+                                <th>단위</th>
+                            </tr>
+                            <tr>
+                                <td>소요 전단력 (V<sub>u</sub>)</td>
+                                <td class="result-value">${formatNumber(results.Vu_end, 2)}</td>
+                                <td>kN</td>
+                            </tr>
+                            <tr>
+                                <td>설계 전단 강도 (φ<sub>v</sub>V<sub>n</sub>)</td>
+                                <td class="result-value" style="font-weight: 600;">${formatNumber(results.phiVn_solid, 2)}</td>
+                                <td>kN</td>
+                            </tr>
+                            <tr>
+                                <td>사용률</td>
+                                <td class="result-value ${results.shear_solid_ok ? 'status-ok' : 'status-ng'}">${formatNumber(results.shear_solid_UR, 3)}</td>
+                                <td>-</td>
+                            </tr>
+                            <tr>
+                                <td>판정</td>
+                                <td class="result-value ${results.shear_solid_ok ? 'status-ok' : 'status-ng'}" style="font-weight: 600;">
+                                    ${results.shear_solid_ok ? '✅ 만족 (V<sub>u</sub> ≤ φ<sub>v</sub>V<sub>n</sub>)' : '❌ 불만족 (V<sub>u</sub> > φ<sub>v</sub>V<sub>n</sub>)'}
+                                </td>
+                                <td>-</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- 5. 개구부 위치 제한 검토 (Geometric Limits) -->
+                <div class="result-section">
+                    <div class="result-section-title" style="font-size: 18px; font-weight: 700; color: #1e3a5f; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px solid #3b82f6;">5. 개구부 위치 제한 검토 (Geometric Limits)</div>
+                    
+                    <div style="font-size: 11px; color: #64748b; margin-bottom: 15px; padding: 8px; background: #f8fafc; border-radius: 4px; border-left: 3px solid #3b82f6;">
+                        <strong>검토 내용:</strong> AISC Design Guide 31 권장사항에 따른 개구부 위치 제한을 검토합니다.<br>
+                        <strong>검토 항목:</strong> 개구부 높이, Web Post 폭, 지점부 개구부 이격거리
+                    </div>
+                    
+                    <table class="result-table" style="margin-bottom: 20px;">
+                        <tr>
+                            <th style="width: 35%;">검토 항목</th>
+                            <th style="width: 20%;">계산값</th>
+                            <th style="width: 20%;">권장 기준</th>
+                            <th style="width: 25%;">판정</th>
+                        </tr>
+                        <tr>
+                            <td><strong>개구부 높이</strong><br>0.5h ≤ h<sub>o</sub> ≤ 0.75h</td>
+                            <td class="result-value">${formatNumber(results.ho * 1000, 1)} mm<br>(${formatNumber(results.ho, 3)} m)</td>
+                            <td class="result-value">${formatNumber(results.ho_min_limit * 1000, 1)} ~ ${formatNumber(results.ho_max_limit * 1000, 1)} mm<br>(${formatNumber(results.ho_min_limit, 3)} ~ ${formatNumber(results.ho_max_limit, 3)} m)</td>
+                            <td class="result-value ${results.ho_geometric_ok ? 'status-ok' : 'status-ng'}" style="font-weight: 600;">
+                                ${results.ho_geometric_ok ? '✅ 적합' : '❌ 부적합'}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>Web Post 폭</strong><br>e ≥ 0.25h<sub>o</sub></td>
+                            <td class="result-value">${formatNumber(results.e, 1)} mm</td>
+                            <td class="result-value">≥ ${formatNumber(results.e_min_limit, 1)} mm</td>
+                            <td class="result-value ${results.e_geometric_ok ? 'status-ok' : 'status-ng'}" style="font-weight: 600;">
+                                ${results.e_geometric_ok ? '✅ 적합' : '❌ 부적합'}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>지점부 개구부 이격거리</strong><br>≥ 1.5h</td>
+                            <td class="result-value">${formatNumber(results.endPostDistance_mm, 1)} mm<br>(${formatNumber(results.endPostDistance, 3)} m)</td>
+                            <td class="result-value">≥ ${formatNumber(results.endPostDistance_min_limit * 1000, 1)} mm<br>(≥ ${formatNumber(results.endPostDistance_min_limit, 3)} m)</td>
+                            <td class="result-value ${results.endPostDistance_geometric_ok ? 'status-ok' : 'status-ng'}" style="font-weight: 600;">
+                                ${results.endPostDistance_geometric_ok ? '✅ 적합' : '❌ 부적합'}
+                            </td>
+                        </tr>
+                    </table>
+                    
+                    <div style="margin-top: 15px; padding: 10px; background: ${results.geometric_limits_ok ? '#d1fae5' : '#fee2e2'}; border-radius: 6px; border: 1px solid ${results.geometric_limits_ok ? '#10b981' : '#ef4444'};">
+                        <div style="font-size: 12px; font-weight: 600; color: ${results.geometric_limits_ok ? '#065f46' : '#991b1b'}; text-align: center;">
+                            종합 판정: <strong>${results.geometric_limits_ok ? '✅ 모든 항목 적합' : '❌ 일부 항목 부적합'}</strong>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 6. 입력 조건 -->
+                <div class="result-section">
+                    <div class="result-section-title">6. 입력 조건</div>
                     <table class="result-table">
                         <tr>
                             <th>항목</th>
@@ -1210,7 +2540,7 @@
 
                 <!-- 원단면 Section Properties -->
                 <div class="result-section">
-                    <div class="result-section-title">원단면 (H형강) Section Properties</div>
+                    <div class="result-section-title">7. 원단면 (H형강) Section Properties</div>
                     <table class="result-table">
                         <tr>
                             <th>항목</th>
@@ -1257,7 +2587,7 @@
 
                 <!-- Castellated Beam Section Properties -->
                 <div class="result-section">
-                    <div class="result-section-title">Castellated Beam Section Properties</div>
+                    <div class="result-section-title">8. Castellated Beam Section Properties</div>
                     <table class="result-table">
                         <tr>
                             <th>항목</th>
@@ -1304,7 +2634,7 @@
 
                 <!-- 2. 개구부별 계산 결과 -->
                 <div class="result-section">
-                    <div class="result-section-title">2. 개구부별 계산 결과</div>
+                    <div class="result-section-title">9. 개구부별 계산 결과</div>
                     <div style="overflow-x: auto;">
                         <table class="result-table">
                             <thead>
@@ -1327,7 +2657,7 @@
 
                 <!-- 3. 지배 개구부 -->
                 <div class="result-section">
-                    <div class="result-section-title">3. 지배 개구부 (Governing Opening)</div>
+                    <div class="result-section-title">10. 지배 개구부 (Governing Opening)</div>
                     <table class="result-table">
                         <tr>
                             <th>항목</th>
@@ -1381,7 +2711,7 @@
 
                 <!-- 4. 지배 Web-Post -->
                 <div class="result-section">
-                    <div class="result-section-title">4. 지배 Web-Post (Governing Web-Post)</div>
+                    <div class="result-section-title">11. 지배 Web-Post (Governing Web-Post)</div>
                     <table class="result-table">
                         <tr>
                             <th>항목</th>
@@ -1408,7 +2738,7 @@
 
                 <!-- 5. Web-Post Buckling 검토 (DG31) -->
                 <div class="result-section">
-                    <div class="result-section-title">5. Web-Post Buckling 검토 (AISC DG31)</div>
+                    <div class="result-section-title">12. Web-Post Buckling 검토 (AISC DG31)</div>
                     <table class="result-table">
                         <tr>
                             <th>항목</th>
@@ -1457,8 +2787,8 @@
 
                 <!-- 7. 가설하중 검토 -->
                 <div class="result-section">
-                    <div class="result-section-title" style="font-size: 18px; font-weight: 700; color: #1e3a5f; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px solid #cbd5e1;">1. 작용하중단계별 소요강도 및 소요단면 2차 모멘트</div>
-                    <div class="result-section-title">1.1 시공단계의 소요강도 및 소요단면 2차 모멘트</div>
+                    <div class="result-section-title" style="font-size: 18px; font-weight: 700; color: #1e3a5f; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px solid #cbd5e1;">13. 작용하중단계별 소요강도 및 소요단면 2차 모멘트</div>
+                    <div class="result-section-title">13.1 시공단계의 소요강도 및 소요단면 2차 모멘트</div>
                     <div style="font-size: 12px; color: #64748b; margin-bottom: 15px; padding: 8px; background: #f1f5f9; border-radius: 4px;">
                         간격 ${formatNumber(results.B, 1)}m의 보에 대한 선형등분포하중을 산정하여 작용하중단계별 소요휨강도, 소요전단강도, 소요단면 2차 모멘트를 구한다.
                     </div>
@@ -1542,7 +2872,7 @@
 
                 <!-- 6. 용접 설계 -->
                 <div class="result-section">
-                    <div class="result-section-title">6. 용접 설계</div>
+                    <div class="result-section-title">14. 용접 설계</div>
                     <table class="result-table">
                         <tr>
                             <th>항목</th>
@@ -1645,7 +2975,7 @@
             return 0;
         }
 
-        // End Post 길이 자동 계산 함수 (endPost = dc)
+        // End Post 길이 자동 계산 함수 (endPost = dc × 1.5)
         function updateEndPost() {
             const beamDepthEl = document.getElementById('beamDepth');
             const endPostEl = document.getElementById('endPost');
@@ -1656,7 +2986,7 @@
             
             const dc = parseFloat(beamDepthEl.value) || 0;  // mm 단위
             if (dc > 0) {
-                const endPost = dc / 1000;  // mm → m 변환
+                const endPost = (dc * 1.5) / 1000;  // mm → m 변환 (1.5배 적용)
                 endPostEl.value = endPost.toFixed(3);
             }
         }
@@ -1884,20 +3214,133 @@
         }
         
         // Initialize KS section options
+        // #region agent log
+        function checkKsSectionVisibility() {
+            const ksSectionSelect = document.getElementById('ksSection');
+            if (!ksSectionSelect) {
+                fetch('http://127.0.0.1:7242/ingest/f6b33b86-5eb3-41dd-83f7-9e0a0382507b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'castellated-beam-calculator.html:checkKsSectionVisibility',message:'ksSection element not found in DOM',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+                console.error('[DEBUG] ksSection element not found in DOM');
+                return;
+            }
+            
+            const computedStyle = window.getComputedStyle(ksSectionSelect);
+            const parent = ksSectionSelect.parentElement;
+            const parentStyle = parent ? window.getComputedStyle(parent) : null;
+            const grandParent = parent ? parent.parentElement : null;
+            const grandParentStyle = grandParent ? window.getComputedStyle(grandParent) : null;
+            
+            const data = {
+                elementExists: true,
+                display: computedStyle.display,
+                visibility: computedStyle.visibility,
+                opacity: computedStyle.opacity,
+                width: computedStyle.width,
+                height: computedStyle.height,
+                offsetWidth: ksSectionSelect.offsetWidth,
+                offsetHeight: ksSectionSelect.offsetHeight,
+                offsetTop: ksSectionSelect.offsetTop,
+                offsetLeft: ksSectionSelect.offsetLeft,
+                parentDisplay: parentStyle ? parentStyle.display : 'N/A',
+                parentVisibility: parentStyle ? parentStyle.visibility : 'N/A',
+                grandParentDisplay: grandParentStyle ? grandParentStyle.display : 'N/A',
+                grandParentVisibility: grandParentStyle ? grandParentStyle.visibility : 'N/A',
+                classList: Array.from(ksSectionSelect.classList),
+                id: ksSectionSelect.id,
+                tagName: ksSectionSelect.tagName
+            };
+            
+            fetch('http://127.0.0.1:7242/ingest/f6b33b86-5eb3-41dd-83f7-9e0a0382507b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'castellated-beam-calculator.html:checkKsSectionVisibility',message:'ksSection visibility check',data:data,timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+            console.log('[DEBUG] ksSection visibility check:', data);
+        }
+        // #endregion
+        
+        // #region agent log
+        fetch('http://127.0.0.1:7242/ingest/f6b33b86-5eb3-41dd-83f7-9e0a0382507b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'castellated-beam-calculator.html:init',message:'Initializing KS section options',data:{readyState:document.readyState},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'G'})}).catch(()=>{});
+        // #endregion
+        
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', function() {
-                populateKsSectionOptions();
+                // #region agent log
+                fetch('http://127.0.0.1:7242/ingest/f6b33b86-5eb3-41dd-83f7-9e0a0382507b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'castellated-beam-calculator.html:DOMContentLoaded',message:'DOMContentLoaded fired',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H'})}).catch(()=>{});
+                console.log('[DEBUG] DOMContentLoaded fired, calling populateKsSectionOptions');
+                // #endregion
+                const populateResult = populateKsSectionOptions();
+                console.log('[DEBUG] populateKsSectionOptions returned:', populateResult);
+                // #region agent log
+                fetch('http://127.0.0.1:7242/ingest/f6b33b86-5eb3-41dd-83f7-9e0a0382507b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'castellated-beam-calculator.html:DOMContentLoaded',message:'populateKsSectionOptions result',data:{populateResult:populateResult},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'I'})}).catch(()=>{});
+                // #endregion
                 const ksSectionSelect = document.getElementById('ksSection');
                 if (ksSectionSelect) {
-                    ksSectionSelect.addEventListener('change', onKsSectionChange);
+                    // #region agent log
+                    console.log('[DEBUG] Attaching event listener to ksSection. Options count:', ksSectionSelect.options.length);
+                    fetch('http://127.0.0.1:7242/ingest/f6b33b86-5eb3-41dd-83f7-9e0a0382507b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'castellated-beam-calculator.html:DOMContentLoaded',message:'Before attaching event listener',data:{optionsCount:ksSectionSelect.options.length,selectId:ksSectionSelect.id,selectValue:ksSectionSelect.value},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'J'})}).catch(()=>{});
+                    // #endregion
+                    
+                    // 이벤트 리스너 추가
+                    ksSectionSelect.addEventListener('change', function(e) {
+                        console.log('[DEBUG] ksSection change event fired. Selected value:', e.target.value);
+                        onKsSectionChange();
+                    });
+                    
+                    // 클릭 이벤트도 추가 (디버깅용)
+                    ksSectionSelect.addEventListener('click', function(e) {
+                        console.log('[DEBUG] ksSection click event fired. Options count:', e.target.options.length);
+                        fetch('http://127.0.0.1:7242/ingest/f6b33b86-5eb3-41dd-83f7-9e0a0382507b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'castellated-beam-calculator.html:click',message:'ksSection clicked',data:{optionsCount:e.target.options.length,value:e.target.value},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'O'})}).catch(()=>{});
+                    });
+                    
+                    // #region agent log
+                    fetch('http://127.0.0.1:7242/ingest/f6b33b86-5eb3-41dd-83f7-9e0a0382507b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'castellated-beam-calculator.html:DOMContentLoaded',message:'Event listener attached',data:{optionsCount:ksSectionSelect.options.length},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'J'})}).catch(()=>{});
+                    console.log('[DEBUG] Event listener attached to ksSection');
+                    // #endregion
+                } else {
+                    // #region agent log
+                    console.error('[ERROR] ksSectionSelect not found for event listener');
+                    fetch('http://127.0.0.1:7242/ingest/f6b33b86-5eb3-41dd-83f7-9e0a0382507b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'castellated-beam-calculator.html:DOMContentLoaded',message:'ksSectionSelect not found for event listener',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'K'})}).catch(()=>{});
+                    // #endregion
                 }
+                // #region agent log
+                setTimeout(checkKsSectionVisibility, 100);
+                // #endregion
             });
         } else {
-            populateKsSectionOptions();
+            console.log('[DEBUG] Document already loaded, calling populateKsSectionOptions immediately');
+            const populateResult = populateKsSectionOptions();
+            console.log('[DEBUG] populateKsSectionOptions returned:', populateResult);
+            // #region agent log
+            fetch('http://127.0.0.1:7242/ingest/f6b33b86-5eb3-41dd-83f7-9e0a0382507b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'castellated-beam-calculator.html:immediate',message:'populateKsSectionOptions result (immediate)',data:{populateResult:populateResult},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'L'})}).catch(()=>{});
+            // #endregion
             const ksSectionSelect = document.getElementById('ksSection');
             if (ksSectionSelect) {
-                ksSectionSelect.addEventListener('change', onKsSectionChange);
+                // #region agent log
+                console.log('[DEBUG] Attaching event listener to ksSection (immediate). Options count:', ksSectionSelect.options.length);
+                fetch('http://127.0.0.1:7242/ingest/f6b33b86-5eb3-41dd-83f7-9e0a0382507b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'castellated-beam-calculator.html:immediate',message:'Before attaching event listener (immediate)',data:{optionsCount:ksSectionSelect.options.length,selectId:ksSectionSelect.id,selectValue:ksSectionSelect.value},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'M'})}).catch(()=>{});
+                // #endregion
+                
+                // 이벤트 리스너 추가
+                ksSectionSelect.addEventListener('change', function(e) {
+                    console.log('[DEBUG] ksSection change event fired (immediate). Selected value:', e.target.value);
+                    onKsSectionChange();
+                });
+                
+                // 클릭 이벤트도 추가 (디버깅용)
+                ksSectionSelect.addEventListener('click', function(e) {
+                    console.log('[DEBUG] ksSection click event fired (immediate). Options count:', e.target.options.length);
+                    fetch('http://127.0.0.1:7242/ingest/f6b33b86-5eb3-41dd-83f7-9e0a0382507b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'castellated-beam-calculator.html:click',message:'ksSection clicked (immediate)',data:{optionsCount:e.target.options.length,value:e.target.value},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'P'})}).catch(()=>{});
+                });
+                
+                // #region agent log
+                fetch('http://127.0.0.1:7242/ingest/f6b33b86-5eb3-41dd-83f7-9e0a0382507b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'castellated-beam-calculator.html:immediate',message:'Event listener attached (immediate)',data:{optionsCount:ksSectionSelect.options.length},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'M'})}).catch(()=>{});
+                console.log('[DEBUG] Event listener attached to ksSection (immediate)');
+                // #endregion
+            } else {
+                // #region agent log
+                console.error('[ERROR] ksSectionSelect not found for event listener (immediate)');
+                fetch('http://127.0.0.1:7242/ingest/f6b33b86-5eb3-41dd-83f7-9e0a0382507b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'castellated-beam-calculator.html:immediate',message:'ksSectionSelect not found for event listener (immediate)',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'N'})}).catch(()=>{});
+                // #endregion
             }
+            // #region agent log
+            setTimeout(checkKsSectionVisibility, 100);
+            // #endregion
         }
     </script>
 </body>
