@@ -59,8 +59,7 @@
           // #endregion
           e.preventDefault();
           e.stopPropagation();
-          // Castellated Beam 계산서 (추후 구현 예정)
-          alert('Castellated Beam 계산서는 추후 구현 예정입니다.');
+          showCastellatedBeamSelectionModal();
           return false;
         }
         
@@ -72,8 +71,8 @@
           this.classList.add('active');
         } else {
           // 링크가 없는 경우 active 상태만 토글
-          items.forEach(function(i) { i.classList.remove('active'); });
-          this.classList.add('active');
+        items.forEach(function(i) { i.classList.remove('active'); });
+        this.classList.add('active');
         }
       });
     });
@@ -94,6 +93,28 @@
     exSlimBoxNav.style.display = 'none';
     if (ex2Nav) {
       ex2Nav.style.display = 'none';
+    }
+    
+    // Function to show/hide nav items based on admin status
+    function updateNavVisibility(isAdmin) {
+      if (isAdmin) {
+        exSlimBoxNav.style.display = 'flex';
+        exSlimBoxNav.style.cursor = 'pointer';
+        exSlimBoxNav.classList.remove('gray-text');
+        exSlimBoxNav.classList.add('gold');
+        
+        if (ex2Nav) {
+          ex2Nav.style.display = 'flex';
+          ex2Nav.style.cursor = 'pointer';
+          ex2Nav.classList.remove('gray-text');
+          ex2Nav.classList.add('gold');
+        }
+      } else {
+        exSlimBoxNav.style.display = 'none';
+        if (ex2Nav) {
+          ex2Nav.style.display = 'none';
+        }
+      }
     }
     
     // Check if user is admin and show nav item if admin
@@ -125,30 +146,14 @@
           fetch('http://127.0.0.1:7242/ingest/f6b33b86-5eb3-41dd-83f7-9e0a0382507b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'main.js:105',message:'Admin check result',data:{isAdmin:isAdmin,email:profile?.email,exSlimBoxNavExists:!!exSlimBoxNav,ex2NavExists:!!ex2Nav},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
           // #endregion
           
-          if (isAdmin) {
-            // User is admin, show nav items
-            exSlimBoxNav.style.display = 'flex';
-            exSlimBoxNav.style.cursor = 'pointer';
-            exSlimBoxNav.classList.remove('gray-text');
-            exSlimBoxNav.classList.add('gold');
-            
-            if (ex2Nav) {
-              ex2Nav.style.display = 'flex';
-              ex2Nav.style.cursor = 'pointer';
-              ex2Nav.classList.remove('gray-text');
-              ex2Nav.classList.add('gold');
-              
-              // #region agent log
-              fetch('http://127.0.0.1:7242/ingest/f6b33b86-5eb3-41dd-83f7-9e0a0382507b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'main.js:120',message:'ex-2 nav shown',data:{display:ex2Nav.style.display},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
-              // #endregion
-            }
-          } else {
-            // Not admin, keep hidden
-            exSlimBoxNav.style.display = 'none';
-            if (ex2Nav) {
-              ex2Nav.style.display = 'none';
-            }
+          // Use updateNavVisibility function (defined below)
+          updateNavVisibility(isAdmin);
+          
+          // #region agent log
+          if (isAdmin && ex2Nav) {
+            fetch('http://127.0.0.1:7242/ingest/f6b33b86-5eb3-41dd-83f7-9e0a0382507b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'main.js:128',message:'ex-2 nav shown',data:{display:ex2Nav.style.display},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
           }
+          // #endregion
         }).catch(function(err) {
           // Error getting profile, keep hidden
           console.debug('Error checking admin status for EX-Slim-Box nav:', err);
@@ -163,12 +168,66 @@
     if (window.SDP && window.SDP.auth) {
       // Auth is available, check immediately
       checkAdminAndShowNav();
+      
+      // Also listen for auth state changes to update nav visibility automatically when admin logs in
+      if (window.SDP.auth.getClient) {
+        window.SDP.auth.getClient().then(function(client) {
+          if (client && client.auth && client.auth.onAuthStateChange) {
+            client.auth.onAuthStateChange(function(event, session) {
+              // #region agent log
+              fetch('http://127.0.0.1:7242/ingest/f6b33b86-5eb3-41dd-83f7-9e0a0382507b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'main.js:175',message:'Auth state changed',data:{event:event,hasSession:!!session},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'AN'})}).catch(()=>{});
+              // #endregion
+              
+              if (session) {
+                // User logged in, check if admin
+                window.SDP.auth.getProfile().then(function(profile) {
+                  var isAdmin = profile && window.SDP.auth.isAdmin();
+                  // #region agent log
+                  fetch('http://127.0.0.1:7242/ingest/f6b33b86-5eb3-41dd-83f7-9e0a0382507b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'main.js:182',message:'Auth state change - admin check',data:{isAdmin:isAdmin,email:profile?.email},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'AO'})}).catch(()=>{});
+                  // #endregion
+                  updateNavVisibility(isAdmin);
+                }).catch(function(err) {
+                  console.debug('Error checking admin on auth state change:', err);
+                  updateNavVisibility(false);
+                });
+              } else {
+                // User logged out, hide nav items
+                updateNavVisibility(false);
+              }
+            });
+          }
+        }).catch(function(err) {
+          console.debug('Error getting client for auth state listener:', err);
+        });
+      }
     } else {
       // Wait for auth to load
       var checkInterval = setInterval(function() {
         if (window.SDP && window.SDP.auth) {
           clearInterval(checkInterval);
           checkAdminAndShowNav();
+          
+          // Set up auth state change listener
+          if (window.SDP.auth.getClient) {
+            window.SDP.auth.getClient().then(function(client) {
+              if (client && client.auth && client.auth.onAuthStateChange) {
+                client.auth.onAuthStateChange(function(event, session) {
+                  if (session) {
+                    window.SDP.auth.getProfile().then(function(profile) {
+                      var isAdmin = profile && window.SDP.auth.isAdmin();
+                      updateNavVisibility(isAdmin);
+                    }).catch(function(err) {
+                      updateNavVisibility(false);
+                    });
+                  } else {
+                    updateNavVisibility(false);
+                  }
+                });
+              }
+            }).catch(function(err) {
+              console.debug('Error getting client for auth state listener:', err);
+            });
+          }
         }
       }, 100);
       
@@ -257,5 +316,86 @@
   } else {
     init();
   }
+
+  // Show Castellated Beam selection modal
+  function showCastellatedBeamSelectionModal() {
+    // Create modal overlay if it doesn't exist
+    var modalOverlay = document.getElementById('castellated-beam-modal');
+    if (!modalOverlay) {
+      modalOverlay = document.createElement('div');
+      modalOverlay.id = 'castellated-beam-modal';
+      modalOverlay.className = 'castellated-beam-modal-overlay';
+      modalOverlay.innerHTML = `
+        <div class="castellated-beam-modal">
+          <div class="castellated-beam-modal-header">
+            <div class="castellated-beam-modal-title">
+              <strong>Castellated Beam Design</strong>
+              <span>계산 방식을 선택하세요</span>
+            </div>
+            <button class="castellated-beam-modal-close" onclick="closeCastellatedBeamModal()">×</button>
+          </div>
+          <div class="castellated-beam-modal-content">
+            <div class="castellated-beam-option" onclick="selectCastellatedBeamType('without-slab')">
+              <div class="castellated-beam-option-icon">🏗️</div>
+              <div class="castellated-beam-option-title">Castellated Beam<br>without top-slab</div>
+              <div class="castellated-beam-option-desc">상부 슬래브가 없는 Castellated Beam 설계</div>
+            </div>
+            <div class="castellated-beam-option" onclick="selectCastellatedBeamType('with-slab')">
+              <div class="castellated-beam-option-icon">🏢</div>
+              <div class="castellated-beam-option-title">Castellated Beam<br>with top-slab</div>
+              <div class="castellated-beam-option-desc">상부 슬래브가 있는 Castellated Beam 설계</div>
+            </div>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modalOverlay);
+      
+      // Close on overlay click
+      modalOverlay.addEventListener('click', function(e) {
+        if (e.target === modalOverlay) {
+          closeCastellatedBeamModal();
+        }
+      });
+      
+      // Close on Escape key
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && modalOverlay.classList.contains('active')) {
+          closeCastellatedBeamModal();
+        }
+      });
+    }
+    
+    modalOverlay.classList.add('active');
+  }
+
+  // Close Castellated Beam modal
+  function closeCastellatedBeamModal() {
+    var modalOverlay = document.getElementById('castellated-beam-modal');
+    if (modalOverlay) {
+      modalOverlay.classList.remove('active');
+    }
+  }
+
+  // Select Castellated Beam type and redirect
+  function selectCastellatedBeamType(type) {
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/f6b33b86-5eb3-41dd-83f7-9e0a0382507b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'main.js:350',message:'Castellated Beam type selected',data:{type:type},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'AP'})}).catch(()=>{});
+    // #endregion
+    
+    closeCastellatedBeamModal();
+    
+    if (type === 'without-slab') {
+      // Redirect to Castellated Beam without top-slab calculator
+      window.location.href = '/pages/k-col web software/castellated-beam-calculator.html?type=without-slab';
+    } else if (type === 'with-slab') {
+      // Redirect to Castellated Beam with top-slab calculator
+      window.location.href = '/pages/k-col web software/castellated-beam-calculator.html?type=with-slab';
+    }
+  }
+
+  // Make functions globally available
+  window.showCastellatedBeamSelectionModal = showCastellatedBeamSelectionModal;
+  window.closeCastellatedBeamModal = closeCastellatedBeamModal;
+  window.selectCastellatedBeamType = selectCastellatedBeamType;
 
 })();

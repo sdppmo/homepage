@@ -1480,6 +1480,145 @@ a.brochure-btn.white:hover {
   opacity: 0.9;
 }
 
+/* ==========================================================================
+   11. CASTELLATED BEAM SELECTION MODAL
+   ========================================================================== */
+
+.castellated-beam-modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  padding: 20px;
+  background:
+    radial-gradient(1200px 600px at 20% 10%, rgba(44, 74, 124, 0.55), rgba(0,0,0,0.25)),
+    rgba(0,0,0,0.55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  align-items: center;
+  justify-content: center;
+}
+
+.castellated-beam-modal-overlay.active {
+  display: flex;
+}
+
+.castellated-beam-modal {
+  max-width: 700px;
+  width: 90%;
+  background: rgba(255,255,255,0.95);
+  border-radius: 18px;
+  box-shadow: 0 18px 70px rgba(0,0,0,0.45);
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.55);
+}
+
+.castellated-beam-modal-header {
+  padding: 20px 24px;
+  background: linear-gradient(135deg, #1f3358, #355c94 55%, #4a6fa5);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.castellated-beam-modal-title {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.castellated-beam-modal-title strong {
+  font-size: 20px;
+  letter-spacing: 0.2px;
+  font-weight: 700;
+}
+
+.castellated-beam-modal-title span {
+  font-size: 13px;
+  opacity: 0.9;
+}
+
+.castellated-beam-modal-close {
+  border: 1px solid rgba(255,255,255,0.35);
+  background: rgba(255,255,255,0.12);
+  color: #fff;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.castellated-beam-modal-close:hover {
+  background: rgba(255,255,255,0.25);
+  border-color: rgba(255,255,255,0.5);
+}
+
+.castellated-beam-modal-content {
+  padding: 30px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.castellated-beam-option {
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  border: 2px solid #cbd5e1;
+  border-radius: 12px;
+  padding: 30px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+}
+
+.castellated-beam-option:hover {
+  background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%);
+  border-color: #3b82f6;
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(59, 130, 246, 0.2);
+}
+
+.castellated-beam-option-icon {
+  font-size: 48px;
+  line-height: 1;
+}
+
+.castellated-beam-option-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1e3a5f;
+  line-height: 1.4;
+}
+
+.castellated-beam-option-desc {
+  font-size: 13px;
+  color: #64748b;
+  line-height: 1.5;
+}
+
+@media (max-width: 768px) {
+  .castellated-beam-modal-content {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+  
+  .castellated-beam-modal {
+    max-width: 90%;
+  }
+}
+
 .proj-modal-close {
   border: 1px solid rgba(255,255,255,0.35);
   background: rgba(255,255,255,0.12);
