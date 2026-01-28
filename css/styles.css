@@ -363,6 +363,17 @@ div.nav-item {
   background: #000;
 }
 
+/* ex-2 메뉴 항목: 흰색 글자, 검정 배경 (gold 클래스가 있어도 무시) */
+div.nav-item#ex-2 {
+  color: #fff !important;
+  background: #000 !important;
+}
+
+div.nav-item#ex-2:hover {
+  color: #fff !important;
+  background: #222 !important;
+}
+
 a.nav-item:hover {
   color: #fff;
   background: #222;
@@ -398,18 +409,21 @@ a.nav-item.gray-text:hover {
 }
 
 /* 황금색 네비게이션 항목 */
-a.nav-item.gold {
+a.nav-item.gold,
+div.nav-item.gold {
   color: #ffcc00;
   background: linear-gradient(180deg, #1a2050 0%, #101535 100%);
 }
 
-a.nav-item.gold:hover {
+a.nav-item.gold:hover,
+div.nav-item.gold:hover {
   color: #ffcc00;
   background: linear-gradient(180deg, #252a60 0%, #1a1f45 100%);
 }
 
 /* active와 gold가 함께 있을 때 gold 색상 우선 */
-a.nav-item.active.gold {
+a.nav-item.active.gold,
+div.nav-item.active.gold {
   color: #ffcc00;
 }
 

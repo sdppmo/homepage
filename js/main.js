@@ -43,23 +43,73 @@
         
         if (text.includes('EX-Slim-Beam') || text.includes('EX-Slim-Box') || this.id === 'ex-slim-box-nav') {
           // #region agent log
-          fetch('http://127.0.0.1:7242/ingest/f6b33b86-5eb3-41dd-83f7-9e0a0382507b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'main.js:45',message:'EX-Slim-Beam clicked - redirecting',data:{text:text,id:this.id,url:'/pages/k-col web software/ex-slim-beam-calculator.html'},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
+          const targetUrl = '/pages/k-col web software/compositebeam-calculator.html';
+          const encodedUrl = encodeURI(targetUrl);
+          fetch('http://127.0.0.1:7242/ingest/f6b33b86-5eb3-41dd-83f7-9e0a0382507b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'main.js:45',message:'EX-Slim-Beam clicked - redirecting',data:{text:text,id:this.id,url:targetUrl,encodedUrl:encodedUrl},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
           // #endregion
           e.preventDefault();
           e.stopPropagation();
           // 운영자만 접근 가능 - 이미 표시된 것은 운영자이므로 바로 이동
-          window.location.href = '/pages/k-col web software/ex-slim-beam-calculator.html';
+          // URL 인코딩하여 공백 처리
+          window.location.href = encodeURI('/pages/k-col web software/compositebeam-calculator.html');
           return false;
         }
         
-        // ex-2 (Castellated Beam) 클릭 처리
+        // ex-2 (Castellated Beam) 클릭 처리 - 운영자만 접근 가능
         if (this.id === 'ex-2') {
           // #region agent log
-          fetch('http://127.0.0.1:7242/ingest/f6b33b86-5eb3-41dd-83f7-9e0a0382507b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'main.js:56',message:'ex-2 clicked',data:{id:this.id,text:text},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'F'})}).catch(()=>{});
+          fetch('http://127.0.0.1:7242/ingest/f6b33b86-5eb3-41dd-83f7-9e0a0382507b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'main.js:ex-2-click',message:'ex-2 clicked - checking admin permission',data:{id:this.id,text:text,hasSDP:!!window.SDP,hasAuth:!!(window.SDP && window.SDP.auth)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'EX2'})}).catch(()=>{});
           // #endregion
           e.preventDefault();
           e.stopPropagation();
-          showCastellatedBeamSelectionModal();
+          
+          // 운영자 권한 체크
+          if (!window.SDP || !window.SDP.auth) {
+            // #region agent log
+            fetch('http://127.0.0.1:7242/ingest/f6b33b86-5eb3-41dd-83f7-9e0a0382507b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'main.js:ex-2-click',message:'Auth not available',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'EX2'})}).catch(()=>{});
+            // #endregion
+            alert('이 기능은 운영자만 사용할 수 있습니다.\n로그인 후 운영자 권한이 있는 계정으로 접근해주세요.');
+            return false;
+          }
+          
+          window.SDP.auth.getSession().then(function(session) {
+            if (!session) {
+              // #region agent log
+              fetch('http://127.0.0.1:7242/ingest/f6b33b86-5eb3-41dd-83f7-9e0a0382507b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'main.js:ex-2-click',message:'No session - access denied',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'EX2'})}).catch(()=>{});
+              // #endregion
+              alert('이 기능은 운영자만 사용할 수 있습니다.\n로그인 후 운영자 권한이 있는 계정으로 접근해주세요.');
+              return;
+            }
+            
+            window.SDP.auth.getProfile().then(function(profile) {
+              var isAdmin = profile && window.SDP.auth.isAdmin();
+              
+              // #region agent log
+              fetch('http://127.0.0.1:7242/ingest/f6b33b86-5eb3-41dd-83f7-9e0a0382507b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'main.js:ex-2-click',message:'Admin check result',data:{isAdmin:isAdmin,email:profile?.email},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'EX2'})}).catch(()=>{});
+              // #endregion
+              
+              if (isAdmin) {
+                // 운영자면 모달 표시
+                showCastellatedBeamSelectionModal();
+              } else {
+                // 운영자가 아니면 접근 거부
+                alert('이 기능은 운영자만 사용할 수 있습니다.\n운영자 권한이 필요합니다.');
+              }
+            }).catch(function(err) {
+              // #region agent log
+              fetch('http://127.0.0.1:7242/ingest/f6b33b86-5eb3-41dd-83f7-9e0a0382507b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'main.js:ex-2-click',message:'Error getting profile',data:{error:err.message},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'EX2'})}).catch(()=>{});
+              // #endregion
+              console.error('Error checking admin status:', err);
+              alert('권한 확인 중 오류가 발생했습니다.');
+            });
+          }).catch(function(err) {
+            // #region agent log
+            fetch('http://127.0.0.1:7242/ingest/f6b33b86-5eb3-41dd-83f7-9e0a0382507b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'main.js:ex-2-click',message:'Error getting session',data:{error:err.message},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'EX2'})}).catch(()=>{});
+            // #endregion
+            console.error('Error getting session:', err);
+            alert('로그인 상태 확인 중 오류가 발생했습니다.');
+          });
+          
           return false;
         }
         
@@ -78,42 +128,68 @@
     });
   }
 
-  // Initialize EX-Slim-Box nav item: show only for admins
+  // Initialize EX-Slim-Box nav item: show for everyone (public)
   function initExSlimBoxNav() {
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/f6b33b86-5eb3-41dd-83f7-9e0a0382507b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'main.js:initExSlimBoxNav',message:'initExSlimBoxNav function called',data:{readyState:document.readyState},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'INIT'})}).catch(()=>{});
+    // #endregion
+    
     var exSlimBoxNav = document.getElementById('ex-slim-box-nav');
     var ex2Nav = document.getElementById('ex-2');
     
     // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/f6b33b86-5eb3-41dd-83f7-9e0a0382507b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'main.js:72',message:'initExSlimBoxNav called',data:{exSlimBoxNavExists:!!exSlimBoxNav,ex2NavExists:!!ex2Nav},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+    fetch('http://127.0.0.1:7242/ingest/f6b33b86-5eb3-41dd-83f7-9e0a0382507b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'main.js:initExSlimBoxNav',message:'DOM elements found',data:{exSlimBoxNavExists:!!exSlimBoxNav,ex2NavExists:!!ex2Nav,exSlimBoxNavDisplay:exSlimBoxNav?exSlimBoxNav.style.display:'N/A',ex2NavDisplay:ex2Nav?ex2Nav.style.display:'N/A',exSlimBoxNavClasses:exSlimBoxNav?exSlimBoxNav.className:'N/A',ex2NavClasses:ex2Nav?ex2Nav.className:'N/A'},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'DOM'})}).catch(()=>{});
     // #endregion
     
-    if (!exSlimBoxNav) return;
-    
-    // Initially hide the nav items
-    exSlimBoxNav.style.display = 'none';
-    if (ex2Nav) {
-      ex2Nav.style.display = 'none';
+    if (!exSlimBoxNav) {
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/f6b33b86-5eb3-41dd-83f7-9e0a0382507b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'main.js:initExSlimBoxNav',message:'exSlimBoxNav not found - returning early',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'ERROR'})}).catch(()=>{});
+      // #endregion
+      return;
     }
     
-    // Function to show/hide nav items based on admin status
-    function updateNavVisibility(isAdmin) {
-      if (isAdmin) {
-        exSlimBoxNav.style.display = 'flex';
-        exSlimBoxNav.style.cursor = 'pointer';
-        exSlimBoxNav.classList.remove('gray-text');
-        exSlimBoxNav.classList.add('gold');
-        
-        if (ex2Nav) {
-          ex2Nav.style.display = 'flex';
-          ex2Nav.style.cursor = 'pointer';
-          ex2Nav.classList.remove('gray-text');
-          ex2Nav.classList.add('gold');
-        }
-      } else {
-        exSlimBoxNav.style.display = 'none';
-        if (ex2Nav) {
-          ex2Nav.style.display = 'none';
-        }
+    // Show nav items for everyone (public access)
+    exSlimBoxNav.style.display = 'flex';
+    exSlimBoxNav.style.cursor = 'pointer';
+    exSlimBoxNav.classList.remove('gray-text');
+    exSlimBoxNav.classList.remove('small-text'); // Remove small-text to match kcol-product-schedule-link
+    exSlimBoxNav.classList.add('gold');
+    
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/f6b33b86-5eb3-41dd-83f7-9e0a0382507b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'main.js:initExSlimBoxNav',message:'exSlimBoxNav styled',data:{display:exSlimBoxNav.style.display,classes:exSlimBoxNav.className,hasGold:exSlimBoxNav.classList.contains('gold'),hasGrayText:exSlimBoxNav.classList.contains('gray-text'),hasSmallText:exSlimBoxNav.classList.contains('small-text')},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'STYLE'})}).catch(()=>{});
+    // #endregion
+    
+    if (ex2Nav) {
+      ex2Nav.style.display = 'flex';
+      ex2Nav.style.cursor = 'pointer';
+      ex2Nav.classList.remove('gray-text');
+      ex2Nav.classList.remove('small-text'); // Remove small-text to match other nav items
+      ex2Nav.classList.add('gold');
+      
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/f6b33b86-5eb3-41dd-83f7-9e0a0382507b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'main.js:initExSlimBoxNav',message:'ex2Nav styled',data:{display:ex2Nav.style.display,classes:ex2Nav.className,hasGold:ex2Nav.classList.contains('gold'),hasGrayText:ex2Nav.classList.contains('gray-text'),hasSmallText:ex2Nav.classList.contains('small-text')},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'STYLE'})}).catch(()=>{});
+      // #endregion
+    } else {
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/f6b33b86-5eb3-41dd-83f7-9e0a0382507b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'main.js:initExSlimBoxNav',message:'ex2Nav not found',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'DOM'})}).catch(()=>{});
+      // #endregion
+    }
+    
+    // Function to show/hide nav items (kept for compatibility, but always shows now)
+    function updateNavVisibility(hasPermission) {
+      // Always show - public access
+      exSlimBoxNav.style.display = 'flex';
+      exSlimBoxNav.style.cursor = 'pointer';
+      exSlimBoxNav.classList.remove('gray-text');
+      exSlimBoxNav.classList.remove('small-text'); // Remove small-text to match kcol-product-schedule-link
+      exSlimBoxNav.classList.add('gold');
+      
+      if (ex2Nav) {
+        ex2Nav.style.display = 'flex';
+        ex2Nav.style.cursor = 'pointer';
+        ex2Nav.classList.remove('gray-text');
+        ex2Nav.classList.remove('small-text'); // Remove small-text to match other nav items
+        ex2Nav.classList.add('gold');
       }
     }
     
@@ -138,16 +214,18 @@
           return;
         }
         
-        // Check if user is admin
+        // Check if user has permission (admin or access_beam)
         return window.SDP.auth.getProfile().then(function(profile) {
           var isAdmin = profile && window.SDP.auth.isAdmin();
+          var hasAccessBeam = profile && profile.access_beam === true;
+          var hasPermission = isAdmin || hasAccessBeam;
           
           // #region agent log
-          fetch('http://127.0.0.1:7242/ingest/f6b33b86-5eb3-41dd-83f7-9e0a0382507b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'main.js:105',message:'Admin check result',data:{isAdmin:isAdmin,email:profile?.email,exSlimBoxNavExists:!!exSlimBoxNav,ex2NavExists:!!ex2Nav},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
+          fetch('http://127.0.0.1:7242/ingest/f6b33b86-5eb3-41dd-83f7-9e0a0382507b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'main.js:105',message:'Permission check result',data:{isAdmin:isAdmin,hasAccessBeam:hasAccessBeam,hasPermission:hasPermission,email:profile?.email,exSlimBoxNavExists:!!exSlimBoxNav,ex2NavExists:!!ex2Nav},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
           // #endregion
           
           // Use updateNavVisibility function (defined below)
-          updateNavVisibility(isAdmin);
+          updateNavVisibility(hasPermission);
           
           // #region agent log
           if (isAdmin && ex2Nav) {
@@ -164,78 +242,8 @@
       });
     }
     
-    // Wait for auth to be ready, then check
-    if (window.SDP && window.SDP.auth) {
-      // Auth is available, check immediately
-      checkAdminAndShowNav();
-      
-      // Also listen for auth state changes to update nav visibility automatically when admin logs in
-      if (window.SDP.auth.getClient) {
-        window.SDP.auth.getClient().then(function(client) {
-          if (client && client.auth && client.auth.onAuthStateChange) {
-            client.auth.onAuthStateChange(function(event, session) {
-              // #region agent log
-              fetch('http://127.0.0.1:7242/ingest/f6b33b86-5eb3-41dd-83f7-9e0a0382507b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'main.js:175',message:'Auth state changed',data:{event:event,hasSession:!!session},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'AN'})}).catch(()=>{});
-              // #endregion
-              
-              if (session) {
-                // User logged in, check if admin
-                window.SDP.auth.getProfile().then(function(profile) {
-                  var isAdmin = profile && window.SDP.auth.isAdmin();
-                  // #region agent log
-                  fetch('http://127.0.0.1:7242/ingest/f6b33b86-5eb3-41dd-83f7-9e0a0382507b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'main.js:182',message:'Auth state change - admin check',data:{isAdmin:isAdmin,email:profile?.email},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'AO'})}).catch(()=>{});
-                  // #endregion
-                  updateNavVisibility(isAdmin);
-                }).catch(function(err) {
-                  console.debug('Error checking admin on auth state change:', err);
-                  updateNavVisibility(false);
-                });
-              } else {
-                // User logged out, hide nav items
-                updateNavVisibility(false);
-              }
-            });
-          }
-        }).catch(function(err) {
-          console.debug('Error getting client for auth state listener:', err);
-        });
-      }
-    } else {
-      // Wait for auth to load
-      var checkInterval = setInterval(function() {
-        if (window.SDP && window.SDP.auth) {
-          clearInterval(checkInterval);
-          checkAdminAndShowNav();
-          
-          // Set up auth state change listener
-          if (window.SDP.auth.getClient) {
-            window.SDP.auth.getClient().then(function(client) {
-              if (client && client.auth && client.auth.onAuthStateChange) {
-                client.auth.onAuthStateChange(function(event, session) {
-                  if (session) {
-                    window.SDP.auth.getProfile().then(function(profile) {
-                      var isAdmin = profile && window.SDP.auth.isAdmin();
-                      updateNavVisibility(isAdmin);
-                    }).catch(function(err) {
-                      updateNavVisibility(false);
-                    });
-                  } else {
-                    updateNavVisibility(false);
-                  }
-                });
-              }
-            }).catch(function(err) {
-              console.debug('Error getting client for auth state listener:', err);
-            });
-          }
-        }
-      }, 100);
-      
-      // Stop checking after 5 seconds
-      setTimeout(function() {
-        clearInterval(checkInterval);
-      }, 5000);
-    }
+    // No auth check needed - menu is public and always visible
+    // Removed all auth state listeners since menu is now public
   }
 
   // Initialize db-button: show only for admins
@@ -306,6 +314,9 @@
 
   // Init on DOM ready
   function init() {
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/f6b33b86-5eb3-41dd-83f7-9e0a0382507b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'main.js:init',message:'init function called',data:{readyState:document.readyState},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'INIT'})}).catch(()=>{});
+    // #endregion
     initNavigation();
     initExSlimBoxNav();
     initDbButton();
@@ -316,6 +327,36 @@
   } else {
     init();
   }
+  
+  // Also try to initialize after a short delay to ensure DOM is fully ready
+  setTimeout(function() {
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/f6b33b86-5eb3-41dd-83f7-9e0a0382507b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'main.js:setTimeout',message:'Delayed init check',data:{readyState:document.readyState,exSlimBoxNavExists:!!document.getElementById('ex-slim-box-nav'),ex2NavExists:!!document.getElementById('ex-2')},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'DELAY'})}).catch(()=>{});
+    // #endregion
+    // Re-initialize if elements exist but are not visible
+    var exSlimBoxNav = document.getElementById('ex-slim-box-nav');
+    var ex2Nav = document.getElementById('ex-2');
+    if (exSlimBoxNav && (exSlimBoxNav.style.display === 'none' || !exSlimBoxNav.classList.contains('gold'))) {
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/f6b33b86-5eb3-41dd-83f7-9e0a0382507b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'main.js:setTimeout',message:'Re-initializing exSlimBoxNav',data:{display:exSlimBoxNav.style.display,classes:exSlimBoxNav.className},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'RETRY'})}).catch(()=>{});
+      // #endregion
+      exSlimBoxNav.style.display = 'flex';
+      exSlimBoxNav.style.cursor = 'pointer';
+      exSlimBoxNav.classList.remove('gray-text');
+      exSlimBoxNav.classList.remove('small-text');
+      exSlimBoxNav.classList.add('gold');
+    }
+    if (ex2Nav && (ex2Nav.style.display === 'none' || !ex2Nav.classList.contains('gold'))) {
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/f6b33b86-5eb3-41dd-83f7-9e0a0382507b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'main.js:setTimeout',message:'Re-initializing ex2Nav',data:{display:ex2Nav.style.display,classes:ex2Nav.className},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'RETRY'})}).catch(()=>{});
+      // #endregion
+      ex2Nav.style.display = 'flex';
+      ex2Nav.style.cursor = 'pointer';
+      ex2Nav.classList.remove('gray-text');
+      ex2Nav.classList.remove('small-text');
+      ex2Nav.classList.add('gold');
+    }
+  }, 500);
 
   // Show Castellated Beam selection modal
   function showCastellatedBeamSelectionModal() {
@@ -334,16 +375,19 @@
             </div>
             <button class="castellated-beam-modal-close" onclick="closeCastellatedBeamModal()">×</button>
           </div>
+          <div class="castellated-beam-modal-image" style="padding: 20px; text-align: center; background: #f8fafc; border-bottom: 1px solid #e2e8f0;">
+            <img src="/assets/images/composite_noncomposite.png" alt="비합성보와 합성보 비교" style="max-width: 100%; max-height: 400px; height: auto; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); display: block; margin: 0 auto;" onerror="console.error('이미지 로드 실패:', this.src); this.style.display='none';">
+          </div>
           <div class="castellated-beam-modal-content">
             <div class="castellated-beam-option" onclick="selectCastellatedBeamType('without-slab')">
               <div class="castellated-beam-option-icon">🏗️</div>
-              <div class="castellated-beam-option-title">Non Composite Castillated Beam<br>(Beam Only)</div>
+              <div class="castellated-beam-option-title">Non Composite Castellated Beam<br>(Beam Only)</div>
               <div class="castellated-beam-option-desc">상부 슬래브가 없는 Castellated Beam 설계</div>
             </div>
             <div class="castellated-beam-option" onclick="selectCastellatedBeamType('with-slab')">
               <div class="castellated-beam-option-icon">🏢</div>
-              <div class="castellated-beam-option-title">Composite Castillated Beam<br>with Top-Slab</div>
-              <div class="castellated-beam-option-desc">상부 슬래브가 있는 Castellated Beam 설계</div>
+              <div class="castellated-beam-option-title">Composite Castellated Beam<br>with Top-Slab</div>
+              <div class="castellated-beam-option-desc">구조계산은 Non Composite와 동일하며, 전단연결재를 이용하여 슬래브와 합성할 수 있는 구조계산입니다.</div>
             </div>
           </div>
         </div>
@@ -386,10 +430,10 @@
     
     if (type === 'without-slab') {
       // Redirect to Castellated Beam without top-slab calculator
-      window.location.href = '/pages/k-col web software/castellated-beam-calculator.html?type=without-slab';
+      window.location.href = '/pages/k-col web software/noncomposite-castellatedbeam-calculator.html?type=without-slab';
     } else if (type === 'with-slab') {
       // Redirect to Castellated Beam with top-slab calculator
-      window.location.href = '/pages/k-col web software/castellated-beam-calculator.html?type=with-slab';
+      window.location.href = '/pages/k-col web software/noncomposite-castellatedbeam-calculator.html?type=with-slab';
     }
   }
 

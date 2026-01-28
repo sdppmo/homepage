@@ -92,8 +92,8 @@
           <a href="pages/slim-box-web-support.html" class="nav-item gold">D. M. I. S. (K-COL / Slim-Box)</a>
           <a href="pages/k-col web software/crossHcolumnCalculator.html" class="nav-item active gold" data-requires-auth="true" data-required-groups="kcol-user">K-COL Web Software</a>
           <a href="pages/K-product/2H_steel_product.html" class="nav-item gold" id="kcol-product-schedule-link" data-requires-auth="true" data-required-groups="kcol-admin">K-COL Product Schedule</a>
-          <div class="nav-item small-text gray-text" id="ex-slim-box-nav" style="display: none;">Composite Beam Design (H형강)</div>
-          <div class="nav-item small-text gray-text" id="ex-2" style="display: none;">Castillated composite Beam Design</div>
+          <div class="nav-item gold" id="ex-slim-box-nav" style="display: flex; cursor: pointer;">Composite Beam Design (H형강)</div>
+          <div class="nav-item gold" id="ex-2" style="display: flex; cursor: pointer;">Castellated composite Beam Design</div>
           <a href="pages/ks-code-database.html" class="nav-item gold">KS code DB(철골용)</a>
           <a href="pages/qa.html" class="nav-item gold">Q & A (logged-in user)</a>
           <div class="nav-item gray-text" onclick="enableKosisMode()" style="cursor: pointer;">KOSIS (월평균가격)</div>
@@ -486,11 +486,30 @@
       }
     }
 
-    // 페이지 로드 시 환율 정보 가져오기
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', fetchExchangeRate);
-    } else {
-      fetchExchangeRate();
+    // 페이지 로드 시 환율 정보 가져오기 (오류가 발생해도 페이지 초기화를 막지 않도록)
+    try {
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function() {
+          fetchExchangeRate().catch(function(err) {
+            // #region agent log
+            fetch('http://127.0.0.1:7242/ingest/f6b33b86-5eb3-41dd-83f7-9e0a0382507b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'index.html:DOMContentLoaded',message:'fetchExchangeRate promise rejection',data:{error:err.message,errorName:err.name},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'EXCHANGE'})}).catch(()=>{});
+            // #endregion
+            console.error('환율 정보 가져오기 실패 (무시됨):', err);
+          });
+        });
+      } else {
+        fetchExchangeRate().catch(function(err) {
+          // #region agent log
+          fetch('http://127.0.0.1:7242/ingest/f6b33b86-5eb3-41dd-83f7-9e0a0382507b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'index.html:pageLoad',message:'fetchExchangeRate promise rejection',data:{error:err.message,errorName:err.name},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'EXCHANGE'})}).catch(()=>{});
+          // #endregion
+          console.error('환율 정보 가져오기 실패 (무시됨):', err);
+        });
+      }
+    } catch (err) {
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/f6b33b86-5eb3-41dd-83f7-9e0a0382507b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'index.html:pageLoad',message:'Error calling fetchExchangeRate',data:{error:err.message,errorName:err.name},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'EXCHANGE'})}).catch(()=>{});
+      // #endregion
+      console.error('환율 정보 가져오기 호출 중 오류 (무시됨):', err);
     }
 
     // 1시간마다 환율 정보 업데이트
