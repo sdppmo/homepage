@@ -2581,11 +2581,11 @@
                     noResults = document.getElementById('noResults');
                 }
                 if (!container || !noResults) {
-                    // #region agent log
+                // #region agent log
                     fetch('http://127.0.0.1:7242/ingest/f6b33b86-5eb3-41dd-83f7-9e0a0382507b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'noncomposite-castellatedbeam-calculator.html:displayResults',message:'DOM elements not found after recreation attempt',data:{container:!!container,noResults:!!noResults},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H_RECREATE'})}).catch(()=>{});
-                    // #endregion
+                // #endregion
                     alert('결과 표시 영역을 찾을 수 없습니다.');
-                    return;
+                return;
                 }
             }
 
@@ -5695,22 +5695,22 @@
                         const fullHeight = Math.max(scrollHeight, clientHeight, offsetHeight) + paddingTop + paddingBottom + marginTop + marginBottom + 50; // 50px buffer
                         const fullWidth = Math.max(targetElement.scrollWidth, targetElement.offsetWidth, targetElement.clientWidth);
 
-                        // #region agent log
+                    // #region agent log
                         fetch('http://127.0.0.1:7242/ingest/f6b33b86-5eb3-41dd-83f7-9e0a0382507b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'noncomposite-castellatedbeam-calculator.html:html2canvas',message:'Starting html2canvas conversion',data:{targetElement:rightSection?'right-section':'resultsContainer',targetElementId:targetElement?targetElement.id:'',targetElementClassName:targetElement?targetElement.className:'',targetWidth:fullWidth,targetHeight:fullHeight,scrollHeight:scrollHeight,clientHeight:clientHeight,offsetHeight:offsetHeight,paddingTop:paddingTop,paddingBottom:paddingBottom,rightSectionExists:!!rightSection,containerExists:!!container},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'IMAGE'})}).catch(()=>{});
-                        // #endregion
-                        
+                    // #endregion
+                    
                         html2canvasFn(targetElement, {
                             scale: 2,
-                            useCORS: true,
-                            logging: false,
-                            backgroundColor: '#ffffff',
+                        useCORS: true,
+                        logging: false,
+                        backgroundColor: '#ffffff',
                             width: fullWidth,
                             height: fullHeight,
                             scrollX: 0,
                             scrollY: 0,
                             windowWidth: fullWidth,
                             windowHeight: fullHeight,
-                            allowTaint: true,
+                        allowTaint: true,
                             foreignObjectRendering: false,
                             removeContainer: false,
                             onclone: function(clonedDoc) {
@@ -5721,17 +5721,17 @@
                                     clonedElement.style.height = 'auto';
                                 }
                             }
-                        }).then(function(canvas) {
+                    }).then(function(canvas) {
                             // Restore original styles
                             if (rightSection) {
                                 rightSection.style.maxHeight = originalMaxHeight;
                                 rightSection.style.overflow = originalOverflow;
                                 rightSection.style.height = originalHeight;
                             }
-                            // #region agent log
+                        // #region agent log
                             fetch('http://127.0.0.1:7242/ingest/f6b33b86-5eb3-41dd-83f7-9e0a0382507b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'noncomposite-castellatedbeam-calculator.html:html2canvas',message:'Image conversion successful',data:{canvasWidth:canvas.width,canvasHeight:canvas.height,targetElement:rightSection?'right-section':'resultsContainer',targetElementExists:!!targetElement},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'IMAGE'})}).catch(()=>{});
-                            // #endregion
-                            
+                        // #endregion
+                        
                             // right-section 전체를 이미지로 교체
                             // 보안을 위해 원본 HTML을 저장하지 않음
                             // right-section을 다시 찾기 (이미지 변환 중 DOM이 변경되었을 수 있음)
@@ -5747,30 +5747,30 @@
                                 
                                 // 기존 data-original-html 속성 제거 (이전에 저장된 것이 있다면)
                                 finalTargetElement.removeAttribute('data-original-html');
-                                
-                                // 이미지 요소 생성
-                                const img = document.createElement('img');
-                                img.src = canvas.toDataURL('image/png');
-                                img.style.width = '100%';
-                                img.style.height = 'auto';
-                                img.style.display = 'block';
-                                img.style.userSelect = 'none';
-                                img.style.pointerEvents = 'none';
-                                img.style.webkitUserSelect = 'none';
-                                img.style.webkitUserDrag = 'none';
-                                
-                                // 이미지 우클릭 방지
-                                img.addEventListener('contextmenu', function(e) {
-                                    e.preventDefault();
-                                    return false;
-                                });
-                                
-                                // 이미지 드래그 방지
-                                img.addEventListener('dragstart', function(e) {
-                                    e.preventDefault();
-                                    return false;
-                                });
-                                
+                        
+                        // 이미지 요소 생성
+                        const img = document.createElement('img');
+                        img.src = canvas.toDataURL('image/png');
+                        img.style.width = '100%';
+                        img.style.height = 'auto';
+                        img.style.display = 'block';
+                        img.style.userSelect = 'none';
+                        img.style.pointerEvents = 'none';
+                        img.style.webkitUserSelect = 'none';
+                        img.style.webkitUserDrag = 'none';
+                        
+                        // 이미지 우클릭 방지
+                        img.addEventListener('contextmenu', function(e) {
+                            e.preventDefault();
+                            return false;
+                        });
+                        
+                        // 이미지 드래그 방지
+                        img.addEventListener('dragstart', function(e) {
+                            e.preventDefault();
+                            return false;
+                        });
+                        
                                 // 이미지 로드 완료 대기
                                 img.onload = function() {
                                     // #region agent log

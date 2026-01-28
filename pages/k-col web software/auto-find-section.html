@@ -483,7 +483,7 @@
                 
                 <div style="overflow-x: auto; margin-top: 15px;">
                     <table class="load-table" style="width: 100%; border-collapse: collapse; font-size: 13px;">
-                        <thead>
+                    <thead>
                             <tr style="background: linear-gradient(135deg, #2c4a7c, #4a6fa5); color: white;">
                                 <th style="padding: 10px; border: 1px solid #ccc; text-align: center; min-width: 50px;">Nos.</th>
                                 <th style="padding: 10px; border: 1px solid #ccc; text-align: center; min-width: 120px;">기둥이름</th>
@@ -494,9 +494,9 @@
                                 <th style="padding: 10px; border: 1px solid #ccc; text-align: center; min-width: 100px;">Ly (m)</th>
                                 <th style="padding: 10px; border: 1px solid #ccc; text-align: center; min-width: 80px;">Kx</th>
                                 <th style="padding: 10px; border: 1px solid #ccc; text-align: center; min-width: 80px;">Ky</th>
-                            </tr>
-                        </thead>
-                        <tbody id="loadTableBody">
+                        </tr>
+                    </thead>
+                    <tbody id="loadTableBody">
                             <!-- 하중 입력 데이터가 여기에 표시됩니다 -->
                             <!-- 기본 예시 행 (9개 컬럼) - JavaScript가 실행되지 않아도 보이도록 -->
                             <tr>
@@ -532,8 +532,8 @@
                                 <td style="padding: 8px; border: 1px solid #e2e8f0;"><input type="number" id="col3_Kx" value="0.8" step="0.1" placeholder="Kx" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px; font-size: 13px;" onchange="if(typeof updateColumnData === 'function') updateColumnData(3, 'kx', this.value)"></td>
                                 <td style="padding: 8px; border: 1px solid #e2e8f0;"><input type="number" id="col3_Ky" value="0.8" step="0.1" placeholder="Ky" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px; font-size: 13px;" onchange="if(typeof updateColumnData === 'function') updateColumnData(3, 'ky', this.value)"></td>
                             </tr>
-                        </tbody>
-                    </table>
+                    </tbody>
+                </table>
                 </div>
             </div>
 
@@ -793,16 +793,16 @@
                     }
                 }
             }
-
+            
             const count = parseInt(document.getElementById('columnCount').value) || 3;
             console.log(`📊 기둥 개수: ${count}`);
             
             // 기존 데이터 보존 (먼저 수집)
             const existingData = {};
             if (Array.isArray(columnData)) {
-                columnData.forEach(col => {
+            columnData.forEach(col => {
                     if (col && col.no) {
-                        existingData[col.no] = col;
+                existingData[col.no] = col;
                     }
                 });
             }
@@ -842,7 +842,7 @@
                             };
                         }
                     });
-                } else {
+                        } else {
                     // 이미 9개 컬럼이 있으면 재생성 생략 (행 개수는 무시)
                     console.log('✅ 이미 9개 컬럼 테이블이 있습니다. 재생성 생략.');
                     // 기존 HTML 행의 데이터를 columnData에 반영
@@ -906,7 +906,7 @@
                 td1.style.cssText = 'font-weight: 600; color: #667eea; text-align: center;';
                 td1.textContent = i;
                 row.appendChild(td1);
-
+                
                 // 기둥이름
                 const td2 = document.createElement('td');
                 const input2 = document.createElement('input');
@@ -917,7 +917,7 @@
                 input2.onchange = function() { updateColumnData(i, 'name', this.value); };
                 td2.appendChild(input2);
                 row.appendChild(td2);
-
+                
                 // Pu (kN)
                 const td3 = document.createElement('td');
                 const input3 = document.createElement('input');
@@ -953,7 +953,7 @@
                 input5.onchange = function() { updateColumnData(i, 'muy', this.value); };
                 td5.appendChild(input5);
                 row.appendChild(td5);
-
+                        
                 // Lx (m) - 새로 추가
                 const td6 = document.createElement('td');
                 const input6 = document.createElement('input');
@@ -977,7 +977,7 @@
                 input7.onchange = function() { updateColumnData(i, 'ly', this.value); };
                 td7.appendChild(input7);
                 row.appendChild(td7);
-
+                            
                 // Kx
                 const td8 = document.createElement('td');
                 const input8 = document.createElement('input');
@@ -1003,7 +1003,7 @@
                 row.appendChild(td9);
 
                 tbody.appendChild(row);
-
+                            
                 // columnData 업데이트
                 if (!existing) {
                     columnData.push({

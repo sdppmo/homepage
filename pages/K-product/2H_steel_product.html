@@ -1306,6 +1306,8 @@
         let auth = null;
         let isFirebaseEnabled = false;
         let currentUser = null;
+        let userRole = 'viewer'; // 기본 역할: viewer
+        let allowedProcesses = []; // Editor가 수정 가능한 공정 목록 (예: [1, 2, 3, 6])
         
         try {
             firebase.initializeApp(firebaseConfig);
@@ -1314,14 +1316,42 @@
             isFirebaseEnabled = firebaseConfig.apiKey !== "YOUR_API_KEY";
             console.log('[Firebase] Firestore 초기화 완료');
             
-            // 인증 상태 확인 (선택적 - Firestore 규칙이 if true로 설정된 경우 불필요)
-            // 익명 로그인 시도 제거: Firestore 규칙을 if true로 설정하면 인증이 필요 없음
+            // 인증 상태 확인 및 익명 로그인
+            // Firestore 규칙이 request.auth != null을 요구하므로 익명 로그인 필요
             auth.onAuthStateChanged((user) => {
                 currentUser = user;
                 if (user) {
                     console.log('[Firebase] 인증된 사용자:', user.isAnonymous ? '(익명)' : user.email);
+                    // 사용자 역할 로드
+                    loadUserRole().then(() => {
+                        // 리스너 재설정 (인증 후)
+                        if (isFirebaseEnabled) {
+                            setupFirebaseListeners();
+                        }
+                    });
                 } else {
-                    console.log('[Firebase] 인증되지 않은 사용자 - Firestore 규칙이 if true로 설정되어 있으면 접근 가능');
+                    console.log('[Firebase] 인증되지 않은 사용자 - 익명 로그인 시도');
+                    // 익명 로그인으로 Firestore 접근 가능하도록 시도
+                    auth.signInAnonymously()
+                        .then((result) => {
+                            currentUser = result.user;
+                            console.log('[Firebase] 익명 로그인 성공');
+                            // 사용자 역할 로드
+                            return loadUserRole();
+                        })
+                        .then(() => {
+                            // 리스너 재설정 (인증 후)
+                            if (isFirebaseEnabled) {
+                                setupFirebaseListeners();
+                            }
+                        })
+                        .catch((error) => {
+                            console.error('[Firebase] 익명 로그인 실패:', error);
+                            console.warn('[Firebase] 해결 방법: Firebase Console → Authentication → Sign-in method → Anonymous → Enable');
+                            console.warn('[Firebase] 현재는 localStorage 모드로 작동합니다.');
+                            userRole = null;
+                            applyRoleBasedUI();
+                        });
                 }
             });
         } catch (e) {
@@ -1361,6 +1391,418 @@
             // projectId 기반으로 저장하여 여러 사용자가 같은 프로젝트 데이터에 접근 가능
             const docPath = `${PROJECT_ID}_${pathSuffix}`;
             return db.collection('kcolumn').doc(docPath);
+        }
+        
+        // 사용자 역할 관리
+        function getUserRoleRef() {
+            if (!currentUser || !db) return null;
+            return db.collection('user_roles').doc(currentUser.uid);
+        }
+        
+        // 사용자 역할 가져오기
+        function getUserRole() {
+            return userRole;
+        }
+        
+        // 사용자 역할 로드
+        function loadUserRole() {
+            if (!isFirebaseEnabled || !currentUser || !db) {
+                // Firebase가 비활성화된 경우 (로컬 모드)
+                userRole = null;
+                allowedProcesses = [];
+                showNoAccessMessage('Firebase가 비활성화되어 있습니다. 관리자에게 문의하세요.');
+                return Promise.resolve(null);
+            }
+            
+            const roleRef = getUserRoleRef();
+            if (!roleRef) {
+                userRole = null;
+                allowedProcesses = [];
+                showNoAccessMessage('사용자 인증 정보를 확인할 수 없습니다.');
+                return Promise.resolve(null);
+            }
+            
+            return roleRef.get()
+                .then((doc) => {
+                    if (doc.exists) {
+                        const data = doc.data();
+                        userRole = data.role || null;
+                        
+                        if (!userRole) {
+                            // 역할이 null이면 접근 불가
+                            showNoAccessMessage('사용자 역할이 설정되지 않았습니다. 관리자에게 문의하세요.');
+                            return null;
+                        }
+                        
+                        // Editor의 경우 allowedProcesses 필드 확인
+                        if (userRole === 'editor') {
+                            allowedProcesses = data.allowedProcesses || [];
+                            // allowedProcesses가 없으면 기본값: 공장 3개(1,2,3) + 현장 1개(6)
+                            if (allowedProcesses.length === 0) {
+                                allowedProcesses = [1, 2, 3, 6]; // 주기둥커팅, 소부재가공, 주기둥조립, 현장설치
+                            }
+                            console.log('[RBAC] Editor 허용 공정:', allowedProcesses);
+                        } else {
+                            allowedProcesses = []; // Editor가 아니면 제한 없음
+                        }
+                    } else {
+                        // 역할이 없으면 접근 불가 (익명 사용자 차단)
+                        userRole = null;
+                        allowedProcesses = [];
+                        showNoAccessMessage('접근 권한이 없습니다. 관리자에게 역할을 요청하세요.');
+                        return null;
+                    }
+                    console.log('[RBAC] 사용자 역할:', userRole, '허용 공정:', allowedProcesses);
+                    applyRoleBasedUI();
+                    return userRole;
+                })
+                .catch((error) => {
+                    console.error('[RBAC] 역할 로드 오류:', error);
+                    userRole = null;
+                    allowedProcesses = [];
+                    showNoAccessMessage('역할 정보를 불러올 수 없습니다. 관리자에게 문의하세요.');
+                    return null;
+                });
+        }
+        
+        // 접근 불가 메시지 표시
+        function showNoAccessMessage(message) {
+            // 기존 메시지 제거
+            const existingMsg = document.getElementById('no-access-message');
+            if (existingMsg) {
+                existingMsg.remove();
+            }
+            
+            // 메시지 표시
+            const msgDiv = document.createElement('div');
+            msgDiv.id = 'no-access-message';
+            msgDiv.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:white;padding:30px;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,0.3);z-index:10001;max-width:500px;text-align:center;';
+            msgDiv.innerHTML = `
+                <h2 style="color:#f44336;margin-bottom:15px;">⚠️ 접근 권한 없음</h2>
+                <p style="color:#666;margin-bottom:20px;line-height:1.6;">${message}</p>
+                <button onclick="window.location.href='../../index.html'" style="padding:10px 20px;background:#2196f3;color:white;border:none;border-radius:6px;cursor:pointer;font-size:14px;">홈으로 돌아가기</button>
+            `;
+            document.body.appendChild(msgDiv);
+            
+            // 모든 입력 필드 비활성화
+            applyRoleBasedUI();
+        }
+        
+        // 역할 기반 UI 제어
+        function applyRoleBasedUI() {
+            // 역할이 없으면 모든 기능 비활성화
+            if (!userRole) {
+                const workDateInput = document.getElementById('work-date');
+                const columnGridInput = document.getElementById('column-grid-input');
+                const saveButton = document.querySelector('#panel-input button[onclick*="saveSelectedColumns"]');
+                
+                if (workDateInput) workDateInput.disabled = true;
+                if (columnGridInput) {
+                    columnGridInput.style.pointerEvents = 'none';
+                    columnGridInput.style.opacity = '0.3';
+                }
+                if (saveButton) saveButton.disabled = true;
+                disableProcessButtons([]);
+                return; // 역할이 없으면 더 이상 진행하지 않음
+            }
+            
+            const isViewer = userRole === 'viewer';
+            const isEditor = userRole === 'editor';
+            const isApprover = userRole === 'approver';
+            const isAdmin = userRole === 'admin';
+            
+            // 일일입력 패널 제어
+            const inputPanel = document.getElementById('panel-input');
+            const workDateInput = document.getElementById('work-date');
+            const columnGridInput = document.getElementById('column-grid-input');
+            const saveButton = document.querySelector('#panel-input button[onclick*="saveSelectedColumns"]');
+            
+            if (isViewer) {
+                // Viewer: 읽기 전용
+                if (workDateInput) {
+                    workDateInput.disabled = true;
+                    workDateInput.title = 'Viewer는 일일입력을 할 수 없습니다.';
+                }
+                if (columnGridInput) {
+                    columnGridInput.style.pointerEvents = 'none';
+                    columnGridInput.style.opacity = '0.6';
+                }
+                if (saveButton) {
+                    saveButton.disabled = true;
+                    saveButton.title = 'Viewer는 저장할 수 없습니다.';
+                }
+                // 공정 버튼 비활성화
+                disableProcessButtons([]);
+                // 역할 표시
+                showRoleBadge('viewer', '열람자 - 읽기 전용');
+            } else if (isEditor) {
+                // Editor: 허용된 공정만 수정 가능
+                if (workDateInput) {
+                    workDateInput.disabled = false;
+                }
+                if (columnGridInput) {
+                    columnGridInput.style.pointerEvents = 'auto';
+                    columnGridInput.style.opacity = '1';
+                }
+                if (saveButton) {
+                    saveButton.disabled = false;
+                }
+                // 허용된 공정 버튼만 활성화, 나머지 비활성화
+                disableProcessButtons(allowedProcesses);
+                // 역할 표시
+                const allowedNames = allowedProcesses.map(p => {
+                    const proc = PROCESSES.find(pr => pr.id === p);
+                    return proc ? `${p}.${proc.name}` : `${p}`;
+                }).join(', ');
+                showRoleBadge('editor', `편집자 - 공정 ${allowedNames}만 수정 가능`);
+            } else {
+                // Approver, Admin: 모든 공정 수정 가능
+                if (workDateInput) {
+                    workDateInput.disabled = false;
+                }
+                if (columnGridInput) {
+                    columnGridInput.style.pointerEvents = 'auto';
+                    columnGridInput.style.opacity = '1';
+                }
+                if (saveButton) {
+                    saveButton.disabled = false;
+                }
+                // 모든 공정 버튼 활성화
+                disableProcessButtons([]);
+                // 역할 표시
+                const roleNames = {
+                    'approver': '승인자 - 일일입력 및 승인 가능',
+                    'admin': '관리자 - 모든 권한'
+                };
+                showRoleBadge(userRole, roleNames[userRole] || userRole);
+            }
+        }
+        
+        // 공정 버튼 활성화/비활성화
+        function disableProcessButtons(allowedProcesses) {
+            // 모든 공정 버튼 찾기
+            const processButtons = document.querySelectorAll('.process-btn');
+            processButtons.forEach(btn => {
+                const processId = parseInt(btn.dataset.process);
+                if (userRole === 'viewer') {
+                    // Viewer: 모든 버튼 비활성화
+                    btn.disabled = true;
+                    btn.style.opacity = '0.5';
+                    btn.style.cursor = 'not-allowed';
+                    btn.title = 'Viewer는 공정을 선택할 수 없습니다.';
+                } else if (userRole === 'editor') {
+                    // Editor: 허용된 공정만 활성화
+                    if (allowedProcesses.includes(processId)) {
+                        btn.disabled = false;
+                        btn.style.opacity = '1';
+                        btn.style.cursor = 'pointer';
+                        btn.title = '';
+                    } else {
+                        btn.disabled = true;
+                        btn.style.opacity = '0.5';
+                        btn.style.cursor = 'not-allowed';
+                        const proc = PROCESSES.find(p => p.id === processId);
+                        btn.title = `Editor는 ${proc ? proc.name : `공정 ${processId}`}을 수정할 수 없습니다.`;
+                    }
+                } else {
+                    // Approver, Admin: 모든 버튼 활성화
+                    btn.disabled = false;
+                    btn.style.opacity = '1';
+                    btn.style.cursor = 'pointer';
+                    btn.title = '';
+                }
+            });
+        }
+        
+        // 역할 배지 표시
+        function showRoleBadge(role, label) {
+            let badge = document.getElementById('user-role-badge');
+            if (!badge) {
+                badge = document.createElement('div');
+                badge.id = 'user-role-badge';
+                badge.style.cssText = 'position:fixed;top:20px;right:20px;background:#333;color:white;padding:8px 16px;border-radius:8px;font-size:12px;z-index:10000;box-shadow:0 2px 8px rgba(0,0,0,0.2);cursor:pointer;transition:all 0.2s;';
+                badge.onclick = () => showRoleDetails(role);
+                badge.onmouseenter = function() { this.style.transform = 'scale(1.05)'; this.style.boxShadow = '0 4px 12px rgba(0,0,0,0.3)'; };
+                badge.onmouseleave = function() { this.style.transform = 'scale(1)'; this.style.boxShadow = '0 2px 8px rgba(0,0,0,0.2)'; };
+                document.body.appendChild(badge);
+            }
+            
+            const roleColors = {
+                'viewer': '#9e9e9e',
+                'editor': '#2196f3',
+                'approver': '#ff9800',
+                'admin': '#f44336'
+            };
+            badge.style.background = roleColors[role] || '#333';
+            badge.textContent = `👤 ${label}`;
+            badge.title = '클릭하여 상세 정보 확인';
+        }
+        
+        // 역할 상세 정보 모달 표시
+        function showRoleDetails(role) {
+            // 기존 모달 제거
+            const existingModal = document.getElementById('role-details-modal');
+            if (existingModal) {
+                existingModal.remove();
+            }
+            
+            // 모달 생성
+            const modal = document.createElement('div');
+            modal.id = 'role-details-modal';
+            modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:10001;display:flex;align-items:center;justify-content:center;';
+            modal.onclick = (e) => {
+                if (e.target === modal) {
+                    modal.remove();
+                }
+            };
+            
+            const roleNames = {
+                'viewer': '열람자',
+                'editor': '편집자',
+                'approver': '승인자',
+                'admin': '관리자'
+            };
+            
+            const roleDescriptions = {
+                'viewer': '공정표 열람만 가능합니다. 일일입력 및 수정은 불가능합니다.',
+                'editor': '허용된 공정에 대해서만 일일입력 및 수정이 가능합니다.',
+                'approver': '모든 공정에 대해 일일입력 및 변경사항 승인이 가능합니다.',
+                'admin': '모든 권한을 가지고 있습니다. 사용자 및 권한 관리가 가능합니다.'
+            };
+            
+            const roleColors = {
+                'viewer': '#9e9e9e',
+                'editor': '#2196f3',
+                'approver': '#ff9800',
+                'admin': '#f44336'
+            };
+            
+            let contentHtml = `
+                <div style="background:white;border-radius:12px;padding:30px;max-width:500px;width:90%;box-shadow:0 4px 20px rgba(0,0,0,0.3);">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+                        <h2 style="margin:0;color:#333;display:flex;align-items:center;gap:10px;">
+                            <span style="font-size:24px;">👤</span>
+                            <span>${roleNames[role] || role}</span>
+                        </h2>
+                        <button onclick="document.getElementById('role-details-modal').remove()" style="background:none;border:none;font-size:24px;cursor:pointer;color:#666;padding:0;width:30px;height:30px;display:flex;align-items:center;justify-content:center;">&times;</button>
+                    </div>
+                    <div style="margin-bottom:20px;padding:15px;background:#f5f5f5;border-radius:8px;border-left:4px solid ${roleColors[role] || '#333'};">
+                        <p style="margin:0;color:#666;line-height:1.6;">${roleDescriptions[role] || '역할 정보가 없습니다.'}</p>
+                    </div>
+            `;
+            
+            // Editor인 경우 허용된 공정 목록 표시
+            if (role === 'editor' && allowedProcesses && allowedProcesses.length > 0) {
+                contentHtml += `
+                    <div style="margin-bottom:20px;">
+                        <h3 style="margin:0 0 15px 0;color:#333;font-size:16px;">✅ 입력 가능한 공정</h3>
+                        <div style="display:grid;gap:10px;">
+                `;
+                
+                allowedProcesses.forEach(processId => {
+                    const proc = PROCESSES.find(p => p.id === processId);
+                    if (proc) {
+                        const companyNames = {
+                            'yuseok': '유석철강',
+                            'jinhung': '진흥기업'
+                        };
+                        const companyName = companyNames[proc.company] || proc.company;
+                        contentHtml += `
+                            <div style="padding:12px;background:#e3f2fd;border-radius:8px;border-left:4px solid #2196f3;display:flex;justify-content:space-between;align-items:center;">
+                                <div>
+                                    <strong style="color:#1976d2;">공정 ${processId}: ${proc.name}</strong>
+                                    <div style="font-size:12px;color:#666;margin-top:4px;">${companyName}</div>
+                                </div>
+                                <span style="font-size:20px;">✅</span>
+                            </div>
+                        `;
+                    }
+                });
+                
+                // 허용되지 않은 공정 목록도 표시
+                const allProcessIds = PROCESSES.map(p => p.id);
+                const notAllowedProcesses = allProcessIds.filter(id => !allowedProcesses.includes(id));
+                
+                if (notAllowedProcesses.length > 0) {
+                    contentHtml += `
+                        </div>
+                        <h3 style="margin:20px 0 15px 0;color:#333;font-size:16px;">❌ 입력 불가능한 공정</h3>
+                        <div style="display:grid;gap:10px;">
+                    `;
+                    
+                    notAllowedProcesses.forEach(processId => {
+                        const proc = PROCESSES.find(p => p.id === processId);
+                        if (proc) {
+                            const companyNames = {
+                                'yuseok': '유석철강',
+                                'jinhung': '진흥기업'
+                            };
+                            const companyName = companyNames[proc.company] || proc.company;
+                            contentHtml += `
+                                <div style="padding:12px;background:#f5f5f5;border-radius:8px;border-left:4px solid #ccc;display:flex;justify-content:space-between;align-items:center;opacity:0.6;">
+                                    <div>
+                                        <strong style="color:#666;">공정 ${processId}: ${proc.name}</strong>
+                                        <div style="font-size:12px;color:#999;margin-top:4px;">${companyName}</div>
+                                    </div>
+                                    <span style="font-size:20px;">❌</span>
+                                </div>
+                            `;
+                        }
+                    });
+                }
+                
+                contentHtml += `
+                        </div>
+                    </div>
+                `;
+            } else if (role === 'editor') {
+                contentHtml += `
+                    <div style="padding:15px;background:#fff3cd;border-radius:8px;border-left:4px solid #ffc107;">
+                        <p style="margin:0;color:#856404;">⚠️ 허용된 공정이 설정되지 않았습니다. 관리자에게 문의하세요.</p>
+                    </div>
+                `;
+            }
+            
+            // 다른 역할인 경우 모든 공정 표시
+            if (role !== 'editor') {
+                contentHtml += `
+                    <div style="margin-bottom:20px;">
+                        <h3 style="margin:0 0 15px 0;color:#333;font-size:16px;">✅ 접근 가능한 공정</h3>
+                        <div style="display:grid;gap:10px;">
+                `;
+                
+                PROCESSES.forEach(proc => {
+                    const companyNames = {
+                        'yuseok': '유석철강',
+                        'jinhung': '진흥기업'
+                    };
+                    const companyName = companyNames[proc.company] || proc.company;
+                    contentHtml += `
+                        <div style="padding:12px;background:#e8f5e9;border-radius:8px;border-left:4px solid #4caf50;display:flex;justify-content:space-between;align-items:center;">
+                            <div>
+                                <strong style="color:#2e7d32;">공정 ${proc.id}: ${proc.name}</strong>
+                                <div style="font-size:12px;color:#666;margin-top:4px;">${companyName}</div>
+                            </div>
+                            <span style="font-size:20px;">✅</span>
+                        </div>
+                    `;
+                });
+                
+                contentHtml += `
+                        </div>
+                    </div>
+                `;
+            }
+            
+            contentHtml += `
+                    <div style="text-align:center;margin-top:20px;">
+                        <button onclick="document.getElementById('role-details-modal').remove()" style="padding:10px 30px;background:${roleColors[role] || '#333'};color:white;border:none;border-radius:6px;cursor:pointer;font-size:14px;font-weight:600;">닫기</button>
+                    </div>
+                </div>
+            `;
+            
+            modal.innerHTML = contentHtml;
+            document.body.appendChild(modal);
         }
         
         // Firestore 데이터 저장 헬퍼
@@ -1452,6 +1894,12 @@
                     renderGanttChart();
                 }
                 
+                // 역할 기반 UI 적용 (사용자 인증 후 자동으로 로드됨)
+                if (!currentUser) {
+                    userRole = null;
+                    applyRoleBasedUI();
+                }
+                
                 // URL 파라미터로 공정 선택 (예: ?process=1)
                 const processParam = urlParams.get('process');
                 if (processParam) {
@@ -1537,6 +1985,17 @@
 
         // Process Selection (공정별 선택)
         function selectProcess(processId) {
+            // Editor의 경우 허용된 공정만 선택 가능
+            if (userRole === 'editor' && !allowedProcesses.includes(processId)) {
+                const proc = PROCESSES.find(p => p.id === processId);
+                const procName = proc ? proc.name : `공정 ${processId}`;
+                alert(`⚠️ 권한 없음\n\nEditor는 ${procName}을 선택할 수 없습니다.\n\n허용된 공정: ${allowedProcesses.map(p => {
+                    const pr = PROCESSES.find(pr => pr.id === p);
+                    return pr ? `${p}.${pr.name}` : `${p}`;
+                }).join(', ')}`);
+                return;
+            }
+            
             currentProcess = processId;
             
             // 공정 변경 시 선택된 기둥 초기화
@@ -1794,6 +2253,23 @@
         
         // 선택된 모든 기둥을 한 번에 저장
         function saveSelectedColumns() {
+            // 역할 확인: Viewer는 저장 불가
+            if (userRole === 'viewer') {
+                alert('⚠️ 권한 없음\n\nViewer는 일일입력을 할 수 없습니다.\n\nEditor 이상의 권한이 필요합니다.');
+                return;
+            }
+            
+            // Editor의 경우 허용된 공정만 저장 가능
+            if (userRole === 'editor' && !allowedProcesses.includes(currentProcess)) {
+                const proc = PROCESSES.find(p => p.id === currentProcess);
+                const procName = proc ? proc.name : `공정 ${currentProcess}`;
+                alert(`⚠️ 권한 없음\n\nEditor는 ${procName}을 수정할 수 없습니다.\n\n허용된 공정: ${allowedProcesses.map(p => {
+                    const pr = PROCESSES.find(pr => pr.id === p);
+                    return pr ? `${p}.${pr.name}` : `${p}`;
+                }).join(', ')}`);
+                return;
+            }
+            
             if (selectedColumns.length === 0) {
                 alert('저장할 기둥을 선택해주세요.');
                 return;
@@ -3038,13 +3514,18 @@
             selectedColumn = columnId;
             document.getElementById('modal-column-num').textContent = columnId;
             
-            // 수정 모드일 때는 모든 공정 선택 가능
+            // 수정 모드일 때는 공정 선택 가능 (Editor는 허용된 공정만)
             if (editMode) {
                 const processNames = ['미착수', '주기둥커팅', '기둥소부재가공', '주기둥조립', '소부재조립', '현장배송', '현장설치'];
                 let optionsHtml = '';
                 for (let i = 0; i <= 6; i++) {
                     const selected = (i === currentStatus) ? 'selected' : '';
-                    optionsHtml += `<option value="${i}" ${selected}>${i}. ${processNames[i]}</option>`;
+                    // Editor의 경우 허용된 공정만 선택 가능
+                    let disabled = '';
+                    if (userRole === 'editor' && i > 0 && !allowedProcesses.includes(i)) {
+                        disabled = 'disabled';
+                    }
+                    optionsHtml += `<option value="${i}" ${selected} ${disabled}>${i}. ${processNames[i]}${disabled ? ' (권한 없음)' : ''}</option>`;
                 }
                 document.getElementById('modal-process-select').innerHTML = optionsHtml;
                 document.getElementById('modal-process-select').value = currentStatus;
@@ -3151,6 +3632,24 @@
 
         // Save Column Status
         function saveColumnStatus() {
+            // 역할 확인: Viewer는 저장 불가
+            if (userRole === 'viewer') {
+                alert('⚠️ 권한 없음\n\nViewer는 데이터를 수정할 수 없습니다.\n\nEditor 이상의 권한이 필요합니다.');
+                return;
+            }
+            
+            // Editor의 경우 허용된 공정만 저장 가능
+            const selectedStatus = parseInt(document.getElementById('modal-process-select').value);
+            const newStatus = editMode ? selectedStatus : (currentProcess || selectedStatus);
+            if (userRole === 'editor' && !allowedProcesses.includes(newStatus)) {
+                const proc = PROCESSES.find(p => p.id === newStatus);
+                const procName = proc ? proc.name : `공정 ${newStatus}`;
+                alert(`⚠️ 권한 없음\n\nEditor는 ${procName}을 수정할 수 없습니다.\n\n허용된 공정: ${allowedProcesses.map(p => {
+                    const pr = PROCESSES.find(pr => pr.id === p);
+                    return pr ? `${p}.${pr.name}` : `${p}`;
+                }).join(', ')}`);
+                return;
+            }
             if (!selectedColumn) {
                 alert('기둥이 선택되지 않았습니다.');
                 return;
@@ -4008,6 +4507,11 @@
 
         // Save/Load Data
         function saveData() {
+            // 역할 확인: Viewer는 저장 불가
+            if (userRole === 'viewer') {
+                alert('⚠️ 권한 없음\n\nViewer는 데이터를 수정할 수 없습니다.\n\nEditor 이상의 권한이 필요합니다.');
+                return;
+            }
             // 모든 공정(1-6)에서 선택된 기둥들을 한 번에 저장
             if (currentProcess && currentProcess >= 1 && currentProcess <= 6 && selectedColumns.length > 0) {
                 saveSelectedColumns();
@@ -6389,6 +6893,12 @@
         }
         
         function saveTransportPlan() {
+            // 역할 확인: Viewer는 저장 불가
+            if (userRole === 'viewer') {
+                alert('⚠️ 권한 없음\n\nViewer는 운송차수계획을 수정할 수 없습니다.\n\nEditor 이상의 권한이 필요합니다.');
+                return;
+            }
+            
             localStorage.setItem(kcolKey('transportPlan'), JSON.stringify(transportPlan));
             
             // 운송차수계획을 dailyData의 현장배송(process 5)에 동기화 (확인 없이 자동 동기화)
