@@ -1,0 +1,19 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // kcolumn collection: projectId 기반 접근 허용
+    // 경로: kcolumn/{projectId}_{suffix}
+    // 예: kcolumn/P1_columnData, kcolumn/P1_dailyData 등
+    match /kcolumn/{document=**} {
+      // ⚠️ 임시: 인증 없이도 접근 가능 (테스트용)
+      // 프로덕션 환경에서는 아래 주석 처리된 규칙을 사용하세요
+      allow read, write: if true;
+      
+      // 프로덕션용 규칙 (익명 로그인 활성화 후 사용):
+      // allow read, write: if request.auth != null;
+    }
+    
+    // 기존 users/{uid} 구조가 있다면 제거하거나 마이그레이션
+    // (필요한 경우에만 유지)
+  }
+}

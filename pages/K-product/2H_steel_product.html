@@ -761,8 +761,9 @@
         }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Firebase SDK (Firestore) -->
+    <!-- Firebase SDK (Firestore + Auth) -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
@@ -1300,15 +1301,29 @@
             appId: "1:578179103785:web:b8daecb0ac24924e30b038"
         };
 
-        // Firebase 초기화 (Firestore)
+        // Firebase 초기화 (Firestore + Auth)
         let db = null;
+        let auth = null;
         let isFirebaseEnabled = false;
+        let currentUser = null;
         
         try {
             firebase.initializeApp(firebaseConfig);
             db = firebase.firestore();
+            auth = firebase.auth();
             isFirebaseEnabled = firebaseConfig.apiKey !== "YOUR_API_KEY";
             console.log('[Firebase] Firestore 초기화 완료');
+            
+            // 인증 상태 확인 (선택적 - Firestore 규칙이 if true로 설정된 경우 불필요)
+            // 익명 로그인 시도 제거: Firestore 규칙을 if true로 설정하면 인증이 필요 없음
+            auth.onAuthStateChanged((user) => {
+                currentUser = user;
+                if (user) {
+                    console.log('[Firebase] 인증된 사용자:', user.isAnonymous ? '(익명)' : user.email);
+                } else {
+                    console.log('[Firebase] 인증되지 않은 사용자 - Firestore 규칙이 if true로 설정되어 있으면 접근 가능');
+                }
+            });
         } catch (e) {
             console.log('Firebase 초기화 실패, localStorage 모드로 전환:', e);
         }
@@ -1343,7 +1358,9 @@
 
         function kcolRef(pathSuffix) {
             // Firestore: collection 'kcolumn', document '{projectId}_{suffix}'
-            return db.collection('kcolumn').doc(`${PROJECT_ID}_${pathSuffix}`);
+            // projectId 기반으로 저장하여 여러 사용자가 같은 프로젝트 데이터에 접근 가능
+            const docPath = `${PROJECT_ID}_${pathSuffix}`;
+            return db.collection('kcolumn').doc(docPath);
         }
         
         // Firestore 데이터 저장 헬퍼
@@ -1476,20 +1493,25 @@
 
         // Firebase 실시간 리스너 (Firestore)
         function setupFirebaseListeners() {
-            // columnData 실시간 리스너
+            // columnData 실시간 리스너 (projectId 기반)
             kcolRef('columnData').onSnapshot((snapshot) => {
-                columnData = firestoreGet(snapshot);
+                const data = firestoreGet(snapshot);
+                columnData = data;
                 renderColumnGrid('column-grid-overview');
                 renderColumnGrid('column-grid-input');
                 updateProgressBars();
+            }, (error) => {
+                console.error('columnData 리스너 오류:', error);
             });
 
-            // dailyData 실시간 리스너
+            // dailyData 실시간 리스너 (projectId 기반)
             kcolRef('dailyData').onSnapshot((snapshot) => {
                 dailyData = firestoreGet(snapshot);
+            }, (error) => {
+                console.error('dailyData 리스너 오류:', error);
             });
 
-            // transportPlan 실시간 리스너
+            // transportPlan 실시간 리스너 (projectId 기반)
             kcolRef('transportPlan').onSnapshot((snapshot) => {
                 const data = firestoreGet(snapshot);
                 if (data && Object.keys(data).length > 0) {
@@ -1508,6 +1530,8 @@
                     renderColumnGrid('column-grid-input');
                     updateProgressBars();
                 }
+            }, (error) => {
+                console.error('transportPlan 리스너 오류:', error);
             });
         }
 
@@ -4003,7 +4027,7 @@
                 console.log('✅ localStorage 저장 완료:', { columnData, dailyData, columnCoordinates, deliveryConfirmed, actualDeliveryDate });
                 
                 if (isFirebaseEnabled && db) {
-                    // Firebase에 저장
+                    // Firebase에 저장 (projectId 기반)
                     firestoreSet(kcolRef('columnData'), columnData)
                         .then(() => {
                             return firestoreSet(kcolRef('dailyData'), dailyData);
@@ -4018,7 +4042,7 @@
                             return firestoreSet(kcolRef('actualDeliveryDate'), actualDeliveryDate);
                         })
                         .then(() => {
-                            console.log('✅ Firebase 저장 완료');
+                            console.log('✅ Firebase 저장 완료 (projectId:', PROJECT_ID + ')');
                         })
                         .catch((error) => {
                             console.error('Firebase 저장 오류:', error);
@@ -6556,12 +6580,6 @@
             }
         });
 
-        // Close process selection modal on outside click
-        document.getElementById('process-selection-modal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                cancelProcessSelection();
-            }
-        });
     </script>
 
     <!-- Process Selection Modal -->
@@ -6582,6 +6600,21 @@
             </div>
         </div>
     </div>
+    
+    <!-- Initialize process selection modal after DOM is loaded -->
+    <script>
+        // Close process selection modal on outside click
+        // This runs after the modal element is in the DOM
+        const processModal = document.getElementById('process-selection-modal');
+        if (processModal) {
+            processModal.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    cancelProcessSelection();
+                }
+            });
+        }
+    </script>
+    
     <script src="../../js/auth-config.js"></script>
     <script src="../../js/auth.js"></script>
     <script src="../../js/auth-guard.js"></script>
