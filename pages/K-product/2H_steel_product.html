@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>K-COLUMN 공정관리 시스템</title>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
         * {
@@ -777,6 +781,17 @@
             <div class="header-info">
                 <div>공사기간: 2025.12.26 ~ 2026.04.30</div>
                 <div style="margin-top:5px;">총 기둥수: <strong>50개</strong></div>
+                <div style="margin-top:10px;padding:8px;background:rgba(255,255,255,0.1);border-radius:6px;font-size:12px;">
+                    <div style="display:flex;align-items:center;gap:6px;">
+                        <input type="text" id="admin-uid-input" placeholder="Admin UID 입력" 
+                               style="flex:1;padding:6px 10px;border:1px solid rgba(255,255,255,0.3);border-radius:4px;background:rgba(255,255,255,0.9);color:#333;font-size:11px;">
+                        <button id="admin-setup-btn"
+                                style="padding:6px 12px;background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.3);border-radius:4px;color:white;cursor:pointer;font-size:11px;font-weight:600;white-space:nowrap;">
+                            Admin 설정
+                        </button>
+                    </div>
+                    <div id="admin-uid-status" style="margin-top:4px;font-size:10px;opacity:0.8;"></div>
+                </div>
             </div>
         </div>
 
@@ -1466,10 +1481,122 @@
             return `kcol:${PROJECT_ID}:${suffix}`;
         }
 
-        // 사용자 역할 관리 (Firebase 없이 localStorage 기반)
+        // 사용자 역할 관리 (Firebase + localStorage 하이브리드)
         
-        // 현재 사용자 UID 생성/가져오기 (브라우저 기반 고유 ID)
+        // Firebase 인증 상태 확인
+        let firebaseAuth = null;
+        let firebaseDb = null;
+        let firebaseInitialized = false;
+        
+        // Firebase 초기화 확인
+        function initFirebase() {
+            if (firebaseInitialized) return true;
+            
+            try {
+                if (typeof firebase !== 'undefined' && firebase.apps.length > 0) {
+                    firebaseAuth = firebase.auth();
+                    firebaseDb = firebase.firestore();
+                    firebaseInitialized = true;
+                    console.log('✅ Firebase 초기화 완료');
+                    return true;
+                }
+            } catch (error) {
+                console.warn('⚠️ Firebase 초기화 실패:', error);
+            }
+            return false;
+        }
+        
+        // Firebase에서 사용자 역할 로드
+        async function loadUserRoleFromFirebase() {
+            if (!initFirebase()) {
+                console.log('ℹ️ Firebase를 사용할 수 없습니다. localStorage를 사용합니다.');
+                return null;
+            }
+            
+            try {
+                const user = firebaseAuth.currentUser;
+                if (!user) {
+                    console.log('ℹ️ Firebase에 로그인된 사용자가 없습니다.');
+                    return null;
+                }
+                
+                console.log('🔍 Firebase 사용자 확인:', user.uid);
+                
+                // Firestore에서 사용자 역할 조회 (user_roles 컬렉션 사용)
+                const userDoc = await firebaseDb.collection('user_roles').doc(user.uid).get();
+                
+                if (userDoc.exists) {
+                    const userData = userDoc.data();
+                    const role = userData.role || 'viewer';
+                    const allowedProcesses = userData.allowedProcesses || [];
+                    
+                    console.log('✅ Firebase에서 역할 로드:', role, allowedProcesses);
+                    
+                    // localStorage에도 저장 (캐시)
+                    localStorage.setItem('kcol:userRole', role);
+                    localStorage.setItem('kcol:allowedProcesses', JSON.stringify(allowedProcesses));
+                    localStorage.setItem('kcol:firebaseUid', user.uid);
+                    
+                    return { role, allowedProcesses };
+                } else {
+                    console.log('ℹ️ Firestore에 사용자 역할 문서가 없습니다. 생성이 필요합니다.');
+                    return null;
+                }
+            } catch (error) {
+                console.error('❌ Firebase 역할 로드 오류:', error);
+                return null;
+            }
+        }
+        
+        // Firebase 인증 상태 리스너 설정
+        function setupFirebaseAuthListener() {
+            if (!initFirebase()) return;
+            
+            firebaseAuth.onAuthStateChanged(async (user) => {
+                if (user) {
+                    console.log('✅ Firebase 사용자 로그인:', user.uid);
+                    const roleData = await loadUserRoleFromFirebase();
+                    if (roleData) {
+                        userRole = roleData.role;
+                        allowedProcesses = roleData.allowedProcesses;
+                        applyRoleBasedUI();
+                    }
+                    
+                    // Firebase 연결 상태 업데이트
+                    const modeEl = document.getElementById('current-mode');
+                    if (modeEl) {
+                        modeEl.textContent = '🟢 Firebase 연결됨 (Firestore 저장)';
+                        modeEl.style.color = '#4caf50';
+                    }
+                    showConnectionStatus('🟢 Firebase 연결됨 - Firestore에 저장됩니다');
+                } else {
+                    console.log('ℹ️ Firebase 사용자 로그아웃');
+                    // localStorage 기반으로 fallback
+                    userRole = localStorage.getItem('kcol:userRole') || 'viewer';
+                    allowedProcesses = JSON.parse(localStorage.getItem('kcol:allowedProcesses') || '[]');
+                    applyRoleBasedUI();
+                    
+                    // 로컬 저장 모드로 업데이트
+                    const modeEl = document.getElementById('current-mode');
+                    if (modeEl) {
+                        modeEl.textContent = '🟡 로컬 저장 모드 (같은 브라우저에서만 공유)';
+                        modeEl.style.color = '#f57c00';
+                    }
+                }
+            });
+        }
+        
+        // 현재 사용자 UID 생성/가져오기 (Firebase 우선, 없으면 localStorage)
         function getCurrentUID() {
+            // Firebase 사용자 우선
+            if (initFirebase()) {
+                const user = firebaseAuth.currentUser;
+                if (user) {
+                    return user.uid;
+                }
+            }
+            
+            // Firebase가 없거나 로그인 안 된 경우 localStorage 사용
             let uid = localStorage.getItem('kcol:currentUid');
             if (!uid) {
                 // 고유 ID 생성 (타임스탬프 + 랜덤)
@@ -1593,32 +1720,464 @@
             return allAdminUids;
         }
         
+        // ============================================================
+        // Firebase Admin 설정 함수들
+        // ============================================================
+        
+        // Firebase Anonymous 로그인 (Admin 설정용)
+        async function loginAsAdminAnonymous() {
+            if (!initFirebase()) {
+                console.error('❌ Firebase가 초기화되지 않았습니다.');
+                return null;
+            }
+            
+            try {
+                const userCredential = await firebaseAuth.signInAnonymously();
+                const user = userCredential.user;
+                console.log('✅ Anonymous 로그인 완료:', user.uid);
+                
+                // Firestore에 admin 역할 설정
+                await setAdminRoleInFirestore(user.uid);
+                
+                return user.uid;
+            } catch (error) {
+                console.error('❌ Anonymous 로그인 실패:', error);
+                alert('로그인 실패: ' + error.message);
+                return null;
+            }
+        }
+        
+        // Firebase Email/Password 로그인
+        async function loginAsAdmin(email, password) {
+            if (!initFirebase()) {
+                console.error('❌ Firebase가 초기화되지 않았습니다.');
+                return null;
+            }
+            
+            if (!email || !password) {
+                console.error('❌ 이메일과 비밀번호를 입력해주세요.');
+                console.log('사용법: loginAsAdmin("email@example.com", "password")');
+                return null;
+            }
+            
+            try {
+                const userCredential = await firebaseAuth.signInWithEmailAndPassword(email, password);
+                const user = userCredential.user;
+                console.log('✅ 이메일 로그인 완료:', user.uid);
+                
+                // Firestore에서 역할 확인
+                const roleData = await loadUserRoleFromFirebase();
+                if (roleData) {
+                    console.log('✅ 역할 확인 완료:', roleData.role);
+                    userRole = roleData.role;
+                    allowedProcesses = roleData.allowedProcesses;
+                    applyRoleBasedUI();
+                } else {
+                    console.log('ℹ️ Firestore에 역할이 없습니다. 설정이 필요합니다.');
+                }
+                
+                return user.uid;
+            } catch (error) {
+                console.error('❌ 이메일 로그인 실패:', error);
+                alert('로그인 실패: ' + error.message);
+                return null;
+            }
+        }
+        
+        // Firestore에 Admin 역할 설정
+        async function setAdminRoleInFirestore(uid) {
+            if (!initFirebase()) {
+                console.error('❌ Firebase가 초기화되지 않았습니다.');
+                return false;
+            }
+            
+            if (!uid) {
+                console.error('❌ UID를 제공해주세요.');
+                return false;
+            }
+            
+            try {
+                await firebaseDb.collection('user_roles').doc(uid).set({
+                    role: 'admin',
+                    allowedProcesses: [],
+                    projectId: PROJECT_ID,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true });
+                
+                console.log('✅ Firestore에 Admin 역할 설정 완료:', uid);
+                
+                // 현재 사용자가 해당 UID인 경우 역할 재로드
+                const currentUser = firebaseAuth.currentUser;
+                if (currentUser && currentUser.uid === uid) {
+                    const roleData = await loadUserRoleFromFirebase();
+                    if (roleData) {
+                        userRole = roleData.role;
+                        allowedProcesses = roleData.allowedProcesses;
+                        applyRoleBasedUI();
+                    }
+                }
+                
+                return true;
+            } catch (error) {
+                console.error('❌ Firestore 역할 설정 실패:', error);
+                alert('역할 설정 실패: ' + error.message);
+                return false;
+            }
+        }
+        
+        // Admin UID를 입력받아서 Firestore에 Admin 역할 설정
+        async function setAdminByUID(adminUID) {
+            if (!adminUID) {
+                console.error('❌ Admin UID를 입력해주세요.');
+                console.log('사용법: setAdminByUID("42ZPnQyu0uWxjrQ62AhhoWWOseJ2")');
+                return false;
+            }
+            
+            if (!initFirebase()) {
+                console.error('❌ Firebase가 초기화되지 않았습니다.');
+                return false;
+            }
+            
+            console.log('🔧 Admin UID 입력:', adminUID);
+            console.log('📝 Firestore에 Admin 역할 설정 중...');
+            
+            const success = await setAdminRoleInFirestore(adminUID);
+            
+            if (success) {
+                console.log('✅ Admin 역할 설정 완료!');
+                console.log('💡 이제 해당 UID로 로그인하면 Admin 권한을 사용할 수 있습니다.');
+                console.log('💡 또는 현재 로그인된 사용자가 해당 UID라면 즉시 적용됩니다.');
+                
+                // localStorage에도 Admin UID 추가
+                addAdminUID(adminUID);
+            }
+            
+            return success;
+        }
+        
+        // 기본 Admin UID를 Firestore에 자동 설정 (페이지 로드 시)
+        async function ensureDefaultAdminInFirestore() {
+            if (!initFirebase()) {
+                return;
+            }
+            
+            const defaultAdminUID = '42ZPnQyu0uWxjrQ62AhhoWWOseJ2';
+            
+            try {
+                // Firestore에서 해당 UID의 역할 확인
+                const userRoleDoc = await firebaseDb.collection('user_roles').doc(defaultAdminUID).get();
+                
+                if (!userRoleDoc.exists || userRoleDoc.data().role !== 'admin') {
+                    console.log('🔧 기본 Admin UID를 Firestore에 설정 중...');
+                    await setAdminRoleInFirestore(defaultAdminUID);
+                    console.log('✅ 기본 Admin UID 설정 완료:', defaultAdminUID);
+                } else {
+                    console.log('ℹ️ 기본 Admin UID가 이미 Firestore에 설정되어 있습니다.');
+                }
+            } catch (error) {
+                console.warn('⚠️ 기본 Admin UID 설정 확인 실패:', error);
+            }
+        }
+        
+        // 현재 로그인된 사용자를 Admin으로 설정
+        async function setCurrentUserAsAdmin() {
+            if (!initFirebase()) {
+                console.error('❌ Firebase가 초기화되지 않았습니다.');
+                return false;
+            }
+            
+            const user = firebaseAuth.currentUser;
+            if (!user) {
+                console.error('❌ 로그인된 사용자가 없습니다.');
+                console.log('💡 먼저 로그인하세요:');
+                console.log('   - Anonymous: loginAsAdminAnonymous()');
+                console.log('   - Email: loginAsAdmin("email@example.com", "password")');
+                return false;
+            }
+            
+            return await setAdminRoleInFirestore(user.uid);
+        }
+        
+        // Firebase 로그아웃
+        async function logoutFromFirebase() {
+            if (!initFirebase()) {
+                return;
+            }
+            
+            try {
+                await firebaseAuth.signOut();
+                console.log('✅ 로그아웃 완료');
+                
+                // localStorage 기반으로 fallback
+                userRole = localStorage.getItem('kcol:userRole') || 'viewer';
+                allowedProcesses = JSON.parse(localStorage.getItem('kcol:allowedProcesses') || '[]');
+                applyRoleBasedUI();
+            } catch (error) {
+                console.error('❌ 로그아웃 실패:', error);
+            }
+        }
+        
+        // 현재 Firebase 사용자 정보 확인
+        function checkFirebaseUser() {
+            if (!initFirebase()) {
+                console.log('❌ Firebase가 초기화되지 않았습니다.');
+                return;
+            }
+            
+            const user = firebaseAuth.currentUser;
+            if (user) {
+                console.log('✅ 현재 Firebase 사용자:');
+                console.log('   UID:', user.uid);
+                console.log('   Email:', user.email || '(Anonymous)');
+                console.log('   Provider:', user.providerData[0]?.providerId || 'anonymous');
+                
+                // Firestore 역할 확인
+                loadUserRoleFromFirebase().then(roleData => {
+                    if (roleData) {
+                        console.log('   Role:', roleData.role);
+                        console.log('   Allowed Processes:', roleData.allowedProcesses);
+                    } else {
+                        console.log('   Role: (설정되지 않음)');
+                    }
+                });
+            } else {
+                console.log('ℹ️ 로그인된 사용자가 없습니다.');
+                console.log('💡 로그인 방법:');
+                console.log('   - Anonymous: loginAsAdminAnonymous()');
+                console.log('   - Email: loginAsAdmin("email@example.com", "password")');
+            }
+        }
+        
+        // Admin UID 입력 처리 (UI에서 호출)
+        // 토스트 메시지 표시 함수
+        function showToast(message, type = 'info') {
+            // 기존 토스트 제거
+            const existingToast = document.getElementById('admin-toast');
+            if (existingToast) {
+                existingToast.remove();
+            }
+            
+            const toast = document.createElement('div');
+            toast.id = 'admin-toast';
+            
+            const colors = {
+                'success': { bg: '#4caf50', icon: '✅' },
+                'error': { bg: '#f44336', icon: '❌' },
+                'warning': { bg: '#ff9800', icon: '⚠️' },
+                'info': { bg: '#2196f3', icon: 'ℹ️' }
+            };
+            
+            const color = colors[type] || colors.info;
+            
+            toast.style.cssText = `
+                position: fixed;
+                top: 80px;
+                right: 20px;
+                background: ${color.bg};
+                color: white;
+                padding: 16px 24px;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                z-index: 10001;
+                font-size: 14px;
+                font-weight: 600;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                animation: slideIn 0.3s ease-out;
+                max-width: 400px;
+            `;
+            
+            toast.innerHTML = `
+                <span style="font-size: 20px;">${color.icon}</span>
+                <span>${message}</span>
+            `;
+            
+            // 애니메이션 스타일 추가
+            if (!document.getElementById('toast-animations')) {
+                const style = document.createElement('style');
+                style.id = 'toast-animations';
+                style.textContent = `
+                    @keyframes slideIn {
+                        from {
+                            transform: translateX(100%);
+                            opacity: 0;
+                        }
+                        to {
+                            transform: translateX(0);
+                            opacity: 1;
+                        }
+                    }
+                    @keyframes slideOut {
+                        from {
+                            transform: translateX(0);
+                            opacity: 1;
+                        }
+                        to {
+                            transform: translateX(100%);
+                            opacity: 0;
+                        }
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+            
+            document.body.appendChild(toast);
+            
+            // 3초 후 자동 제거
+            setTimeout(() => {
+                toast.style.animation = 'slideOut 0.3s ease-out';
+                setTimeout(() => {
+                    if (toast.parentNode) {
+                        toast.remove();
+                    }
+                }, 300);
+            }, 3000);
+        }
+        
+        async function handleAdminUIDInput() {
+            const input = document.getElementById('admin-uid-input');
+            const statusDiv = document.getElementById('admin-uid-status');
+            
+            if (!input) {
+                console.error('❌ Admin UID 입력 필드를 찾을 수 없습니다.');
+                showToast('Admin UID 입력 필드를 찾을 수 없습니다.', 'error');
+                return;
+            }
+            
+            const adminUID = input.value.trim();
+            
+            if (!adminUID) {
+                showToast('UID를 입력해주세요.', 'warning');
+                if (statusDiv) {
+                    statusDiv.textContent = '❌ UID를 입력해주세요.';
+                    statusDiv.style.color = '#ffcdd2';
+                }
+                return;
+            }
+            
+            // UID 형식 간단 검증
+            if (adminUID.length < 10) {
+                showToast('UID가 너무 짧습니다. 올바른 UID를 입력해주세요.', 'warning');
+                return;
+            }
+            
+            showToast('Admin 설정 중...', 'info');
+            
+            if (statusDiv) {
+                statusDiv.textContent = '⏳ 설정 중...';
+                statusDiv.style.color = '#fff9c4';
+            }
+            
+            try {
+                const success = await setAdminByUID(adminUID);
+                
+                if (success) {
+                    showToast(`Admin 설정 완료!\nUID: ${adminUID.substring(0, 20)}...`, 'success');
+                    
+                    if (statusDiv) {
+                        statusDiv.textContent = '✅ Admin 설정 완료!';
+                        statusDiv.style.color = '#c8e6c9';
+                    }
+                    
+                    // 입력 필드 초기화
+                    input.value = '';
+                    
+                    // 3초 후 상태 메시지 제거
+                    setTimeout(() => {
+                        if (statusDiv) {
+                            statusDiv.textContent = '';
+                        }
+                    }, 3000);
+                    
+                    // 역할 재로드
+                    await loadUserRole();
+                    applyRoleBasedUI();
+                } else {
+                    showToast('Admin 설정 실패. 콘솔을 확인하세요.', 'error');
+                    if (statusDiv) {
+                        statusDiv.textContent = '❌ 설정 실패. 콘솔을 확인하세요.';
+                        statusDiv.style.color = '#ffcdd2';
+                    }
+                }
+            } catch (error) {
+                console.error('❌ Admin 설정 오류:', error);
+                showToast(`설정 오류: ${error.message}`, 'error');
+                if (statusDiv) {
+                    statusDiv.textContent = '❌ 오류: ' + error.message;
+                    statusDiv.style.color = '#ffcdd2';
+                }
+            }
+        }
+        
         // 전역으로 노출
         window.addAdminUID = addAdminUID;
         window.removeAdminUID = removeAdminUID;
         window.listAdminUIDs = listAdminUIDs;
         window.getCurrentUID = getCurrentUID;
         window.setCurrentUID = setCurrentUID;
+        window.loginAsAdminAnonymous = loginAsAdminAnonymous;
+        window.loginAsAdmin = loginAsAdmin;
+        window.setAdminRoleInFirestore = setAdminRoleInFirestore;
+        window.setAdminByUID = setAdminByUID;
+        window.setCurrentUserAsAdmin = setCurrentUserAsAdmin;
+        window.logoutFromFirebase = logoutFromFirebase;
+        window.checkFirebaseUser = checkFirebaseUser;
+        window.handleAdminUIDInput = handleAdminUIDInput;
         
-        // 페이지 로드 시 UID 기반 역할 확인
+        // 페이지 로드 시 역할 로드
         let userRole = null;
         let allowedProcesses = [];
         
-        // UID 기반 역할 확인 시도
-        const uidBasedRole = checkRoleByUID();
-        if (!uidBasedRole) {
-            // UID 기반 역할이 없으면 localStorage에서 로드
-            userRole = localStorage.getItem('kcol:userRole') || 'admin'; // 기본값: admin
+        // 역할 로드 함수 (Firebase 우선, localStorage fallback)
+        async function loadUserRole() {
+            // 1. Firebase에서 역할 로드 시도
+            const firebaseRole = await loadUserRoleFromFirebase();
+            if (firebaseRole) {
+                userRole = firebaseRole.role;
+                allowedProcesses = firebaseRole.allowedProcesses;
+                console.log('✅ Firebase에서 역할 로드 완료:', userRole);
+                return;
+            }
+            
+            // 2. UID 기반 역할 확인 (localStorage)
+            const uidBasedRole = checkRoleByUID();
+            if (uidBasedRole) {
+                console.log('✅ UID 기반 역할 확인 완료:', uidBasedRole);
+                return;
+            }
+            
+            // 3. localStorage에서 로드
+            userRole = localStorage.getItem('kcol:userRole') || 'viewer';
             allowedProcesses = JSON.parse(localStorage.getItem('kcol:allowedProcesses') || '[]');
+            console.log('✅ localStorage에서 역할 로드 완료:', userRole);
         }
         
-        // 페이지 로드 완료 후 UI 적용
+        // Firebase 인증 리스너 설정 및 초기 역할 로드
         if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', function() {
+            document.addEventListener('DOMContentLoaded', async function() {
+                setupFirebaseAuthListener();
+                
+                // 기본 Admin UID를 Firestore에 설정 (비동기, 실패해도 계속 진행)
+                ensureDefaultAdminInFirestore().catch(err => {
+                    console.warn('기본 Admin UID 설정 실패 (계속 진행):', err);
+                });
+                
+                await loadUserRole();
                 setTimeout(applyRoleBasedUI, 100);
             });
         } else {
-            setTimeout(applyRoleBasedUI, 100);
+            setupFirebaseAuthListener();
+            
+            // 기본 Admin UID를 Firestore에 설정 (비동기, 실패해도 계속 진행)
+            ensureDefaultAdminInFirestore().catch(err => {
+                console.warn('기본 Admin UID 설정 실패 (계속 진행):', err);
+            });
+            
+            loadUserRole().then(() => {
+                setTimeout(applyRoleBasedUI, 100);
+            });
         }
         
         // 역할 설정 함수 (콘솔에서 사용 가능)
@@ -1871,6 +2430,37 @@
             });
         }
         
+        // Firebase 연결 상태 확인
+        function getFirebaseConnectionStatus() {
+            if (!initFirebase()) {
+                return {
+                    connected: false,
+                    source: 'localStorage',
+                    message: 'Firebase 미연결 (localStorage 사용)'
+                };
+            }
+            
+            const user = firebaseAuth.currentUser;
+            if (user) {
+                const firebaseUid = localStorage.getItem('kcol:firebaseUid');
+                const isFromFirebase = firebaseUid === user.uid;
+                
+                return {
+                    connected: true,
+                    source: 'firebase',
+                    uid: user.uid,
+                    email: user.email || 'Anonymous',
+                    message: isFromFirebase ? `Firebase 연결됨 (${user.email || 'Anonymous'})` : 'Firebase 로그인됨 (역할: localStorage)'
+                };
+            }
+            
+            return {
+                connected: false,
+                source: 'localStorage',
+                message: 'Firebase 미로그인 (localStorage 사용)'
+            };
+        }
+        
         // 역할 배지 표시
         function showRoleBadge(role, label) {
             let badge = document.getElementById('user-role-badge');
@@ -1903,8 +2493,21 @@
                 label = defaultLabels[role] || label || role;
             }
             
-            badge.textContent = `👤 ${label}`;
-            badge.title = '클릭하여 상세 정보 확인';
+            // Firebase 연결 상태 확인 및 표시
+            const firebaseStatus = getFirebaseConnectionStatus();
+            let statusIcon = '';
+            let statusText = '';
+            
+            if (firebaseStatus.connected) {
+                statusIcon = '🟢';
+                statusText = ' (Firebase)';
+            } else {
+                statusIcon = '🟡';
+                statusText = ' (로컬)';
+            }
+            
+            badge.textContent = `${label}${statusText}`;
+            badge.title = `${label}\n${firebaseStatus.message}\n클릭하여 상세 정보 확인`;
         }
         
         // 전역으로 노출 (콘솔에서 사용 가능)
@@ -1964,6 +2567,44 @@
                         <p style="margin:0;color:#666;line-height:1.6;">${roleDescriptions[role] || '역할 정보가 없습니다.'}</p>
                     </div>
             `;
+            
+            // Firebase 연결 상태 표시
+            const firebaseStatus = getFirebaseConnectionStatus();
+            if (firebaseStatus.connected) {
+                contentHtml += `
+                    <div style="margin-bottom:20px;padding:15px;background:#e8f5e9;border-radius:8px;border-left:4px solid #4caf50;">
+                        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+                            <span style="font-size:18px;">🟢</span>
+                            <strong style="color:#2e7d32;">Firebase 연결됨</strong>
+                        </div>
+                        <div style="font-size:13px;color:#555;line-height:1.6;">
+                            <div><strong>UID:</strong> ${firebaseStatus.uid}</div>
+                            <div><strong>이메일:</strong> ${firebaseStatus.email}</div>
+                            <div style="margin-top:8px;padding-top:8px;border-top:1px solid #c8e6c9;color:#2e7d32;">
+                                ✅ 역할과 데이터가 Firestore에 저장됩니다
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                contentHtml += `
+                    <div style="margin-bottom:20px;padding:15px;background:#fff3cd;border-radius:8px;border-left:4px solid #ffc107;">
+                        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+                            <span style="font-size:18px;">🟡</span>
+                            <strong style="color:#856404;">Firebase 미연결</strong>
+                        </div>
+                        <div style="font-size:13px;color:#555;line-height:1.6;">
+                            <div>${firebaseStatus.message}</div>
+                            <div style="margin-top:8px;padding-top:8px;border-top:1px solid #ffe082;color:#856404;">
+                                ⚠️ 역할과 데이터가 localStorage에만 저장됩니다
+                            </div>
+                            <div style="margin-top:8px;font-size:12px;color:#856404;">
+                                💡 Firebase 연결: <code style="background:#fff;padding:2px 6px;border-radius:4px;">loginAsAdminAnonymous()</code> 또는 헤더의 Admin UID 입력
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
             
             // Editor인 경우 허용된 공정 목록 표시
             if (role === 'editor' && allowedProcesses && allowedProcesses.length > 0) {
@@ -2132,13 +2773,51 @@
             console.log(message);
         }
 
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', async function() {
             try {
                 const badge = document.getElementById('project-badge');
                 if (badge) badge.textContent = getProjectName();
 
-                loadFromLocalStorage(); // 내부에서 syncTransportToDailyData() 호출됨
-                showConnectionStatus('🟡 로컬 저장 모드');
+                await loadFromLocalStorage(); // 내부에서 syncTransportToDailyData() 호출됨
+                
+                // Firebase 연결 상태 확인 및 표시
+                const firebaseStatus = getFirebaseConnectionStatus();
+                if (firebaseStatus.connected) {
+                    showConnectionStatus('🟢 Firebase 연결됨 - Firestore에 저장됩니다');
+                } else {
+                    showConnectionStatus('🟡 로컬 저장 모드 - localStorage에만 저장됩니다');
+                }
+                
+                // Admin UID 입력 필드 및 버튼 이벤트 추가
+                const adminUIDInput = document.getElementById('admin-uid-input');
+                const adminSetupBtn = document.getElementById('admin-setup-btn');
+                
+                if (adminUIDInput) {
+                    // Enter 키 이벤트
+                    adminUIDInput.addEventListener('keypress', function(e) {
+                        if (e.key === 'Enter') {
+                            if (typeof handleAdminUIDInput === 'function') {
+                                handleAdminUIDInput();
+                            } else {
+                                console.error('handleAdminUIDInput 함수를 찾을 수 없습니다.');
+                            }
+                        }
+                    });
+                }
+                
+                if (adminSetupBtn) {
+                    // 버튼 클릭 이벤트
+                    adminSetupBtn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        if (typeof handleAdminUIDInput === 'function') {
+                            handleAdminUIDInput();
+                        } else {
+                            console.error('handleAdminUIDInput 함수를 찾을 수 없습니다.');
+                            alert('Admin 설정 기능을 사용할 수 없습니다. 페이지를 새로고침해주세요.');
+                        }
+                    });
+                }
+                
                 setToday();
                 renderWeekdayButtons(); // 요일 버튼 렌더링
                 loadTransportPlan(); // 내부에서 syncTransportToDailyData() 호출됨
@@ -2214,11 +2893,18 @@
             document.body.appendChild(statusDiv);
             setTimeout(() => statusDiv.remove(), 5000);
             
-            // 모드 텍스트 업데이트
+            // 모드 텍스트 업데이트 (Firebase 연결 상태에 따라)
             const modeEl = document.getElementById('current-mode');
             if (modeEl) {
-                modeEl.textContent = '🟡 로컬 저장 모드 (같은 브라우저에서만 공유)';
-                modeEl.style.color = '#f57c00';
+                // Firebase 연결 상태 확인
+                const firebaseStatus = getFirebaseConnectionStatus();
+                if (firebaseStatus.connected) {
+                    modeEl.textContent = '🟢 Firebase 연결됨 (Firestore 저장)';
+                    modeEl.style.color = '#4caf50';
+                } else {
+                    modeEl.textContent = '🟡 로컬 저장 모드 (같은 브라우저에서만 공유)';
+                    modeEl.style.color = '#f57c00';
+                }
             }
         }
 
@@ -4699,7 +5385,7 @@
             }
         }
 
-        function saveToStorage() {
+        async function saveToStorage() {
             try {
                 // 항상 localStorage에 먼저 저장 (백업)
                 localStorage.setItem(kcolKey('steelColumnData'), JSON.stringify(columnData));
@@ -4707,7 +5393,42 @@
                 localStorage.setItem(kcolKey('columnCoordinates'), JSON.stringify(columnCoordinates));
                 localStorage.setItem(kcolKey('deliveryConfirmed'), JSON.stringify(deliveryConfirmed));
                 localStorage.setItem(kcolKey('actualDeliveryDate'), JSON.stringify(actualDeliveryDate));
-                console.log('✅ localStorage 저장 완료:', { columnData, dailyData, columnCoordinates, deliveryConfirmed, actualDeliveryDate });
+                console.log('✅ localStorage 저장 완료');
+                
+                // Firebase Firestore에도 저장 시도
+                if (initFirebase() && firebaseAuth.currentUser) {
+                    try {
+                        const projectData = {
+                            columnData: columnData,
+                            dailyData: dailyData,
+                            columnCoordinates: columnCoordinates,
+                            deliveryConfirmed: deliveryConfirmed,
+                            actualDeliveryDate: actualDeliveryDate,
+                            transportPlan: transportPlan || {},
+                            lastUpdated: firebase.firestore.FieldValue.serverTimestamp(),
+                            updatedBy: firebaseAuth.currentUser.uid
+                        };
+                        
+                        await firebaseDb.collection('projects').doc(PROJECT_ID).set(projectData, { merge: true });
+                        console.log('✅ Firestore 저장 완료:', PROJECT_ID);
+                        
+                        // 연결 상태 업데이트
+                        const modeEl = document.getElementById('current-mode');
+                        if (modeEl) {
+                            modeEl.textContent = '🟢 Firebase 연결됨 (Firestore 저장)';
+                            modeEl.style.color = '#4caf50';
+                        }
+                    } catch (firebaseError) {
+                        console.warn('⚠️ Firestore 저장 실패 (localStorage는 저장됨):', firebaseError);
+                    }
+                } else {
+                    // Firebase가 연결되지 않은 경우 상태 업데이트
+                    const modeEl = document.getElementById('current-mode');
+                    if (modeEl) {
+                        modeEl.textContent = '🟡 로컬 저장 모드 (같은 브라우저에서만 공유)';
+                        modeEl.style.color = '#f57c00';
+                    }
+                }
             } catch (error) {
                 console.error('저장 오류:', error);
                 alert('데이터 저장 중 오류가 발생했습니다: ' + error.message);
@@ -4872,7 +5593,47 @@
             currentColumnForSetup = null;
         }
 
-        function loadFromLocalStorage() {
+        async function loadFromLocalStorage() {
+            // Firebase Firestore에서 먼저 로드 시도
+            if (initFirebase() && firebaseAuth.currentUser) {
+                try {
+                    const projectDoc = await firebaseDb.collection('projects').doc(PROJECT_ID).get();
+                    
+                    if (projectDoc.exists) {
+                        const projectData = projectDoc.data();
+                        console.log('✅ Firestore에서 데이터 로드 완료:', PROJECT_ID);
+                        
+                        columnData = projectData.columnData || {};
+                        dailyData = projectData.dailyData || {};
+                        columnCoordinates = projectData.columnCoordinates || {};
+                        deliveryConfirmed = projectData.deliveryConfirmed || {};
+                        actualDeliveryDate = projectData.actualDeliveryDate || {};
+                        transportPlan = projectData.transportPlan || {};
+                        
+                        // localStorage에도 동기화 (백업)
+                        localStorage.setItem(kcolKey('steelColumnData'), JSON.stringify(columnData));
+                        localStorage.setItem(kcolKey('steelColumnDaily'), JSON.stringify(dailyData));
+                        localStorage.setItem(kcolKey('columnCoordinates'), JSON.stringify(columnCoordinates));
+                        localStorage.setItem(kcolKey('deliveryConfirmed'), JSON.stringify(deliveryConfirmed));
+                        localStorage.setItem(kcolKey('actualDeliveryDate'), JSON.stringify(actualDeliveryDate));
+                        localStorage.setItem(kcolKey('transportPlan'), JSON.stringify(transportPlan));
+                        
+                        // Firebase 연결 상태 업데이트
+                        const modeEl = document.getElementById('current-mode');
+                        if (modeEl) {
+                            modeEl.textContent = '🟢 Firebase 연결됨 (Firestore 저장)';
+                            modeEl.style.color = '#4caf50';
+                        }
+                        
+                        syncTransportToDailyData(false);
+                        return;
+                    }
+                } catch (firebaseError) {
+                    console.warn('⚠️ Firestore 로드 실패, localStorage 사용:', firebaseError);
+                }
+            }
+            
+            // Firebase가 없거나 실패한 경우 localStorage에서 로드
             const savedColumnData = localStorage.getItem(kcolKey('steelColumnData'));
             const savedDailyData = localStorage.getItem(kcolKey('steelColumnDaily'));
             const savedTransportPlan = localStorage.getItem(kcolKey('transportPlan'));
@@ -7452,6 +8213,9 @@
             console.log('💡 Admin으로 설정: setCurrentUID("42ZPnQyu0uWxjrQ62AhhoWWOseJ2")');
         })();
     </script>
+    
+    <!-- Firebase Configuration -->
+    <script src="../../js/firebase-config.js"></script>
     
     <script src="../../js/auth-config.js"></script>
     <script src="../../js/auth.js"></script>
