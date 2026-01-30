@@ -761,10 +761,6 @@
         }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Firebase SDK (Firestore + Auth) -->
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
     <div class="container">
@@ -957,6 +953,9 @@
             <div class="input-section">
                 <h3>✏️ 일일 공정 입력 <span id="selected-company-name" style="color:#666;font-weight:400;font-size:14px;"></span></h3>
                 
+                <!-- 공정별 입력 안내 -->
+                <div id="process-guide" style="margin-bottom:20px;padding:15px;background:#f5f5f5;border-radius:8px;border-left:4px solid #2196f3;"></div>
+                
                 <!-- 엑셀 일괄 업로드 섹션 (공정 1-6) -->
                 <div id="process-excel-upload" style="margin-bottom:20px;padding:20px;background:#e3f2fd;border-radius:8px;border:2px solid #2196f3;box-shadow:0 2px 8px rgba(33,150,243,0.2);">
                     <div style="margin-bottom:12px;font-weight:700;color:#2c4a7c;font-size:16px;">📊 엑셀 일괄 업로드 (공정 1-6)</div>
@@ -1024,8 +1023,10 @@
                     </label>
                 </div>
                 <p style="margin-top:15px;padding:15px;background:#e3f2fd;border-radius:8px;font-size:13px;color:#1565c0;">
-                    💡 <strong>실시간 공유 설정:</strong> 3개 업체가 각자 장소에서 입력하려면 Firebase 설정이 필요합니다.<br>
-                    현재 모드: <span id="current-mode" style="font-weight:bold;">확인 중...</span>
+                    💡 <strong>로컬 저장 모드:</strong> 데이터는 브라우저의 localStorage에 저장됩니다.<br>
+                    <strong>Admin 설정:</strong> 콘솔에서 <code>addAdminUID(getCurrentUID())</code> 또는 <code>addAdminUID("your-uid")</code> 사용<br>
+                    <strong>역할 설정:</strong> 콘솔에서 <code>setUserRole('admin')</code>, <code>setUserRole('editor', [3,4,5])</code>, <code>setUserRole('viewer')</code> 사용<br>
+                    <strong>Editor 역할:</strong> Editor 1(공정1), Editor 2(공정2), Editor 3(공정3,4,5), Editor 4(공정6)
                 </p>
             </div>
         </div>
@@ -1290,73 +1291,152 @@
     </div>
 
     <script>
-        // Firebase Configuration
-        // ⚠️ 실제 사용 시 아래 설정을 Firebase Console에서 생성한 프로젝트 설정으로 교체하세요
-        const firebaseConfig = {
-            apiKey: "AIzaSyDIuTX7eQVscRl5GJxtKVWHeF7MCfCbFPc",
-            authDomain: "hakdong-a80b8.firebaseapp.com",
-            projectId: "hakdong-a80b8",
-            storageBucket: "hakdong-a80b8.firebasestorage.app",
-            messagingSenderId: "578179103785",
-            appId: "1:578179103785:web:b8daecb0ac24924e30b038"
-        };
-
-        // Firebase 초기화 (Firestore + Auth)
-        let db = null;
-        let auth = null;
-        let isFirebaseEnabled = false;
-        let currentUser = null;
-        let userRole = 'viewer'; // 기본 역할: viewer
-        let allowedProcesses = []; // Editor가 수정 가능한 공정 목록 (예: [1, 2, 3, 6])
+        // ============================================
+        // 전역 함수 정의 (HTML onclick에서 사용 가능하도록 먼저 정의)
+        // ============================================
         
-        try {
-            firebase.initializeApp(firebaseConfig);
-            db = firebase.firestore();
-            auth = firebase.auth();
-            isFirebaseEnabled = firebaseConfig.apiKey !== "YOUR_API_KEY";
-            console.log('[Firebase] Firestore 초기화 완료');
+        // Panel Navigation (전역 함수로 먼저 정의)
+        window.showPanel = function showPanel(panelId, btnElement) {
+            console.log('🔵 showPanel 호출:', panelId, btnElement);
             
-            // 인증 상태 확인 및 익명 로그인
-            // Firestore 규칙이 request.auth != null을 요구하므로 익명 로그인 필요
-            auth.onAuthStateChanged((user) => {
-                currentUser = user;
-                if (user) {
-                    console.log('[Firebase] 인증된 사용자:', user.isAnonymous ? '(익명)' : user.email);
-                    // 사용자 역할 로드
-                    loadUserRole().then(() => {
-                        // 리스너 재설정 (인증 후)
-                        if (isFirebaseEnabled) {
-                            setupFirebaseListeners();
-                        }
-                    });
-                } else {
-                    console.log('[Firebase] 인증되지 않은 사용자 - 익명 로그인 시도');
-                    // 익명 로그인으로 Firestore 접근 가능하도록 시도
-                    auth.signInAnonymously()
-                        .then((result) => {
-                            currentUser = result.user;
-                            console.log('[Firebase] 익명 로그인 성공');
-                            // 사용자 역할 로드
-                            return loadUserRole();
-                        })
-                        .then(() => {
-                            // 리스너 재설정 (인증 후)
-                            if (isFirebaseEnabled) {
-                                setupFirebaseListeners();
-                            }
-                        })
-                        .catch((error) => {
-                            console.error('[Firebase] 익명 로그인 실패:', error);
-                            console.warn('[Firebase] 해결 방법: Firebase Console → Authentication → Sign-in method → Anonymous → Enable');
-                            console.warn('[Firebase] 현재는 localStorage 모드로 작동합니다.');
-                            userRole = null;
-                            applyRoleBasedUI();
-                        });
+            // 운송차수계획 패널은 Admin만 접근 가능
+            if (panelId === 'transport' && typeof userRole !== 'undefined' && userRole !== 'admin') {
+                alert('⚠️ 권한 없음\n\n운송차수계획은 관리자(Admin)만 사용할 수 있습니다.');
+                return;
+            }
+            
+            // 모든 패널 비활성화
+            document.querySelectorAll('.panel').forEach(p => {
+                p.classList.remove('active');
+                console.log('패널 비활성화:', p.id);
+            });
+            
+            // 일일 입력 버튼은 제외하고 active 클래스 제거
+            document.querySelectorAll('.tab-btn').forEach(b => {
+                if (!b.closest('.company-selector')) {
+                    b.classList.remove('active');
                 }
             });
-        } catch (e) {
-            console.log('Firebase 초기화 실패, localStorage 모드로 전환:', e);
-        }
+            
+            // 해당 패널 활성화
+            const panel = document.getElementById('panel-' + panelId);
+            console.log('패널 찾기:', 'panel-' + panelId, panel);
+            if (panel) {
+                panel.classList.add('active');
+                console.log('✅ 패널 활성화:', panel.id);
+            } else {
+                console.error('❌ 패널을 찾을 수 없습니다:', 'panel-' + panelId);
+            }
+            
+            // 버튼 활성화
+            if (btnElement) {
+                btnElement.classList.add('active');
+                console.log('✅ 버튼 활성화:', btnElement);
+            } else {
+                // btnElement가 없으면 이벤트에서 찾기
+                const clickedBtn = document.querySelector(`[onclick*="showPanel('${panelId}'"]`) || 
+                                 document.querySelector(`[onclick*='showPanel("${panelId}"']`);
+                if (clickedBtn) {
+                    clickedBtn.classList.add('active');
+                    console.log('✅ 버튼 활성화 (찾음):', clickedBtn);
+                }
+            }
+            
+            // 패널별 초기화 작업 (함수가 정의된 후에만 실행)
+            if (typeof loadTransportPlan === 'function' && panelId === 'gantt') {
+                loadTransportPlan();
+                if (typeof syncTransportToDailyData === 'function') {
+                    syncTransportToDailyData(false);
+                }
+                if (typeof renderGanttChart === 'function') {
+                    renderGanttChart();
+                }
+            } else if (typeof renderCharts === 'function' && panelId === 'chart') {
+                renderCharts();
+            } else if (typeof renderColumnGrid === 'function' && panelId === 'overview') {
+                renderColumnGrid('column-grid-overview');
+                if (typeof updateProgressBars === 'function') {
+                    updateProgressBars();
+                }
+            } else if (typeof loadTransportPlan === 'function' && panelId === 'transport') {
+                loadTransportPlan();
+                if (typeof renderTransportColumnGrid === 'function') {
+                    renderTransportColumnGrid();
+                }
+                if (typeof renderTransportTrips === 'function') {
+                    renderTransportTrips();
+                }
+            } else if (typeof renderTransportVolumeTable === 'function' && panelId === 'transportVolume') {
+                renderTransportVolumeTable();
+            } else if (typeof renderInstallationStatus === 'function' && panelId === 'installation') {
+                renderInstallationStatus();
+            }
+            
+            console.log('✅ showPanel 완료');
+        };
+        
+        // Process Selection (공정별 선택)
+        window.selectProcess = function selectProcess(processId) {
+            if (typeof currentProcess !== 'undefined') {
+                currentProcess = processId;
+            }
+            
+            // 공정 변경 시 선택된 기둥 초기화
+            if (typeof selectedColumns !== 'undefined') {
+                selectedColumns = [];
+            }
+            
+            // 해당 공정의 담당 업체 설정
+            if (typeof PROCESSES !== 'undefined') {
+                const process = PROCESSES.find(p => p.id === processId);
+                if (typeof currentCompany !== 'undefined' && process) {
+                    currentCompany = process.company;
+                }
+            }
+            
+            // 버튼 활성화 표시
+            document.querySelectorAll('.process-btn').forEach(btn => btn.classList.remove('active'));
+            const processBtn = document.querySelector(`.process-btn.p${processId}`);
+            if (processBtn) {
+                processBtn.classList.add('active');
+            }
+            
+            const processNames = {
+                1: '1. 주기둥커팅 (유석철강(충주공장))',
+                2: '2. 기둥소부재가공 (유석철강(오창공장))',
+                3: '3. 주기둥조립 (유석철강(음성공장))',
+                4: '4. 소부재조립 (유석철강(음성공장))',
+                5: '5. 현장배송 (유석철강(음성공장))',
+                6: '6. 현장설치 (진흥기업)'
+            };
+            const companyNameEl = document.getElementById('selected-company-name');
+            if (companyNameEl) {
+                companyNameEl.textContent = '- ' + (processNames[processId] || '');
+            }
+            
+            // 공정별 입력 안내 메시지 표시
+            if (typeof showProcessGuide === 'function') {
+                showProcessGuide(processId);
+            }
+            
+            // 일일 입력 패널 자동으로 열기
+            if (window.showPanel) {
+                window.showPanel('input', null);
+            } else {
+                // showPanel이 없을 경우 직접 처리
+                const inputPanel = document.getElementById('panel-input');
+                if (inputPanel) {
+                    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+                    inputPanel.classList.add('active');
+                    document.querySelectorAll('.tabs .tab-btn').forEach(btn => btn.classList.remove('active'));
+                }
+            }
+            
+            // 그리드 렌더링
+            if (typeof renderColumnGrid === 'function') {
+                renderColumnGrid('column-grid-input');
+            }
+        };
 
         // Constants
         const TOTAL_COLUMNS = 50;
@@ -1386,106 +1466,183 @@
             return `kcol:${PROJECT_ID}:${suffix}`;
         }
 
-        function kcolRef(pathSuffix) {
-            // Firestore: collection 'kcolumn', document '{projectId}_{suffix}'
-            // projectId 기반으로 저장하여 여러 사용자가 같은 프로젝트 데이터에 접근 가능
-            const docPath = `${PROJECT_ID}_${pathSuffix}`;
-            return db.collection('kcolumn').doc(docPath);
+        // 사용자 역할 관리 (Firebase 없이 localStorage 기반)
+        
+        // 현재 사용자 UID 생성/가져오기 (브라우저 기반 고유 ID)
+        function getCurrentUID() {
+            let uid = localStorage.getItem('kcol:currentUid');
+            if (!uid) {
+                // 고유 ID 생성 (타임스탬프 + 랜덤)
+                uid = 'uid_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                localStorage.setItem('kcol:currentUid', uid);
+            }
+            return uid;
         }
         
-        // 사용자 역할 관리
-        function getUserRoleRef() {
-            if (!currentUser || !db) return null;
-            return db.collection('user_roles').doc(currentUser.uid);
+        // Admin UID 목록 가져오기
+        function getAdminUIDs() {
+            // 기본 Admin UID 목록
+            const defaultAdminUids = ['42ZPnQyu0uWxjrQ62AhhoWWOseJ2'];
+            
+            // localStorage에서 가져온 Admin UID 목록
+            const storedUids = JSON.parse(localStorage.getItem('kcol:adminUids') || '[]');
+            
+            // 기본 UID와 저장된 UID를 합침 (중복 제거)
+            const allUids = [...new Set([...defaultAdminUids, ...storedUids])];
+            
+            return allUids;
         }
         
-        // 사용자 역할 가져오기
-        function getUserRole() {
-            return userRole;
-        }
-        
-        // 사용자 역할 로드
-        function loadUserRole() {
-            if (!isFirebaseEnabled || !currentUser || !db) {
-                // Firebase가 비활성화된 경우 (로컬 모드)
-                userRole = null;
-                allowedProcesses = [];
-                showNoAccessMessage('Firebase가 비활성화되어 있습니다. 관리자에게 문의하세요.');
-                return Promise.resolve(null);
+        // 현재 사용자 UID를 특정 UID로 설정 (Admin UID로 로그인)
+        function setCurrentUID(uid) {
+            if (!uid) {
+                console.error('❌ UID를 제공해주세요.');
+                console.log('사용법: setCurrentUID("your-uid-here")');
+                return;
             }
             
-            const roleRef = getUserRoleRef();
-            if (!roleRef) {
-                userRole = null;
-                allowedProcesses = [];
-                showNoAccessMessage('사용자 인증 정보를 확인할 수 없습니다.');
-                return Promise.resolve(null);
-            }
+            localStorage.setItem('kcol:currentUid', uid);
+            console.log(`✅ 현재 사용자 UID 설정 완료: ${uid}`);
             
-            return roleRef.get()
-                .then((doc) => {
-                    if (doc.exists) {
-                        const data = doc.data();
-                        userRole = data.role || null;
-                        
-                        if (!userRole) {
-                            // 역할이 null이면 접근 불가
-                            showNoAccessMessage('사용자 역할이 설정되지 않았습니다. 관리자에게 문의하세요.');
-                            return null;
-                        }
-                        
-                        // Editor의 경우 allowedProcesses 필드 확인
-                        if (userRole === 'editor') {
-                            allowedProcesses = data.allowedProcesses || [];
-                            // allowedProcesses가 없으면 기본값: 공장 3개(1,2,3) + 현장 1개(6)
-                            if (allowedProcesses.length === 0) {
-                                allowedProcesses = [1, 2, 3, 6]; // 주기둥커팅, 소부재가공, 주기둥조립, 현장설치
-                            }
-                            console.log('[RBAC] Editor 허용 공정:', allowedProcesses);
-                        } else {
-                            allowedProcesses = []; // Editor가 아니면 제한 없음
-                        }
-                    } else {
-                        // 역할이 없으면 접근 불가 (익명 사용자 차단)
-                        userRole = null;
-                        allowedProcesses = [];
-                        showNoAccessMessage('접근 권한이 없습니다. 관리자에게 역할을 요청하세요.');
-                        return null;
-                    }
-                    console.log('[RBAC] 사용자 역할:', userRole, '허용 공정:', allowedProcesses);
-                    applyRoleBasedUI();
-                    return userRole;
-                })
-                .catch((error) => {
-                    console.error('[RBAC] 역할 로드 오류:', error);
-                    userRole = null;
-                    allowedProcesses = [];
-                    showNoAccessMessage('역할 정보를 불러올 수 없습니다. 관리자에게 문의하세요.');
-                    return null;
-                });
-        }
-        
-        // 접근 불가 메시지 표시
-        function showNoAccessMessage(message) {
-            // 기존 메시지 제거
-            const existingMsg = document.getElementById('no-access-message');
-            if (existingMsg) {
-                existingMsg.remove();
-            }
-            
-            // 메시지 표시
-            const msgDiv = document.createElement('div');
-            msgDiv.id = 'no-access-message';
-            msgDiv.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:white;padding:30px;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,0.3);z-index:10001;max-width:500px;text-align:center;';
-            msgDiv.innerHTML = `
-                <h2 style="color:#f44336;margin-bottom:15px;">⚠️ 접근 권한 없음</h2>
-                <p style="color:#666;margin-bottom:20px;line-height:1.6;">${message}</p>
-                <button onclick="window.location.href='../../index.html'" style="padding:10px 20px;background:#2196f3;color:white;border:none;border-radius:6px;cursor:pointer;font-size:14px;">홈으로 돌아가기</button>
-            `;
-            document.body.appendChild(msgDiv);
-            
-            // 모든 입력 필드 비활성화
+            // UID 기반 역할 재확인
+            checkRoleByUID();
             applyRoleBasedUI();
+            
+            console.log('🔑 현재 역할:', userRole);
+        }
+        
+        // 전역으로 노출
+        window.setCurrentUID = setCurrentUID;
+        
+        // UID 기반 역할 확인
+        function checkRoleByUID() {
+            const currentUID = getCurrentUID();
+            const adminUids = getAdminUIDs();
+            
+            // Admin UID 목록에 있으면 admin으로 설정
+            if (adminUids.includes(currentUID)) {
+                userRole = 'admin';
+                allowedProcesses = [];
+                localStorage.setItem('kcol:userRole', 'admin');
+                localStorage.setItem('kcol:allowedProcesses', JSON.stringify([]));
+                console.log('✅ UID 기반 역할 확인: Admin');
+                // UI 즉시 적용
+                setTimeout(applyRoleBasedUI, 50);
+                return 'admin';
+            }
+            
+            // UID 기반 역할이 없으면 기존 localStorage 값 사용
+            return null;
+        }
+        
+        // Admin UID 추가 함수 (콘솔에서 사용 가능)
+        function addAdminUID(uid) {
+            if (!uid) {
+                console.error('❌ UID를 제공해주세요.');
+                console.log('사용법: addAdminUID("your-uid-here")');
+                return;
+            }
+            
+            const adminUids = JSON.parse(localStorage.getItem('kcol:adminUids') || '[]');
+            if (!adminUids.includes(uid)) {
+                adminUids.push(uid);
+                localStorage.setItem('kcol:adminUids', JSON.stringify(adminUids));
+                console.log(`✅ Admin UID 추가 완료: ${uid}`);
+                console.log(`현재 Admin UID 목록:`, adminUids);
+                
+                // 현재 UID가 추가된 UID와 같으면 즉시 admin으로 설정
+                const currentUID = getCurrentUID();
+                if (currentUID === uid) {
+                    userRole = 'admin';
+                    allowedProcesses = [];
+                    localStorage.setItem('kcol:userRole', 'admin');
+                    applyRoleBasedUI();
+                    console.log('✅ 현재 사용자가 Admin으로 설정되었습니다.');
+                }
+            } else {
+                console.log(`ℹ️ UID ${uid}는 이미 Admin 목록에 있습니다.`);
+            }
+        }
+        
+        // Admin UID 제거 함수
+        function removeAdminUID(uid) {
+            const adminUids = JSON.parse(localStorage.getItem('kcol:adminUids') || '[]');
+            const index = adminUids.indexOf(uid);
+            if (index > -1) {
+                adminUids.splice(index, 1);
+                localStorage.setItem('kcol:adminUids', JSON.stringify(adminUids));
+                console.log(`✅ Admin UID 제거 완료: ${uid}`);
+                console.log(`현재 Admin UID 목록:`, adminUids);
+            } else {
+                console.log(`ℹ️ UID ${uid}는 Admin 목록에 없습니다.`);
+            }
+        }
+        
+        // Admin UID 목록 조회 함수
+        function listAdminUIDs() {
+            // getAdminUIDs()를 사용하여 기본 UID와 저장된 UID 모두 포함
+            const allAdminUids = getAdminUIDs();
+            const currentUID = getCurrentUID();
+            const isAdmin = allAdminUids.includes(currentUID);
+            
+            console.log('📋 Admin UID 목록 (기본 + 저장된):', allAdminUids);
+            console.log('👤 현재 사용자 UID:', currentUID);
+            console.log('🔑 현재 역할:', userRole || '확인 불가');
+            console.log('✅ Admin 여부:', isAdmin ? 'Yes' : 'No');
+            
+            return allAdminUids;
+        }
+        
+        // 전역으로 노출
+        window.addAdminUID = addAdminUID;
+        window.removeAdminUID = removeAdminUID;
+        window.listAdminUIDs = listAdminUIDs;
+        window.getCurrentUID = getCurrentUID;
+        window.setCurrentUID = setCurrentUID;
+        
+        // 페이지 로드 시 UID 기반 역할 확인
+        let userRole = null;
+        let allowedProcesses = [];
+        
+        // UID 기반 역할 확인 시도
+        const uidBasedRole = checkRoleByUID();
+        if (!uidBasedRole) {
+            // UID 기반 역할이 없으면 localStorage에서 로드
+            userRole = localStorage.getItem('kcol:userRole') || 'admin'; // 기본값: admin
+            allowedProcesses = JSON.parse(localStorage.getItem('kcol:allowedProcesses') || '[]');
+        }
+        
+        // 페이지 로드 완료 후 UI 적용
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', function() {
+                setTimeout(applyRoleBasedUI, 100);
+            });
+        } else {
+            setTimeout(applyRoleBasedUI, 100);
+        }
+        
+        // 역할 설정 함수 (콘솔에서 사용 가능)
+        // Editor 역할 예시:
+        // - Editor 1: setUserRole('editor', [1])           // 공정 1만 (주기둥커팅)
+        // - Editor 2: setUserRole('editor', [2])           // 공정 2만 (기둥소부재가공)
+        // - Editor 3: setUserRole('editor', [3, 4, 5])     // 공정 3, 4, 5 (주기둥조립, 소부재조립, 현장배송)
+        // - Editor 4: setUserRole('editor', [6])           // 공정 6만 (현장설치)
+        function setUserRole(role, processes = []) {
+            userRole = role;
+            allowedProcesses = processes;
+            localStorage.setItem('kcol:userRole', role);
+            localStorage.setItem('kcol:allowedProcesses', JSON.stringify(processes));
+            applyRoleBasedUI();
+            console.log(`✅ 역할 설정 완료: ${role}`, processes.length > 0 ? `(허용 공정: ${processes.join(', ')})` : '');
+            
+            // Editor 역할 안내
+            if (role === 'editor' && processes.length > 0) {
+                const processNames = processes.map(p => {
+                    const proc = PROCESSES.find(pr => pr.id === p);
+                    return proc ? `${p}.${proc.name}` : `${p}`;
+                }).join(', ');
+                console.log(`📝 Editor는 다음 공정만 수정 가능합니다: ${processNames}`);
+            }
         }
         
         // 역할 기반 UI 제어
@@ -1503,7 +1660,7 @@
                 }
                 if (saveButton) saveButton.disabled = true;
                 disableProcessButtons([]);
-                return; // 역할이 없으면 더 이상 진행하지 않음
+                return;
             }
             
             const isViewer = userRole === 'viewer';
@@ -1512,7 +1669,6 @@
             const isAdmin = userRole === 'admin';
             
             // 일일입력 패널 제어
-            const inputPanel = document.getElementById('panel-input');
             const workDateInput = document.getElementById('work-date');
             const columnGridInput = document.getElementById('column-grid-input');
             const saveButton = document.querySelector('#panel-input button[onclick*="saveSelectedColumns"]');
@@ -1531,9 +1687,7 @@
                     saveButton.disabled = true;
                     saveButton.title = 'Viewer는 저장할 수 없습니다.';
                 }
-                // 공정 버튼 비활성화
                 disableProcessButtons([]);
-                // 역할 표시
                 showRoleBadge('viewer', '열람자 - 읽기 전용');
             } else if (isEditor) {
                 // Editor: 허용된 공정만 수정 가능
@@ -1547,16 +1701,14 @@
                 if (saveButton) {
                     saveButton.disabled = false;
                 }
-                // 허용된 공정 버튼만 활성화, 나머지 비활성화
                 disableProcessButtons(allowedProcesses);
-                // 역할 표시
                 const allowedNames = allowedProcesses.map(p => {
                     const proc = PROCESSES.find(pr => pr.id === p);
                     return proc ? `${p}.${proc.name}` : `${p}`;
                 }).join(', ');
                 showRoleBadge('editor', `편집자 - 공정 ${allowedNames}만 수정 가능`);
-            } else {
-                // Approver, Admin: 모든 공정 수정 가능
+            } else if (isAdmin) {
+                // Admin: 모든 공정 수정 가능 + 운송차수계획 사용 가능
                 if (workDateInput) {
                     workDateInput.disabled = false;
                 }
@@ -1567,31 +1719,137 @@
                 if (saveButton) {
                     saveButton.disabled = false;
                 }
-                // 모든 공정 버튼 활성화
                 disableProcessButtons([]);
-                // 역할 표시
-                const roleNames = {
-                    'approver': '승인자 - 일일입력 및 승인 가능',
-                    'admin': '관리자 - 모든 권한'
-                };
-                showRoleBadge(userRole, roleNames[userRole] || userRole);
+                showRoleBadge('admin', '관리자 - 모든 권한');
+                
+                // 운송차수계획 패널 활성화 (Admin만)
+                enableTransportPanel(true);
+            } else {
+                // Approver: 모든 공정 수정 가능 (운송차수계획 제외)
+                if (workDateInput) {
+                    workDateInput.disabled = false;
+                }
+                if (columnGridInput) {
+                    columnGridInput.style.pointerEvents = 'auto';
+                    columnGridInput.style.opacity = '1';
+                }
+                if (saveButton) {
+                    saveButton.disabled = false;
+                }
+                disableProcessButtons([]);
+                showRoleBadge('approver', '승인자 - 일일입력 및 승인 가능');
+                
+                // 운송차수계획 패널 비활성화 (Approver는 사용 불가)
+                enableTransportPanel(false);
+            }
+        }
+        
+        // 운송차수계획 패널 활성화/비활성화
+        function enableTransportPanel(enabled) {
+            const transportPanel = document.getElementById('panel-transport');
+            if (!transportPanel) return;
+            
+            // 모든 입력 필드와 버튼 찾기
+            const fileInput = document.getElementById('transport-plan-file');
+            const addButton = document.querySelector('button[onclick="addTransportTrip()"]');
+            const removeButton = document.querySelector('button[onclick="removeTransportTrip()"]');
+            const editButton = document.querySelector('button[onclick="editTransportTrip()"]');
+            const saveButton = document.querySelector('button[onclick="saveTransportPlan()"]');
+            const tripInput = document.getElementById('transport-trip-input');
+            const tripEditInput = document.getElementById('transport-trip-edit-input');
+            const transportGrid = document.getElementById('transport-column-grid');
+            
+            if (enabled) {
+                // Admin: 모든 기능 활성화
+                if (fileInput) {
+                    fileInput.disabled = false;
+                    fileInput.style.opacity = '1';
+                    fileInput.style.pointerEvents = 'auto';
+                }
+                if (addButton) {
+                    addButton.disabled = false;
+                    addButton.style.opacity = '1';
+                    addButton.style.pointerEvents = 'auto';
+                }
+                if (removeButton) {
+                    removeButton.disabled = false;
+                    removeButton.style.opacity = '1';
+                    removeButton.style.pointerEvents = 'auto';
+                }
+                if (editButton) {
+                    editButton.disabled = false;
+                    editButton.style.opacity = '1';
+                    editButton.style.pointerEvents = 'auto';
+                }
+                if (saveButton) {
+                    saveButton.disabled = false;
+                    saveButton.style.opacity = '1';
+                    saveButton.style.pointerEvents = 'auto';
+                }
+                if (tripInput) tripInput.disabled = false;
+                if (tripEditInput) tripEditInput.disabled = false;
+                if (transportGrid) {
+                    transportGrid.style.pointerEvents = 'auto';
+                    transportGrid.style.opacity = '1';
+                }
+            } else {
+                // Approver/Editor/Viewer: 모든 기능 비활성화
+                if (fileInput) {
+                    fileInput.disabled = true;
+                    fileInput.style.opacity = '0.5';
+                    fileInput.style.pointerEvents = 'none';
+                    fileInput.title = '운송차수계획은 관리자(Admin)만 사용할 수 있습니다.';
+                }
+                if (addButton) {
+                    addButton.disabled = true;
+                    addButton.style.opacity = '0.5';
+                    addButton.style.pointerEvents = 'none';
+                    addButton.title = '운송차수계획은 관리자(Admin)만 사용할 수 있습니다.';
+                }
+                if (removeButton) {
+                    removeButton.disabled = true;
+                    removeButton.style.opacity = '0.5';
+                    removeButton.style.pointerEvents = 'none';
+                    removeButton.title = '운송차수계획은 관리자(Admin)만 사용할 수 있습니다.';
+                }
+                if (editButton) {
+                    editButton.disabled = true;
+                    editButton.style.opacity = '0.5';
+                    editButton.style.pointerEvents = 'none';
+                    editButton.title = '운송차수계획은 관리자(Admin)만 사용할 수 있습니다.';
+                }
+                if (saveButton) {
+                    saveButton.disabled = true;
+                    saveButton.style.opacity = '0.5';
+                    saveButton.style.pointerEvents = 'none';
+                    saveButton.title = '운송차수계획은 관리자(Admin)만 사용할 수 있습니다.';
+                }
+                if (tripInput) {
+                    tripInput.disabled = true;
+                    tripInput.title = '운송차수계획은 관리자(Admin)만 사용할 수 있습니다.';
+                }
+                if (tripEditInput) {
+                    tripEditInput.disabled = true;
+                    tripEditInput.title = '운송차수계획은 관리자(Admin)만 사용할 수 있습니다.';
+                }
+                if (transportGrid) {
+                    transportGrid.style.pointerEvents = 'none';
+                    transportGrid.style.opacity = '0.5';
+                }
             }
         }
         
         // 공정 버튼 활성화/비활성화
         function disableProcessButtons(allowedProcesses) {
-            // 모든 공정 버튼 찾기
             const processButtons = document.querySelectorAll('.process-btn');
             processButtons.forEach(btn => {
                 const processId = parseInt(btn.dataset.process);
                 if (userRole === 'viewer') {
-                    // Viewer: 모든 버튼 비활성화
                     btn.disabled = true;
                     btn.style.opacity = '0.5';
                     btn.style.cursor = 'not-allowed';
                     btn.title = 'Viewer는 공정을 선택할 수 없습니다.';
                 } else if (userRole === 'editor') {
-                    // Editor: 허용된 공정만 활성화
                     if (allowedProcesses.includes(processId)) {
                         btn.disabled = false;
                         btn.style.opacity = '1';
@@ -1605,7 +1863,6 @@
                         btn.title = `Editor는 ${proc ? proc.name : `공정 ${processId}`}을 수정할 수 없습니다.`;
                     }
                 } else {
-                    // Approver, Admin: 모든 버튼 활성화
                     btn.disabled = false;
                     btn.style.opacity = '1';
                     btn.style.cursor = 'pointer';
@@ -1634,11 +1891,28 @@
                 'admin': '#f44336'
             };
             badge.style.background = roleColors[role] || '#333';
+            
+            // label이 없으면 role에 맞는 기본 라벨 사용
+            if (!label || label === 'admin' || label === role) {
+                const defaultLabels = {
+                    'viewer': '열람자 - 읽기 전용',
+                    'editor': '편집자',
+                    'approver': '승인자 - 일일입력 및 승인 가능',
+                    'admin': '관리자 - 모든 권한'
+                };
+                label = defaultLabels[role] || label || role;
+            }
+            
             badge.textContent = `👤 ${label}`;
             badge.title = '클릭하여 상세 정보 확인';
         }
         
-        // 역할 상세 정보 모달 표시
+        // 전역으로 노출 (콘솔에서 사용 가능)
+        window.setUserRole = setUserRole;
+        window.userRole = () => userRole;
+        window.allowedProcesses = () => allowedProcesses;
+
+        // 역할 상세 정보 모달 표시 (제거됨 - Firebase 관련)
         function showRoleDetails(role) {
             // 기존 모달 제거
             const existingModal = document.getElementById('role-details-modal');
@@ -1805,19 +2079,6 @@
             document.body.appendChild(modal);
         }
         
-        // Firestore 데이터 저장 헬퍼
-        function firestoreSet(docRef, data) {
-            return docRef.set({ data: data, updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
-        }
-        
-        // Firestore 데이터 읽기 헬퍼
-        function firestoreGet(snapshot) {
-            if (snapshot.exists) {
-                const doc = snapshot.data();
-                return doc.data || {};
-            }
-            return {};
-        }
         
         // 휴무일 정의 (설날 연휴)
         const HOLIDAYS = {
@@ -1876,13 +2137,8 @@
                 const badge = document.getElementById('project-badge');
                 if (badge) badge.textContent = getProjectName();
 
-                if (isFirebaseEnabled) {
-                    setupFirebaseListeners();
-                    showConnectionStatus('🟢 실시간 연결됨 (Firebase)');
-                } else {
-                    loadFromLocalStorage(); // 내부에서 syncTransportToDailyData() 호출됨
-                    showConnectionStatus('🟡 로컬 저장 모드 (Firebase 설정 필요)');
-                }
+                loadFromLocalStorage(); // 내부에서 syncTransportToDailyData() 호출됨
+                showConnectionStatus('🟡 로컬 저장 모드');
                 setToday();
                 renderWeekdayButtons(); // 요일 버튼 렌더링
                 loadTransportPlan(); // 내부에서 syncTransportToDailyData() 호출됨
@@ -1894,10 +2150,20 @@
                     renderGanttChart();
                 }
                 
-                // 역할 기반 UI 적용 (사용자 인증 후 자동으로 로드됨)
-                if (!currentUser) {
-                    userRole = null;
-                    applyRoleBasedUI();
+                // 역할 기반 UI 적용
+                // UID 기반 역할 재확인 (페이지 로드 시)
+                checkRoleByUID();
+                applyRoleBasedUI();
+                
+                // 현재 UID와 역할 정보 콘솔에 표시
+                const currentUID = getCurrentUID();
+                const adminUids = getAdminUIDs();
+                console.log('👤 현재 사용자 UID:', currentUID);
+                console.log('🔑 현재 역할:', userRole);
+                if (adminUids.includes(currentUID)) {
+                    console.log('✅ Admin UID로 확인됨');
+                } else {
+                    console.log('ℹ️ Admin UID 목록에 없음. Admin UID 추가: addAdminUID("' + currentUID + '")');
                 }
                 
                 // URL 파라미터로 공정 선택 (예: ?process=1)
@@ -1911,6 +2177,28 @@
                         }, 100);
                     }
                 }
+                
+                // 탭 버튼에 이벤트 리스너 직접 추가 (onclick 대신)
+                document.querySelectorAll('.tab-btn').forEach(btn => {
+                    // 기존 onclick 속성 제거하고 이벤트 리스너 추가
+                    const onclickAttr = btn.getAttribute('onclick');
+                    if (onclickAttr && onclickAttr.includes('showPanel')) {
+                        btn.removeAttribute('onclick');
+                        btn.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            // onclick 속성에서 panelId 추출
+                            const match = onclickAttr.match(/showPanel\(['"]([^'"]+)['"]/);
+                            if (match && match[1]) {
+                                const panelId = match[1];
+                                console.log('탭 버튼 클릭:', panelId, this);
+                                window.showPanel(panelId, this);
+                            }
+                        });
+                    }
+                });
+                
+                console.log('✅ 탭 버튼 이벤트 리스너 설정 완료');
             } catch (error) {
                 console.error('Initialization error:', error);
                 alert('시스템 초기화 오류: ' + error.message);
@@ -1929,113 +2217,13 @@
             // 모드 텍스트 업데이트
             const modeEl = document.getElementById('current-mode');
             if (modeEl) {
-                if (isFirebaseEnabled) {
-                    modeEl.textContent = '🟢 실시간 공유 모드 (Firebase 연결됨)';
-                    modeEl.style.color = '#2e7d32';
-                } else {
-                    modeEl.textContent = '🟡 로컬 저장 모드 (같은 브라우저에서만 공유)';
-                    modeEl.style.color = '#f57c00';
-                }
+                modeEl.textContent = '🟡 로컬 저장 모드 (같은 브라우저에서만 공유)';
+                modeEl.style.color = '#f57c00';
             }
         }
 
-        // Firebase 실시간 리스너 (Firestore)
-        function setupFirebaseListeners() {
-            // columnData 실시간 리스너 (projectId 기반)
-            kcolRef('columnData').onSnapshot((snapshot) => {
-                const data = firestoreGet(snapshot);
-                columnData = data;
-                renderColumnGrid('column-grid-overview');
-                renderColumnGrid('column-grid-input');
-                updateProgressBars();
-            }, (error) => {
-                console.error('columnData 리스너 오류:', error);
-            });
-
-            // dailyData 실시간 리스너 (projectId 기반)
-            kcolRef('dailyData').onSnapshot((snapshot) => {
-                dailyData = firestoreGet(snapshot);
-            }, (error) => {
-                console.error('dailyData 리스너 오류:', error);
-            });
-
-            // transportPlan 실시간 리스너 (projectId 기반)
-            kcolRef('transportPlan').onSnapshot((snapshot) => {
-                const data = firestoreGet(snapshot);
-                if (data && Object.keys(data).length > 0) {
-                    transportPlan = data;
-                    // 운송차수계획을 dailyData의 현장배송(process 5)에 동기화
-                    // 초기 로드이므로 확인 없이 자동 동기화
-                    syncTransportToDailyData(false);
-                    if (document.getElementById('panel-transport')?.classList.contains('active')) {
-                        renderTransportTrips();
-                        renderTransportColumnGrid();
-                        updateTransportTripInfo();
-                    }
-                    // 화면 업데이트
-                    renderGanttChart();
-                    renderColumnGrid('column-grid-overview');
-                    renderColumnGrid('column-grid-input');
-                    updateProgressBars();
-                }
-            }, (error) => {
-                console.error('transportPlan 리스너 오류:', error);
-            });
-        }
-
-        // Process Selection (공정별 선택)
-        function selectProcess(processId) {
-            // Editor의 경우 허용된 공정만 선택 가능
-            if (userRole === 'editor' && !allowedProcesses.includes(processId)) {
-                const proc = PROCESSES.find(p => p.id === processId);
-                const procName = proc ? proc.name : `공정 ${processId}`;
-                alert(`⚠️ 권한 없음\n\nEditor는 ${procName}을 선택할 수 없습니다.\n\n허용된 공정: ${allowedProcesses.map(p => {
-                    const pr = PROCESSES.find(pr => pr.id === p);
-                    return pr ? `${p}.${pr.name}` : `${p}`;
-                }).join(', ')}`);
-                return;
-            }
-            
-            currentProcess = processId;
-            
-            // 공정 변경 시 선택된 기둥 초기화
-            selectedColumns = [];
-            
-            // 해당 공정의 담당 업체 설정
-            const process = PROCESSES.find(p => p.id === processId);
-            currentCompany = process?.company;
-            
-            // 버튼 활성화 표시
-            document.querySelectorAll('.process-btn').forEach(btn => btn.classList.remove('active'));
-            document.querySelector(`.process-btn.p${processId}`).classList.add('active');
-            
-            const processNames = {
-                1: '1. 주기둥커팅 (유석철강(충주공장))',
-                2: '2. 기둥소부재가공 (유석철강(오창공장))',
-                3: '3. 주기둥조립 (유석철강(음성공장))',
-                4: '4. 소부재조립 (유석철강(음성공장))',
-                5: '5. 현장배송 (유석철강(음성공장))',
-                6: '6. 현장설치 (진흥기업)'
-            };
-            document.getElementById('selected-company-name').textContent = '- ' + processNames[processId];
-            
-            // 공정별 입력 안내 메시지 표시
-            showProcessGuide(processId);
-            
-            // 일일 입력 패널 자동으로 열기
-            const inputPanel = document.getElementById('panel-input');
-            if (inputPanel) {
-                // 다른 패널 비활성화
-                document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-                // 일일 입력 패널 활성화
-                inputPanel.classList.add('active');
-                
-                // 다른 탭 버튼 비활성화 (일일 입력 버튼 제외)
-                document.querySelectorAll('.tabs .tab-btn').forEach(btn => btn.classList.remove('active'));
-            }
-            
-            renderColumnGrid('column-grid-input');
-        }
+        // Firebase 관련 코드 제거됨 (localStorage 기반으로 변경)
+        // selectProcess와 showPanel 함수는 스크립트 상단에 이미 정의됨
         
         // 모든 공정에서 기둥 선택/해제 토글
         function toggleColumnSelection(columnId) {
@@ -2259,6 +2447,7 @@
                 return;
             }
             
+            // Admin과 Approver는 모든 공정에서 입력 가능
             // Editor의 경우 허용된 공정만 저장 가능
             if (userRole === 'editor' && !allowedProcesses.includes(currentProcess)) {
                 const proc = PROCESSES.find(p => p.id === currentProcess);
@@ -2412,6 +2601,16 @@
             const guide = guideMessages[processId];
             const guideDiv = document.getElementById('process-guide');
             
+            if (!guideDiv) {
+                console.warn('process-guide 요소를 찾을 수 없습니다.');
+                return;
+            }
+            
+            if (!guide) {
+                console.warn(`공정 ${processId}에 대한 안내 메시지가 없습니다.`);
+                return;
+            }
+            
             guideDiv.innerHTML = `
                 <div style="margin-bottom:10px;">
                     <strong style="font-size:14px;color:#1565c0;">${guide.title}</strong>
@@ -2437,47 +2636,7 @@
             else if (company === 'jinhung') selectProcess(5);
         }
 
-        // Panel Navigation
-        function showPanel(panelId, btnElement) {
-            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-            // 일일 입력 버튼은 제외하고 active 클래스 제거
-            document.querySelectorAll('.tab-btn').forEach(b => {
-                if (!b.closest('.company-selector')) {
-                    b.classList.remove('active');
-                }
-            });
-            
-            const panel = document.getElementById('panel-' + panelId);
-            if (panel) {
-                panel.classList.add('active');
-            }
-            
-            if (btnElement) {
-                btnElement.classList.add('active');
-            } else if (event && event.target) {
-                event.target.classList.add('active');
-            }
-            
-            if (panelId === 'gantt') {
-                loadTransportPlan(); // 운송계획 로드 (내부에서 syncTransportToDailyData 호출)
-                // 강제로 다시 동기화하여 공정표에 반영
-                syncTransportToDailyData(false);
-                renderGanttChart();
-            } else if (panelId === 'chart') {
-                renderCharts();
-            } else if (panelId === 'overview') {
-                renderColumnGrid('column-grid-overview');
-                updateProgressBars();
-            } else if (panelId === 'transport') {
-                loadTransportPlan();
-                renderTransportColumnGrid();
-                renderTransportTrips();
-            } else if (panelId === 'transportVolume') {
-                renderTransportVolumeTable();
-            } else if (panelId === 'installation') {
-                renderInstallationStatus();
-            }
-        }
+        // showPanel 함수는 스크립트 상단에 이미 정의됨
 
         // Set Today's Date
         function setToday() {
@@ -3638,6 +3797,7 @@
                 return;
             }
             
+            // Admin과 Approver는 모든 공정에서 입력 가능
             // Editor의 경우 허용된 공정만 저장 가능
             const selectedStatus = parseInt(document.getElementById('modal-process-select').value);
             const newStatus = editMode ? selectedStatus : (currentProcess || selectedStatus);
@@ -3666,9 +3826,7 @@
                 }
             }
             
-            // 수정 모드일 때는 선택된 공정 사용, 일반 모드일 때는 currentProcess 사용
-            const selectedStatus = parseInt(document.getElementById('modal-process-select').value);
-            const newStatus = editMode ? selectedStatus : (currentProcess || selectedStatus);
+            // selectedStatus와 newStatus는 위에서 이미 선언되었으므로 재사용
             
             if (newStatus === undefined || newStatus === null) {
                 alert('공정 상태를 선택해주세요.');
@@ -4092,19 +4250,40 @@
                             }
                         }
                         
-                        // 클릭 이벤트 추가 (삭제 모드일 때만)
+                        // 클릭 이벤트 추가
                         const currentProcessNum = cellClass ? cellClass.match(/p(\d)/)?.[1] || '0' : '0';
-                        const clickHandler = deleteMode ? `onclick="handleGanttCellDelete(${c}, '${dateStr}')"` : '';
-                        const cursorStyle = deleteMode ? 'cursor:pointer;' : '';
-                        const hoverStyle = deleteMode ? 'transition:background-color 0.2s;' : '';
+                        let clickHandler = '';
+                        let cursorStyle = '';
+                        let hoverStyle = '';
                         
-                        bodyHtml += `<td class="${isWeekend ? 'weekend' : ''}" ${clickHandler} style="${cursorStyle}${hoverStyle}" onmouseover="${deleteMode ? 'this.style.backgroundColor=\'#ffebee\'' : ''}" onmouseout="${deleteMode ? 'this.style.backgroundColor=\'\'' : ''}">`;
+                        if (deleteMode) {
+                            // 삭제 모드: 삭제 핸들러
+                            clickHandler = `onclick="handleGanttCellDelete(${c}, '${dateStr}')"`;
+                            cursorStyle = 'cursor:pointer;';
+                            hoverStyle = 'transition:background-color 0.2s;';
+                        } else if (cellClass && cellClass !== 'gantt-cell duplicate') {
+                            // 일반 모드: 공정 셀 클릭 시 해당 공정으로 이동
+                            if (cellClass === 'gantt-cell both') {
+                                // both 셀은 각 div에 개별 클릭 이벤트 추가
+                                cursorStyle = 'cursor:pointer;';
+                            } else {
+                                // 단일 공정 셀: 해당 공정으로 이동
+                                const processNum = parseInt(currentProcessNum);
+                                if (processNum >= 1 && processNum <= 6) {
+                                    clickHandler = `onclick="selectProcess(${processNum}); showPanel('input', null);"`;
+                                    cursorStyle = 'cursor:pointer;';
+                                    hoverStyle = 'transition:opacity 0.2s;';
+                                }
+                            }
+                        }
+                        
+                        bodyHtml += `<td class="${isWeekend ? 'weekend' : ''}" ${clickHandler} style="${cursorStyle}${hoverStyle}" onmouseover="${deleteMode ? 'this.style.backgroundColor=\'#ffebee\'' : (cellClass && cellClass !== 'gantt-cell duplicate' ? 'this.style.opacity=\'0.8\'' : '')}" onmouseout="${deleteMode ? 'this.style.backgroundColor=\'\'' : (cellClass && cellClass !== 'gantt-cell duplicate' ? 'this.style.opacity=\'1\'' : '')}">`;
                         if (cellClass) {
                             // 주기둥커팅(1)과 소부재가공(2)이 모두 있는 경우 두 개의 div로 분할 표시
                             if (cellClass === 'gantt-cell both') {
                                 bodyHtml += `<div style="display:flex;width:100%;height:20px;border-radius:0;">`;
-                                bodyHtml += `<div class="gantt-cell p1" style="flex:1;height:20px;min-width:0;"></div>`;
-                                bodyHtml += `<div class="gantt-cell p2" style="flex:1;height:20px;min-width:0;"></div>`;
+                                bodyHtml += `<div class="gantt-cell p1" style="flex:1;height:20px;min-width:0;cursor:pointer;" onclick="selectProcess(1); showPanel('input', null);" onmouseover="this.style.opacity='0.8';" onmouseout="this.style.opacity='1';"></div>`;
+                                bodyHtml += `<div class="gantt-cell p2" style="flex:1;height:20px;min-width:0;cursor:pointer;" onclick="selectProcess(2); showPanel('input', null);" onmouseover="this.style.opacity='0.8';" onmouseout="this.style.opacity='1';"></div>`;
                                 bodyHtml += `</div>`;
                             } else {
                                 // process 5 (현장배송)인 경우 차수번호 또는 "O" 표시
@@ -4529,30 +4708,6 @@
                 localStorage.setItem(kcolKey('deliveryConfirmed'), JSON.stringify(deliveryConfirmed));
                 localStorage.setItem(kcolKey('actualDeliveryDate'), JSON.stringify(actualDeliveryDate));
                 console.log('✅ localStorage 저장 완료:', { columnData, dailyData, columnCoordinates, deliveryConfirmed, actualDeliveryDate });
-                
-                if (isFirebaseEnabled && db) {
-                    // Firebase에 저장 (projectId 기반)
-                    firestoreSet(kcolRef('columnData'), columnData)
-                        .then(() => {
-                            return firestoreSet(kcolRef('dailyData'), dailyData);
-                        })
-                        .then(() => {
-                            return firestoreSet(kcolRef('columnCoordinates'), columnCoordinates);
-                        })
-                        .then(() => {
-                            return firestoreSet(kcolRef('deliveryConfirmed'), deliveryConfirmed);
-                        })
-                        .then(() => {
-                            return firestoreSet(kcolRef('actualDeliveryDate'), actualDeliveryDate);
-                        })
-                        .then(() => {
-                            console.log('✅ Firebase 저장 완료 (projectId:', PROJECT_ID + ')');
-                        })
-                        .catch((error) => {
-                            console.error('Firebase 저장 오류:', error);
-                            // localStorage는 이미 저장됨
-                        });
-                }
             } catch (error) {
                 console.error('저장 오류:', error);
                 alert('데이터 저장 중 오류가 발생했습니다: ' + error.message);
@@ -5034,6 +5189,12 @@
 
         // 차수 추가
         function addTransportTrip() {
+            // 권한 체크: 운송차수계획은 Admin만 사용 가능
+            if (userRole !== 'admin') {
+                alert('⚠️ 권한 없음\n\n운송차수계획은 관리자(Admin)만 사용할 수 있습니다.');
+                return;
+            }
+            
             const input = document.getElementById('transport-trip-input');
             const tripNum = parseInt(input.value) || 1;
             
@@ -5052,6 +5213,12 @@
 
         // 차수 삭제
         function removeTransportTrip() {
+            // 권한 체크: 운송차수계획은 Admin만 사용 가능
+            if (userRole !== 'admin') {
+                alert('⚠️ 권한 없음\n\n운송차수계획은 관리자(Admin)만 사용할 수 있습니다.');
+                return;
+            }
+            
             const trips = Object.keys(transportPlan).map(Number).sort((a, b) => a - b);
             if (trips.length <= 1) {
                 alert('최소 1개의 차수는 유지해야 합니다.');
@@ -5104,6 +5271,12 @@
 
         // 차수 번호 수정
         function editTransportTrip() {
+            // 권한 체크: 운송차수계획은 Admin만 사용 가능
+            if (userRole !== 'admin') {
+                alert('⚠️ 권한 없음\n\n운송차수계획은 관리자(Admin)만 사용할 수 있습니다.');
+                return;
+            }
+            
             const editInput = document.getElementById('transport-trip-edit-input');
             const newTripNum = parseInt(editInput.value) || 1;
             const oldTripNum = currentTransportTrip;
@@ -5415,6 +5588,12 @@
 
         // 기둥 선택/해제
         function toggleColumnForTransport(columnId) {
+            // 권한 체크: 운송차수계획은 Admin만 사용 가능
+            if (userRole !== 'admin') {
+                alert('⚠️ 권한 없음\n\n운송차수계획은 관리자(Admin)만 사용할 수 있습니다.');
+                return;
+            }
+            
             if (!transportPlan[currentTransportTrip]) {
                 transportPlan[currentTransportTrip] = { columns: [], date: '' };
             }
@@ -5765,6 +5944,29 @@
                 return;
             }
             
+            // 권한 체크: Viewer는 업로드 불가, Admin/Approver는 모든 공정 가능
+            if (userRole === 'viewer') {
+                alert('⚠️ 권한 없음\n\nViewer는 엑셀 파일을 업로드할 수 없습니다.');
+                if (statusEl) statusEl.textContent = '⚠️ 권한 없음';
+                return;
+            }
+            
+            // Editor는 허용된 공정만 업로드 가능, Admin/Approver는 모든 공정 가능
+            if (userRole === 'editor') {
+                // Editor는 허용된 공정만 업로드 가능
+                // 엑셀 파일을 읽어서 어떤 공정 데이터가 포함되어 있는지 확인해야 하지만,
+                // 파일을 읽기 전에 미리 경고만 표시
+                const allowedNames = allowedProcesses.map(p => {
+                    const proc = PROCESSES.find(pr => pr.id === p);
+                    return proc ? `${p}.${proc.name}` : `${p}`;
+                }).join(', ');
+                if (allowedProcesses.length === 0) {
+                    alert('⚠️ 권한 없음\n\nEditor는 허용된 공정이 없습니다.\n\n관리자에게 문의하세요.');
+                    if (statusEl) statusEl.textContent = '⚠️ 권한 없음';
+                    return;
+                }
+            }
+            
             let XLSXLib;
             try {
                 XLSXLib = await ensureXLSXLoaded();
@@ -5809,7 +6011,9 @@
                     
                     let successCount = 0;
                     let errorCount = 0;
+                    let skippedCount = 0; // Editor 권한으로 스킵된 공정 수
                     const errors = [];
+                    const skippedProcesses = new Set(); // 스킵된 공정 목록
                     
                     // 엑셀 데이터 파싱
                     rows.forEach((row, idx) => {
@@ -5852,6 +6056,13 @@
                             ];
                             
                             processDates.forEach(({ name, process, keys }) => {
+                                // 권한 체크: Editor는 허용된 공정만 처리, Admin/Approver는 모든 공정 처리
+                                if (userRole === 'editor' && !allowedProcesses.includes(process)) {
+                                    skippedProcesses.add(process);
+                                    skippedCount++;
+                                    return; // 허용되지 않은 공정은 스킵
+                                }
+                                
                                 // 날짜 찾기
                                 let date = null;
                                 for (let key of keys) {
@@ -5968,6 +6179,13 @@
                         if (errors.length > 0 && errors.length <= 10) {
                             message += '\n\n오류 상세:\n' + errors.slice(0, 10).join('\n');
                         }
+                    }
+                    if (userRole === 'editor' && skippedCount > 0) {
+                        const skippedNames = Array.from(skippedProcesses).map(p => {
+                            const proc = PROCESSES.find(pr => pr.id === p);
+                            return proc ? `${p}.${proc.name}` : `${p}`;
+                        }).join(', ');
+                        message += `\n\n⚠️ 권한 없음: ${skippedCount}개 공정 데이터가 무시되었습니다.\n허용되지 않은 공정: ${skippedNames}\n허용된 공정만 업로드되었습니다.`;
                     }
                     
                     alert(message);
@@ -6224,6 +6442,13 @@
                 return;
             }
             
+            // 권한 체크: 운송차수계획은 Admin만 사용 가능
+            if (userRole !== 'admin') {
+                alert('⚠️ 권한 없음\n\n운송차수계획은 관리자(Admin)만 사용할 수 있습니다.');
+                if (statusEl) statusEl.textContent = '⚠️ 권한 없음';
+                return;
+            }
+            
             if (typeof XLSX === 'undefined') {
                 alert('엑셀 라이브러리를 불러오지 못했습니다. 인터넷 연결을 확인해주세요.');
                 return;
@@ -6411,12 +6636,6 @@
                         updateProgressBars();
                     }
                     
-                    // Firebase에 저장 (활성화된 경우)
-                    if (isFirebaseEnabled && db) {
-                        firestoreSet(kcolRef('transportPlan'), transportPlan).catch((error) => {
-                            console.error('Firebase 저장 오류:', error);
-                        });
-                    }
                     
                 } catch (err) {
                     console.error('운송차수계획 엑셀 처리 오류:', err);
@@ -6633,6 +6852,23 @@
             
             if (!file) {
                 if (statusEl) statusEl.textContent = '파일을 업로드해주세요.';
+                return;
+            }
+            
+            // 권한 체크: Viewer는 업로드 불가, Editor는 공정 5만 허용, Admin/Approver는 모든 공정 가능
+            if (userRole === 'viewer') {
+                alert('⚠️ 권한 없음\n\nViewer는 운송물량산정 파일을 업로드할 수 없습니다.');
+                if (statusEl) statusEl.textContent = '⚠️ 권한 없음';
+                return;
+            }
+            
+            // Editor는 공정 5만 허용, Admin/Approver는 모든 공정 가능
+            if (userRole === 'editor' && !allowedProcesses.includes(5)) {
+                alert('⚠️ 권한 없음\n\nEditor는 현장배송(공정 5) 파일을 업로드할 수 없습니다.\n\n허용된 공정: ' + allowedProcesses.map(p => {
+                    const proc = PROCESSES.find(pr => pr.id === p);
+                    return proc ? `${p}.${proc.name}` : `${p}`;
+                }).join(', '));
+                if (statusEl) statusEl.textContent = '⚠️ 권한 없음';
                 return;
             }
             if (typeof XLSX === 'undefined') {
@@ -6893,9 +7129,9 @@
         }
         
         function saveTransportPlan() {
-            // 역할 확인: Viewer는 저장 불가
-            if (userRole === 'viewer') {
-                alert('⚠️ 권한 없음\n\nViewer는 운송차수계획을 수정할 수 없습니다.\n\nEditor 이상의 권한이 필요합니다.');
+            // 권한 체크: 운송차수계획은 Admin만 사용 가능
+            if (userRole !== 'admin') {
+                alert('⚠️ 권한 없음\n\n운송차수계획은 관리자(Admin)만 수정할 수 있습니다.');
                 return;
             }
             
@@ -6918,29 +7154,12 @@
             }
             console.log('dailyData 총 기둥 수:', totalColumnsInDailyData);
             
-            // Firebase에 저장 (활성화된 경우)
-            if (isFirebaseEnabled && db) {
-                firestoreSet(kcolRef('transportPlan'), transportPlan)
-                    .then(() => {
-                        alert('✅ 운송차수계획이 저장되었습니다. (현장배송 데이터 자동 동기화 완료)');
-                        // 화면 업데이트
-                        renderGanttChart();
-                        renderColumnGrid('column-grid-overview');
-                        renderColumnGrid('column-grid-input');
-                        updateProgressBars();
-                    })
-                    .catch((error) => {
-                        console.error('Firebase 저장 오류:', error);
-                        alert('⚠️ 저장 중 오류가 발생했습니다.');
-                    });
-            } else {
-                alert('✅ 운송차수계획이 로컬에 저장되었습니다. (현장배송 데이터 자동 동기화 완료)');
-                // 화면 업데이트
-                renderGanttChart();
-                renderColumnGrid('column-grid-overview');
-                renderColumnGrid('column-grid-input');
-                updateProgressBars();
-            }
+            alert('✅ 운송차수계획이 로컬에 저장되었습니다. (현장배송 데이터 자동 동기화 완료)');
+            // 화면 업데이트
+            renderGanttChart();
+            renderColumnGrid('column-grid-overview');
+            renderColumnGrid('column-grid-input');
+            updateProgressBars();
         }
 
         // 공정표 강제 동기화
@@ -7035,52 +7254,15 @@
             // 운송차수계획도 저장
             localStorage.setItem(kcolKey('transportPlan'), JSON.stringify(transportPlan));
             
-            // Firebase에 저장 (활성화된 경우)
-            if (isFirebaseEnabled && db) {
-                firestoreSet(kcolRef('columnData'), columnData)
-                    .then(() => {
-                        return firestoreSet(kcolRef('dailyData'), dailyData);
-                    })
-                    .then(() => {
-                        return firestoreSet(kcolRef('transportPlan'), transportPlan);
-                    })
-                    .then(() => {
-                        return firestoreSet(kcolRef('deliveryConfirmed'), deliveryConfirmed);
-                    })
-                    .then(() => {
-                        return firestoreSet(kcolRef('actualDeliveryDate'), actualDeliveryDate);
-                    })
-                    .then(() => {
-                        // columnCoordinates는 유지하므로 Firebase에서도 삭제하지 않음
-                        // return firestoreSet(kcolRef('columnCoordinates'), columnCoordinates);
-                        return Promise.resolve();
-                    })
-                    .then(() => {
-                        alert('✅ 전체 데이터가 초기화되었습니다.');
-                        // 화면 업데이트
-                        renderColumnGrid('column-grid-overview');
-                        renderColumnGrid('column-grid-input');
-                        renderGanttChart();
-                        updateProgressBars();
-                        renderTransportTrips();
-                        renderTransportColumnGrid();
-                        updateTransportTripInfo();
-                    })
-                    .catch((error) => {
-                        console.error('Firebase 저장 오류:', error);
-                        alert('⚠️ 초기화 중 오류가 발생했습니다.');
-                    });
-            } else {
-                alert('✅ 전체 데이터가 초기화되었습니다.');
-                // 화면 업데이트
-                renderColumnGrid('column-grid-overview');
-                renderColumnGrid('column-grid-input');
-                renderGanttChart();
-                updateProgressBars();
-                renderTransportTrips();
-                renderTransportColumnGrid();
-                updateTransportTripInfo();
-            }
+            alert('✅ 전체 데이터가 초기화되었습니다.');
+            // 화면 업데이트
+            renderColumnGrid('column-grid-overview');
+            renderColumnGrid('column-grid-input');
+            renderGanttChart();
+            updateProgressBars();
+            renderTransportTrips();
+            renderTransportColumnGrid();
+            updateTransportTripInfo();
         }
 
         // Close modal on outside click
@@ -7089,6 +7271,44 @@
                 closeModal();
             }
         });
+
+        // 전역 함수 최종 확인 및 노출 (스크립트 로드 완료 후)
+        // 함수가 정의되어 있으면 전역으로 노출
+        try {
+            if (typeof setCurrentUID !== 'undefined') {
+                window.setCurrentUID = setCurrentUID;
+            }
+            if (typeof addAdminUID !== 'undefined') {
+                window.addAdminUID = addAdminUID;
+            }
+            if (typeof getCurrentUID !== 'undefined') {
+                window.getCurrentUID = getCurrentUID;
+            }
+            if (typeof listAdminUIDs !== 'undefined') {
+                window.listAdminUIDs = listAdminUIDs;
+            }
+            if (typeof setUserRole !== 'undefined') {
+                window.setUserRole = setUserRole;
+            }
+        } catch (e) {
+            console.error('전역 함수 노출 오류:', e);
+        }
+        
+        // 콘솔에서 사용 가능한 함수 목록 표시
+        setTimeout(() => {
+            console.log('🔧 사용 가능한 함수:', {
+                'setCurrentUID': typeof window.setCurrentUID,
+                'addAdminUID': typeof window.addAdminUID,
+                'getCurrentUID': typeof window.getCurrentUID,
+                'listAdminUIDs': typeof window.listAdminUIDs,
+                'setUserRole': typeof window.setUserRole
+            });
+            
+            // Admin UID 설정 안내
+            const currentUID = typeof window.getCurrentUID === 'function' ? window.getCurrentUID() : '확인 불가';
+            console.log('👤 현재 사용자 UID:', currentUID);
+            console.log('💡 Admin으로 설정하려면: setCurrentUID("42ZPnQyu0uWxjrQ62AhhoWWOseJ2")');
+        }, 100);
 
     </script>
 
@@ -7123,6 +7343,114 @@
                 }
             });
         }
+    </script>
+    
+    <!-- 전역 함수 명시적 노출 (콘솔에서 사용 가능하도록) -->
+    <script>
+        // 페이지 로드 완료 후 전역 함수 노출 확인
+        (function() {
+            // 함수가 정의되어 있는지 확인하고 전역으로 노출
+            const scriptTag = document.currentScript || document.scripts[document.scripts.length - 1];
+            const parentScript = scriptTag.previousElementSibling;
+            
+            // 이전 스크립트 태그에서 함수를 찾아서 전역으로 노출
+            if (typeof setCurrentUID === 'function') {
+                window.setCurrentUID = setCurrentUID;
+            }
+            if (typeof addAdminUID === 'function') {
+                window.addAdminUID = addAdminUID;
+            }
+            if (typeof getCurrentUID === 'function') {
+                window.getCurrentUID = getCurrentUID;
+            }
+            if (typeof listAdminUIDs === 'function') {
+                window.listAdminUIDs = listAdminUIDs;
+            }
+            if (typeof setUserRole === 'function') {
+                window.setUserRole = setUserRole;
+            }
+            
+            // 직접 함수 정의 (백업)
+            if (!window.setCurrentUID) {
+                window.setCurrentUID = function(uid) {
+                    if (!uid) {
+                        console.error('❌ UID를 제공해주세요.');
+                        console.log('사용법: setCurrentUID("your-uid-here")');
+                        return;
+                    }
+                    localStorage.setItem('kcol:currentUid', uid);
+                    console.log(`✅ 현재 사용자 UID 설정 완료: ${uid}`);
+                    
+                    // Admin UID 목록 확인
+                    const adminUids = JSON.parse(localStorage.getItem('kcol:adminUids') || '[]');
+                    const defaultAdminUids = ['42ZPnQyu0uWxjrQ62AhhoWWOseJ2'];
+                    const allUids = [...new Set([...defaultAdminUids, ...adminUids])];
+                    
+                    if (allUids.includes(uid)) {
+                        // Admin으로 설정
+                        if (typeof setUserRole === 'function') {
+                            setUserRole('admin');
+                        } else {
+                            localStorage.setItem('kcol:userRole', 'admin');
+                            localStorage.setItem('kcol:allowedProcesses', JSON.stringify([]));
+                            if (typeof applyRoleBasedUI === 'function') {
+                                applyRoleBasedUI();
+                            } else {
+                                location.reload();
+                            }
+                        }
+                        console.log('✅ UID 기반 역할 확인: Admin');
+                    }
+                    console.log('🔑 현재 역할:', localStorage.getItem('kcol:userRole') || 'admin');
+                };
+            }
+            
+            if (!window.getCurrentUID) {
+                window.getCurrentUID = function() {
+                    let uid = localStorage.getItem('kcol:currentUid');
+                    if (!uid) {
+                        uid = 'uid_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                        localStorage.setItem('kcol:currentUid', uid);
+                    }
+                    return uid;
+                };
+            }
+            
+            if (!window.addAdminUID) {
+                window.addAdminUID = function(uid) {
+                    if (!uid) {
+                        console.error('❌ UID를 제공해주세요.');
+                        return;
+                    }
+                    const adminUids = JSON.parse(localStorage.getItem('kcol:adminUids') || '[]');
+                    if (!adminUids.includes(uid)) {
+                        adminUids.push(uid);
+                        localStorage.setItem('kcol:adminUids', JSON.stringify(adminUids));
+                        console.log(`✅ Admin UID 추가 완료: ${uid}`);
+                    }
+                    const currentUID = window.getCurrentUID();
+                    if (currentUID === uid) {
+                        window.setCurrentUID(uid);
+                    }
+                };
+            }
+            
+            if (!window.listAdminUIDs) {
+                window.listAdminUIDs = function() {
+                    const defaultAdminUids = ['42ZPnQyu0uWxjrQ62AhhoWWOseJ2'];
+                    const storedUids = JSON.parse(localStorage.getItem('kcol:adminUids') || '[]');
+                    const allUids = [...new Set([...defaultAdminUids, ...storedUids])];
+                    const currentUID = window.getCurrentUID();
+                    console.log('📋 Admin UID 목록:', allUids);
+                    console.log('👤 현재 사용자 UID:', currentUID);
+                    console.log('🔑 현재 역할:', localStorage.getItem('kcol:userRole') || 'admin');
+                    return allUids;
+                };
+            }
+            
+            console.log('✅ 전역 함수 노출 완료');
+            console.log('💡 Admin으로 설정: setCurrentUID("42ZPnQyu0uWxjrQ62AhhoWWOseJ2")');
+        })();
     </script>
     
     <script src="../../js/auth-config.js"></script>
