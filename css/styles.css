@@ -1581,6 +1581,7 @@ a.brochure-btn.white:hover {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 20px;
+  position: relative;
 }
 
 .castellated-beam-option {
@@ -1595,6 +1596,18 @@ a.brochure-btn.white:hover {
   flex-direction: column;
   align-items: center;
   gap: 15px;
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.castellated-beam-option:not(:nth-last-child(-n+2))::after {
+  content: '';
+  position: absolute;
+  bottom: -20px;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(to right, transparent, #94a3b8 20%, #94a3b8 80%, transparent);
 }
 
 .castellated-beam-option:hover {

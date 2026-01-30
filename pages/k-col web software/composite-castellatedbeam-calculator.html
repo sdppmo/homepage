@@ -9,6 +9,10 @@
             onload="window.html2canvasLoaded = true; console.log('html2canvas loaded');"
             onerror="console.error('html2canvas failed to load');"></script>
     <style>
+        html {
+            scroll-behavior: smooth;
+        }
+        
         * {
             margin: 0;
             padding: 0;
@@ -526,6 +530,7 @@
                 </div>
 
                 <button class="calc-btn input-group full-width" onclick="calculateBeam()" style="grid-column: 1 / -1;">계산하기</button>
+                <button class="calc-btn input-group full-width" onclick="saveAsDefault()" style="grid-column: 1 / -1; background: #64748b; margin-top: 10px;">현재값을 기본값으로 저장</button>
             </div>
 
             <div class="right-section">
@@ -590,11 +595,11 @@
                     alert('이 페이지는 인쇄할 수 없습니다.');
                     return false;
                 }
-                // F12 (개발자 도구)도 차단 (선택사항)
-                if (e.key === 'F12') {
-                    e.preventDefault();
-                    return false;
-                }
+                // F12 (개발자 도구) 차단 해제 (디버깅용)
+                // if (e.key === 'F12') {
+                //     e.preventDefault();
+                //     return false;
+                // }
             }, true); // capture phase에서 처리하여 우선 차단
 
             // beforeprint 이벤트 감지 (인쇄 대화상자 열릴 때)
@@ -629,6 +634,59 @@
                 return false;
             };
         })();
+
+        // 섹션으로 스크롤하는 함수 (전역에 노출)
+        window.scrollToSection = function(sectionId) {
+            console.log('scrollToSection called with:', sectionId);
+            const offset = 80; // sticky 목차 높이 고려
+            let attempts = 0;
+            const maxAttempts = 50; // 최대 50번 시도 (약 2.5초)
+            
+            function tryScroll() {
+                const el = document.getElementById(sectionId);
+                console.log('tryScroll attempt:', attempts, 'element found:', !!el);
+                if (el) {
+                    // 요소가 존재하고 렌더링되었는지 확인
+                    const rect = el.getBoundingClientRect();
+                    console.log('element rect:', rect);
+                    if (rect.height > 0 || rect.width > 0) {
+                        // 요소가 렌더링되었으므로 스크롤
+                        const elementPosition = rect.top + window.pageYOffset;
+                        const scrollPosition = elementPosition - offset;
+                        console.log('Scrolling to:', scrollPosition);
+                        window.scrollTo({
+                            top: scrollPosition,
+                            behavior: 'smooth'
+                        });
+                        return;
+                    }
+                }
+                
+                // 요소가 아직 렌더링되지 않았으면 재시도
+                attempts++;
+                if (attempts < maxAttempts) {
+                    setTimeout(tryScroll, 50); // 50ms마다 재시도
+                } else {
+                    // 최대 시도 횟수 초과 시 강제 스크롤 시도
+                    console.log('Max attempts reached, forcing scroll');
+                    const el = document.getElementById(sectionId);
+                    if (el) {
+                        const rect = el.getBoundingClientRect();
+                        const elementPosition = rect.top + window.pageYOffset;
+                        const scrollPosition = elementPosition - offset;
+                        window.scrollTo({
+                            top: scrollPosition,
+                            behavior: 'smooth'
+                        });
+                    } else {
+                        console.error('Element not found:', sectionId);
+                    }
+                }
+            }
+            
+            // 즉시 시작
+            tryScroll();
+        };
 
         // 클립보드 차단 기능
         (function() {
@@ -1314,7 +1372,7 @@
 
         // Format number with commas
         function formatNumber(num, decimals) {
-            if (isNaN(num) || !isFinite(num)) return '-';
+            if (num === null || num === undefined || isNaN(num) || !isFinite(num)) return '-';
             return num.toFixed(decimals).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
         }
 
@@ -1469,7 +1527,10 @@
                 }
                 const Ix_original = I_flange_original * 2 + I_flange_parallel_original * 2 + I_web_original - I_fillet_correction_original; // mm⁴
                 
-                // 단면적 계산 (원 beam과 castellated beam 동일)
+                // 단면적 계산
+                // 원부재 H형강 단면적
+                const As_original = bf * tf * 2 + hw_original * tw; // mm² (원부재 H형강 단면적)
+                // Castellated beam 단면적 (원 beam과 castellated beam 동일)
                 const A_total = bf * tf * 2 + hw_castellated * tw; // mm²
                 if (r > 0) {
                     const A_fillet_total = 4 * (r * r - Math.PI * r * r / 4); // mm²
@@ -2147,6 +2208,7 @@
                     Iy_castellated: Iy_castellated,
                     ry_castellated: ry_castellated,
                     A_total: A_total,
+                    As_original: As_original, // 원부재 H형강 단면적
                     // Service stage results
                     w_DL_service: w_DL_service,
                     w_SIDL_service: w_SIDL_service,
@@ -2192,40 +2254,17 @@
                     // Effective width (mm)
                     const beff_mm = effectiveWidth * 1000; // mm
                     
-                    // Shear connector strength (AISC I8.1)
-                    // Qn = 0.5 * Asa * sqrt(fc * Ec) <= Asa * Fu
-                    const studArea = Math.PI * Math.pow(studDiameter / 2, 2); // mm²
-                    const Qn_single = 0.5 * studArea * Math.sqrt(concreteStrength * Ec) / 1000; // kN
-                    const Qn_max = (studArea * studFu) / 1000; // kN
-                    const Qn = Math.min(Qn_single, Qn_max); // kN
-                    
-                    // Total shear connector strength required
-                    // ΣQn = w_u_service * L (for half span)
-                    const w_u_service_composite = results.w_u_service || wu; // kN/m
-                    const SigmaQn = w_u_service_composite * L; // kN
-                    
-                    // Number of studs required
-                    const n_stud_half = Math.ceil(SigmaQn / (Qn * studRows)); // per half span
-                    const n_stud_total = 2 * n_stud_half; // total
-                    
-                    // Stud spacing calculation
-                    const L_half_mm = (L * 1000) / 2; // mm
-                    const s_stud_calc = L_half_mm / n_stud_half; // mm
-                    
-                    // Spacing limits (AISC I8.2)
-                    const min_spacing = 6 * studDiameter; // mm
-                    const max_spacing_1 = 8 * ts; // mm (8t_slab)
-                    const max_spacing_2 = 900; // mm
-                    const max_spacing = Math.min(max_spacing_1, max_spacing_2); // mm
-                    
-                    // Adjust spacing to meet limits
-                    let s_stud = Math.floor(s_stud_calc / 10) * 10; // 10mm units
-                    if (s_stud < min_spacing) {
-                        s_stud = Math.ceil(min_spacing / 10) * 10;
-                    } else if (s_stud > max_spacing) {
-                        s_stud = Math.floor(max_spacing / 10) * 10;
-                    }
-                    const spacing_ok = (s_stud >= min_spacing && s_stud <= max_spacing);
+                    // Shear connector strength (AISC 18.3)
+                    // Qn1 = 0.5 * Asc * sqrt(fc * Ec) * Rg * Rp
+                    // Qn2 = Asc * fu * Rg * Rp
+                    // Qn = min(Qn1, Qn2)
+                    const studArea = Math.PI * Math.pow(studDiameter / 2, 2); // mm² (Asc)
+                    const Rg = 1.00; // 그룹 계수 (Group factor)
+                    const Rp = 1.00; // 위치 계수 (Position factor)
+                    const Qn1 = 0.5 * studArea * Math.sqrt(concreteStrength * Ec) * Rg * Rp / 1000; // kN (콘크리트 파괴)
+                    const Qn2 = studArea * studFu * Rg * Rp / 1000; // kN (스터드 파괴)
+                    const Qn = Math.min(Qn1, Qn2); // kN (공칭강도)
+                    const phiQn = Qn * 0.75; // kN (설계강도, φ = 0.75)
                     
                     // Composite section properties (using castellated beam section)
                     // Slab equivalent area
@@ -2241,6 +2280,20 @@
                     const d_composite = results.d_castellated + ts; // mm
                     
                     const y_bar_composite = (As_slab_equiv * y_slab_centroid + results.A_total * (ts + y_steel_centroid)) / (As_slab_equiv + results.A_total);
+                    
+                    // 중립축 위치 판정 (슬래브 내 또는 강재 단면 내)
+                    let neutral_axis_location = '';
+                    let neutral_axis_location_kr = '';
+                    if (y_bar_composite < ts) {
+                        neutral_axis_location = 'slab';
+                        neutral_axis_location_kr = '슬래브 내';
+                    } else if (y_bar_composite <= (ts + results.d_castellated)) {
+                        neutral_axis_location = 'steel';
+                        neutral_axis_location_kr = '강재 단면 내';
+                    } else {
+                        neutral_axis_location = 'below';
+                        neutral_axis_location_kr = '강재 하단 이하';
+                    }
                     
                     // Composite moment of inertia
                     const I_slab_own = beff_mm * Math.pow(ts, 3) / (12 * n); // mm⁴
@@ -2260,6 +2313,51 @@
                     // Plastic moment capacity (AISC I3.3)
                     const C_slab = 0.85 * concreteStrength * beff_mm * ts / 1000; // kN
                     const T_steel = Fy * results.A_total / 1000; // kN
+                    
+                    // 완전합성시 수평전단력 Vh 계산 (AISC I3.1)
+                    // B.1.1) 강재 인장력에 의한 Vh (Ts)
+                    const As_original = results.As_original || results.A_total; // 원부재 H형강 단면적
+                    const Ts = (Fy * As_original) / 1000; // kN (강재 인장력)
+                    
+                    // B.1.2) 콘크리트 압축력에 의한 Vh (Cc)
+                    const Cc = (0.85 * concreteStrength * beff_mm * ts) / 1000; // kN (콘크리트 압축력)
+                    
+                    // B.1.3) 수평전단력 Vh 결정 (완전합성 기준, AISC I3.1)
+                    const Vh = Math.min(Ts, Cc); // kN (두 값 중 작은 값)
+                    const Vh_governing = Ts < Cc ? 'steel' : 'concrete'; // 지배하는 요소
+                    
+                    // Total shear connector strength required (AISC 14.1)
+                    // ΣQn = Vh (완전합성 기준, B.1에서 산정된 Vh 사용)
+                    const SigmaQn = Vh; // kN
+                    
+                    // Number of studs required (AISC 14.1)
+                    // n_stud_half = Vh / (φQn × n_rows)
+                    const phiQn_safe = phiQn > 0 ? phiQn : 1; // 0으로 나누기 방지
+                    const studRows_safe = studRows > 0 ? studRows : 1; // 0으로 나누기 방지
+                    const n_stud_half_calc = Vh / (phiQn_safe * studRows_safe); // 반구간 소요개수 (계산값)
+                    const n_stud_half = Math.ceil(n_stud_half_calc); // 반구간 소요개수 (올림)
+                    const n_stud_total = 2 * n_stud_half; // 전체 총개수
+                    
+                    // Stud spacing calculation
+                    const L_value = results.L || L || 0; // 보 스팬 (m)
+                    const L_half_mm = (L_value * 1000) / 2; // mm
+                    const n_stud_half_safe = n_stud_half > 0 ? n_stud_half : 1; // 0으로 나누기 방지
+                    const s_stud_calc = L_half_mm / n_stud_half_safe; // mm
+                    
+                    // Spacing limits (AISC I8.2)
+                    const min_spacing = 6 * studDiameter; // mm
+                    const max_spacing_1 = 8 * ts; // mm (8t_slab)
+                    const max_spacing_2 = 900; // mm
+                    const max_spacing = Math.min(max_spacing_1, max_spacing_2); // mm
+                    
+                    // Adjust spacing to meet limits
+                    let s_stud = Math.floor(s_stud_calc / 10) * 10; // 10mm units
+                    if (s_stud < min_spacing) {
+                        s_stud = Math.ceil(min_spacing / 10) * 10;
+                    } else if (s_stud > max_spacing) {
+                        s_stud = Math.floor(max_spacing / 10) * 10;
+                    }
+                    const spacing_ok = (s_stud >= min_spacing && s_stud <= max_spacing);
                     
                     // 합성 정도 계산
                     const composite_degree = C_slab / T_steel; // 합성 정도 (1.0 이상이면 완전 합성)
@@ -2296,6 +2394,11 @@
                     
                         // Add composite results to results object
                         results.composite_calculated = true;
+                        results.Vh = Vh; // 완전합성시 수평전단력
+                        results.Vh_Ts = Ts; // 강재 인장력에 의한 Vh
+                        results.Vh_Cc = Cc; // 콘크리트 압축력에 의한 Vh
+                        results.Vh_governing = Vh_governing; // 지배하는 요소 ('steel' or 'concrete')
+                        results.L = results.L || L || 0; // 보 스팬 저장 (B.2.3에서 사용)
                         results.effectiveWidth = effectiveWidth;
                         results.concreteStrength = concreteStrength;
                         results.concreteUnitWeight = concreteUnitWeight;
@@ -2311,9 +2414,10 @@
                         results.Ec = Ec;
                         results.n = n;
                         results.beff_mm = beff_mm;
-                        results.Qn = Qn;
-                        results.Qn_max = Qn_max;
-                        results.Qn_single = Qn_single;
+                        results.Qn = Qn; // 공칭강도
+                        results.Qn1 = Qn1; // 콘크리트 파괴
+                        results.Qn2 = Qn2; // 스터드 파괴
+                        results.phiQn = phiQn; // 설계강도
                         results.SigmaQn = SigmaQn;
                         results.n_stud_half = n_stud_half;
                         results.n_stud_total = n_stud_total;
@@ -2323,8 +2427,16 @@
                         results.max_spacing = max_spacing;
                         results.spacing_ok = spacing_ok;
                         results.Ix_composite = Ix_composite;
+                        results.I_slab_own = I_slab_own;
+                        results.I_slab = I_slab;
+                        results.d_slab = d_slab;
+                        results.d_steel = d_steel;
+                        results.y_slab_centroid = y_slab_centroid;
+                        results.y_steel_centroid = y_steel_centroid;
                         results.Sx_composite = Sx_composite;
                         results.y_bar_composite = y_bar_composite;
+                        results.neutral_axis_location = neutral_axis_location;
+                        results.neutral_axis_location_kr = neutral_axis_location_kr;
                         results.y_pna = y_pna;
                         results.Mn_composite = Mn_composite;
                         results.phiMn_composite = phiMn_composite;
@@ -2365,7 +2477,8 @@
                         // #region agent log
                         fetch('http://127.0.0.1:7242/ingest/f6b33b86-5eb3-41dd-83f7-9e0a0382507b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'noncomposite-castellatedbeam-calculator.html:B.7-Vierendeel',message:'상부 Tee 휨응력 감소 계산',data:{M_tee_noncomposite:results.M_tee,M_tee_composite:M_tee_composite,y_bar_noncomposite:y_bar_noncomposite,y_bar_composite:results.y_bar_composite,neutral_axis_shift_ratio:neutral_axis_shift_ratio,flexural_stress_reduction_factor:flexural_stress_reduction_factor,reduction_percent:(1-Math.max(flexural_stress_reduction_factor,0.5))*100,M_tee_change:M_tee_composite-results.M_tee,M_tee_change_percent:((M_tee_composite-results.M_tee)/results.M_tee*100)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'TEE_FLEXURAL_REDUCTION'})}).catch(()=>{});
                         // #endregion
-                        const V_tee_composite = results.V_tee * (w_u_composite / wu); // kN (전단력은 하중 비례)
+                        const wu_safe = wu > 0 ? wu : 1; // 0으로 나누기 방지
+                        const V_tee_composite = results.V_tee * (w_u_composite / wu_safe); // kN (전단력은 하중 비례)
                         // 상부 Tee 축압축력 증가: 합성 작용으로 슬래브가 압축을 담당하면서 상부 Tee에도 추가 압축력이 작용
                         // 중립축이 상승하면서 상부 Tee까지의 거리가 줄어들지만, 슬래브 압축력이 상부 Tee로 전달되어 축압축력은 증가
                         const axial_compression_increase_factor = 1.0 + Math.abs(neutral_axis_shift_ratio) * 0.3; // 축압축력 증가 계수 (최대 30% 증가)
@@ -2398,16 +2511,18 @@
                         // Web post 압축력 증가: 하중 증가 + 중립축 상승으로 인한 추가 압축력 증가
                         // 중립축 상승으로 인해 Web post에 더 많은 압축력이 전달됨
                         const webpost_compression_increase_factor = 1.0 + Math.abs(neutral_axis_shift_ratio) * 0.2; // Web post 압축력 증가 계수 (최대 20% 추가 증가)
-                        const Vrh_composite = results.Vrh * (w_u_composite / wu) * webpost_compression_increase_factor; // kN (하중 증가 + 합성 작용 증가)
-                        const Mrh_composite = results.Mrh * (w_u_composite / wu) * webpost_compression_increase_factor; // kN·m
+                        const wu_safe_webpost = wu > 0 ? wu : 1; // 0으로 나누기 방지
+                        const Vrh_composite = results.Vrh * (w_u_composite / wu_safe_webpost) * webpost_compression_increase_factor; // kN (하중 증가 + 합성 작용 증가)
+                        const Mrh_composite = results.Mrh * (w_u_composite / wu_safe_webpost) * webpost_compression_increase_factor; // kN·m
                         
                         // #region agent log
                         fetch('http://127.0.0.1:7242/ingest/f6b33b86-5eb3-41dd-83f7-9e0a0382507b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'noncomposite-castellatedbeam-calculator.html:B.8-WebPost',message:'Web Post 압축력 증가 계산',data:{Vrh_noncomposite:results.Vrh,Vrh_composite:Vrh_composite,webpost_compression_increase_factor:webpost_compression_increase_factor,neutral_axis_shift_ratio:neutral_axis_shift_ratio,load_ratio:w_u_composite/wu,increase_percent:(webpost_compression_increase_factor-1.0)*100,Vrh_change:Vrh_composite-results.Vrh,Vrh_change_percent:((Vrh_composite-results.Vrh)/results.Vrh*100),calculation_formula:`${results.Vrh} × (${w_u_composite}/${wu}) × ${webpost_compression_increase_factor} = ${Vrh_composite}`},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'WEBPOST_COMPRESSION'})}).catch(()=>{});
                         // #endregion
                         
                         // 웹포스트 전단강도 판정 (강도는 동일)
-                        const shear_webpost_ok_composite = Vrh_composite <= phiVn_webpost;
-                        const shear_webpost_UR_composite = Vrh_composite / phiVn_webpost;
+                        const phiVn_webpost_safe = results.phiVn_webpost > 0 ? results.phiVn_webpost : 1; // 0으로 나누기 방지
+                        const shear_webpost_ok_composite = Vrh_composite <= phiVn_webpost_safe;
+                        const shear_webpost_UR_composite = Vrh_composite / phiVn_webpost_safe;
                         
                         // 웹포스트 좌굴 판정
                         // 합성보에서 좌굴 강도는 단면 특성에 의존하므로 동일하지만, 
@@ -2420,8 +2535,10 @@
                         const webpost_max_UR_composite = Math.max(shear_webpost_UR_composite, buckling_UR_composite);
                         
                         // 좌굴안전율 계산 (phiMocr / Mrh)
-                        const buckling_safety_factor = results.phiMocr / results.Mrh;
-                        const buckling_safety_factor_composite = phiMocr_composite / Mrh_composite;
+                        const Mrh_safe = results.Mrh > 0 ? results.Mrh : 1; // 0으로 나누기 방지
+                        const Mrh_composite_safe = Mrh_composite > 0 ? Mrh_composite : 1; // 0으로 나누기 방지
+                        const buckling_safety_factor = results.phiMocr / Mrh_safe;
+                        const buckling_safety_factor_composite = phiMocr_composite / Mrh_composite_safe;
                         
                         // 좌굴 강도 차이 (비합성보와 합성보 비교)
                         const phiMocr_difference = phiMocr_composite - results.phiMocr; // 일반적으로 0 (동일)
@@ -2434,6 +2551,18 @@
                         
                         // ===== B.9 장기처짐 검토 (Long-term Deflection) =====
                         // AISC I3.1b, ACI 318 크리프 및 수축 고려
+                        // Service stage calculations (사용단계 계산) - 합성보
+                        // 합성 전 고정하중: 슬래브 자중 + 철골보 자중
+                        const w_DL_service_composite = (slabWeight + self_w) * B; // kN/m
+                        // 합성 후 고정하중: Dead Load (합성 후 추가 고정하중)
+                        const w_SIDL_service_composite = qD * B; // kN/m
+                        // 합성 후 활하중: Live Load
+                        const w_LL_service_composite = qL * B; // kN/m
+                        // 사용 중 계수하중 (LRFD): max[1.4*(DL+SIDL), 1.2*(DL+SIDL) + 1.6*LL]
+                        const w_u1_service_composite = 1.4 * (w_DL_service_composite + w_SIDL_service_composite); // kN/m
+                        const w_u2_service_composite = 1.2 * (w_DL_service_composite + w_SIDL_service_composite) + 1.6 * w_LL_service_composite; // kN/m
+                        const w_u_service_composite = Math.max(w_u1_service_composite, w_u2_service_composite); // kN/m
+                        
                         // 즉시처짐 (Immediate Deflection)
                         const E_composite = Es; // Steel elastic modulus
                         const I_eff_composite = Ix_composite; // mm⁴ (composite moment of inertia)
@@ -2447,7 +2576,7 @@
                         
                         // 장기처짐 (Long-term Deflection)
                         // 슬래브 하중에 대한 장기처짐만 고려 (DL + SIDL)
-                        const w_DL_composite = w_DL_service + w_SIDL_service; // kN/m
+                        const w_DL_composite = w_DL_service_composite + w_SIDL_service_composite; // kN/m
                         const delta_longterm = lambda * (5 * w_DL_composite * Math.pow(L * 1000, 4)) / (384 * E_composite * I_eff_composite); // mm
                         
                         // 총 처짐
@@ -2522,6 +2651,8 @@
                         fetch('http://127.0.0.1:7242/ingest/f6b33b86-5eb3-41dd-83f7-9e0a0382507b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'noncomposite-castellatedbeam-calculator.html:calculateBeam',message:'Composite beam calculation error',data:{error:compositeError.message,stack:compositeError.stack,name:compositeError.name},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'COMPOSITE'})}).catch(()=>{});
                         // #endregion
                         console.error('합성보 계산 중 오류:', compositeError);
+                        console.error('에러 상세:', compositeError.stack);
+                        alert('합성보 계산 중 오류가 발생했습니다: ' + compositeError.message + '\n\n콘솔(F12)에서 자세한 정보를 확인하세요.');
                         results.composite_calculated = false;
                     }
                 }
@@ -2628,8 +2759,26 @@
             // #endregion
             
             container.innerHTML = `
+                <!-- 계산서 목차 (바로가기) -->
+                <div style="position: sticky; top: 0; z-index: 100; background: #ffffff; padding: 15px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border: 2px solid #3b82f6;">
+                    <div style="font-size: 14px; font-weight: 600; color: #1e3a5f; margin-bottom: 10px;">📋 계산서 목차</div>
+                    <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                        <a href="javascript:void(0)" onclick="event.preventDefault();event.stopPropagation();(function(){const el=document.getElementById('section-a');if(el){const rect=el.getBoundingClientRect();const offset=100;const pos=rect.top+window.pageYOffset-offset;window.scrollTo({top:Math.max(0,pos),behavior:'smooth'});}})();return false;" style="display: inline-block; padding: 8px 16px; background: #3b82f6; color: #ffffff; text-decoration: none; border-radius: 6px; font-size: 13px; font-weight: 500; transition: all 0.2s; cursor: pointer;" onmouseover="this.style.background='#2563eb'; this.style.transform='translateY(-2px)';" onmouseout="this.style.background='#3b82f6'; this.style.transform='translateY(0)';">
+                            A. 전단연결재와 슬래브 체결전
+                        </a>
+                        ${results.type === 'with-slab' && results.composite_calculated ? `
+                        <a href="javascript:void(0)" onclick="event.preventDefault();event.stopPropagation();(function(){let scrolling=false;let attempts=0;const tryScroll=function(){if(scrolling)return;const el=document.getElementById('section-b');if(el){const rect=el.getBoundingClientRect();if(rect.height>0||rect.width>0){scrolling=true;const offset=100;const pos=rect.top+window.pageYOffset-offset;window.scrollTo({top:Math.max(0,pos),behavior:'smooth'});setTimeout(function(){scrolling=false;},1000);return;}else if(attempts++<50){setTimeout(tryScroll,50);}}else if(attempts++<50){setTimeout(tryScroll,50);}};tryScroll();})();return false;" style="display: inline-block; padding: 8px 16px; background: #10b981; color: #ffffff; text-decoration: none; border-radius: 6px; font-size: 13px; font-weight: 500; transition: all 0.2s; cursor: pointer;" onmouseover="this.style.background='#059669'; this.style.transform='translateY(-2px)';" onmouseout="this.style.background='#10b981'; this.style.transform='translateY(0)';">
+                            B. 전단연결재 적용후 Composite Beam 계산
+                        </a>
+                        <a href="javascript:void(0)" onclick="event.preventDefault();event.stopPropagation();(function(){let scrolling=false;let attempts=0;const tryScroll=function(){if(scrolling)return;const el=document.getElementById('section-c');if(el){const rect=el.getBoundingClientRect();if(rect.height>0||rect.width>0){scrolling=true;const offset=100;const pos=rect.top+window.pageYOffset-offset;window.scrollTo({top:Math.max(0,pos),behavior:'smooth'});setTimeout(function(){scrolling=false;},1000);return;}else if(attempts++<50){setTimeout(tryScroll,50);}}else if(attempts++<50){setTimeout(tryScroll,50);}};tryScroll();})();return false;" style="display: inline-block; padding: 8px 16px; background: #f59e0b; color: #ffffff; text-decoration: none; border-radius: 6px; font-size: 13px; font-weight: 500; transition: all 0.2s; cursor: pointer;" onmouseover="this.style.background='#d97706'; this.style.transform='translateY(-2px)';" onmouseout="this.style.background='#f59e0b'; this.style.transform='translateY(0)';">
+                            C. 비합성과 합성의 차이분석
+                        </a>
+                        ` : ''}
+                    </div>
+                </div>
+                
                 <!-- A. 전단연결재와 슬래브 체결전 -->
-                <div class="result-section">
+                <div class="result-section" id="section-a">
                     <div class="result-section-title" style="font-size: 18px; font-weight: 700; color: #1e3a5f; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px solid #3b82f6;">A. 전단연결재와 슬래브 체결전</div>
                     
                     <div style="font-size: 11px; color: #64748b; margin-bottom: 15px; padding: 8px; background: #f8fafc; border-radius: 4px; border-left: 3px solid #3b82f6;">
@@ -2740,7 +2889,7 @@
                             <tr>
                                 <td>판정</td>
                                 <td class="result-value ${results.shear_webpost_ok ? 'status-ok' : 'status-ng'}" style="font-weight: 600;">
-                                    ${results.shear_webpost_ok ? '✅ 만족 (V<sub>rh</sub> ≤ φV<sub>n,webpost</sub>)' : '❌ 불만족 (V<sub>rh</sub> > φV<sub>n,webpost</sub>)'}
+                                    ${results.shear_webpost_ok ? '✅ 만족 (V<sub>rh</sub> ≤ φV<sub>n,webpost</sub>)' : `❌ 불만족 (V<sub>rh</sub> > φV<sub>n,webpost</sub>)<br><span style="font-size: 11px; color: #ef4444; font-weight: 600;">불만족 개구부: ${results.webPostPair ? results.webPostPair.join(' - ') : 'N/A'}</span>`}
                                 </td>
                                 <td>-</td>
                             </tr>
@@ -2891,7 +3040,7 @@
                                 <td class="result-value ${results.shear_webpost_ok ? 'status-ok' : 'status-ng'}">${formatNumber(results.webpost_shear_UR, 3)}</td>
                                 <td class="result-value ${results.shear_webpost_ok ? 'status-ok' : 'status-ng'}" style="font-weight: 600;">
                                     ${results.shear_webpost_ok ? '✅ OK' : '❌ NG'}
-                                    ${!results.shear_webpost_ok ? '<div style="font-size: 10px; color: #ef4444; margin-top: 4px;">Web Post 보강필요</div>' : ''}
+                                    ${!results.shear_webpost_ok ? `<div style="font-size: 10px; color: #ef4444; margin-top: 4px;">Web Post 보강필요<br>불만족 개구부: ${results.webPostPair ? results.webPostPair.join(' - ') : 'N/A'}</div>` : ''}
                                 </td>
                             </tr>
                             <tr>
@@ -2901,7 +3050,7 @@
                                 <td class="result-value ${results.buckling_ok ? 'status-ok' : 'status-ng'}">${formatNumber(results.webpost_buckling_UR, 3)}</td>
                                 <td class="result-value ${results.buckling_ok ? 'status-ok' : 'status-ng'}" style="font-weight: 600;">
                                     ${results.buckling_ok ? '✅ OK' : '❌ NG'}
-                                    ${!results.buckling_ok ? '<div style="font-size: 10px; color: #ef4444; margin-top: 4px;">Web Post 보강필요</div>' : ''}
+                                    ${!results.buckling_ok ? `<div style="font-size: 10px; color: #ef4444; margin-top: 4px;">Web Post 보강필요<br>불만족 개구부: ${results.webPostPair ? results.webPostPair.join(' - ') : 'N/A'}</div>` : ''}
                                 </td>
                             </tr>
                         </table>
@@ -2915,6 +3064,7 @@
                             </div>
                             <div style="font-size: 11px; color: ${results.webpost_failure_ok ? '#065f46' : '#991b1b'}; text-align: center; margin-top: 8px;">
                                 최대 사용률: ${formatNumber(results.webpost_max_UR, 3)}
+                                ${!results.webpost_failure_ok && results.webPostPair ? `<br><span style="font-weight: 600; color: #ef4444;">불만족 개구부: ${results.webPostPair.join(' - ')}</span>` : ''}
                             </div>
                         </div>
                     </div>
@@ -3945,7 +4095,7 @@
                     return results.type === 'with-slab' && results.composite_calculated;
                 })() ? `
                 <!-- B. 전단연결재 적용후 Composite Beam 계산 -->
-                <div class="result-section">
+                <div class="result-section" id="section-b">
                     <div class="result-section-title" style="font-size: 18px; font-weight: 700; color: #1e3a5f; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px solid #3b82f6;">B. 전단연결재 적용후 Composite Beam 계산</div>
                     
                     <div style="font-size: 11px; color: #64748b; margin-bottom: 15px; padding: 8px; background: #f8fafc; border-radius: 4px; border-left: 3px solid #3b82f6;">
@@ -4027,11 +4177,173 @@
                         </table>
                     </div>
                     
-                    <!-- B.2 전단연결재 강도 계산 -->
+                    <!-- B.1 완전합성시 수평전단력 Vh 계산 -->
                     <div style="margin-bottom: 20px;">
-                        <h4 style="font-size: 14px; font-weight: 600; color: #1e3a5f; margin-bottom: 10px;">B.2 전단연결재 강도 계산 (AISC I8.1)</h4>
+                        <h4 style="font-size: 14px; font-weight: 600; color: #1e3a5f; margin-bottom: 10px;">B.1 완전합성시 수평전단력 Vh 계산</h4>
                         <div style="font-size: 11px; color: #64748b; margin-bottom: 10px; padding: 8px; background: #f8fafc; border-radius: 4px; border-left: 3px solid #3b82f6;">
-                            <strong>계산식:</strong> Q<sub>n</sub> = 0.5 × A<sub>sa</sub> × √(f'<sub>c</sub> × E<sub>c</sub>) ≤ A<sub>sa</sub> × F<sub>u</sub>
+                            <strong>검토 내용:</strong> 완전합성 합성보에서 강재와 콘크리트 슬래브 사이의 수평전단력을 산정한다. (AISC I3.1)<br>
+                            <strong>계산 원리:</strong> 완전합성 기준으로 콘크리트 및 강재의 각각 Vh를 계산하고 그 중 작은 값을 Vh로 정한다.
+                        </div>
+                        
+                        <!-- B.1.1) 강재 인장력에 의한 Vh (Ts) -->
+                        <div style="margin-bottom: 15px;">
+                            <h5 style="font-size: 13px; font-weight: 600; color: #1e3a5f; margin-bottom: 8px;">B.1.1) 강재 인장력에 의한 Vh (Ts)</h5>
+                            <div style="font-size: 12px; color: #475569; line-height: 1.8; font-family: 'Courier New', monospace; background: #f8fafc; padding: 12px; border-radius: 6px; border: 1px solid #e2e8f0;">
+                                <div style="margin-bottom: 8px;"><strong>강재 인장력 (Ts):</strong></div>
+                                <div style="margin-left: 20px;">Ts = F<sub>y</sub> × A<sub>s</sub></div>
+                                <div style="margin-left: 20px;">= ${formatNumber(results.Fy || 0, 0)} MPa × ${formatNumber(results.As_original || results.A_total || 0, 2)} mm² / 1000</div>
+                                <div style="margin-left: 20px;">= ${formatNumber(results.Vh_Ts || 0, 2)} kN</div>
+                                <div style="margin-left: 20px; margin-top: 8px; font-size: 11px; color: #64748b;">※ 강재가 전달할 수 있는 최대 인장력</div>
+                                <div style="margin-left: 20px; margin-top: 8px; font-weight: 600;">→ 강재에 의한 Vh = Ts = ${formatNumber(results.Vh_Ts || 0, 2)} kN</div>
+                            </div>
+                        </div>
+                        
+                        <!-- B.1.2) 콘크리트 압축력에 의한 Vh (Cc) -->
+                        <div style="margin-bottom: 15px;">
+                            <h5 style="font-size: 13px; font-weight: 600; color: #1e3a5f; margin-bottom: 8px;">B.1.2) 콘크리트 압축력에 의한 Vh (Cc)</h5>
+                            <div style="font-size: 12px; color: #475569; line-height: 1.8; font-family: 'Courier New', monospace; background: #f8fafc; padding: 12px; border-radius: 6px; border: 1px solid #e2e8f0;">
+                                <div style="margin-bottom: 8px;"><strong>콘크리트 압축력 (Cc):</strong></div>
+                                <div style="margin-left: 20px;">Cc = 0.85 × f'<sub>c</sub> × b<sub>eff</sub> × t<sub>s</sub></div>
+                                <div style="margin-left: 20px;">= 0.85 × ${formatNumber(results.concreteStrength || 0, 0)} MPa × ${formatNumber((results.effectiveWidth || 0) * 1000, 0)} mm × ${formatNumber(results.ts || 0, 0)} mm / 1000</div>
+                                <div style="margin-left: 20px;">= ${formatNumber(results.Vh_Cc || 0, 1)} kN</div>
+                                <div style="margin-left: 20px; margin-top: 8px; font-size: 11px; color: #64748b;">※ 0.85는 콘크리트 압축강도 감소계수 (Whitney stress block)</div>
+                                <div style="margin-left: 20px; margin-top: 8px; font-weight: 600;">→ 콘크리트에 의한 Vh = Cc = ${formatNumber(results.Vh_Cc || 0, 1)} kN</div>
+                            </div>
+                        </div>
+                        
+                        <!-- B.1.3) 수평전단력 Vh 결정 -->
+                        <div style="margin-bottom: 15px;">
+                            <h5 style="font-size: 13px; font-weight: 600; color: #1e3a5f; margin-bottom: 8px;">B.1.3) 수평전단력 Vh 결정 (완전합성 기준, AISC I3.1)</h5>
+                            <div style="font-size: 12px; color: #475569; line-height: 1.8; font-family: 'Courier New', monospace; background: #f8fafc; padding: 12px; border-radius: 6px; border: 1px solid #e2e8f0;">
+                                <div style="margin-left: 20px;">V<sub>h</sub> = min(강재에 의한 Vh, 콘크리트에 의한 Vh)</div>
+                                <div style="margin-left: 20px;">= min(Ts, Cc)</div>
+                                <div style="margin-left: 20px;">= min(${formatNumber(results.Vh_Ts || 0, 2)}, ${formatNumber(results.Vh_Cc || 0, 1)})</div>
+                                <div style="margin-left: 20px; font-weight: 600; margin-top: 8px;">= ${formatNumber(results.Vh || 0, 2)} kN</div>
+                            </div>
+                        </div>
+                        
+                        <!-- 지배하는 Vh 요약 -->
+                        <div style="background: #d1fae5; border: 2px solid #10b981; border-radius: 6px; padding: 12px; margin-top: 15px;">
+                                <div style="font-weight: 600; color: #065f46; margin-bottom: 8px;">
+                                    ✓ 지배하는 Vh: ${(results.Vh_governing || 'concrete') === 'steel' ? '강재 인장력 (Ts)' : '콘크리트 압축력 (Cc)'}
+                                </div>
+                            <div style="font-size: 12px; color: #065f46; line-height: 1.8;">
+                                <div>강재 인장력: Ts = ${formatNumber(results.Vh_Ts || 0, 2)} kN</div>
+                                <div>콘크리트 압축력: Cc = ${formatNumber(results.Vh_Cc || 0, 1)} kN</div>
+                                <div style="margin-top: 8px;">
+                                    ∴ ${formatNumber(results.Vh_Ts || 0, 2)} ${(results.Vh_Ts || 0) < (results.Vh_Cc || 0) ? '<' : '>'} ${formatNumber(results.Vh_Cc || 0, 1)}
+                                </div>
+                                <div style="font-weight: 600; margin-top: 8px;">
+                                    ∴ Vh = ${(results.Vh_governing || 'concrete') === 'steel' ? 'Ts' : 'Cc'} = ${formatNumber(results.Vh || 0, 2)} kN (${(results.Vh_governing || 'concrete') === 'steel' ? '강재가 지배' : '콘크리트가 지배'})
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div style="font-size: 11px; color: #64748b; margin-top: 10px; padding: 8px; background: #f1f5f9; border-radius: 4px;">
+                            <strong>근거:</strong> 완전합성 합성보에서 강재와 콘크리트 슬래브 사이의 수평전단력은 강재 인장력과 콘크리트 압축력 중 작은 값으로 결정된다. (AISC I3.1)
+                        </div>
+                    </div>
+                    
+                    <!-- B.2 강재앵커(스터드)의 소요개수 산정 -->
+                    <div style="margin-bottom: 20px;">
+                        <h4 style="font-size: 14px; font-weight: 600; color: #1e3a5f; margin-bottom: 10px;">B.2 강재앵커(스터드)의 소요개수 산정</h4>
+                        <div style="font-size: 11px; color: #64748b; margin-bottom: 10px; padding: 8px; background: #f8fafc; border-radius: 4px; border-left: 3px solid #3b82f6;">
+                            <strong>검토 내용:</strong> 합성보에서 콘크리트 슬래브와 강재보를 연결하기 위한 강재앵커(스터드)의 소요개수와 배치를 산정한다.
+                        </div>
+                        
+                        <!-- B.2 계산 근거 -->
+                        <div style="margin-bottom: 15px;">
+                            <h5 style="font-size: 13px; font-weight: 600; color: #1e3a5f; margin-bottom: 8px;">B.2 계산 근거 (AISC 14.1, 18.3)</h5>
+                            <div style="font-size: 11px; color: #475569; line-height: 1.8; padding: 10px; background: #f8fafc; border-radius: 4px;">
+                                <ul style="margin: 0; padding-left: 20px;">
+                                    <li>완전합성시 필요한 전단연결재의 총 강도는 ∑Q<sub>n</sub> = Vh 이다. (AISC 14.1, B.1에서 산정된 Vh 사용)</li>
+                                    <li>스터드 개수는 n = Vh / (φQ<sub>n</sub> × 열수)로 산정한다.</li>
+                                    <li>스터드 공칭강도 Q<sub>n</sub>은 AISC 18.3에 따라 계산한다.</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <!-- B.2.1 전단연결재 강도 계산 -->
+                        <div style="margin-bottom: 15px;">
+                            <h5 style="font-size: 13px; font-weight: 600; color: #1e3a5f; margin-bottom: 8px;">B.2.1 전단연결재 강도 계산 (AISC 18.3)</h5>
+                            <div style="font-size: 11px; color: #64748b; margin-bottom: 10px; padding: 8px; background: #f8fafc; border-radius: 4px; border-left: 3px solid #3b82f6;">
+                                <strong>계산식:</strong><br>
+                                Q<sub>n1</sub> = 0.5 × A<sub>sc</sub> × √(f'<sub>c</sub> × E<sub>c</sub>) × R<sub>g</sub> × R<sub>p</sub><br>
+                                Q<sub>n2</sub> = A<sub>sc</sub> × f<sub>u</sub> × R<sub>g</sub> × R<sub>p</sub><br>
+                                Q<sub>n</sub> = min(Q<sub>n1</sub>, Q<sub>n2</sub>)
+                            </div>
+                            <table class="result-table">
+                                <tr>
+                                    <th>항목</th>
+                                    <th>값</th>
+                                    <th>단위</th>
+                                </tr>
+                                <tr>
+                                    <td>스터드 직경</td>
+                                    <td class="result-value">φ${formatNumber(results.studDiameter || 0, 0)}</td>
+                                    <td>mm</td>
+                                </tr>
+                                <tr>
+                                    <td>스터드 단면적 (A<sub>sc</sub>)</td>
+                                    <td class="result-value">${formatNumber(Math.PI * Math.pow((results.studDiameter || 0) / 2, 2), 2)}</td>
+                                    <td>mm²</td>
+                                </tr>
+                                <tr>
+                                    <td>콘크리트 압축강도 (f'<sub>c</sub>)</td>
+                                    <td class="result-value">${formatNumber(results.concreteStrength || 0, 0)}</td>
+                                    <td>MPa</td>
+                                </tr>
+                                <tr>
+                                    <td>콘크리트 탄성계수 (E<sub>c</sub>)</td>
+                                    <td class="result-value">${formatNumber(results.Ec || 0, 0)}</td>
+                                    <td>MPa</td>
+                                </tr>
+                                <tr>
+                                    <td>스터드 인장강도 (f<sub>u</sub>)</td>
+                                    <td class="result-value">${formatNumber(results.studFu || 0, 0)}</td>
+                                    <td>MPa</td>
+                                </tr>
+                                <tr>
+                                    <td>그룹 계수 (R<sub>g</sub>)</td>
+                                    <td class="result-value">1.00</td>
+                                    <td>-</td>
+                                </tr>
+                                <tr>
+                                    <td>위치 계수 (R<sub>p</sub>)</td>
+                                    <td class="result-value">1.00</td>
+                                    <td>-</td>
+                                </tr>
+                                <tr>
+                                    <td>Q<sub>n1</sub> (콘크리트 파괴)</td>
+                                    <td class="result-value">${formatNumber(results.Qn1 || 0, 2)}</td>
+                                    <td>kN</td>
+                                </tr>
+                                <tr>
+                                    <td>Q<sub>n2</sub> (스터드 파괴)</td>
+                                    <td class="result-value">${formatNumber(results.Qn2 || 0, 2)}</td>
+                                    <td>kN</td>
+                                </tr>
+                                <tr style="background: #e0f2fe;">
+                                    <td style="font-weight: 600;">전단연결재 공칭강도 (Q<sub>n</sub>)</td>
+                                    <td class="result-value" style="font-weight: 600;">${formatNumber(results.Qn || 0, 2)}</td>
+                                    <td>kN</td>
+                                </tr>
+                                <tr>
+                                    <td>전단연결재 설계강도 (φQ<sub>n</sub>)</td>
+                                    <td class="result-value">${formatNumber(results.phiQn || 0, 2)}</td>
+                                    <td>kN</td>
+                                </tr>
+                            </table>
+                        </div>
+                        
+                        <!-- B.2.2 전단연결재 소요개수 계산 -->
+                        <div style="margin-bottom: 20px;">
+                            <h5 style="font-size: 13px; font-weight: 600; color: #1e3a5f; margin-bottom: 8px;">B.2.2 전단연결재 소요개수 계산 (완전합성 기준, AISC 14.1)</h5>
+                        <div style="font-size: 11px; color: #64748b; margin-bottom: 10px; padding: 8px; background: #f8fafc; border-radius: 4px; border-left: 3px solid #3b82f6;">
+                            <strong>계산식:</strong><br>
+                            n<sub>stud,half</sub> = Vh / (φQ<sub>n</sub> × n<sub>rows</sub>)<br>
+                            n<sub>stud,total</sub> = 2 × n<sub>stud,half</sub><br>
+                            <span style="font-size: 10px;">※ B.1에서 산정된 수평전단력 Vh 사용</span>
                         </div>
                         <table class="result-table">
                             <tr>
@@ -4040,36 +4352,135 @@
                                 <th>단위</th>
                             </tr>
                             <tr>
-                                <td>스터드 단면적 (A<sub>sa</sub>)</td>
-                                <td class="result-value">${formatNumber(Math.PI * Math.pow(results.studDiameter / 2, 2), 2)}</td>
-                                <td>mm²</td>
-                            </tr>
-                            <tr>
-                                <td>콘크리트 탄성계수 (E<sub>c</sub>)</td>
-                                <td class="result-value">${formatNumber(results.Ec, 0)}</td>
-                                <td>MPa</td>
-                            </tr>
-                            <tr>
-                                <td>전단연결재 강도 (Q<sub>n</sub>)</td>
-                                <td class="result-value">${formatNumber(results.Qn, 2)}</td>
+                                <td>수평전단력 (Vh) - B.1에서 산정</td>
+                                <td class="result-value">${formatNumber(results.Vh || 0, 2)}</td>
                                 <td>kN</td>
                             </tr>
                             <tr>
-                                <td>소요 전단연결재 강도 (ΣQ<sub>n</sub>)</td>
-                                <td class="result-value">${formatNumber(results.SigmaQn, 2)}</td>
+                                <td>전단연결재 설계강도 (φQ<sub>n</sub>)</td>
+                                <td class="result-value">${formatNumber(results.phiQn || 0, 2)}</td>
                                 <td>kN</td>
+                            </tr>
+                            <tr>
+                                <td>스터드 열수 (n<sub>rows</sub>)</td>
+                                <td class="result-value">${formatNumber(results.studRows || 1, 0)}</td>
+                                <td>열</td>
                             </tr>
                             <tr>
                                 <td>스터드 소요개수 (반구간)</td>
-                                <td class="result-value">${formatNumber(results.n_stud_half, 0)}</td>
+                                <td class="result-value">${formatNumber((results.Vh || 0) / ((results.phiQn || 1) * (results.studRows || 1)), 3)}</td>
                                 <td>개</td>
                             </tr>
-                            <tr>
-                                <td>스터드 총개수</td>
-                                <td class="result-value">${formatNumber(results.n_stud_total, 0)}</td>
+                            <tr style="background: #e0f2fe;">
+                                <td style="font-weight: 600;">스터드 소요개수 (반구간, 올림)</td>
+                                <td class="result-value" style="font-weight: 600;">${formatNumber(Math.ceil((results.Vh || 0) / ((results.phiQn || 1) * (results.studRows || 1))), 0)}</td>
+                                <td>개</td>
+                            </tr>
+                            <tr style="background: #e0f2fe;">
+                                <td style="font-weight: 600;">스터드 총개수</td>
+                                <td class="result-value" style="font-weight: 600;">${formatNumber(Math.ceil((results.Vh || 0) / ((results.phiQn || 1) * (results.studRows || 1))) * 2, 0)}</td>
                                 <td>개</td>
                             </tr>
                         </table>
+                        </div>
+                        
+                        <!-- B.2.3 전단연결재 배치 및 간격 계산 -->
+                        <div style="margin-bottom: 20px;">
+                            <h5 style="font-size: 13px; font-weight: 600; color: #1e3a5f; margin-bottom: 8px;">B.2.3 전단연결재 배치 및 간격 계산</h5>
+                        <table class="result-table">
+                            <tr>
+                                <th>항목</th>
+                                <th>값</th>
+                                <th>단위</th>
+                            </tr>
+                            <tr>
+                                <td>배치 방식</td>
+                                <td class="result-value">${formatNumber(results.studRows || 1, 0)}열 배치</td>
+                                <td>-</td>
+                            </tr>
+                            <tr>
+                                <td>L/2 구간 길이</td>
+                                <td class="result-value">${formatNumber((results.L || 0) * 1000 / 2, 0)}</td>
+                                <td>mm</td>
+                            </tr>
+                            <tr>
+                                <td>L/2 구간당 스터드 개수</td>
+                                <td class="result-value">${formatNumber(Math.ceil((results.Vh || 0) / ((results.phiQn || 1) * (results.studRows || 1))), 0)}</td>
+                                <td>개</td>
+                            </tr>
+                            <tr>
+                                <td>계산 간격 (s<sub>stud,calc</sub>)</td>
+                                <td class="result-value">${formatNumber((results.L || 0) * 1000 / 2 / Math.ceil((results.Vh || 0) / ((results.phiQn || 1) * (results.studRows || 1))), 2)}</td>
+                                <td>mm</td>
+                            </tr>
+                            <tr style="background: #e0f2fe;">
+                                <td style="font-weight: 600;">최종 스터드 간격 (s<sub>stud</sub>)</td>
+                                <td class="result-value" style="font-weight: 600;">${formatNumber(results.s_stud || 0, 0)}</td>
+                                <td>mm</td>
+                            </tr>
+                        </table>
+                        
+                        <!-- B.2.3 합성보의 길이방향에 대한 간격 검토 -->
+                        <div style="margin-top: 15px;">
+                            <h6 style="font-size: 12px; font-weight: 600; color: #1e3a5f; margin-bottom: 8px;">합성보의 길이방향에 대한 간격 검토 (AISC I8.2)</h6>
+                            <div style="font-size: 11px; color: #64748b; margin-bottom: 10px; padding: 8px; background: #f8fafc; border-radius: 4px; border-left: 3px solid #3b82f6;">
+                                <strong>검토 기준:</strong> 최소 간격 6d<sub>stud</sub> ≤ s<sub>stud</sub> ≤ min(8t<sub>slab</sub>, 900mm)<br>
+                                <span style="font-size: 10px;">※ 전단연결재의 길이방향 간격은 콘크리트 슬래브의 전단력 전달 능력과 관련이 있으며, 너무 넓으면 전단력 전달이 불충분하고, 너무 좁으면 시공이 어렵다.</span>
+                            </div>
+                            
+                            <div style="font-size: 12px; color: #475569; line-height: 1.8; font-family: 'Courier New', monospace; background: #f8fafc; padding: 12px; border-radius: 6px; border: 1px solid #e2e8f0; margin-bottom: 10px;">
+                                <div style="margin-bottom: 8px;"><strong>1) 최소 간격 검토:</strong></div>
+                                <div style="margin-left: 20px;">최소 간격 = 6 × d<sub>stud</sub></div>
+                                <div style="margin-left: 20px;">= 6 × ${formatNumber(results.studDiameter || 0, 0)} mm</div>
+                                <div style="margin-left: 20px; font-weight: 600;">= ${formatNumber(results.min_spacing || 0, 1)} mm</div>
+                                <div style="margin-left: 20px; margin-top: 8px;">
+                                    s<sub>stud</sub> = ${formatNumber(results.s_stud || 0, 0)} mm 
+                                    ${(results.s_stud || 0) >= (results.min_spacing || 0) ? '≥' : '<'} 
+                                    ${formatNumber(results.min_spacing || 0, 1)} mm 
+                                    <span style="color: ${(results.s_stud || 0) >= (results.min_spacing || 0) ? '#10b981' : '#ef4444'}; font-weight: 600;">
+                                        ${(results.s_stud || 0) >= (results.min_spacing || 0) ? '✓ 만족' : '✗ 불만족'}
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <div style="font-size: 12px; color: #475569; line-height: 1.8; font-family: 'Courier New', monospace; background: #f8fafc; padding: 12px; border-radius: 6px; border: 1px solid #e2e8f0; margin-bottom: 10px;">
+                                <div style="margin-bottom: 8px;"><strong>2) 최대 간격 검토:</strong></div>
+                                <div style="margin-left: 20px;">최대 간격 = min(8 × t<sub>slab</sub>, 900mm)</div>
+                                <div style="margin-left: 20px;">= min(8 × ${formatNumber(results.ts || 0, 0)} mm, 900mm)</div>
+                                <div style="margin-left: 20px;">= min(${formatNumber((results.ts || 0) * 8, 1)} mm, 900mm)</div>
+                                <div style="margin-left: 20px; font-weight: 600;">= ${formatNumber(results.max_spacing || 0, 1)} mm</div>
+                                <div style="margin-left: 20px; margin-top: 8px;">
+                                    s<sub>stud</sub> = ${formatNumber(results.s_stud || 0, 0)} mm 
+                                    ${(results.s_stud || 0) <= (results.max_spacing || 0) ? '≤' : '>'} 
+                                    ${formatNumber(results.max_spacing || 0, 1)} mm 
+                                    <span style="color: ${(results.s_stud || 0) <= (results.max_spacing || 0) ? '#10b981' : '#ef4444'}; font-weight: 600;">
+                                        ${(results.s_stud || 0) <= (results.max_spacing || 0) ? '✓ 만족' : '✗ 불만족'}
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <div style="background: ${results.spacing_ok ? '#d1fae5' : '#fee2e2'}; border: 2px solid ${results.spacing_ok ? '#10b981' : '#ef4444'}; border-radius: 6px; padding: 12px; margin-top: 15px;">
+                                <div style="font-weight: 600; color: ${results.spacing_ok ? '#065f46' : '#991b1b'}; margin-bottom: 8px;">
+                                    ${results.spacing_ok ? '✓ 간격 검토 만족' : '✗ 간격 검토 불만족'}
+                                </div>
+                                <div style="font-size: 12px; color: ${results.spacing_ok ? '#065f46' : '#991b1b'}; line-height: 1.8;">
+                                    <div>최소 간격: ${formatNumber(results.min_spacing || 0, 1)} mm</div>
+                                    <div>최대 간격: ${formatNumber(results.max_spacing || 0, 1)} mm</div>
+                                    <div>설계 간격: ${formatNumber(results.s_stud || 0, 0)} mm</div>
+                                    <div style="margin-top: 8px; font-weight: 600;">
+                                        ${results.spacing_ok ? 
+                                            `✓ ${formatNumber(results.min_spacing || 0, 1)} ≤ ${formatNumber(results.s_stud || 0, 0)} ≤ ${formatNumber(results.max_spacing || 0, 1)} (만족)` : 
+                                            `✗ 간격이 허용 범위를 벗어났습니다. 간격을 조정하세요.`}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div style="font-size: 11px; color: #64748b; margin-top: 10px; padding: 8px; background: #f1f5f9; border-radius: 4px;">
+                                <strong>근거:</strong> AISC I8.2에 따라 전단연결재의 길이방향 간격은 최소 6d<sub>stud</sub> 이상, 최대 min(8t<sub>slab</sub>, 900mm) 이하여야 한다. 
+                                이는 콘크리트 슬래브의 전단력 전달 능력을 보장하고 시공성을 확보하기 위한 것이다.
+                            </div>
+                        </div>
+                        </div>
                     </div>
                     
                     <!-- B.3 전단연결재 간격 검토 -->
@@ -4147,6 +4558,23 @@
                                 <td>합성보 중립축 위치 (ȳ)</td>
                                 <td class="result-value">${formatNumber(results.y_bar_composite, 1)}</td>
                                 <td>mm</td>
+                            </tr>
+                            <tr>
+                                <td>중립축 위치 판정</td>
+                                <td class="result-value" style="font-weight: 600; color: ${results.neutral_axis_location === 'slab' ? '#3b82f6' : (results.neutral_axis_location === 'steel' ? '#10b981' : '#ef4444')};">
+                                    ${results.neutral_axis_location_kr || '강재 단면 내'}
+                                </td>
+                                <td>-</td>
+                            </tr>
+                            <tr style="background: #f8fafc;">
+                                <td colspan="3" style="font-size: 11px; color: #64748b; padding: 8px;">
+                                    <strong>※ 기준점:</strong> ȳ는 슬래브 상단(합성보 상단)에서부터 측정된 거리입니다.<br>
+                                    <strong>판정 기준:</strong><br>
+                                    • 0 ≤ ȳ &lt; t<sub>slab</sub> (${formatNumber(results.ts || 0, 0)} mm) → 슬래브 내<br>
+                                    • t<sub>slab</sub> (${formatNumber(results.ts || 0, 0)} mm) ≤ ȳ ≤ t<sub>slab</sub> + d<sub>castellated</sub> (${formatNumber((results.ts || 0) + (results.d_castellated || 0), 0)} mm) → 강재 단면 내<br>
+                                    <strong>현재:</strong> ȳ = ${formatNumber(results.y_bar_composite, 1)} mm (슬래브 상단에서 ${formatNumber(results.y_bar_composite, 1)} mm 아래)
+                                    ${results.neutral_axis_location === 'steel' ? `<br>→ 강재 상단에서 ${formatNumber((results.y_bar_composite || 0) - (results.ts || 0), 1)} mm 아래, 강재 중심에서 ${formatNumber(Math.abs((results.y_bar_composite || 0) - (results.ts || 0) - (results.d_castellated || 0) / 2), 1)} mm ${(results.y_bar_composite || 0) - (results.ts || 0) < (results.d_castellated || 0) / 2 ? '위' : '아래'}` : ''}
+                                </td>
                             </tr>
                             <tr>
                                 <td>소성중립축 위치 (y<sub>PNA</sub>)</td>
@@ -4395,8 +4823,9 @@
                             <div style="font-size: 12px; font-weight: 600; color: ${results.webpost_ok_composite ? '#065f46' : '#991b1b'};">
                                 ${results.webpost_ok_composite ? '✅ Web Post 검토 만족' : '❌ Web Post 검토 불만족'}
                             </div>
-                            <div style="font-size: 11px; color: #64748b; margin-top: 5px;">
+                            <div style="font-size: 11px; color: ${results.webpost_ok_composite ? '#64748b' : '#991b1b'}; margin-top: 5px;">
                                 최대 사용률: ${formatNumber(results.webpost_max_UR_composite, 3)}
+                                ${!results.webpost_ok_composite && results.webPostPair ? `<br><span style="font-weight: 600; color: #ef4444;">불만족 개구부: ${results.webPostPair.join(' - ')}</span>` : ''}
                             </div>
                         </div>
                     </div>
@@ -4418,6 +4847,68 @@
                                 <td>합성보 단면2차모멘트 (I<sub>x,composite</sub>)</td>
                                 <td class="result-value">${formatNumber(results.Ix_composite / 1e6, 2)}</td>
                                 <td>×10⁶ mm⁴</td>
+                            </tr>
+                        </table>
+                        
+                        <!-- B.9 합성보 단면2차 모멘트 계산 근거 -->
+                        <div style="margin-top: 15px; margin-bottom: 20px;">
+                            <h5 style="font-size: 13px; font-weight: 600; color: #1e3a5f; margin-bottom: 8px;">합성보 단면2차 모멘트 계산 근거 (AISC I3.1)</h5>
+                            <div style="font-size: 11px; color: #64748b; margin-bottom: 10px; padding: 8px; background: #f8fafc; border-radius: 4px; border-left: 3px solid #3b82f6;">
+                                <strong>계산 원리:</strong> 평행축 정리(Parallel Axis Theorem)를 사용하여 슬래브와 강재의 단면2차 모멘트를 합성 중립축 기준으로 변환하여 합산합니다.<br>
+                                <strong>계산식:</strong> I<sub>x,composite</sub> = I<sub>slab</sub> + I<sub>x,steel</sub> + A<sub>steel</sub> × d<sub>steel</sub>²
+                            </div>
+                            
+                            <div style="font-size: 12px; color: #475569; line-height: 1.8; font-family: 'Courier New', monospace; background: #f8fafc; padding: 12px; border-radius: 6px; border: 1px solid #e2e8f0; margin-bottom: 10px;">
+                                <div style="margin-bottom: 8px;"><strong>1) 슬래브 자체 단면2차 모멘트 (I<sub>slab,own</sub>):</strong></div>
+                                <div style="margin-left: 20px;">I<sub>slab,own</sub> = b<sub>eff</sub> × t<sub>s</sub>³ / (12 × n)</div>
+                                <div style="margin-left: 20px;">= ${formatNumber((results.beff_mm || 0) / 1000, 2)} m × (${formatNumber(results.ts || 0, 0)} mm)³ / (12 × ${formatNumber(results.n || 0, 0)})</div>
+                                <div style="margin-left: 20px;">= ${formatNumber((results.I_slab_own || 0) / 1e6, 2)} × 10⁶ mm⁴</div>
+                                <div style="margin-left: 20px; margin-top: 8px; font-size: 11px; color: #64748b;">※ n = E<sub>s</sub>/E<sub>c</sub> (모듈러 비), 슬래브를 강재 등가 단면으로 변환</div>
+                            </div>
+                            
+                            <div style="font-size: 12px; color: #475569; line-height: 1.8; font-family: 'Courier New', monospace; background: #f8fafc; padding: 12px; border-radius: 6px; border: 1px solid #e2e8f0; margin-bottom: 10px;">
+                                <div style="margin-bottom: 8px;"><strong>2) 슬래브 중심에서 합성 중립축까지 거리 (d<sub>slab</sub>):</strong></div>
+                                <div style="margin-left: 20px;">d<sub>slab</sub> = ȳ - y<sub>slab,centroid</sub></div>
+                                <div style="margin-left: 20px;">= ${formatNumber(results.y_bar_composite || 0, 1)} mm - ${formatNumber(results.y_slab_centroid || (results.ts || 0) / 2, 1)} mm</div>
+                                <div style="margin-left: 20px;">= ${formatNumber(results.d_slab || 0, 1)} mm</div>
+                            </div>
+                            
+                            <div style="font-size: 12px; color: #475569; line-height: 1.8; font-family: 'Courier New', monospace; background: #f8fafc; padding: 12px; border-radius: 6px; border: 1px solid #e2e8f0; margin-bottom: 10px;">
+                                <div style="margin-bottom: 8px;"><strong>3) 슬래브의 합성 중립축 기준 단면2차 모멘트 (I<sub>slab</sub>):</strong></div>
+                                <div style="margin-left: 20px;">I<sub>slab</sub> = I<sub>slab,own</sub> + A<sub>slab,equiv</sub> × d<sub>slab</sub>²</div>
+                                <div style="margin-left: 20px;">= ${formatNumber((results.I_slab_own || 0) / 1e6, 2)} × 10⁶ + ${formatNumber((results.As_slab_equiv || 0), 0)} mm² × (${formatNumber(results.d_slab || 0, 1)} mm)²</div>
+                                <div style="margin-left: 20px;">= ${formatNumber((results.I_slab_own || 0) / 1e6, 2)} × 10⁶ + ${formatNumber((results.As_slab_equiv || 0) * Math.pow(results.d_slab || 0, 2) / 1e6, 2)} × 10⁶</div>
+                                <div style="margin-left: 20px; font-weight: 600;">= ${formatNumber((results.I_slab || 0) / 1e6, 2)} × 10⁶ mm⁴</div>
+                                <div style="margin-left: 20px; margin-top: 8px; font-size: 11px; color: #64748b;">※ 평행축 정리 적용</div>
+                            </div>
+                            
+                            <div style="font-size: 12px; color: #475569; line-height: 1.8; font-family: 'Courier New', monospace; background: #f8fafc; padding: 12px; border-radius: 6px; border: 1px solid #e2e8f0; margin-bottom: 10px;">
+                                <div style="margin-bottom: 8px;"><strong>4) 강재 중심에서 합성 중립축까지 거리 (d<sub>steel</sub>):</strong></div>
+                                <div style="margin-left: 20px;">d<sub>steel</sub> = (t<sub>s</sub> + y<sub>steel,centroid</sub>) - ȳ</div>
+                                <div style="margin-left: 20px;">= (${formatNumber(results.ts || 0, 0)} mm + ${formatNumber(results.y_steel_centroid || (results.d_castellated || 0) / 2, 1)} mm) - ${formatNumber(results.y_bar_composite || 0, 1)} mm</div>
+                                <div style="margin-left: 20px; font-weight: 600;">= ${formatNumber(results.d_steel || 0, 1)} mm</div>
+                            </div>
+                            
+                            <div style="font-size: 12px; color: #475569; line-height: 1.8; font-family: 'Courier New', monospace; background: #f8fafc; padding: 12px; border-radius: 6px; border: 1px solid #e2e8f0; margin-bottom: 10px;">
+                                <div style="margin-bottom: 8px;"><strong>5) 합성보 단면2차 모멘트 (I<sub>x,composite</sub>):</strong></div>
+                                <div style="margin-left: 20px;">I<sub>x,composite</sub> = I<sub>slab</sub> + I<sub>x,steel</sub> + A<sub>steel</sub> × d<sub>steel</sub>²</div>
+                                <div style="margin-left: 20px;">= ${formatNumber((results.I_slab || 0) / 1e6, 2)} × 10⁶ + ${formatNumber((results.Ix_steel || 0) / 1e6, 2)} × 10⁶ + ${formatNumber(results.A_total || 0, 0)} mm² × (${formatNumber(results.d_steel || 0, 1)} mm)²</div>
+                                <div style="margin-left: 20px;">= ${formatNumber((results.I_slab || 0) / 1e6, 2)} × 10⁶ + ${formatNumber((results.Ix_steel || 0) / 1e6, 2)} × 10⁶ + ${formatNumber((results.A_total || 0) * Math.pow(results.d_steel || 0, 2) / 1e6, 2)} × 10⁶</div>
+                                <div style="margin-left: 20px; font-weight: 600; margin-top: 8px;">= ${formatNumber((results.Ix_composite || 0) / 1e6, 2)} × 10⁶ mm⁴</div>
+                                <div style="margin-left: 20px; margin-top: 8px; font-size: 11px; color: #64748b;">※ 평행축 정리를 사용하여 각 구성 요소의 단면2차 모멘트를 합성 중립축 기준으로 변환하여 합산</div>
+                            </div>
+                            
+                            <div style="font-size: 11px; color: #64748b; margin-top: 10px; padding: 8px; background: #f1f5f9; border-radius: 4px;">
+                                <strong>근거:</strong> AISC I3.1에 따라 합성보의 단면2차 모멘트는 슬래브와 강재의 각각의 단면2차 모멘트를 합성 중립축 기준으로 변환하여 합산한다. 
+                                평행축 정리(I = I<sub>own</sub> + A × d²)를 사용하여 각 구성 요소의 단면2차 모멘트를 계산한다.
+                            </div>
+                        </div>
+                        
+                        <table class="result-table">
+                            <tr>
+                                <th>항목</th>
+                                <th>값</th>
+                                <th>단위</th>
                             </tr>
                             <tr>
                                 <td>장기처짐 계수 (λ)</td>
@@ -4475,7 +4966,7 @@
                     return results.type === 'with-slab' && results.composite_calculated;
                 })() ? `
                 <!-- C. 비합성과 합성의 차이분석 -->
-                <div class="result-section">
+                <div class="result-section" id="section-c">
                     <div class="result-section-title" style="font-size: 18px; font-weight: 700; color: #1e3a5f; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px solid #3b82f6;">C. 비합성과 합성의 차이분석</div>
                     
                     <div style="font-size: 11px; color: #64748b; margin-bottom: 15px; padding: 8px; background: #f8fafc; border-radius: 4px; border-left: 3px solid #3b82f6;">
@@ -5008,10 +5499,10 @@
                             <tr>
                                 <td>판정</td>
                                 <td class="result-value ${results.webpost_failure_ok ? 'status-ok' : 'status-ng'}" style="font-weight: 600;">
-                                    ${results.webpost_failure_ok ? '✅ 만족' : '❌ 불만족'}
+                                    ${results.webpost_failure_ok ? '✅ 만족' : `❌ 불만족${results.webPostPair ? `<br><span style="font-size: 10px; color: #ef4444;">개구부: ${results.webPostPair.join(' - ')}</span>` : ''}`}
                                 </td>
                                 <td class="result-value ${results.webpost_ok_composite ? 'status-ok' : 'status-ng'}" style="font-weight: 600;">
-                                    ${results.webpost_ok_composite ? '✅ 만족' : '❌ 불만족'}
+                                    ${results.webpost_ok_composite ? '✅ 만족' : `❌ 불만족${results.webPostPair ? `<br><span style="font-size: 10px; color: #ef4444;">개구부: ${results.webPostPair.join(' - ')}</span>` : ''}`}
                                 </td>
                                 <td class="result-value" style="font-weight: 600;">
                                     ${results.webpost_max_UR_composite > results.webpost_max_UR ? '⚠️ 증가' : '✅ 감소'}
@@ -5496,52 +5987,87 @@
                                 <td class="result-value">-</td>
                             </tr>
                             <tr>
-                                <td colspan="5" style="background: #f1f5f9; font-weight: 600; padding: 8px;">2. 스터드 강도</td>
+                                <td colspan="5" style="background: #f1f5f9; font-weight: 600; padding: 8px;">2. 스터드 강도 - B.2.1</td>
                             </tr>
                             <tr>
-                                <td style="padding-left: 20px;">스터드 단일 강도 (Q<sub>n</sub>, kN)</td>
+                                <td style="padding-left: 20px;">Q<sub>n1</sub> (콘크리트 파괴, kN)</td>
                                 <td class="result-value">-</td>
-                                <td class="result-value">${formatNumber(results.Qn, 2)}</td>
-                                <td class="result-value">-</td>
-                                <td class="result-value">-</td>
-                            </tr>
-                            <tr>
-                                <td style="padding-left: 20px;">스터드 최대 강도 (Q<sub>n,max</sub>, kN)</td>
-                                <td class="result-value">-</td>
-                                <td class="result-value">${formatNumber(results.Qn_max || 0, 2)}</td>
+                                <td class="result-value">${formatNumber(results.Qn1 || 0, 2)}</td>
                                 <td class="result-value">-</td>
                                 <td class="result-value">-</td>
                             </tr>
                             <tr>
-                                <td colspan="5" style="background: #f1f5f9; font-weight: 600; padding: 8px;">3. 총 스터드 용량</td>
+                                <td style="padding-left: 20px;">Q<sub>n2</sub> (스터드 파괴, kN)</td>
+                                <td class="result-value">-</td>
+                                <td class="result-value">${formatNumber(results.Qn2 || 0, 2)}</td>
+                                <td class="result-value">-</td>
+                                <td class="result-value">-</td>
                             </tr>
                             <tr>
-                                <td style="padding-left: 20px;">필요 전단력 (ΣQ<sub>n</sub>, kN)</td>
+                                <td style="padding-left: 20px;">스터드 공칭강도 (Q<sub>n</sub> = min(Q<sub>n1</sub>, Q<sub>n2</sub>), kN)</td>
+                                <td class="result-value">-</td>
+                                <td class="result-value" style="font-weight: 600;">${formatNumber(results.Qn, 2)}</td>
+                                <td class="result-value">-</td>
+                                <td class="result-value">${(results.Qn1 || 0) < (results.Qn2 || 0) ? 'Qn1 지배' : 'Qn2 지배'}</td>
+                            </tr>
+                            <tr>
+                                <td colspan="5" style="background: #f1f5f9; font-weight: 600; padding: 8px;">3. 수평전단력 및 총 스터드 용량</td>
+                            </tr>
+                            <tr>
+                                <td style="padding-left: 20px;">강재 인장력에 의한 Vh (T<sub>s</sub>, kN) - B.1.1</td>
+                                <td class="result-value">-</td>
+                                <td class="result-value">${formatNumber(results.Vh_Ts || 0, 2)}</td>
+                                <td class="result-value">-</td>
+                                <td class="result-value">-</td>
+                            </tr>
+                            <tr>
+                                <td style="padding-left: 20px;">콘크리트 압축력에 의한 Vh (C<sub>c</sub>, kN) - B.1.2</td>
+                                <td class="result-value">-</td>
+                                <td class="result-value">${formatNumber(results.Vh_Cc || 0, 1)}</td>
+                                <td class="result-value">-</td>
+                                <td class="result-value">-</td>
+                            </tr>
+                            <tr>
+                                <td style="padding-left: 20px;">수평전단력 (V<sub>h</sub> = min(T<sub>s</sub>, C<sub>c</sub>), kN) - B.1.3</td>
+                                <td class="result-value">-</td>
+                                <td class="result-value" style="font-weight: 600;">${formatNumber(results.Vh, 2)}</td>
+                                <td class="result-value">-</td>
+                                <td class="result-value" style="font-weight: 600;">${results.Vh_governing === 'steel' ? '강재 지배' : '콘크리트 지배'}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding-left: 20px;">필요 전단력 (ΣQ<sub>n</sub> = V<sub>h</sub>, kN) - B.2.2</td>
                                 <td class="result-value">-</td>
                                 <td class="result-value">${formatNumber(results.SigmaQn, 2)}</td>
                                 <td class="result-value">-</td>
+                                <td class="result-value">${Math.abs(results.SigmaQn - results.Vh) < 0.01 ? '✅ Vh와 일치' : '⚠️ 불일치'}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding-left: 20px;">설계강도 (φQ<sub>n</sub>, kN) - B.2.1</td>
+                                <td class="result-value">-</td>
+                                <td class="result-value">${formatNumber(results.phiQn, 2)}</td>
+                                <td class="result-value">-</td>
                                 <td class="result-value">-</td>
                             </tr>
                             <tr>
-                                <td style="padding-left: 20px;">총 스터드 개수 (n<sub>stud,total</sub>)</td>
+                                <td style="padding-left: 20px;">총 스터드 개수 (n<sub>stud,total</sub>) - B.2.2</td>
                                 <td class="result-value">-</td>
                                 <td class="result-value">${formatNumber(results.n_stud_total, 0)}</td>
                                 <td class="result-value">-</td>
                                 <td class="result-value">-</td>
                             </tr>
                             <tr>
-                                <td style="padding-left: 20px;">반경간 스터드 개수 (n<sub>stud,half</sub>)</td>
+                                <td style="padding-left: 20px;">반경간 스터드 개수 (n<sub>stud,half</sub>) - B.2.2</td>
                                 <td class="result-value">-</td>
                                 <td class="result-value">${formatNumber(results.n_stud_half, 0)}</td>
                                 <td class="result-value">-</td>
                                 <td class="result-value">-</td>
                             </tr>
                             <tr>
-                                <td style="padding-left: 20px;">제공 전단 용량 (n<sub>stud</sub> × Q<sub>n</sub> × 열수, kN)</td>
+                                <td style="padding-left: 20px;">제공 전단 용량 (n<sub>stud</sub> × φQ<sub>n</sub> × 열수, kN)</td>
                                 <td class="result-value">-</td>
-                                <td class="result-value">${formatNumber(results.n_stud_total * results.Qn * results.studRows, 2)}</td>
+                                <td class="result-value">${formatNumber(results.n_stud_total * results.phiQn * results.studRows, 2)}</td>
                                 <td class="result-value">-</td>
-                                <td class="result-value">${(results.n_stud_total * results.Qn * results.studRows >= results.SigmaQn) ? '✅ 충분' : '❌ 부족'}</td>
+                                <td class="result-value">${(results.n_stud_total * results.phiQn * results.studRows >= results.SigmaQn) ? '✅ 충분' : '❌ 부족'}</td>
                             </tr>
                             <tr>
                                 <td colspan="5" style="background: #f1f5f9; font-weight: 600; padding: 8px;">4. 합성 정도</td>
@@ -5608,15 +6134,41 @@
                                 <td class="result-value">-</td>
                             </tr>
                         </table>
-                        <div style="font-size: 11px; color: #64748b; margin-top: 10px; padding: 8px; background: #f8fafc; border-radius: 4px;">
-                            <strong>참고:</strong> 
+                        
+                        <!-- C.8 참고 설명 -->
+                        <div style="font-size: 11px; color: #64748b; margin-top: 15px; margin-bottom: 15px; padding: 12px; background: #f8fafc; border-radius: 4px; border: 1px solid #e2e8f0;">
+                            <strong style="font-size: 12px; color: #1e3a5f;">참고:</strong> 
                             <ul style="margin: 5px 0; padding-left: 20px;">
                                 <li>전단연결재: 비합성보는 전단연결재가 없으며, 합성보만 사용합니다.</li>
-                                <li>스터드 강도: Q<sub>n</sub> = min(0.5A<sub>sc</sub>√(f'<sub>c</sub>E<sub>c</sub>), A<sub>sc</sub>f<sub>u</sub>) (AISC I8.3)</li>
-                                <li>총 스터드 용량: ΣQ<sub>n</sub> = w<sub>u,service</sub> × L (반경간 필요 전단력)</li>
+                                <li>스터드 강도: Q<sub>n</sub> = min(0.5A<sub>sc</sub>√(f'<sub>c</sub>E<sub>c</sub>), A<sub>sc</sub>f<sub>u</sub>) (AISC 18.3)</li>
+                                <li>수평전단력: V<sub>h</sub> = min(T<sub>s</sub>, C<sub>c</sub>) (B.1에서 산정, AISC I3.1)</li>
+                                <li>필요 전단력: ΣQ<sub>n</sub> = V<sub>h</sub> (완전합성 기준, B.2.2)</li>
                                 <li>합성 정도: C<sub>slab</sub>/T<sub>steel</sub> ≥ 1.0이면 완전 합성, 0.5~1.0이면 부분 합성</li>
                                 <li>스터드 배치: AISC I8.2에 따라 최소 간격(6d)과 최대 간격(min(8t<sub>s</sub>, 900mm))을 준수해야 합니다.</li>
                             </ul>
+                        </div>
+                        
+                        <!-- C.8 종합 요약 -->
+                        <div style="margin-top: 20px; margin-bottom: 60px; padding: 20px; padding-bottom: 35px; background: #f0f9ff; border-radius: 8px; border-left: 4px solid #3b82f6; box-shadow: 0 2px 4px rgba(0,0,0,0.1); min-height: fit-content;">
+                            <h5 style="font-size: 14px; font-weight: 600; color: #1e3a5f; margin-bottom: 15px; padding-bottom: 8px; border-bottom: 2px solid #3b82f6;">C.8 종합 요약</h5>
+                            <div style="font-size: 12px; color: #475569; line-height: 2.0;">
+                                <div style="margin-bottom: 12px; font-weight: 600; color: #1e3a5f; font-size: 13px;">전단연결재 설계 결과:</div>
+                                <ul style="margin: 0; padding-left: 20px; line-height: 2.2;">
+                                    <li style="margin-bottom: 6px;">수평전단력: V<sub>h</sub> = <strong style="color: #1e3a5f;">${formatNumber(results.Vh || 0, 2)} kN</strong> (${results.Vh_governing === 'steel' ? '강재 지배' : '콘크리트 지배'})</li>
+                                    <li style="margin-bottom: 6px;">스터드 설계강도: φQ<sub>n</sub> = <strong style="color: #1e3a5f;">${formatNumber(results.phiQn || 0, 2)} kN</strong></li>
+                                    <li style="margin-bottom: 6px;">필요 스터드 개수: <strong style="color: #1e3a5f;">${formatNumber(results.n_stud_total || 0, 0)}개</strong> (반경간 ${formatNumber(results.n_stud_half || 0, 0)}개)</li>
+                                    <li style="margin-bottom: 6px;">스터드 간격: <strong style="color: #1e3a5f;">${formatNumber(results.s_stud || 0, 0)} mm</strong> ${results.spacing_ok ? '<span style="color: #10b981; font-weight: 600;">✅ 간격 검토 만족</span>' : '<span style="color: #ef4444; font-weight: 600;">❌ 간격 검토 불만족</span>'}</li>
+                                    <li style="margin-bottom: 6px;">제공 전단 용량: <strong style="color: #1e3a5f;">${formatNumber((results.n_stud_total || 0) * (results.phiQn || 0) * (results.studRows || 1), 2)} kN</strong> ${(results.n_stud_total || 0) * (results.phiQn || 0) * (results.studRows || 1) >= (results.SigmaQn || 0) ? '<span style="color: #10b981; font-weight: 600;">✅ 충분</span>' : '<span style="color: #ef4444; font-weight: 600;">❌ 부족</span>'}</li>
+                                    <li style="margin-bottom: 12px;">합성 정도: <strong style="color: #1e3a5f;">${results.composite_degree_kr || '계산 중'}</strong> (${formatNumber((results.composite_degree || 0) * 100, 1)}%)</li>
+                                </ul>
+                                <div style="margin-top: 20px; padding-top: 16px; padding-bottom: 16px; border-top: 1px solid #cbd5e1; font-size: 11px; color: #64748b; line-height: 1.9;">
+                                    <div style="margin-bottom: 10px; font-weight: 600; color: #1e3a5f; font-size: 12px;"><strong>설계 기준:</strong></div>
+                                    <div style="margin-left: 10px; margin-bottom: 6px;">• 수평전단력: V<sub>h</sub> = min(T<sub>s</sub>, C<sub>c</sub>) (AISC I3.1)</div>
+                                    <div style="margin-left: 10px; margin-bottom: 6px;">• 스터드 강도: Q<sub>n</sub> = min(0.5A<sub>sc</sub>√(f'<sub>c</sub>E<sub>c</sub>), A<sub>sc</sub>f<sub>u</sub>) (AISC 18.3)</div>
+                                    <div style="margin-left: 10px; margin-bottom: 6px;">• 스터드 간격: 최소 6d, 최대 min(8t<sub>s</sub>, 900mm) (AISC I8.2)</div>
+                                    <div style="margin-left: 10px; margin-bottom: 0;">• 합성 정도: C<sub>slab</sub>/T<sub>steel</sub> ≥ 1.0 (완전 합성)</div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -6273,6 +6825,93 @@
             // #region agent log
             setTimeout(checkKsSectionVisibility, 100);
             // #endregion
+        }
+
+        // 현재값을 기본값으로 저장
+        function saveAsDefault() {
+            try {
+                const defaultValues = {};
+                
+                // 모든 입력 필드 ID 목록
+                const inputIds = [
+                    'beamSpan', 'loadWidth', 'liveLoad', 'deadLoad', 'constructionLoad',
+                    'selfWeight', 'slabThickness', 'slabWeight',
+                    'beamDepth', 'flangeWidth', 'flangeThickness', 'webThickness', 'filletRadius',
+                    'effectiveWidth', 'concreteStrength', 'concreteUnitWeight',
+                    'connectorType', 'studDiameter', 'studHeight', 'studFu', 'studRows', 'studSpacing',
+                    'useDeckPlate', 'deckThickness', 'deckDirection',
+                    'openingHeight', 'openingSpacing', 'openingAngle', 'openingWidth', 'endPost',
+                    'steelGrade', 'ksSection'
+                ];
+                
+                // 각 입력 필드의 현재값 저장
+                inputIds.forEach(id => {
+                    const element = document.getElementById(id);
+                    if (element) {
+                        if (element.type === 'checkbox') {
+                            defaultValues[id] = element.checked;
+                        } else if (element.type === 'select-one') {
+                            defaultValues[id] = element.value;
+                        } else {
+                            defaultValues[id] = element.value;
+                        }
+                    }
+                });
+                
+                // localStorage에 저장
+                localStorage.setItem('compositeCastellatedBeam_defaultValues', JSON.stringify(defaultValues));
+                
+                alert('현재 입력값이 기본값으로 저장되었습니다.');
+                console.log('[DEBUG] Default values saved:', defaultValues);
+            } catch (error) {
+                console.error('[ERROR] saveAsDefault error:', error);
+                alert('기본값 저장 중 오류가 발생했습니다: ' + error.message);
+            }
+        }
+
+        // 저장된 기본값 불러오기
+        function loadDefaultValues() {
+            try {
+                const saved = localStorage.getItem('compositeCastellatedBeam_defaultValues');
+                if (!saved) {
+                    return; // 저장된 기본값이 없으면 종료
+                }
+                
+                const defaultValues = JSON.parse(saved);
+                
+                // 각 입력 필드에 저장된 값 적용
+                Object.keys(defaultValues).forEach(id => {
+                    const element = document.getElementById(id);
+                    if (element) {
+                        if (element.type === 'checkbox') {
+                            element.checked = defaultValues[id];
+                        } else if (element.type === 'select-one') {
+                            element.value = defaultValues[id];
+                            // select 요소의 경우 change 이벤트 발생
+                            if (id === 'ksSection') {
+                                onKsSectionChange();
+                            }
+                        } else {
+                            element.value = defaultValues[id];
+                        }
+                        // input 이벤트 발생 (자동 계산 등이 있는 경우)
+                        element.dispatchEvent(new Event('input', { bubbles: true }));
+                    }
+                });
+                
+                console.log('[DEBUG] Default values loaded:', defaultValues);
+            } catch (error) {
+                console.error('[ERROR] loadDefaultValues error:', error);
+            }
+        }
+
+        // 페이지 로드 시 저장된 기본값 불러오기
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', function() {
+                setTimeout(loadDefaultValues, 500); // 다른 초기화가 완료된 후 실행
+            });
+        } else {
+            setTimeout(loadDefaultValues, 500);
         }
     </script>
 </body>
