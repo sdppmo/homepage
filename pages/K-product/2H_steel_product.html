@@ -1305,6 +1305,7 @@
         let db = null;
         let auth = null;
         let isFirebaseEnabled = false;
+        let firebasePermissionWarningShown = false; // Firebase 권한 경고를 한 번만 표시하기 위한 플래그
         let currentUser = null;
         let userRole = 'viewer'; // 기본 역할: viewer
         let allowedProcesses = []; // Editor가 수정 가능한 공정 목록 (예: [1, 2, 3, 6])
@@ -1949,14 +1950,50 @@
                 renderColumnGrid('column-grid-input');
                 updateProgressBars();
             }, (error) => {
-                console.error('columnData 리스너 오류:', error);
+                // 권한 오류는 정상적인 상황일 수 있으므로 경고로만 표시
+                if (error.code === 'permission-denied' || error.message?.includes('permissions')) {
+                    if (!firebasePermissionWarningShown) {
+                        console.warn('⚠️ Firebase 권한 없음: 읽기/쓰기 불가. localStorage만 사용합니다.');
+                        firebasePermissionWarningShown = true;
+                    }
+                    // localStorage에서 데이터 로드 시도
+                    try {
+                        const localData = localStorage.getItem(`columnData_${PROJECT_ID}`);
+                        if (localData) {
+                            columnData = JSON.parse(localData);
+                            renderColumnGrid('column-grid-overview');
+                            renderColumnGrid('column-grid-input');
+                            updateProgressBars();
+                        }
+                    } catch (e) {
+                        console.error('localStorage 로드 오류:', e);
+                    }
+                } else {
+                    console.error('columnData 리스너 오류:', error);
+                }
             });
 
             // dailyData 실시간 리스너 (projectId 기반)
             kcolRef('dailyData').onSnapshot((snapshot) => {
                 dailyData = firestoreGet(snapshot);
             }, (error) => {
-                console.error('dailyData 리스너 오류:', error);
+                // 권한 오류는 정상적인 상황일 수 있으므로 경고로만 표시
+                if (error.code === 'permission-denied' || error.message?.includes('permissions')) {
+                    if (!firebasePermissionWarningShown) {
+                        firebasePermissionWarningShown = true;
+                    }
+                    // localStorage에서 데이터 로드 시도
+                    try {
+                        const localData = localStorage.getItem(`dailyData_${PROJECT_ID}`);
+                        if (localData) {
+                            dailyData = JSON.parse(localData);
+                        }
+                    } catch (e) {
+                        console.error('localStorage 로드 오류:', e);
+                    }
+                } else {
+                    console.error('dailyData 리스너 오류:', error);
+                }
             });
 
             // transportPlan 실시간 리스너 (projectId 기반)
@@ -1979,7 +2016,33 @@
                     updateProgressBars();
                 }
             }, (error) => {
-                console.error('transportPlan 리스너 오류:', error);
+                // 권한 오류는 정상적인 상황일 수 있으므로 경고로만 표시
+                if (error.code === 'permission-denied' || error.message?.includes('permissions')) {
+                    if (!firebasePermissionWarningShown) {
+                        firebasePermissionWarningShown = true;
+                    }
+                    // localStorage에서 데이터 로드 시도
+                    try {
+                        const localData = localStorage.getItem(`transportPlan_${PROJECT_ID}`);
+                        if (localData) {
+                            transportPlan = JSON.parse(localData);
+                            syncTransportToDailyData(false);
+                            if (document.getElementById('panel-transport')?.classList.contains('active')) {
+                                renderTransportTrips();
+                                renderTransportColumnGrid();
+                                updateTransportTripInfo();
+                            }
+                            renderGanttChart();
+                            renderColumnGrid('column-grid-overview');
+                            renderColumnGrid('column-grid-input');
+                            updateProgressBars();
+                        }
+                    } catch (e) {
+                        console.error('localStorage 로드 오류:', e);
+                    }
+                } else {
+                    console.error('transportPlan 리스너 오류:', error);
+                }
             });
         }
 
@@ -2438,7 +2501,7 @@
         }
 
         // Panel Navigation
-        function showPanel(panelId, btnElement) {
+        window.showPanel = function(panelId, btnElement) {
             document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
             // 일일 입력 버튼은 제외하고 active 클래스 제거
             document.querySelectorAll('.tab-btn').forEach(b => {
@@ -2477,7 +2540,7 @@
             } else if (panelId === 'installation') {
                 renderInstallationStatus();
             }
-        }
+        };
 
         // Set Today's Date
         function setToday() {
@@ -3667,8 +3730,7 @@
             }
             
             // 수정 모드일 때는 선택된 공정 사용, 일반 모드일 때는 currentProcess 사용
-            const selectedStatus = parseInt(document.getElementById('modal-process-select').value);
-            const newStatus = editMode ? selectedStatus : (currentProcess || selectedStatus);
+            // selectedStatus는 위에서 이미 선언되었으므로 재사용
             
             if (newStatus === undefined || newStatus === null) {
                 alert('공정 상태를 선택해주세요.');
@@ -4549,8 +4611,15 @@
                             console.log('✅ Firebase 저장 완료 (projectId:', PROJECT_ID + ')');
                         })
                         .catch((error) => {
-                            console.error('Firebase 저장 오류:', error);
-                            // localStorage는 이미 저장됨
+                            // 권한 오류는 정상적인 상황일 수 있으므로 경고로만 표시
+                            if (error.code === 'permission-denied' || error.message?.includes('permissions')) {
+                                if (!firebasePermissionWarningShown) {
+                                    firebasePermissionWarningShown = true;
+                                }
+                                // localStorage는 이미 저장됨
+                            } else {
+                                console.error('Firebase 저장 오류:', error);
+                            }
                         });
                 }
             } catch (error) {
