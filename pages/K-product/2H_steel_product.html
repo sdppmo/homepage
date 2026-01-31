@@ -769,6 +769,32 @@
 <body>
     <div class="container">
         <!-- Header -->
+        <!-- 로그인 모달 (페이지 접근 시 표시) -->
+        <!-- 로그인 모달 (페이지 접근 시 표시) -->
+        <div id="login-modal" style="display:flex;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:10000;flex-direction:column;align-items:center;justify-content:center;">
+            <div style="background:white;padding:40px;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,0.3);max-width:400px;width:90%;">
+                <h2 style="margin:0 0 20px 0;color:#2c4a7c;font-size:24px;text-align:center;">🔐 로그인 필요</h2>
+                <p style="margin:0 0 30px 0;color:#666;text-align:center;font-size:14px;">
+                    공정표에 접근하려면 Firebase 로그인이 필요합니다.<br>
+                    <span style="font-size:12px;color:#999;">Email/Password로 로그인하세요.</span>
+                </p>
+                <div style="display:flex;flex-direction:column;gap:15px;">
+                    <input type="email" id="modal-login-email" placeholder="이메일" 
+                           style="padding:12px;border:2px solid #ddd;border-radius:6px;font-size:14px;" autocomplete="email">
+                    <input type="password" id="modal-login-password" placeholder="비밀번호" 
+                           style="padding:12px;border:2px solid #ddd;border-radius:6px;font-size:14px;" autocomplete="current-password">
+                    <button id="modal-login-btn" 
+                            style="padding:12px;background:#2c4a7c;color:white;border:none;border-radius:6px;font-size:16px;font-weight:600;cursor:pointer;transition:background 0.3s;">
+                        로그인
+                    </button>
+                </div>
+                <div id="modal-login-status" style="margin-top:15px;font-size:12px;text-align:center;color:#f44336;min-height:20px;"></div>
+                <div style="margin-top:20px;padding-top:20px;border-top:1px solid #eee;font-size:11px;color:#999;text-align:center;">
+                    ℹ️ 로그인 후 역할(Admin/Editor/Viewer)에 따라 권한이 부여됩니다.
+                </div>
+            </div>
+        </div>
+
         <div class="header" style="position: relative;">
             <a href="../../index.html" class="home-btn">
                 <span>🏠</span>
@@ -782,75 +808,100 @@
                 <div>공사기간: 2025.12.26 ~ 2026.04.30</div>
                 <div style="margin-top:5px;">총 기둥수: <strong>50개</strong></div>
                 <div style="margin-top:10px;padding:8px;background:rgba(255,255,255,0.1);border-radius:6px;font-size:12px;">
-                    <!-- Admin 설정 -->
-                    <div style="margin-bottom:8px;">
-                        <div style="display:flex;align-items:center;gap:6px;">
-                            <input type="text" id="admin-uid-input" placeholder="Admin UID 입력" 
+                    <!-- Firebase 로그인 -->
+                    <div style="margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,0.2);">
+                        <div id="login-section" style="display:flex;align-items:center;gap:6px;">
+                            <input type="email" id="login-email-input" placeholder="이메일" 
                                    style="flex:1;padding:6px 10px;border:1px solid rgba(255,255,255,0.3);border-radius:4px;background:rgba(255,255,255,0.9);color:#333;font-size:11px;">
-                            <button id="admin-setup-btn"
-                                    style="padding:6px 12px;background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.3);border-radius:4px;color:white;cursor:pointer;font-size:11px;font-weight:600;white-space:nowrap;">
-                                Admin 설정
+                            <input type="password" id="login-password-input" placeholder="비밀번호" 
+                                   style="flex:1;padding:6px 10px;border:1px solid rgba(255,255,255,0.3);border-radius:4px;background:rgba(255,255,255,0.9);color:#333;font-size:11px;">
+                            <button id="login-btn"
+                                    style="padding:6px 12px;background:#4caf50;border:none;border-radius:4px;color:white;cursor:pointer;font-size:11px;font-weight:600;white-space:nowrap;">
+                                로그인
+                            </button>
+                            <button id="logout-btn" style="display:none;padding:6px 12px;background:#f44336;border:none;border-radius:4px;color:white;cursor:pointer;font-size:11px;font-weight:600;white-space:nowrap;">
+                                로그아웃
                             </button>
                         </div>
-                        <div id="admin-uid-status" style="margin-top:4px;font-size:10px;opacity:0.8;"></div>
+                        <div id="login-status" style="margin-top:4px;font-size:10px;opacity:0.8;"></div>
+                        <div id="user-info" style="margin-top:4px;font-size:10px;opacity:0.9;display:none;">
+                            <div>로그인: <span id="user-email"></span></div>
+                            <div>역할: <span id="user-role-badge"></span></div>
+                        </div>
                     </div>
                     
-                    <!-- Editor 설정 -->
-                    <div style="padding-top:8px;border-top:1px solid rgba(255,255,255,0.2);">
-                        <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
-                            <input type="text" id="editor-uid-input" placeholder="Editor UID 입력" 
-                                   style="flex:1;padding:6px 10px;border:1px solid rgba(255,255,255,0.3);border-radius:4px;background:rgba(255,255,255,0.9);color:#333;font-size:11px;">
-                            <button id="editor-setup-btn"
-                                    style="padding:6px 12px;background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.3);border-radius:4px;color:white;cursor:pointer;font-size:11px;font-weight:600;white-space:nowrap;">
-                                Editor 설정
-                            </button>
+                    <!-- Admin 설정 영역 (Admin만 볼 수 있음) -->
+                    <div id="admin-role-settings" style="display:none;">
+                        <!-- Admin 설정 -->
+                        <div style="margin-bottom:8px;">
+                            <div style="display:flex;align-items:center;gap:6px;">
+                                <input type="text" id="admin-uid-input" placeholder="Admin UID 입력" 
+                                       style="flex:1;padding:6px 10px;border:1px solid rgba(255,255,255,0.3);border-radius:4px;background:rgba(255,255,255,0.9);color:#333;font-size:11px;">
+                                <button id="admin-setup-btn"
+                                        style="padding:6px 12px;background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.3);border-radius:4px;color:white;cursor:pointer;font-size:11px;font-weight:600;white-space:nowrap;">
+                                    Admin 설정
+                                </button>
+                            </div>
+                            <div id="admin-uid-status" style="margin-top:4px;font-size:10px;opacity:0.8;"></div>
                         </div>
-                        <div style="margin-bottom:6px;font-size:10px;color:rgba(255,255,255,0.9);">
-                            허용할 공정 선택:
+                        
+                        <!-- Editor 설정 -->
+                        <div style="padding-top:8px;border-top:1px solid rgba(255,255,255,0.2);">
+                            <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
+                                <input type="text" id="editor-uid-input" placeholder="Editor UID 입력" 
+                                       style="flex:1;padding:6px 10px;border:1px solid rgba(255,255,255,0.3);border-radius:4px;background:rgba(255,255,255,0.9);color:#333;font-size:11px;">
+                                <button id="editor-setup-btn"
+                                        style="padding:6px 12px;background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.3);border-radius:4px;color:white;cursor:pointer;font-size:11px;font-weight:600;white-space:nowrap;">
+                                    Editor 설정
+                                </button>
+                            </div>
+                            <div style="margin-bottom:6px;font-size:10px;color:rgba(255,255,255,0.9);">
+                                허용할 공정 선택:
+                            </div>
+                            <div id="editor-process-select" style="display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-bottom:6px;">
+                                <label style="display:flex;align-items:center;gap:4px;font-size:10px;color:rgba(255,255,255,0.9);cursor:pointer;">
+                                    <input type="checkbox" value="1" class="editor-process-checkbox" style="margin:0;">
+                                    <span>1. 주기둥커팅</span>
+                                </label>
+                                <label style="display:flex;align-items:center;gap:4px;font-size:10px;color:rgba(255,255,255,0.9);cursor:pointer;">
+                                    <input type="checkbox" value="2" class="editor-process-checkbox" style="margin:0;">
+                                    <span>2. 소부재가공</span>
+                                </label>
+                                <label style="display:flex;align-items:center;gap:4px;font-size:10px;color:rgba(255,255,255,0.9);cursor:pointer;">
+                                    <input type="checkbox" value="3" class="editor-process-checkbox" style="margin:0;">
+                                    <span>3. 주기둥조립</span>
+                                </label>
+                                <label style="display:flex;align-items:center;gap:4px;font-size:10px;color:rgba(255,255,255,0.9);cursor:pointer;">
+                                    <input type="checkbox" value="4" class="editor-process-checkbox" style="margin:0;">
+                                    <span>4. 소부재조립</span>
+                                </label>
+                                <label style="display:flex;align-items:center;gap:4px;font-size:10px;color:rgba(255,255,255,0.9);cursor:pointer;">
+                                    <input type="checkbox" value="5" class="editor-process-checkbox" style="margin:0;">
+                                    <span>5. 현장배송</span>
+                                </label>
+                                <label style="display:flex;align-items:center;gap:4px;font-size:10px;color:rgba(255,255,255,0.9);cursor:pointer;">
+                                    <input type="checkbox" value="6" class="editor-process-checkbox" style="margin:0;">
+                                    <span>6. 현장설치</span>
+                                </label>
+                            </div>
+                            <div id="editor-uid-status" style="margin-top:4px;font-size:10px;opacity:0.8;"></div>
                         </div>
-                        <div id="editor-process-select" style="display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-bottom:6px;">
-                            <label style="display:flex;align-items:center;gap:4px;font-size:10px;color:rgba(255,255,255,0.9);cursor:pointer;">
-                                <input type="checkbox" value="1" class="editor-process-checkbox" style="margin:0;">
-                                <span>1. 주기둥커팅</span>
-                            </label>
-                            <label style="display:flex;align-items:center;gap:4px;font-size:10px;color:rgba(255,255,255,0.9);cursor:pointer;">
-                                <input type="checkbox" value="2" class="editor-process-checkbox" style="margin:0;">
-                                <span>2. 소부재가공</span>
-                            </label>
-                            <label style="display:flex;align-items:center;gap:4px;font-size:10px;color:rgba(255,255,255,0.9);cursor:pointer;">
-                                <input type="checkbox" value="3" class="editor-process-checkbox" style="margin:0;">
-                                <span>3. 주기둥조립</span>
-                            </label>
-                            <label style="display:flex;align-items:center;gap:4px;font-size:10px;color:rgba(255,255,255,0.9);cursor:pointer;">
-                                <input type="checkbox" value="4" class="editor-process-checkbox" style="margin:0;">
-                                <span>4. 소부재조립</span>
-                            </label>
-                            <label style="display:flex;align-items:center;gap:4px;font-size:10px;color:rgba(255,255,255,0.9);cursor:pointer;">
-                                <input type="checkbox" value="5" class="editor-process-checkbox" style="margin:0;">
-                                <span>5. 현장배송</span>
-                            </label>
-                            <label style="display:flex;align-items:center;gap:4px;font-size:10px;color:rgba(255,255,255,0.9);cursor:pointer;">
-                                <input type="checkbox" value="6" class="editor-process-checkbox" style="margin:0;">
-                                <span>6. 현장설치</span>
-                            </label>
+                        
+                        <!-- Viewer 설정 -->
+                        <div style="padding-top:8px;border-top:1px solid rgba(255,255,255,0.2);">
+                            <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
+                                <input type="text" id="viewer-uid-input" placeholder="Viewer UID 입력 (여러 개는 쉼표로 구분)" 
+                                       style="flex:1;padding:6px 10px;border:1px solid rgba(255,255,255,0.3);border-radius:4px;background:rgba(255,255,255,0.9);color:#333;font-size:11px;">
+                                <button id="viewer-setup-btn"
+                                        style="padding:6px 12px;background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.3);border-radius:4px;color:white;cursor:pointer;font-size:11px;font-weight:600;white-space:nowrap;">
+                                    Viewer 설정
+                                </button>
+                            </div>
+                            <div style="margin-top:4px;font-size:10px;color:rgba(255,255,255,0.8);">
+                                ℹ️ Viewer는 읽기 전용 권한입니다. 여러 UID는 쉼표(,)로 구분하세요.
+                            </div>
+                            <div id="viewer-uid-status" style="margin-top:4px;font-size:10px;opacity:0.8;"></div>
                         </div>
-                        <div id="editor-uid-status" style="margin-top:4px;font-size:10px;opacity:0.8;"></div>
-                    </div>
-                    
-                    <!-- Viewer 설정 -->
-                    <div style="padding-top:8px;border-top:1px solid rgba(255,255,255,0.2);">
-                        <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
-                            <input type="text" id="viewer-uid-input" placeholder="Viewer UID 입력 (여러 개는 쉼표로 구분)" 
-                                   style="flex:1;padding:6px 10px;border:1px solid rgba(255,255,255,0.3);border-radius:4px;background:rgba(255,255,255,0.9);color:#333;font-size:11px;">
-                            <button id="viewer-setup-btn"
-                                    style="padding:6px 12px;background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.3);border-radius:4px;color:white;cursor:pointer;font-size:11px;font-weight:600;white-space:nowrap;">
-                                Viewer 설정
-                            </button>
-                        </div>
-                        <div style="margin-top:4px;font-size:10px;color:rgba(255,255,255,0.8);">
-                            ℹ️ Viewer는 읽기 전용 권한입니다. 여러 UID는 쉼표(,)로 구분하세요.
-                        </div>
-                        <div id="viewer-uid-status" style="margin-top:4px;font-size:10px;opacity:0.8;"></div>
                     </div>
                 </div>
             </div>
@@ -1553,24 +1604,26 @@
             
             // Editor 권한에 따른 입력창 활성화/비활성화
             if (typeof userRole !== 'undefined' && userRole === 'editor') {
-                if (typeof allowedProcesses !== 'undefined' && !allowedProcesses.includes(processId)) {
-                    // 허용되지 않은 공정: 입력창 비활성화 (보기만 가능)
+                const canEdit = canEditProcess(processId);
+                
+                if (!canEdit) {
+                    // 허용되지 않은 공정: 입력창 비활성화 (보기만 가능 - opacity: 0.25)
                     const workDateInput = document.getElementById('work-date');
                     const columnGridInput = document.getElementById('column-grid-input');
                     const saveButton = document.querySelector('#panel-input button[onclick*="saveSelectedColumns"]');
                     
                     if (workDateInput) {
                         workDateInput.disabled = true;
-                        workDateInput.style.opacity = '0.5';
+                        workDateInput.style.opacity = '0.25';
                         workDateInput.title = 'Editor는 이 공정을 수정할 수 없습니다. (보기만 가능)';
                     }
                     if (columnGridInput) {
                         columnGridInput.style.pointerEvents = 'none';
-                        columnGridInput.style.opacity = '0.5';
+                        columnGridInput.style.opacity = '0.25';
                     }
                     if (saveButton) {
                         saveButton.disabled = true;
-                        saveButton.style.opacity = '0.5';
+                        saveButton.style.opacity = '0.25';
                         saveButton.title = 'Editor는 이 공정을 저장할 수 없습니다.';
                     }
                 } else {
@@ -1594,6 +1647,9 @@
                         saveButton.title = '';
                     }
                 }
+                
+                // 공정별 기둥 그리드 권한 적용
+                applyProcessPermissionToColumnGrid();
             }
             
             // 공정별 입력 안내 메시지 표시
@@ -1629,6 +1685,10 @@
         const urlParams = new URLSearchParams(window.location.search);
         const PROJECT_ID = (urlParams.get('project') || localStorage.getItem('kcol:lastProject') || 'P1').toString();
         localStorage.setItem('kcol:lastProject', PROJECT_ID);
+        
+        // 🔒 디버그 모드 설정 (운영 환경에서는 false로 설정)
+        // URL 파라미터 ?debug=true 또는 localStorage에 'kcol:debugMode'가 'true'일 때만 활성화
+        const DEBUG_MODE = urlParams.get('debug') === 'true' || localStorage.getItem('kcol:debugMode') === 'true';
 
         // 프로젝트 이름 매핑
         const PROJECT_NAMES = {
@@ -1687,23 +1747,45 @@
                     return null;
                 }
                 
-                console.log('🔍 Firebase 사용자 확인:', user.uid);
+                // 익명 사용자 차단
+                if (user.isAnonymous) {
+                    console.warn('⚠️ 익명 로그인 상태에서는 역할을 로드할 수 없습니다.');
+                    return null;
+                }
                 
-                // Firestore에서 사용자 역할 조회 (user_roles 컬렉션 사용)
-                const userDoc = await firebaseDb.collection('user_roles').doc(user.uid).get();
+                console.log('🔍 Firebase 사용자 확인:', user.uid, user.email || '');
+                
+                // Firestore에서 사용자 역할 조회 (projects/{projectId}/members/{uid} 구조 사용)
+                const userDoc = await firebaseDb.collection('projects').doc(PROJECT_ID)
+                    .collection('members').doc(user.uid).get();
                 
                 if (userDoc.exists) {
                     const userData = userDoc.data();
                     const role = userData.role || 'viewer';
-                    const allowedProcesses = userData.allowedProcesses || [];
+                    // allowedProcesses를 숫자 배열로 정규화 (타입 일치 보장)
+                    const rawAllowedProcesses = userData.allowedProcesses || [];
+                    const allowedProcesses = Array.isArray(rawAllowedProcesses) 
+                        ? rawAllowedProcesses.map(p => parseInt(p)).filter(p => !isNaN(p))
+                        : [];
                     
                     console.log('✅ Firebase에서 역할 로드:', role, allowedProcesses);
                     console.log('📋 Firestore 문서 데이터:', userData);
+                    console.log('📋 원본 role 필드 값:', userData.role);
+                    console.log('📋 원본 allowedProcesses 필드 값:', userData.allowedProcesses);
+                    console.log('📋 정규화된 allowedProcesses (숫자 배열):', allowedProcesses);
                     
                     // 역할이 제대로 설정되었는지 확인
                     if (!role || role === 'viewer') {
                         console.warn('⚠️ 역할이 viewer이거나 설정되지 않았습니다. Firestore 문서를 확인하세요.');
                         console.log('💡 Firestore 문서:', userData);
+                        console.log('💡 role 필드 타입:', typeof userData.role);
+                        console.log('💡 role 필드 값:', userData.role);
+                    }
+                    
+                    // Editor 역할인데 allowedProcesses가 없는 경우 경고
+                    if (role === 'editor' && (!allowedProcesses || allowedProcesses.length === 0)) {
+                        console.warn('⚠️ Editor 역할이지만 allowedProcesses가 설정되지 않았습니다.');
+                        console.log('💡 Firestore 문서에서 allowedProcesses 필드를 확인하세요.');
                     }
                     
                     // localStorage에도 저장 (캐시)
@@ -1715,12 +1797,360 @@
                 } else {
                     console.log('ℹ️ Firestore에 사용자 역할 문서가 없습니다. 생성이 필요합니다.');
                     console.log('💡 UID:', user.uid);
-                    console.log('💡 Firestore 경로: user_roles/' + user.uid);
+                    console.log('💡 Firestore 경로: projects/' + PROJECT_ID + '/members/' + user.uid);
                     return null;
                 }
             } catch (error) {
                 console.error('❌ Firebase 역할 로드 오류:', error);
                 return null;
+            }
+        }
+        
+        // Firebase 실시간 동기화 리스너 (onSnapshot)
+        let realtimeUnsubscribe = null;
+        let realtimeStatusCheckInterval = null;
+        let lastRealtimeUpdateTime = null;
+        
+        // 실시간 연결 상태 표시 UI 업데이트 함수
+        function updateRealtimeConnectionStatus(isConnected, errorMessage = null) {
+            // 로그인하지 않은 경우 상태 표시기를 표시하지 않음
+            if (!initFirebase() || !firebaseAuth.currentUser || firebaseAuth.currentUser.isAnonymous) {
+                const statusIndicator = document.getElementById('realtime-status-indicator');
+                if (statusIndicator) {
+                    statusIndicator.style.display = 'none';
+                }
+                return;
+            }
+            
+            let statusIndicator = document.getElementById('realtime-status-indicator');
+            
+            if (!statusIndicator) {
+                // 실시간 상태 표시 UI 생성
+                statusIndicator = document.createElement('div');
+                statusIndicator.id = 'realtime-status-indicator';
+                statusIndicator.style.cssText = 'position:fixed;bottom:20px;left:20px;background:rgba(0,0,0,0.8);color:white;padding:10px 15px;border-radius:8px;font-size:12px;z-index:9998;min-width:200px;box-shadow:0 2px 8px rgba(0,0,0,0.3);';
+                document.body.appendChild(statusIndicator);
+            }
+            
+            // 상태 표시기 표시
+            statusIndicator.style.display = 'block';
+            
+            if (isConnected) {
+                lastRealtimeUpdateTime = Date.now();
+                statusIndicator.innerHTML = `
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <span style="display:inline-block;width:10px;height:10px;background:#4caf50;border-radius:50%;animation:pulse 2s infinite;"></span>
+                        <span>🔄 실시간 동기화 활성</span>
+                    </div>
+                    <div style="margin-top:5px;font-size:10px;opacity:0.8;" id="realtime-last-update">
+                        연결됨
+                    </div>
+                `;
+                statusIndicator.style.borderLeft = '4px solid #4caf50';
+                
+                // 펄스 애니메이션 추가
+                if (!document.getElementById('realtime-pulse-style')) {
+                    const style = document.createElement('style');
+                    style.id = 'realtime-pulse-style';
+                    style.textContent = `
+                        @keyframes pulse {
+                            0%, 100% { opacity: 1; }
+                            50% { opacity: 0.5; }
+                        }
+                    `;
+                    document.head.appendChild(style);
+                }
+            } else {
+                statusIndicator.innerHTML = `
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <span style="display:inline-block;width:10px;height:10px;background:#f44336;border-radius:50%;"></span>
+                        <span>⚠️ 실시간 동기화 중단</span>
+                    </div>
+                    <div style="margin-top:5px;font-size:10px;opacity:0.8;">
+                        ${errorMessage || '연결 오류'}
+                    </div>
+                `;
+                statusIndicator.style.borderLeft = '4px solid #f44336';
+            }
+        }
+        
+        // 실시간 연결 상태 주기적 확인
+        function startRealtimeStatusCheck() {
+            // 기존 인터벌이 있으면 제거
+            if (realtimeStatusCheckInterval) {
+                clearInterval(realtimeStatusCheckInterval);
+            }
+            
+            // 5초마다 연결 상태 확인
+            realtimeStatusCheckInterval = setInterval(() => {
+                if (realtimeUnsubscribe) {
+                    // 리스너가 활성화되어 있으면 연결 상태 업데이트
+                    const statusIndicator = document.getElementById('realtime-status-indicator');
+                    const lastUpdateEl = document.getElementById('realtime-last-update');
+                    
+                    if (statusIndicator && lastUpdateEl) {
+                        if (lastRealtimeUpdateTime) {
+                            const timeSinceUpdate = Math.floor((Date.now() - lastRealtimeUpdateTime) / 1000);
+                            if (timeSinceUpdate < 60) {
+                                lastUpdateEl.textContent = `${timeSinceUpdate}초 전 업데이트`;
+                            } else {
+                                const minutes = Math.floor(timeSinceUpdate / 60);
+                                lastUpdateEl.textContent = `${minutes}분 전 업데이트`;
+                            }
+                        } else {
+                            lastUpdateEl.textContent = '연결됨 (대기 중)';
+                        }
+                    }
+                } else {
+                    // 리스너가 없으면 연결 중단 상태 표시 (로그인된 경우에만)
+                    if (initFirebase() && firebaseAuth.currentUser && !firebaseAuth.currentUser.isAnonymous) {
+                        updateRealtimeConnectionStatus(false, '리스너 미설정');
+                    }
+                }
+            }, 5000);
+        }
+        
+        function stopRealtimeStatusCheck() {
+            if (realtimeStatusCheckInterval) {
+                clearInterval(realtimeStatusCheckInterval);
+                realtimeStatusCheckInterval = null;
+            }
+            
+            const statusIndicator = document.getElementById('realtime-status-indicator');
+            if (statusIndicator) {
+                statusIndicator.remove();
+            }
+        }
+        
+        async function setupFirebaseRealtimeListener() {
+            console.log('🔍 setupFirebaseRealtimeListener 호출됨');
+            
+            if (!initFirebase()) {
+                console.error('❌ Firebase가 초기화되지 않았습니다.');
+                updateRealtimeConnectionStatus(false, 'Firebase 미초기화');
+                return;
+            }
+            
+            if (!firebaseAuth.currentUser) {
+                console.warn('⚠️ 로그인된 사용자가 없습니다. 실시간 동기화를 시작할 수 없습니다.');
+                console.log('🔒 [가드] 인증 확인 실패 - 로그인 페이지로 이동하세요.');
+                // 로그인 전에는 상태 표시기를 숨김
+                const statusIndicator = document.getElementById('realtime-status-indicator');
+                if (statusIndicator) {
+                    statusIndicator.style.display = 'none';
+                }
+                // 로그인 모달 표시
+                if (typeof showLoginModal === 'function') {
+                    showLoginModal();
+                }
+                return;
+            }
+            
+            if (firebaseAuth.currentUser.isAnonymous) {
+                console.warn('⚠️ 익명 사용자는 실시간 동기화를 사용할 수 없습니다.');
+                updateRealtimeConnectionStatus(false, '익명 사용자');
+                return;
+            }
+            
+            // 🔒 [가드] 멤버 확인 - projects/{projectId}/members/{uid} 존재 여부 확인
+            console.log('🔒 [가드] 프로젝트 멤버 확인 중...');
+            console.log('   프로젝트 ID:', PROJECT_ID);
+            console.log('   사용자 UID:', firebaseAuth.currentUser.uid);
+            
+            const memberRoleData = await loadUserRoleFromFirebase();
+            
+            if (!memberRoleData) {
+                console.error('❌ [가드] 프로젝트 멤버가 아닙니다. 접근이 차단됩니다.');
+                console.log('🔒 [가드] Firestore 경로: projects/' + PROJECT_ID + '/members/' + firebaseAuth.currentUser.uid);
+                console.log('🔒 [가드] 해당 경로에 멤버 문서가 존재하지 않습니다.');
+                
+                // 실시간 리스너 해제
+                if (realtimeUnsubscribe) {
+                    realtimeUnsubscribe();
+                    realtimeUnsubscribe = null;
+                }
+                
+                // 에러 메시지 표시
+                const errorMessage = `프로젝트 ${PROJECT_ID}에 대한 접근 권한이 없습니다. 관리자에게 문의하세요.`;
+                showToast(errorMessage, 'error');
+                updateRealtimeConnectionStatus(false, '접근 권한 없음');
+                
+                        // 접근 차단 UI 표시
+                        const container = document.querySelector('.container');
+                        if (container) {
+                            // 디버그 모드에서만 UID/경로 표시
+                            const debugInfo = DEBUG_MODE ? `
+                                <div style="background:#f5f5f5;padding:15px;border-radius:8px;margin-bottom:20px;text-align:left;">
+                                    <strong>확인 사항 (디버그 모드):</strong><br>
+                                    • 사용자 UID: <code style="background:#fff;padding:2px 6px;border-radius:4px;">${firebaseAuth.currentUser.uid}</code><br>
+                                    • 프로젝트 ID: <code style="background:#fff;padding:2px 6px;border-radius:4px;">${PROJECT_ID}</code><br>
+                                    • Firestore 경로: <code style="background:#fff;padding:2px 6px;border-radius:4px;">projects/${PROJECT_ID}/members/${firebaseAuth.currentUser.uid}</code>
+                                </div>
+                            ` : '';
+                            
+                            container.innerHTML = `
+                                <div style="max-width:600px;margin:100px auto;padding:40px;background:white;border-radius:12px;box-shadow:0 4px 15px rgba(0,0,0,0.1);text-align:center;">
+                                    <h2 style="color:#d32f2f;margin-bottom:20px;">🚫 접근 권한 없음</h2>
+                                    <p style="color:#666;margin-bottom:30px;line-height:1.6;">
+                                        프로젝트 <strong>${PROJECT_ID}</strong>에 대한 접근 권한이 없습니다.<br>
+                                        관리자에게 멤버 추가를 요청하세요.
+                                    </p>
+                                    ${debugInfo}
+                                    <div style="display:flex;gap:10px;justify-content:center;margin-top:30px;">
+                                        <button onclick="window.location.href='index.html'" style="padding:12px 24px;background:#2c4a7c;color:white;border:none;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600;">
+                                            홈으로 돌아가기
+                                        </button>
+                                        <button onclick="window.location.href='../auth/login.html'" style="padding:12px 24px;background:#4caf50;color:white;border:none;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600;">
+                                            로그인
+                                        </button>
+                                    </div>
+                                    <div style="margin-top:20px;padding:15px;background:#f5f5f5;border-radius:8px;text-align:left;font-size:12px;color:#666;">
+                                        <strong>💡 콘솔에서 로그인하기:</strong><br>
+                                        <code style="background:#fff;padding:4px 8px;border-radius:4px;display:block;margin-top:8px;white-space:pre-wrap;word-break:break-all;">
+firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
+  .then(() => location.reload())
+                                        </code>
+                                    </div>
+                                </div>
+                            `;
+                        }
+                
+                return;
+            }
+            
+            console.log('✅ [가드] 멤버 확인 완료:', memberRoleData.role, '허용 공정:', memberRoleData.allowedProcesses);
+            
+            // 기존 리스너가 있으면 해제
+            if (realtimeUnsubscribe) {
+                console.log('🔄 기존 실시간 리스너 해제');
+                realtimeUnsubscribe();
+                realtimeUnsubscribe = null;
+            }
+            
+            try {
+                const projectRef = firebaseDb.collection('projects').doc(PROJECT_ID);
+                
+                console.log('🔄 Firebase 실시간 동기화 시작:', PROJECT_ID);
+                console.log('👤 현재 사용자:', firebaseAuth.currentUser.uid, firebaseAuth.currentUser.email);
+                console.log('✅ [가드] 멤버 확인 완료 후 onSnapshot 시작');
+                
+                // onSnapshot으로 실시간 데이터 감지
+                realtimeUnsubscribe = projectRef.onSnapshot(
+                    (docSnapshot) => {
+                        // 실시간 연결 활성 상태 표시 (데이터 수신 시마다)
+                        lastRealtimeUpdateTime = Date.now();
+                        updateRealtimeConnectionStatus(true);
+                        console.log('📡 Firebase 실시간 데이터 수신:', PROJECT_ID, 'exists:', docSnapshot.exists);
+                        
+                        // 첫 데이터 수신 시 상태 체크 시작
+                        if (!realtimeStatusCheckInterval) {
+                            startRealtimeStatusCheck();
+                        }
+                        
+                        // 역할 확인 (클라이언트 측 보안)
+                        if (!userRole) {
+                            console.warn('⚠️ 사용자 역할이 설정되지 않았습니다. 데이터 접근을 제한합니다.');
+                            return;
+                        }
+                        
+                        if (docSnapshot.exists) {
+                            const projectData = docSnapshot.data();
+                            console.log('📡 Firebase 실시간 데이터 수신:', PROJECT_ID);
+                            
+                            // 현재 사용자가 업데이트한 경우는 무시 (자신의 변경사항)
+                            const updatedBy = projectData.updatedBy;
+                            const currentUser = firebaseAuth.currentUser;
+                            
+                            if (updatedBy && currentUser && updatedBy === currentUser.uid) {
+                                console.log('ℹ️ 자신이 업데이트한 데이터이므로 UI 업데이트 건너뜀');
+                                return;
+                            }
+                            
+                            // 데이터 업데이트
+                            const newColumnData = projectData.columnData || {};
+                            const newDailyData = projectData.dailyData || {};
+                            const newColumnCoordinates = projectData.columnCoordinates || {};
+                            const newDeliveryConfirmed = projectData.deliveryConfirmed || {};
+                            const newActualDeliveryDate = projectData.actualDeliveryDate || {};
+                            const newTransportPlan = projectData.transportPlan || {};
+                            
+                            // 데이터가 변경되었는지 확인
+                            const dataChanged = 
+                                JSON.stringify(columnData) !== JSON.stringify(newColumnData) ||
+                                JSON.stringify(dailyData) !== JSON.stringify(newDailyData) ||
+                                JSON.stringify(columnCoordinates) !== JSON.stringify(newColumnCoordinates) ||
+                                JSON.stringify(deliveryConfirmed) !== JSON.stringify(newDeliveryConfirmed) ||
+                                JSON.stringify(actualDeliveryDate) !== JSON.stringify(newActualDeliveryDate) ||
+                                JSON.stringify(transportPlan) !== JSON.stringify(newTransportPlan);
+                            
+                            if (dataChanged) {
+                                console.log('🔄 실시간 데이터 변경 감지 - UI 업데이트 중...');
+                                
+                                // 데이터 업데이트
+                                columnData = newColumnData;
+                                dailyData = newDailyData;
+                                columnCoordinates = newColumnCoordinates;
+                                deliveryConfirmed = newDeliveryConfirmed;
+                                actualDeliveryDate = newActualDeliveryDate;
+                                transportPlan = newTransportPlan;
+                                
+                                // localStorage에도 동기화 (백업)
+                                localStorage.setItem(kcolKey('steelColumnData'), JSON.stringify(columnData));
+                                localStorage.setItem(kcolKey('steelColumnDaily'), JSON.stringify(dailyData));
+                                localStorage.setItem(kcolKey('columnCoordinates'), JSON.stringify(columnCoordinates));
+                                localStorage.setItem(kcolKey('deliveryConfirmed'), JSON.stringify(deliveryConfirmed));
+                                localStorage.setItem(kcolKey('actualDeliveryDate'), JSON.stringify(actualDeliveryDate));
+                                localStorage.setItem(kcolKey('transportPlan'), JSON.stringify(transportPlan));
+                                
+                                // UI 업데이트
+                                syncTransportToDailyData(false);
+                                renderColumnGrid('column-grid-overview');
+                                renderColumnGrid('column-grid-input');
+                                renderGanttChart();
+                                updateProgressBars();
+                                
+                                // 실시간 업데이트 알림
+                                showToast('🔄 실시간 데이터 업데이트됨', 'info');
+                                
+                                console.log('✅ 실시간 데이터 업데이트 완료');
+                            }
+                        } else {
+                            console.log('ℹ️ Firestore 문서가 아직 생성되지 않았습니다.');
+                        }
+                    },
+                    (error) => {
+                        console.error('❌ Firebase 실시간 동기화 오류:', error);
+                        
+                        // 실시간 연결 오류 상태 표시
+                        updateRealtimeConnectionStatus(false, error.message);
+                        
+                        if (error.code === 'permission-denied') {
+                            console.error('❌ Firestore 권한 오류: 로그인 상태와 권한을 확인하세요.');
+                            showToast('⚠️ 실시간 동기화 권한 오류', 'error');
+                        } else {
+                            showToast('⚠️ 실시간 동기화 오류: ' + error.message, 'error');
+                        }
+                    }
+                );
+                
+                console.log('✅ Firebase 실시간 동기화 리스너 설정 완료');
+                console.log('💡 실시간 동기화가 활성화되었습니다. 다른 사용자의 변경사항이 자동으로 반영됩니다.');
+                
+                // 리스너 설정 성공 시 연결 상태 표시 (초기 상태)
+                updateRealtimeConnectionStatus(true);
+                
+                // 첫 데이터 수신을 기다리지 않고 상태 체크 시작
+                setTimeout(() => {
+                    if (realtimeUnsubscribe && !realtimeStatusCheckInterval) {
+                        startRealtimeStatusCheck();
+                    }
+                }, 1000);
+            } catch (error) {
+                console.error('❌ Firebase 실시간 동기화 설정 실패:', error);
+                console.error('❌ 오류 상세:', error.code, error.message);
+                console.error('❌ 스택:', error.stack);
+                updateRealtimeConnectionStatus(false, error.message || '설정 실패');
+                showToast('⚠️ 실시간 동기화 설정 실패: ' + error.message, 'error');
             }
         }
         
@@ -1730,52 +2160,160 @@
             
             firebaseAuth.onAuthStateChanged(async (user) => {
                 if (user) {
-                    console.log('✅ Firebase 사용자 로그인:', user.uid);
-                    const roleData = await loadUserRoleFromFirebase();
+                    // 익명 사용자 즉시 차단 및 로그아웃
+                    if (user.isAnonymous) {
+                        console.warn('⚠️ 익명 로그인으로는 접근할 수 없습니다. 로그아웃합니다.');
+                        showToast('익명 로그인으로는 접근할 수 없습니다. Email/Password로 로그인하세요.', 'error');
+                        await firebaseAuth.signOut();
+                        return;
+                    }
+                    
+                    console.log('✅ Firebase 사용자 로그인:', user.uid, user.email || '');
+                    
+                    // 역할 로드 (재시도 로직 포함)
+                    let roleData = null;
+                    let retries = 3;
+                    while (!roleData && retries > 0) {
+                        roleData = await loadUserRoleFromFirebase();
+                        if (!roleData) {
+                            retries--;
+                            if (retries > 0) {
+                                console.log(`💡 역할 로드 재시도 중... (${3 - retries}/3)`);
+                                await new Promise(resolve => setTimeout(resolve, 1000));
+                            }
+                        }
+                    }
+                    
                     if (roleData) {
-                        userRole = roleData.role;
-                        allowedProcesses = roleData.allowedProcesses;
-                        console.log('✅ 역할 적용:', userRole, '허용 공정:', allowedProcesses);
+                        // allowedProcesses를 숫자 배열로 정규화 (타입 일치 보장)
+                        const rawAllowedProcesses = roleData.allowedProcesses || [];
+                        const normalizedAllowedProcesses = Array.isArray(rawAllowedProcesses) 
+                            ? rawAllowedProcesses.map(p => parseInt(p)).filter(p => !isNaN(p))
+                            : [];
+                        
+                        // setUserRole()을 호출하여 역할 설정 (localStorage 저장 및 UI 업데이트 포함)
+                        if (typeof setUserRole === 'function') {
+                            setUserRole(roleData.role, normalizedAllowedProcesses);
+                        } else {
+                            // setUserRole이 아직 정의되지 않은 경우 직접 할당
+                            userRole = roleData.role;
+                            allowedProcesses = normalizedAllowedProcesses;
+                            applyRoleBasedUI();
+                        }
+                        
+                        console.log('✅ [가드] 역할 적용:', roleData.role, '허용 공정:', normalizedAllowedProcesses);
+                        console.log('✅ [가드] 멤버 확인 완료 - 프로젝트 접근 허용');
                         
                         // 역할이 제대로 로드되었는지 확인
-                        if (userRole === 'viewer') {
+                        if (roleData.role === 'viewer') {
                             console.warn('⚠️ 역할이 viewer로 로드되었습니다.');
-                            console.log('💡 Firestore 문서 확인: user_roles/' + user.uid);
+                            console.log('💡 Firestore 문서 확인: projects/' + PROJECT_ID + '/members/' + user.uid);
                             console.log('💡 Firestore 문서 데이터:', roleData);
                         }
                         
-                        applyRoleBasedUI();
+                        // ✅ [가드] 멤버 확인 완료 후에만 실시간 동기화 시작
+                        console.log('✅ [가드] 멤버 확인 완료 - setupFirebaseRealtimeListener() 호출');
+                        setupFirebaseRealtimeListener();
                     } else {
-                        console.warn('⚠️ Firestore에서 역할을 로드하지 못했습니다.');
-                        console.log('💡 Firestore 경로: user_roles/' + user.uid);
-                        console.log('💡 역할 설정이 필요합니다.');
+                        // 🔒 [가드] Firestore에 멤버 문서가 없는 경우 접근 차단
+                        console.error('❌ [가드] 프로젝트 멤버가 아닙니다. 접근이 차단됩니다.');
+                        console.log('🔒 [가드] Firestore 경로: projects/' + PROJECT_ID + '/members/' + user.uid);
+                        console.log('🔒 [가드] 해당 경로에 멤버 문서가 존재하지 않습니다.');
+                        console.log('🔒 [가드] /projects?error=no_access 시나리오 (정적 HTML이므로 접근 차단 UI 표시)');
                         
-                        // localStorage에서 로드 시도
-                        userRole = localStorage.getItem('kcol:userRole') || 'viewer';
-                        allowedProcesses = JSON.parse(localStorage.getItem('kcol:allowedProcesses') || '[]');
-                        console.log('💡 localStorage에서 역할 로드:', userRole);
-                        applyRoleBasedUI();
+                        // 접근 차단 UI 표시
+                        const container = document.querySelector('.container');
+                        if (container) {
+                            // 디버그 모드에서만 UID/경로 표시
+                            const debugInfo = DEBUG_MODE ? `
+                                <div style="background:#f5f5f5;padding:15px;border-radius:8px;margin-bottom:20px;text-align:left;">
+                                    <strong>확인 사항 (디버그 모드):</strong><br>
+                                    • 사용자 UID: <code style="background:#fff;padding:2px 6px;border-radius:4px;">${user.uid}</code><br>
+                                    • 프로젝트 ID: <code style="background:#fff;padding:2px 6px;border-radius:4px;">${PROJECT_ID}</code><br>
+                                    • Firestore 경로: <code style="background:#fff;padding:2px 6px;border-radius:4px;">projects/${PROJECT_ID}/members/${user.uid}</code>
+                                </div>
+                            ` : '';
+                            
+                            container.innerHTML = `
+                                <div style="max-width:600px;margin:100px auto;padding:40px;background:white;border-radius:12px;box-shadow:0 4px 15px rgba(0,0,0,0.1);text-align:center;">
+                                    <h2 style="color:#d32f2f;margin-bottom:20px;">🚫 접근 권한 없음</h2>
+                                    <p style="color:#666;margin-bottom:30px;line-height:1.6;">
+                                        프로젝트 <strong>${PROJECT_ID}</strong>에 대한 접근 권한이 없습니다.<br>
+                                        관리자에게 멤버 추가를 요청하세요.
+                                    </p>
+                                    ${debugInfo}
+                                    <div style="display:flex;gap:10px;justify-content:center;margin-top:30px;">
+                                        <button onclick="window.location.href='index.html'" style="padding:12px 24px;background:#2c4a7c;color:white;border:none;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600;">
+                                            홈으로 돌아가기
+                                        </button>
+                                        <button onclick="window.location.href='../auth/login.html'" style="padding:12px 24px;background:#4caf50;color:white;border:none;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600;">
+                                            로그인
+                                        </button>
+                                    </div>
+                                    <div style="margin-top:20px;padding:15px;background:#f5f5f5;border-radius:8px;text-align:left;font-size:12px;color:#666;">
+                                        <strong>💡 콘솔에서 로그인하기:</strong><br>
+                                        <code style="background:#fff;padding:4px 8px;border-radius:4px;display:block;margin-top:8px;white-space:pre-wrap;word-break:break-all;">
+firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
+  .then(() => location.reload())
+                                        </code>
+                                    </div>
+                                </div>
+                            `;
+                        }
+                        
+                        showToast('프로젝트 접근 권한이 없습니다. 관리자에게 문의하세요.', 'error');
+                        return;
                     }
                     
                     // Firebase 연결 상태 업데이트
                     const modeEl = document.getElementById('current-mode');
                     if (modeEl) {
-                        modeEl.textContent = '🟢 Firebase 연결됨 (Firestore 저장)';
+                        modeEl.textContent = '🟢 Firebase 실시간 연결됨';
                         modeEl.style.color = '#4caf50';
                     }
-                    showConnectionStatus('🟢 Firebase 연결됨 - Firestore에 저장됩니다');
+                    showConnectionStatus('🟢 Firebase 실시간 연결됨 - 실시간 동기화 중');
                 } else {
-                    console.log('ℹ️ Firebase 사용자 로그아웃');
-                    // localStorage 기반으로 fallback
-                    userRole = localStorage.getItem('kcol:userRole') || 'viewer';
-                    allowedProcesses = JSON.parse(localStorage.getItem('kcol:allowedProcesses') || '[]');
+                    // 🔒 [가드] 로그인하지 않은 사용자 차단
+                    console.warn('⚠️ [가드] 로그인하지 않은 사용자는 접근할 수 없습니다.');
+                    console.log('🔒 [가드] /login 시나리오 (정적 HTML이므로 로그인 모달 표시)');
+                    console.log('💡 Email/Password로 로그인하세요.');
+                    
+                    // 실시간 리스너 해제
+                    if (realtimeUnsubscribe) {
+                        console.log('🔄 로그아웃 - 실시간 리스너 해제');
+                        realtimeUnsubscribe();
+                        realtimeUnsubscribe = null;
+                    }
+                    
+                    // 실시간 상태 확인 중지
+                    stopRealtimeStatusCheck();
+                    updateRealtimeConnectionStatus(false, '로그아웃됨');
+                    
+                    // UI 비활성화
+                    userRole = null;
+                    allowedProcesses = [];
                     applyRoleBasedUI();
                     
-                    // 로컬 저장 모드로 업데이트
+                    // 로그인 모달 표시
+                    showLoginModal();
+                    
+                    // 로컬 저장 모드로 업데이트 (접근 불가 상태)
                     const modeEl = document.getElementById('current-mode');
                     if (modeEl) {
-                        modeEl.textContent = '🟡 로컬 저장 모드 (같은 브라우저에서만 공유)';
-                        modeEl.style.color = '#f57c00';
+                        modeEl.textContent = '🔴 로그인 필요 (Email/Password 로그인 필수)';
+                        modeEl.style.color = '#f44336';
+                    }
+                    
+                    // 모든 입력 필드 비활성화
+                    const workDateInput = document.getElementById('work-date');
+                    const columnGridInput = document.getElementById('column-grid-input');
+                    if (workDateInput) {
+                        workDateInput.disabled = true;
+                        workDateInput.style.opacity = '0.5';
+                    }
+                    if (columnGridInput) {
+                        columnGridInput.style.pointerEvents = 'none';
+                        columnGridInput.style.opacity = '0.5';
                     }
                 }
             });
@@ -1919,65 +2457,11 @@
         // Firebase Admin 설정 함수들
         // ============================================================
         
-        // Firebase Anonymous 로그인 (Admin 설정용)
-        async function loginAsAdminAnonymous() {
-            if (!initFirebase()) {
-                console.error('❌ Firebase가 초기화되지 않았습니다.');
-                return null;
-            }
-            
-            try {
-                const userCredential = await firebaseAuth.signInAnonymously();
-                const user = userCredential.user;
-                console.log('✅ Anonymous 로그인 완료:', user.uid);
-                
-                // Firestore에 admin 역할 설정
-                await setAdminRoleInFirestore(user.uid);
-                
-                return user.uid;
-            } catch (error) {
-                console.error('❌ Anonymous 로그인 실패:', error);
-                alert('로그인 실패: ' + error.message);
-                return null;
-            }
-        }
+        // 익명 로그인은 보안상 절대 사용하지 않습니다. (Email/Password만 허용)
         
-        // Firebase Email/Password 로그인
-        async function loginAsAdmin(email, password) {
-            if (!initFirebase()) {
-                console.error('❌ Firebase가 초기화되지 않았습니다.');
-                return null;
-            }
-            
-            if (!email || !password) {
-                console.error('❌ 이메일과 비밀번호를 입력해주세요.');
-                console.log('사용법: loginAsAdmin("email@example.com", "password")');
-                return null;
-            }
-            
-            try {
-                const userCredential = await firebaseAuth.signInWithEmailAndPassword(email, password);
-                const user = userCredential.user;
-                console.log('✅ 이메일 로그인 완료:', user.uid);
-                
-                // Firestore에서 역할 확인
-                const roleData = await loadUserRoleFromFirebase();
-                if (roleData) {
-                    console.log('✅ 역할 확인 완료:', roleData.role);
-                    userRole = roleData.role;
-                    allowedProcesses = roleData.allowedProcesses;
-                    applyRoleBasedUI();
-                } else {
-                    console.log('ℹ️ Firestore에 역할이 없습니다. 설정이 필요합니다.');
-                }
-                
-                return user.uid;
-            } catch (error) {
-                console.error('❌ 이메일 로그인 실패:', error);
-                alert('로그인 실패: ' + error.message);
-                return null;
-            }
-        }
+        // Firebase Email/Password 로그인은 직접 사용:
+        // firebase.auth().signInWithEmailAndPassword(email, password)
+        //   .then(() => location.reload())
         
         // Firestore에 Admin 역할 설정
         async function setAdminRoleInFirestore(uid) {
@@ -1992,13 +2476,13 @@
             }
             
             try {
-                await firebaseDb.collection('user_roles').doc(uid).set({
-                    role: 'admin',
-                    allowedProcesses: [],
-                    projectId: PROJECT_ID,
-                    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                }, { merge: true });
+                await firebaseDb.collection('projects').doc(PROJECT_ID)
+                    .collection('members').doc(uid).set({
+                        role: 'admin',
+                        allowedProcesses: [],
+                        updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    }, { merge: true });
                 
                 console.log('✅ Firestore에 Admin 역할 설정 완료:', uid);
                 
@@ -2028,6 +2512,51 @@
                 return false;
             }
             
+            const currentUser = firebaseAuth.currentUser;
+            if (!currentUser) {
+                throw new Error('로그인된 사용자가 없습니다. Editor 역할을 설정하려면 먼저 로그인하세요.');
+            }
+            
+            // Admin 권한 체크 (클라이언트 측 확인)
+            let isCurrentUserAdmin = false;
+            try {
+                const currentUserRoleDoc = await firebaseDb.collection('projects').doc(PROJECT_ID)
+                    .collection('members').doc(currentUser.uid).get();
+                if (currentUserRoleDoc.exists) {
+                    const roleData = currentUserRoleDoc.data();
+                    isCurrentUserAdmin = roleData.role === 'admin';
+                    console.log('🔍 현재 사용자 역할 확인:', {
+                        uid: currentUser.uid,
+                        role: roleData.role,
+                        isAdmin: isCurrentUserAdmin
+                    });
+                } else {
+                    console.warn('⚠️ 현재 사용자의 역할 문서가 Firestore에 없습니다.');
+                }
+            } catch (roleCheckError) {
+                console.error('❌ 현재 사용자 역할 확인 실패 (Editor 설정):', roleCheckError);
+                console.error('   오류 코드:', roleCheckError.code);
+                console.error('   오류 메시지:', roleCheckError.message);
+                // 역할 확인 실패 시 userRole 변수 확인 (이미 로드된 경우)
+                if (userRole === 'admin') {
+                    console.log('💡 userRole 변수에서 Admin 확인됨');
+                    isCurrentUserAdmin = true;
+                }
+            }
+            
+            if (!isCurrentUserAdmin) {
+                console.error('❌ Editor 역할을 설정할 권한이 없습니다.');
+                const loggedInUser = firebaseAuth.currentUser;
+                if (loggedInUser) {
+                    console.log('   현재 사용자 UID:', loggedInUser.uid);
+                }
+                console.log('   현재 역할:', userRole);
+                console.log('💡 Editor 역할을 설정하려면 Admin으로 로그인하거나 Admin에게 요청하세요.');
+                throw new Error('Admin 권한이 필요합니다. Admin으로 로그인하거나 Admin에게 Editor 설정을 요청하세요.');
+            }
+            
+            console.log('✅ Admin 권한 확인 완료 - Editor 역할 설정 진행');
+            
             if (!uid) {
                 console.error('❌ UID를 제공해주세요.');
                 return false;
@@ -2043,19 +2572,36 @@
                 const roleData = {
                     role: 'editor',
                     allowedProcesses: processesArray,
-                    projectId: PROJECT_ID,
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
                     createdAt: firebase.firestore.FieldValue.serverTimestamp()
                 };
                 
                 console.log('📝 Firestore에 Editor 역할 저장 중...');
+                console.log('   프로젝트:', PROJECT_ID);
                 console.log('   UID:', uid);
                 console.log('   역할 데이터:', roleData);
                 
-                await firebaseDb.collection('user_roles').doc(uid).set(roleData, { merge: true });
+                // 현재 사용자 정보 로그 (안전하게)
+                const loggedInUser = firebaseAuth.currentUser;
+                if (loggedInUser) {
+                    console.log('   현재 사용자 UID:', loggedInUser.uid);
+                }
+                console.log('   현재 사용자 역할:', userRole);
+                
+                // 문서 존재 여부 확인 후 set 또는 update 사용
+                const projectRef = firebaseDb.collection('projects').doc(PROJECT_ID)
+                    .collection('members').doc(uid);
+                const existingDoc = await projectRef.get();
+                if (existingDoc.exists) {
+                    console.log('📝 기존 문서 업데이트 중...');
+                    await projectRef.update(roleData);
+                } else {
+                    console.log('📝 새 문서 생성 중...');
+                    await projectRef.set(roleData);
+                }
                 
                 // 저장 확인
-                const savedDoc = await firebaseDb.collection('user_roles').doc(uid).get();
+                const savedDoc = await projectRef.get();
                 if (savedDoc.exists) {
                     const savedData = savedDoc.data();
                     console.log('✅ Firestore에 Editor 역할 설정 완료');
@@ -2102,13 +2648,13 @@
             }
             
             try {
-                await firebaseDb.collection('user_roles').doc(uid).set({
-                    role: 'viewer',
-                    allowedProcesses: [],
-                    projectId: PROJECT_ID,
-                    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                }, { merge: true });
+                await firebaseDb.collection('projects').doc(PROJECT_ID)
+                    .collection('members').doc(uid).set({
+                        role: 'viewer',
+                        allowedProcesses: [],
+                        updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    }, { merge: true });
                 
                 console.log('✅ Firestore에 Viewer 역할 설정 완료:', uid);
                 
@@ -2221,9 +2767,29 @@
             return success;
         }
         
-        // 기본 Admin UID를 Firestore에 자동 설정 (페이지 로드 시)
+        // 기본 Admin UID를 Firestore에 자동 설정 (Admin만 실행)
         async function ensureDefaultAdminInFirestore() {
             if (!initFirebase()) {
+                return;
+            }
+            
+            // 로그인하지 않은 경우 실행하지 않음
+            const currentUser = firebaseAuth.currentUser;
+            if (!currentUser || currentUser.isAnonymous) {
+                console.log('ℹ️ 로그인하지 않은 사용자는 기본 Admin 설정을 건너뜁니다.');
+                return;
+            }
+            
+            // 현재 사용자가 Admin인지 확인
+            try {
+                const currentUserRoleDoc = await firebaseDb.collection('projects').doc(PROJECT_ID)
+                    .collection('members').doc(currentUser.uid).get();
+                if (!currentUserRoleDoc.exists || currentUserRoleDoc.data().role !== 'admin') {
+                    console.log('ℹ️ Admin이 아닌 사용자는 기본 Admin 설정을 건너뜁니다.');
+                    return;
+                }
+            } catch (error) {
+                console.warn('⚠️ 현재 사용자 역할 확인 실패 (기본 Admin 설정 건너뜀):', error);
                 return;
             }
             
@@ -2231,7 +2797,8 @@
             
             try {
                 // Firestore에서 해당 UID의 역할 확인
-                const userRoleDoc = await firebaseDb.collection('user_roles').doc(defaultAdminUID).get();
+                const userRoleDoc = await firebaseDb.collection('projects').doc(PROJECT_ID)
+                    .collection('members').doc(defaultAdminUID).get();
                 
                 if (!userRoleDoc.exists || userRoleDoc.data().role !== 'admin') {
                     console.log('🔧 기본 Admin UID를 Firestore에 설정 중...');
@@ -2241,7 +2808,12 @@
                     console.log('ℹ️ 기본 Admin UID가 이미 Firestore에 설정되어 있습니다.');
                 }
             } catch (error) {
-                console.warn('⚠️ 기본 Admin UID 설정 확인 실패:', error);
+                // 권한 오류는 조용히 처리 (Admin이 아닌 경우 발생할 수 있음)
+                if (error.code === 'permission-denied') {
+                    console.warn('⚠️ 기본 Admin UID 설정 권한 오류 (Admin이 아닌 경우 정상):', error.message);
+                } else {
+                    console.warn('⚠️ 기본 Admin UID 설정 확인 실패:', error);
+                }
             }
         }
         
@@ -2256,8 +2828,8 @@
             if (!user) {
                 console.error('❌ 로그인된 사용자가 없습니다.');
                 console.log('💡 먼저 로그인하세요:');
-                console.log('   - Anonymous: loginAsAdminAnonymous()');
-                console.log('   - Email: loginAsAdmin("email@example.com", "password")');
+                console.log('   - 익명 로그인: (금지됨)');
+                console.log('   - Email: firebase.auth().signInWithEmailAndPassword("email@example.com", "password").then(() => location.reload())');
                 return false;
             }
             
@@ -2296,6 +2868,7 @@
                 console.log('   UID:', user.uid);
                 console.log('   Email:', user.email || '(Anonymous)');
                 console.log('   Provider:', user.providerData[0]?.providerId || 'anonymous');
+                console.log('   Is Anonymous:', user.isAnonymous);
                 
                 // Firestore 역할 확인
                 loadUserRoleFromFirebase().then(roleData => {
@@ -2309,8 +2882,96 @@
             } else {
                 console.log('ℹ️ 로그인된 사용자가 없습니다.');
                 console.log('💡 로그인 방법:');
-                console.log('   - Anonymous: loginAsAdminAnonymous()');
-                console.log('   - Email: loginAsAdmin("email@example.com", "password")');
+                console.log('   - Email: firebase.auth().signInWithEmailAndPassword("email@example.com", "password").then(() => location.reload())');
+            }
+        }
+        
+        // Admin 권한 검증 함수
+        async function verifyAdminRole() {
+            console.log('🔍 Admin 권한 검증 시작...');
+            
+            if (!initFirebase()) {
+                console.error('❌ Firebase가 초기화되지 않았습니다.');
+                return false;
+            }
+            
+            const user = firebaseAuth.currentUser;
+            if (!user) {
+                console.error('❌ 로그인된 사용자가 없습니다.');
+                return false;
+            }
+            
+            if (user.isAnonymous) {
+                console.error('❌ 익명 사용자는 Admin 권한을 가질 수 없습니다.');
+                return false;
+            }
+            
+            try {
+                const roleDoc = await firebaseDb.collection('projects').doc(PROJECT_ID)
+                    .collection('members').doc(user.uid).get();
+                
+                if (!roleDoc.exists) {
+                    console.warn('⚠️ Firestore에 역할 문서가 없습니다.');
+                    console.log('💡 Firestore 경로: projects/' + PROJECT_ID + '/members/' + user.uid);
+                    return false;
+                }
+                
+                const roleData = roleDoc.data();
+                const isAdmin = roleData.role === 'admin';
+                
+                console.log('📋 역할 정보:');
+                console.log('   UID:', user.uid);
+                console.log('   Email:', user.email);
+                console.log('   Role:', roleData.role);
+                console.log('   Is Admin:', isAdmin);
+                console.log('   Allowed Processes:', roleData.allowedProcesses || []);
+                console.log('   Project ID:', roleData.projectId || 'N/A');
+                
+                if (isAdmin) {
+                    console.log('✅ Admin 권한 확인됨!');
+                    console.log('💡 Admin 권한으로 다음 작업이 가능합니다:');
+                    console.log('   - 모든 공정 입력/삭제');
+                    console.log('   - 운송차수계획 입력');
+                    console.log('   - Editor/Viewer 역할 설정');
+                    return true;
+                } else {
+                    console.warn('⚠️ Admin 권한이 없습니다. 현재 역할:', roleData.role);
+                    return false;
+                }
+            } catch (error) {
+                console.error('❌ Admin 권한 검증 실패:', error);
+                return false;
+            }
+        }
+        
+        // 로그인 모달 표시/숨김 함수
+        function showLoginModal() {
+            const modal = document.getElementById('login-modal');
+            if (modal) {
+                modal.style.display = 'flex';
+                modal.style.flexDirection = 'column';
+                modal.style.alignItems = 'center';
+                modal.style.justifyContent = 'center';
+                modal.style.zIndex = '10000';
+                console.log('✅ 로그인 모달 표시');
+                console.log('💡 콘솔에서 직접 로그인하려면: firebase.auth().signInWithEmailAndPassword("email@example.com", "password").then(() => location.reload())');
+                
+                // 이메일 입력 필드에 포커스
+                const emailInput = document.getElementById('modal-login-email');
+                if (emailInput) {
+                    setTimeout(() => emailInput.focus(), 100);
+                }
+            } else {
+                console.error('❌ 로그인 모달 요소를 찾을 수 없습니다.');
+                console.log('💡 콘솔에서 직접 로그인하려면: firebase.auth().signInWithEmailAndPassword("email@example.com", "password").then(() => location.reload())');
+            }
+        }
+        
+        function hideLoginModal() {
+            const modal = document.getElementById('login-modal');
+            if (modal) {
+                modal.style.display = 'none';
+                console.log('✅ 로그인 모달 숨김');
             }
         }
         
@@ -2408,6 +3069,23 @@
             if (!input) {
                 console.error('❌ Admin UID 입력 필드를 찾을 수 없습니다.');
                 showToast('Admin UID 입력 필드를 찾을 수 없습니다.', 'error');
+                return;
+            }
+            
+            // 로그인 체크
+            if (!initFirebase() || !firebaseAuth.currentUser) {
+                showToast('로그인된 사용자가 없습니다. 먼저 로그인하세요.', 'error');
+                alert('로그인된 사용자가 없습니다. 먼저 Email/Password로 로그인하세요.\n\n로그인 페이지로 이동하거나 콘솔에서 Firebase Auth를 직접 사용하세요.');
+                console.error('❌ Admin 설정 오류: 로그인된 사용자가 없습니다. 먼저 Email/Password로 로그인하세요.');
+                console.log('💡 해결 방법:');
+                console.log('   1. 로그인 버튼을 클릭하여 로그인 페이지로 이동하거나');
+                console.log('   2. 브라우저 콘솔(F12)에서 다음 명령어를 입력하세요:');
+                console.log('      firebase.auth().signInWithEmailAndPassword("your-email@example.com", "your-password").then(() => location.reload())');
+                console.log('   3. 로그인 성공 후 다시 Admin 설정을 시도하세요.');
+                if (statusDiv) {
+                    statusDiv.textContent = '❌ 로그인 필요';
+                    statusDiv.style.color = '#ffcdd2';
+                }
                 return;
             }
             
@@ -2776,8 +3454,374 @@
         window.listAdminUIDs = listAdminUIDs;
         window.getCurrentUID = getCurrentUID;
         window.setCurrentUID = setCurrentUID;
-        window.loginAsAdminAnonymous = loginAsAdminAnonymous;
-        window.loginAsAdmin = loginAsAdmin;
+        
+        // Admin에서 Editor 계정 확인 및 테스트 함수
+        async function checkEditorAccount(editorUID) {
+            if (!initFirebase()) {
+                console.error('❌ Firebase가 초기화되지 않았습니다.');
+                return;
+            }
+            
+            if (!editorUID) {
+                console.error('❌ Editor UID를 입력해주세요.');
+                console.log('사용법: checkEditorAccount("editor-uid-here")');
+                return;
+            }
+            
+            console.log('🔍 Editor 계정 확인 중...');
+            console.log('   UID:', editorUID);
+            
+            try {
+                // Firestore에서 역할 확인
+                const roleDoc = await firebaseDb.collection('projects').doc(PROJECT_ID)
+                    .collection('members').doc(editorUID).get();
+                
+                if (roleDoc.exists) {
+                    const roleData = roleDoc.data();
+                    console.log('✅ Firestore 역할 문서 존재');
+                    console.log('📋 역할 데이터:', roleData);
+                    console.log('   role:', roleData.role);
+                    console.log('   allowedProcesses:', roleData.allowedProcesses);
+                    console.log('   projectId:', roleData.projectId || 'N/A');
+                    
+                    if (roleData.role === 'editor') {
+                        console.log('✅ Editor 역할이 올바르게 설정되어 있습니다.');
+                        if (roleData.allowedProcesses && roleData.allowedProcesses.length > 0) {
+                            console.log('✅ 허용 공정:', roleData.allowedProcesses);
+                        } else {
+                            console.warn('⚠️ allowedProcesses가 설정되지 않았습니다.');
+                        }
+                    } else {
+                        console.warn('⚠️ 역할이 editor가 아닙니다. 현재 역할:', roleData.role);
+                    }
+                } else {
+                    console.error('❌ Firestore에 역할 문서가 없습니다.');
+                    console.log('💡 Admin 설정 영역에서 Editor 설정을 다시 시도하세요.');
+                }
+                
+                // Firebase Authentication에서 사용자 확인 (Admin 권한 필요)
+                try {
+                    // 참고: Firebase Admin SDK가 없으므로 직접 확인은 불가능
+                    // 대신 Firestore 문서만 확인
+                    console.log('💡 Firebase Authentication 사용자 확인은 Firebase Console에서 직접 확인하세요.');
+                    console.log('   Firebase Console → Authentication → Users');
+                } catch (authError) {
+                    console.warn('⚠️ Authentication 확인 실패 (정상):', authError.message);
+                }
+                
+            } catch (error) {
+                console.error('❌ Editor 계정 확인 실패:', error);
+            }
+        }
+        
+        window.checkEditorAccount = checkEditorAccount;
+        
+        // Admin에서 모든 Editor 계정 목록 확인
+        async function listAllEditors() {
+            console.log('🚀 listAllEditors 함수 시작');
+            
+            if (!initFirebase()) {
+                console.error('❌ Firebase가 초기화되지 않았습니다.');
+                return;
+            }
+            
+            const currentUser = firebaseAuth.currentUser;
+            if (!currentUser) {
+                console.error('❌ 로그인된 사용자가 없습니다. 먼저 로그인하세요.');
+                console.log('💡 콘솔에서 로그인: firebase.auth().signInWithEmailAndPassword("email@example.com", "password").then(() => location.reload())');
+                return;
+            }
+            
+            console.log('🔍 모든 Editor 계정 확인 중...');
+            console.log('   현재 사용자:', currentUser.uid, currentUser.email || '');
+            
+            try {
+                // Firestore에서 프로젝트 멤버 목록 조회 (projects/{projectId}/members)
+                console.log('📡 Firestore에서 projects/' + PROJECT_ID + '/members 컬렉션 조회 중...');
+                const roleDocs = await firebaseDb.collection('projects').doc(PROJECT_ID)
+                    .collection('members').get();
+                console.log('✅ Firestore 조회 완료. 문서 수:', roleDocs.size);
+                
+                const editors = [];
+                const admins = [];
+                const viewers = [];
+                
+                roleDocs.forEach(doc => {
+                    const data = doc.data();
+                    const role = data.role || 'viewer';
+                    const uid = doc.id;
+                    
+                    if (role === 'editor') {
+                        editors.push({
+                            uid: uid,
+                            allowedProcesses: data.allowedProcesses || [],
+                            projectId: data.projectId || 'N/A',
+                            updatedAt: data.updatedAt || 'N/A'
+                        });
+                    } else if (role === 'admin') {
+                        admins.push({ uid: uid, projectId: data.projectId || 'N/A' });
+                    } else if (role === 'viewer') {
+                        viewers.push({ uid: uid, projectId: data.projectId || 'N/A' });
+                    }
+                });
+                
+                console.log('📋 Editor 계정 목록:');
+                if (editors.length > 0) {
+                    editors.forEach((editor, index) => {
+                        console.log(`\n${index + 1}. Editor (공정 ${editor.allowedProcesses.join(', ')}):`);
+                        console.log(`   UID: ${editor.uid}`);
+                        console.log(`   허용 공정: [${editor.allowedProcesses.join(', ')}]`);
+                        console.log(`   프로젝트: ${editor.projectId}`);
+                    });
+                } else {
+                    console.log('   Editor 계정이 없습니다.');
+                }
+                
+                console.log('\n📋 Admin 계정 목록:');
+                if (admins.length > 0) {
+                    admins.forEach((admin, index) => {
+                        console.log(`${index + 1}. Admin: ${admin.uid}`);
+                    });
+                } else {
+                    console.log('   Admin 계정이 없습니다.');
+                }
+                
+                console.log('\n📋 Viewer 계정 목록:');
+                if (viewers.length > 0) {
+                    viewers.forEach((viewer, index) => {
+                        console.log(`${index + 1}. Viewer: ${viewer.uid}`);
+                    });
+                } else {
+                    console.log('   Viewer 계정이 없습니다.');
+                }
+                
+                // Editor 3,4,5 찾기
+                const editor345 = editors.find(e => 
+                    e.allowedProcesses.length === 3 && 
+                    e.allowedProcesses.includes(3) && 
+                    e.allowedProcesses.includes(4) && 
+                    e.allowedProcesses.includes(5)
+                );
+                
+                if (editor345) {
+                    console.log('\n✅ Editor 3,4,5 발견:');
+                    console.log(`   UID: ${editor345.uid}`);
+                    console.log(`   허용 공정: [${editor345.allowedProcesses.join(', ')}]`);
+                    console.log(`\n💡 이 UID로 확인하려면: checkEditorAccount("${editor345.uid}")`);
+                } else {
+                    console.log('\n⚠️ Editor 3,4,5를 찾을 수 없습니다.');
+                    console.log('💡 Editor 3,4,5를 설정하려면 Admin 설정 영역에서 Editor 설정을 다시 시도하세요.');
+                }
+                
+            } catch (error) {
+                console.error('❌ Editor 계정 목록 확인 실패:', error);
+                console.error('   오류 코드:', error.code);
+                console.error('   오류 메시지:', error.message);
+                
+                if (error.code === 'permission-denied') {
+                    console.error('❌ Firestore 권한 오류입니다.');
+                    console.log('💡 Firestore Rules가 제대로 배포되었는지 확인하세요.');
+                    console.log('💡 현재 사용자가 Admin인지 확인하세요.');
+                }
+            }
+        }
+        
+        window.listAllEditors = listAllEditors;
+        
+        // Editor 컴퓨터 상태 확인 함수 (Admin에서 호출 가능)
+        async function checkEditorComputerStatus() {
+            console.log('🔍 Editor 컴퓨터 상태 확인 시작...');
+            console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+            
+            // 1. localStorage 확인
+            console.log('\n📦 localStorage 상태:');
+            const storedRole = localStorage.getItem('kcol:userRole');
+            const storedProcesses = localStorage.getItem('kcol:allowedProcesses');
+            const storedUid = localStorage.getItem('kcol:firebaseUid');
+            const storedAdminUids = localStorage.getItem('kcol:adminUids');
+            
+            console.log('   userRole:', storedRole || '(없음)');
+            console.log('   allowedProcesses:', storedProcesses || '(없음)');
+            console.log('   firebaseUid:', storedUid || '(없음)');
+            console.log('   adminUids:', storedAdminUids || '(없음)');
+            
+            if (storedRole === 'admin') {
+                console.warn('⚠️ localStorage에 "admin" 역할이 저장되어 있습니다!');
+                console.log('💡 이는 이전 세션의 데이터일 수 있습니다.');
+                console.log('💡 Firebase 로그인 후 Firebase의 역할이 우선 적용됩니다.');
+            }
+            
+            // 2. Firebase 초기화 상태
+            console.log('\n🔥 Firebase 상태:');
+            if (!initFirebase()) {
+                console.error('❌ Firebase가 초기화되지 않았습니다.');
+                console.log('💡 Firebase 설정을 확인하세요.');
+            } else {
+                console.log('✅ Firebase 초기화됨');
+            }
+            
+            // 3. Firebase 로그인 상태
+            console.log('\n👤 Firebase 로그인 상태:');
+            const currentUser = firebaseAuth?.currentUser;
+            if (!currentUser) {
+                console.error('❌ Firebase에 로그인되지 않았습니다.');
+                console.log('💡 Email/Password로 로그인해야 합니다.');
+                console.log('💡 로그인 방법: firebase.auth().signInWithEmailAndPassword("email@example.com", "password").then(() => location.reload())');
+            } else {
+                console.log('✅ Firebase 로그인됨');
+                console.log('   UID:', currentUser.uid);
+                console.log('   Email:', currentUser.email || '(없음)');
+                console.log('   Is Anonymous:', currentUser.isAnonymous);
+                
+                if (currentUser.isAnonymous) {
+                    console.error('❌ 익명 로그인은 차단됩니다!');
+                }
+            }
+            
+            // 4. Firebase 역할 확인
+            console.log('\n📋 Firebase 역할 상태:');
+            if (currentUser && !currentUser.isAnonymous) {
+                try {
+                    const roleData = await loadUserRoleFromFirebase();
+                    if (roleData) {
+                        console.log('✅ Firebase에서 역할 로드 성공');
+                        console.log('   역할:', roleData.role);
+                        console.log('   허용 공정:', roleData.allowedProcesses);
+                        
+                        if (roleData.role === 'admin') {
+                            console.warn('⚠️ Firebase에서 Admin 역할이 로드되었습니다.');
+                            console.log('💡 Editor 컴퓨터는 Editor 역할이어야 합니다.');
+                        } else if (roleData.role === 'editor') {
+                            console.log('✅ Editor 역할이 올바르게 설정되어 있습니다.');
+                            if (roleData.allowedProcesses && roleData.allowedProcesses.length > 0) {
+                                console.log('✅ 허용 공정:', roleData.allowedProcesses);
+                            } else {
+                                console.warn('⚠️ 허용 공정이 설정되지 않았습니다.');
+                            }
+                        } else if (roleData.role === 'viewer') {
+                            console.warn('⚠️ Viewer 역할로 로드되었습니다.');
+                            console.log('💡 Editor 역할이 필요합니다. Admin에서 Editor 설정을 확인하세요.');
+                        }
+                    } else {
+                        console.error('❌ Firebase에서 역할을 로드하지 못했습니다.');
+                        console.log('💡 Firestore에 역할 문서가 있는지 확인하세요.');
+                        console.log('💡 Firestore 경로: projects/' + PROJECT_ID + '/members/' + currentUser.uid);
+                    }
+                } catch (error) {
+                    console.error('❌ Firebase 역할 로드 오류:', error);
+                }
+            } else {
+                console.warn('⚠️ Firebase 로그인이 필요합니다.');
+            }
+            
+            // 5. 현재 적용된 역할
+            console.log('\n🎯 현재 적용된 역할 (UI):');
+            console.log('   userRole 변수:', userRole || '(null)');
+            console.log('   allowedProcesses 변수:', allowedProcesses || '[]');
+            
+            if (userRole === 'admin') {
+                console.warn('⚠️ 현재 UI에 Admin 역할이 적용되어 있습니다!');
+                console.log('💡 Editor 컴퓨터는 Editor 역할이어야 합니다.');
+            } else if (userRole === 'editor') {
+                console.log('✅ Editor 역할이 적용되어 있습니다.');
+            } else if (userRole === 'viewer') {
+                console.warn('⚠️ Viewer 역할이 적용되어 있습니다.');
+            } else {
+                console.warn('⚠️ 역할이 설정되지 않았습니다.');
+            }
+            
+            // 6. 권장 사항
+            console.log('\n💡 권장 사항:');
+            if (storedRole === 'admin' || userRole === 'admin') {
+                console.log('   1. localStorage에서 이전 admin 데이터 삭제:');
+                console.log('      localStorage.removeItem("kcol:userRole")');
+                console.log('      localStorage.removeItem("kcol:adminUids")');
+                console.log('   2. 페이지 새로고침 (Ctrl+F5)');
+                console.log('   3. Editor 계정으로 Firebase 로그인');
+            } else if (!currentUser) {
+                console.log('   1. Editor 계정으로 Firebase 로그인:');
+                console.log('      firebase.auth().signInWithEmailAndPassword("editor-email@example.com", "password").then(() => location.reload())');
+            } else if (userRole === 'viewer' || !userRole) {
+                console.log('   1. Admin 컴퓨터에서 Editor 역할 설정 확인');
+                console.log('   2. listAllEditors()로 Editor 목록 확인');
+                console.log('   3. checkEditorAccount("editor-uid")로 역할 확인');
+            }
+            
+            console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        }
+        window.checkEditorComputerStatus = checkEditorComputerStatus;
+        
+        // Admin에서 Editor 계정으로 테스트 로그인 (역할 확인용)
+        async function testEditorLogin(email, password) {
+            if (!initFirebase()) {
+                console.error('❌ Firebase가 초기화되지 않았습니다.');
+                return;
+            }
+            
+            if (!email || !password) {
+                console.error('❌ 이메일과 비밀번호를 입력해주세요.');
+                console.log('사용법: testEditorLogin("editor@example.com", "password")');
+                return;
+            }
+            
+            console.log('🔍 Editor 계정 테스트 로그인 중...');
+            console.log('   이메일:', email);
+            
+            try {
+                // 현재 Admin 계정 로그아웃 (선택사항)
+                const currentUser = firebaseAuth.currentUser;
+                if (currentUser) {
+                    console.log('ℹ️ 현재 로그인된 사용자:', currentUser.uid);
+                    console.log('💡 테스트 로그인을 위해 현재 계정을 로그아웃할까요? (수동으로 진행)');
+                }
+                
+                // Editor 계정으로 로그인 시도
+                const userCredential = await firebaseAuth.signInWithEmailAndPassword(email, password);
+                const user = userCredential.user;
+                console.log('✅ Editor 계정 로그인 성공');
+                console.log('   UID:', user.uid);
+                console.log('   이메일:', user.email);
+                
+                // 역할 로드
+                const roleData = await loadUserRoleFromFirebase();
+                if (roleData) {
+                    console.log('✅ 역할 로드 성공');
+                    console.log('   역할:', roleData.role);
+                    console.log('   허용 공정:', roleData.allowedProcesses);
+                    
+                    if (roleData.role === 'editor') {
+                        console.log('✅ Editor 역할이 올바르게 설정되어 있습니다!');
+                        if (roleData.allowedProcesses && roleData.allowedProcesses.length > 0) {
+                            console.log('✅ 허용 공정:', roleData.allowedProcesses);
+                        } else {
+                            console.warn('⚠️ allowedProcesses가 설정되지 않았습니다.');
+                        }
+                    } else {
+                        console.warn('⚠️ 역할이 editor가 아닙니다. 현재 역할:', roleData.role);
+                    }
+                } else {
+                    console.error('❌ 역할을 로드할 수 없습니다.');
+                    console.log('💡 Firestore에 역할 문서가 있는지 확인하세요.');
+                }
+                
+                // 다시 Admin 계정으로 로그인 (선택사항)
+                console.log('💡 테스트 완료. 원래 Admin 계정으로 다시 로그인하세요.');
+                
+            } catch (error) {
+                console.error('❌ Editor 계정 로그인 실패:', error);
+                console.error('   오류 코드:', error.code);
+                console.error('   오류 메시지:', error.message);
+                
+                if (error.code === 'auth/user-not-found') {
+                    console.log('💡 사용자가 Firebase Authentication에 등록되지 않았습니다.');
+                    console.log('💡 Firebase Console → Authentication → Users에서 사용자를 생성하세요.');
+                } else if (error.code === 'auth/wrong-password') {
+                    console.log('💡 비밀번호가 잘못되었습니다.');
+                }
+            }
+        }
+        
+        window.testEditorLogin = testEditorLogin;
         window.setAdminRoleInFirestore = setAdminRoleInFirestore;
         window.setEditorRoleInFirestore = setEditorRoleInFirestore;
         window.setViewerRoleInFirestore = setViewerRoleInFirestore;
@@ -2788,6 +3832,72 @@
         window.setCurrentUserAsAdmin = setCurrentUserAsAdmin;
         window.logoutFromFirebase = logoutFromFirebase;
         window.checkFirebaseUser = checkFirebaseUser;
+        window.verifyAdminRole = verifyAdminRole;
+        
+        // Firebase 실시간 연결 확인 함수
+        function checkFirebaseRealtimeConnection() {
+            console.log('🔍 Firebase 실시간 연결 상태 확인...');
+            
+            if (!initFirebase()) {
+                console.error('❌ Firebase가 초기화되지 않았습니다.');
+                return false;
+            }
+            
+            const user = firebaseAuth.currentUser;
+            if (!user) {
+                console.error('❌ 로그인된 사용자가 없습니다.');
+                return false;
+            }
+            
+            if (user.isAnonymous) {
+                console.error('❌ 익명 사용자는 실시간 연결을 사용할 수 없습니다.');
+                return false;
+            }
+            
+            console.log('✅ 로그인 상태:', user.email || user.uid);
+            
+            if (realtimeUnsubscribe) {
+                console.log('✅ 실시간 리스너 활성화됨');
+                console.log('📡 프로젝트:', PROJECT_ID);
+                console.log('💡 다른 사용자가 데이터를 변경하면 자동으로 화면이 업데이트됩니다.');
+                return true;
+            } else {
+                console.warn('⚠️ 실시간 리스너가 설정되지 않았습니다.');
+                console.log('💡 setupFirebaseRealtimeListener()를 호출하여 실시간 동기화를 시작하세요.');
+                return false;
+            }
+        }
+        
+        window.checkFirebaseRealtimeConnection = checkFirebaseRealtimeConnection;
+        
+        // 실시간 리스너 수동 재시작 함수
+        function restartRealtimeListener() {
+            console.log('🔄 실시간 리스너 재시작 시도...');
+            
+            if (!initFirebase() || !firebaseAuth.currentUser) {
+                console.error('❌ 로그인이 필요합니다.');
+                showToast('로그인이 필요합니다.', 'error');
+                return false;
+            }
+            
+            // 기존 리스너 해제
+            if (realtimeUnsubscribe) {
+                realtimeUnsubscribe();
+                realtimeUnsubscribe = null;
+            }
+            
+            // 상태 체크 중지
+            stopRealtimeStatusCheck();
+            
+            // 리스너 재시작
+            setupFirebaseRealtimeListener();
+            
+            console.log('✅ 실시간 리스너 재시작 완료');
+            showToast('실시간 리스너 재시작됨', 'info');
+            return true;
+        }
+        
+        window.restartRealtimeListener = restartRealtimeListener;
         window.handleAdminUIDInput = handleAdminUIDInput;
         window.handleEditorUIDInput = handleEditorUIDInput;
         window.handleViewerUIDInput = handleViewerUIDInput;
@@ -2796,52 +3906,264 @@
         let userRole = null;
         let allowedProcesses = [];
         
-        // 역할 로드 함수 (Firebase 우선, localStorage fallback)
+        // 역할 로드 함수 (Firebase 로그인 필수, 익명 및 비로그인 사용자 차단)
         async function loadUserRole() {
             console.log('🔍 역할 로드 시작...');
+            
+            // Firebase 로그인 확인 (필수)
+            if (!initFirebase() || !firebaseAuth.currentUser) {
+                console.warn('⚠️ 로그인하지 않은 사용자는 접근할 수 없습니다.');
+                console.log('💡 Email/Password로 로그인하세요:');
+                console.log('   firebase.auth().signInWithEmailAndPassword("your-email@example.com", "your-password").then(() => location.reload())');
+                userRole = null;
+                allowedProcesses = [];
+                applyRoleBasedUI();
+                return;
+            }
+            
+            // 익명 사용자 차단
+            if (firebaseAuth.currentUser.isAnonymous) {
+                console.warn('⚠️ 익명 로그인은 차단되었습니다. Email/Password로 로그인하세요.');
+                userRole = null;
+                allowedProcesses = [];
+                applyRoleBasedUI();
+                return;
+            }
             
             // 1. Firebase에서 역할 로드 시도
             const firebaseRole = await loadUserRoleFromFirebase();
             if (firebaseRole) {
                 userRole = firebaseRole.role;
-                allowedProcesses = firebaseRole.allowedProcesses;
+                allowedProcesses = firebaseRole.allowedProcesses || [];
                 console.log('✅ Firebase에서 역할 로드 완료:', userRole, '허용 공정:', allowedProcesses);
                 
                 // 역할이 제대로 로드되었는지 확인
                 if (!userRole || userRole === 'viewer') {
                     console.warn('⚠️ 역할이 viewer로 로드되었습니다. Firestore 문서를 확인하세요.');
                     console.log('💡 현재 Firebase 사용자 UID:', firebaseAuth.currentUser?.uid);
-                    console.log('💡 Firestore 경로: user_roles/' + firebaseAuth.currentUser?.uid);
+                    console.log('💡 Firestore 경로: projects/' + PROJECT_ID + '/members/' + firebaseAuth.currentUser?.uid);
                 }
                 
+                applyRoleBasedUI();
                 return;
             }
             
-            console.log('ℹ️ Firebase에서 역할을 로드하지 못했습니다. 다음 방법 시도...');
+            // Firebase에서 역할을 로드하지 못한 경우 (역할 문서가 없음)
+            console.warn('⚠️ Firebase에서 역할을 로드하지 못했습니다.');
+            console.log('💡 Firestore에 사용자 역할 문서가 있는지 확인하세요.');
+            console.log('💡 Firestore 경로: projects/' + PROJECT_ID + '/members/' + firebaseAuth.currentUser?.uid);
+            userRole = null;
+            allowedProcesses = [];
+            applyRoleBasedUI();
+        }
+        
+        // 페이지 로드 시 로그인 체크 함수
+        function checkLoginOnPageLoad() {
+            console.log('🔍 [가드] 페이지 로드 시 로그인 체크 시작...');
+            console.log('🔍 [가드] 프로젝트 ID:', PROJECT_ID);
             
-            // 2. UID 기반 역할 확인 (localStorage)
-            const uidBasedRole = checkRoleByUID();
-            if (uidBasedRole) {
-                console.log('✅ UID 기반 역할 확인 완료:', uidBasedRole);
+            // 먼저 로그인 모달을 표시 (로그인되지 않은 경우를 대비)
+            showLoginModal();
+            
+            if (!initFirebase()) {
+                console.warn('⚠️ [가드] Firebase가 초기화되지 않았습니다. 로그인 모달 표시.');
                 return;
             }
             
-            // 3. localStorage에서 로드
-            userRole = localStorage.getItem('kcol:userRole') || 'viewer';
-            allowedProcesses = JSON.parse(localStorage.getItem('kcol:allowedProcesses') || '[]');
-            console.log('✅ localStorage에서 역할 로드 완료:', userRole, '허용 공정:', allowedProcesses);
+            const user = firebaseAuth.currentUser;
+            console.log('👤 [가드] 현재 사용자:', user ? (user.email || user.uid) : '없음');
             
-            // localStorage 역할이 viewer인 경우 경고
-            if (userRole === 'viewer') {
-                console.warn('⚠️ localStorage에서 viewer 역할이 로드되었습니다.');
-                console.log('💡 Firebase에 로그인하고 Editor 역할이 설정되어 있는지 확인하세요.');
+            if (!user || user.isAnonymous) {
+                console.warn('⚠️ [가드] 로그인하지 않았거나 익명 사용자입니다.');
+                console.log('🔒 [가드] /login 시나리오 (정적 HTML이므로 로그인 모달 표시)');
+                // 로그인 모달은 이미 표시됨
+            } else {
+                console.log('✅ [가드] 로그인된 사용자 확인:', user.uid, user.email);
+                console.log('🔍 [가드] 멤버 확인 대기 중... (setupFirebaseAuthListener에서 처리)');
+                // 로그인된 경우 모달 숨김
+                hideLoginModal();
             }
         }
         
+        // 로그인 모달 초기화 함수 (항상 호출)
+        // 전역 변수로 중복 등록 방지
+        let loginModalInitialized = false;
+        
+        function initializeLoginModal() {
+            if (loginModalInitialized) {
+                console.log('ℹ️ 로그인 모달은 이미 초기화되었습니다.');
+                return;
+            }
+            
+            console.log('🔧 로그인 모달 초기화 시작...');
+            
+            // 로그인 모달 요소 확인
+            const modal = document.getElementById('login-modal');
+            if (!modal) {
+                console.error('❌ 로그인 모달 요소를 찾을 수 없습니다.');
+                // 나중에 다시 시도
+                setTimeout(initializeLoginModal, 100);
+                return;
+            }
+            
+            // 로그인 모달 강제 표시 (로그인되지 않은 경우)
+            if (!initFirebase() || !firebaseAuth || !firebaseAuth.currentUser) {
+                modal.style.display = 'flex';
+                modal.style.flexDirection = 'column';
+                modal.style.alignItems = 'center';
+                modal.style.justifyContent = 'center';
+                modal.style.zIndex = '10000';
+                modal.style.position = 'fixed';
+                modal.style.top = '0';
+                modal.style.left = '0';
+                modal.style.width = '100%';
+                modal.style.height = '100%';
+                modal.style.background = 'rgba(0,0,0,0.8)';
+                console.log('✅ 로그인 모달 표시됨 (로그인되지 않음)');
+            }
+            
+            // 로그인 버튼 이벤트 리스너 등록
+            const modalLoginBtn = document.getElementById('modal-login-btn');
+            const modalLoginEmail = document.getElementById('modal-login-email');
+            const modalLoginPassword = document.getElementById('modal-login-password');
+            const modalLoginStatus = document.getElementById('modal-login-status');
+            
+            if (modalLoginBtn && !loginModalInitialized) {
+                // 로그인 버튼 클릭 이벤트
+                modalLoginBtn.onclick = async function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('🔐 로그인 버튼 클릭됨');
+                    
+                    const email = modalLoginEmail ? modalLoginEmail.value.trim() : '';
+                    const password = modalLoginPassword ? modalLoginPassword.value.trim() : '';
+                    
+                    console.log('📧 입력된 이메일:', email ? email.substring(0, 10) + '...' : '(없음)');
+                    
+                    if (!email || !password) {
+                        console.warn('⚠️ 이메일 또는 비밀번호가 입력되지 않았습니다.');
+                        if (modalLoginStatus) {
+                            modalLoginStatus.textContent = '❌ 이메일과 비밀번호를 입력해주세요.';
+                            modalLoginStatus.style.color = '#f44336';
+                        }
+                        return;
+                    }
+                    
+                    if (modalLoginStatus) {
+                        modalLoginStatus.textContent = '⏳ 로그인 중...';
+                        modalLoginStatus.style.color = '#2196f3';
+                    }
+                    
+                    try {
+                        console.log('🔄 Firebase 로그인 시도 중...');
+                        const userCredential = await firebaseAuth.signInWithEmailAndPassword(email, password);
+                        const user = userCredential.user;
+                        console.log('✅ 로그인 성공! UID:', user.uid);
+                        
+                        // Firestore에서 역할 확인
+                        const roleData = await loadUserRoleFromFirebase();
+                        if (roleData) {
+                            console.log('✅ 역할 확인 완료:', roleData.role);
+                            userRole = roleData.role;
+                            allowedProcesses = roleData.allowedProcesses;
+                            applyRoleBasedUI();
+                        }
+                        
+                        if (user) {
+                            console.log('✅ 로그인 성공!');
+                            if (modalLoginStatus) {
+                                modalLoginStatus.textContent = '✅ 로그인 성공!';
+                                modalLoginStatus.style.color = '#4caf50';
+                            }
+                            
+                            // 입력 필드 초기화
+                            if (modalLoginEmail) modalLoginEmail.value = '';
+                            if (modalLoginPassword) modalLoginPassword.value = '';
+                            
+                            // 모달 숨김
+                            setTimeout(() => {
+                                hideLoginModal();
+                            }, 1000);
+                        } else {
+                            console.error('❌ 로그인 실패: UID가 null입니다.');
+                            if (modalLoginStatus) {
+                                modalLoginStatus.textContent = '❌ 로그인 실패. 이메일과 비밀번호를 확인하세요.';
+                                modalLoginStatus.style.color = '#f44336';
+                            }
+                        }
+                    } catch (error) {
+                        console.error('❌ 로그인 오류:', error);
+                        console.error('❌ 오류 상세:', error.code, error.message);
+                        if (modalLoginStatus) {
+                            let errorMsg = '❌ 로그인 오류: ';
+                            if (error.code === 'auth/user-not-found') {
+                                errorMsg += '사용자를 찾을 수 없습니다.';
+                            } else if (error.code === 'auth/wrong-password') {
+                                errorMsg += '비밀번호가 잘못되었습니다.';
+                            } else if (error.code === 'auth/invalid-email') {
+                                errorMsg += '이메일 형식이 올바르지 않습니다.';
+                            } else {
+                                errorMsg += error.message;
+                            }
+                            modalLoginStatus.textContent = errorMsg;
+                            modalLoginStatus.style.color = '#f44336';
+                        }
+                    }
+                };
+                
+                // Enter 키로 로그인
+                if (modalLoginPassword) {
+                    modalLoginPassword.onkeypress = function(e) {
+                        if (e.key === 'Enter') {
+                            e.preventDefault();
+                            modalLoginBtn.click();
+                        }
+                    };
+                }
+                
+                // 이메일 입력 필드에 포커스
+                if (modalLoginEmail) {
+                    setTimeout(() => modalLoginEmail.focus(), 100);
+                }
+                
+                loginModalInitialized = true;
+                console.log('✅ 로그인 모달 초기화 완료');
+            } else if (!modalLoginBtn) {
+                console.error('❌ 로그인 모달 버튼을 찾을 수 없습니다.');
+                // 나중에 다시 시도
+                setTimeout(initializeLoginModal, 100);
+            }
+        }
+        
+        // 스크립트 로드 즉시 로그인 모달 초기화 시도
+        (function() {
+            if (document.readyState === 'loading') {
+                // DOM이 로드되기 전이면 대기
+                document.addEventListener('DOMContentLoaded', function() {
+                    setTimeout(initializeLoginModal, 50);
+                });
+            } else {
+                // DOM이 이미 로드되었으면 즉시 실행
+                setTimeout(initializeLoginModal, 50);
+            }
+        })();
+        
+        // 전역 함수로 노출 (콘솔에서 사용 가능)
+        window.initializeLoginModal = initializeLoginModal;
+        window.showLoginModal = showLoginModal;
+        window.hideLoginModal = hideLoginModal;
+        
         // Firebase 인증 리스너 설정 및 초기 역할 로드
+        // 페이지 로드 시 즉시 로그인 모달 표시 (로그인되지 않은 경우 대비)
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', async function() {
+                // 먼저 로그인 모달 초기화 및 표시
+                initializeLoginModal();
+                
                 setupFirebaseAuthListener();
+                
+                // 페이지 로드 시 로그인 체크
+                checkLoginOnPageLoad();
                 
                 // 기본 Admin UID를 Firestore에 설정 (비동기, 실패해도 계속 진행)
                 ensureDefaultAdminInFirestore().catch(err => {
@@ -2852,7 +4174,13 @@
                 setTimeout(applyRoleBasedUI, 100);
             });
         } else {
+            // 먼저 로그인 모달 초기화 및 표시
+            initializeLoginModal();
+            
             setupFirebaseAuthListener();
+            
+            // 페이지 로드 시 로그인 체크
+            checkLoginOnPageLoad();
             
             // 기본 Admin UID를 Firestore에 설정 (비동기, 실패해도 계속 진행)
             ensureDefaultAdminInFirestore().catch(err => {
@@ -2908,7 +4236,6 @@
             
             const isViewer = userRole === 'viewer';
             const isEditor = userRole === 'editor';
-            const isApprover = userRole === 'approver';
             const isAdmin = userRole === 'admin';
             
             // 일일입력 패널 제어
@@ -2916,20 +4243,26 @@
             const columnGridInput = document.getElementById('column-grid-input');
             const saveButton = document.querySelector('#panel-input button[onclick*="saveSelectedColumns"]');
             
+            // Admin 설정 영역 숨김 (기본값, Admin인 경우에만 표시)
+            const adminRoleSettings = document.getElementById('admin-role-settings');
+            if (adminRoleSettings) {
+                adminRoleSettings.style.display = 'none';
+            }
+            
             if (isViewer) {
-                // Viewer: 읽기 전용 - 모든 공정 입력창 비활성화 (흐릿하게)
+                // Viewer: 읽기 전용 - 모든 공정 입력창 비활성화 (흐릿하게 - opacity: 0.25)
                 if (workDateInput) {
                     workDateInput.disabled = true;
-                    workDateInput.style.opacity = '0.5';
+                    workDateInput.style.opacity = '0.25';
                     workDateInput.title = 'Viewer는 일일입력을 할 수 없습니다.';
                 }
                 if (columnGridInput) {
                     columnGridInput.style.pointerEvents = 'none';
-                    columnGridInput.style.opacity = '0.5';
+                    columnGridInput.style.opacity = '0.25';
                 }
                 if (saveButton) {
                     saveButton.disabled = true;
-                    saveButton.style.opacity = '0.5';
+                    saveButton.style.opacity = '0.25';
                     saveButton.title = 'Viewer는 저장할 수 없습니다.';
                 }
                 // 모든 공정 버튼 비활성화 (흐릿하게)
@@ -3016,23 +4349,12 @@
                 
                 // 운송차수계획 패널 활성화 (Admin만)
                 enableTransportPanel(true);
-            } else {
-                // Approver: 모든 공정 수정 가능 (운송차수계획 제외)
-                if (workDateInput) {
-                    workDateInput.disabled = false;
-                }
-                if (columnGridInput) {
-                    columnGridInput.style.pointerEvents = 'auto';
-                    columnGridInput.style.opacity = '1';
-                }
-                if (saveButton) {
-                    saveButton.disabled = false;
-                }
-                disableProcessButtons([]);
-                showRoleBadge('approver', '승인자 - 일일입력 및 승인 가능');
                 
-                // 운송차수계획 패널 비활성화 (Approver는 사용 불가)
-                enableTransportPanel(false);
+                // Admin 설정 영역 표시 (Admin만 볼 수 있음)
+                const adminRoleSettings = document.getElementById('admin-role-settings');
+                if (adminRoleSettings) {
+                    adminRoleSettings.style.display = 'block';
+                }
             }
         }
         
@@ -3085,7 +4407,7 @@
                     transportGrid.style.opacity = '1';
                 }
             } else {
-                // Approver/Editor/Viewer: 모든 기능 비활성화
+                // Editor/Viewer: 모든 기능 비활성화
                 if (fileInput) {
                     fileInput.disabled = true;
                     fileInput.style.opacity = '0.5';
@@ -3132,20 +4454,43 @@
         }
         
         // 공정 버튼 활성화/비활성화
+        // 공정 편집 권한 확인 헬퍼 함수
+        // processNo는 항상 숫자여야 함 (1, 2, 3, 4, 5, 6)
+        function canEditProcess(processNo) {
+            if (!userRole) return false;
+            if (userRole === 'admin') return true;
+            if (userRole === 'viewer') return false;
+            if (userRole === 'editor') {
+                // processNo를 숫자로 보장
+                const processNum = typeof processNo === 'number' ? processNo : parseInt(processNo);
+                if (isNaN(processNum)) return false;
+                
+                // allowedProcesses가 숫자 배열인지 확인하고 타입 일치 보장
+                if (!Array.isArray(allowedProcesses)) return false;
+                return allowedProcesses.some(p => {
+                    const pNum = typeof p === 'number' ? p : parseInt(p);
+                    return !isNaN(pNum) && pNum === processNum;
+                });
+            }
+            return false;
+        }
+        
         function disableProcessButtons(allowedProcesses) {
             const processButtons = document.querySelectorAll('.process-btn');
             processButtons.forEach(btn => {
                 const processId = parseInt(btn.dataset.process);
+                const canEdit = canEditProcess(processId);
+                
                 if (userRole === 'viewer') {
-                    // Viewer: 모든 공정 버튼 비활성화 (흐릿하게)
+                    // Viewer: 모든 공정 버튼 비활성화 (흐릿하게 - opacity: 0.25)
                     btn.disabled = true;
-                    btn.style.opacity = '0.5';
+                    btn.style.opacity = '0.25';
                     btn.style.cursor = 'not-allowed';
                     btn.style.pointerEvents = 'none';
                     btn.title = 'Viewer는 공정을 선택할 수 없습니다. (읽기 전용)';
                 } else if (userRole === 'editor') {
-                    // Editor: 허용된 공정만 활성화, 나머지는 비활성화 (흐릿하게)
-                    if (allowedProcesses.includes(processId)) {
+                    // Editor: 허용된 공정만 활성화, 나머지는 비활성화 (흐릿하게 - opacity: 0.25)
+                    if (canEdit) {
                         btn.disabled = false;
                         btn.style.opacity = '1';
                         btn.style.cursor = 'pointer';
@@ -3153,19 +4498,85 @@
                         btn.title = '';
                     } else {
                         btn.disabled = true;
-                        btn.style.opacity = '0.5';
+                        btn.style.opacity = '0.25';
                         btn.style.cursor = 'not-allowed';
                         btn.style.pointerEvents = 'none';
                         const proc = PROCESSES.find(p => p.id === processId);
                         btn.title = `Editor는 ${proc ? proc.name : `공정 ${processId}`}을 수정할 수 없습니다. (보기만 가능)`;
                     }
                 } else {
-                    // Admin/Approver: 모든 공정 버튼 활성화
+                    // Admin: 모든 공정 버튼 활성화
                     btn.disabled = false;
                     btn.style.opacity = '1';
                     btn.style.cursor = 'pointer';
                     btn.style.pointerEvents = 'auto';
                     btn.title = '';
+                }
+            });
+            
+            // 공정별 간트 차트 셀도 권한에 따라 흐릿하게 표시
+            applyProcessPermissionToGantt();
+            
+            // 공정별 기둥 그리드 셀도 권한에 따라 흐릿하게 표시
+            applyProcessPermissionToColumnGrid();
+        }
+        
+        // 간트 차트에 공정별 권한 적용 (흐릿하게 표시)
+        function applyProcessPermissionToGantt() {
+            if (!userRole) return;
+            
+            // 간트 차트의 공정별 셀 찾기
+            const ganttCells = document.querySelectorAll('.gantt-cell[data-process]');
+            ganttCells.forEach(cell => {
+                const processId = parseInt(cell.dataset.process);
+                const canEdit = canEditProcess(processId);
+                
+                if (userRole === 'viewer') {
+                    // Viewer: 모든 공정 셀 흐릿하게 (opacity: 0.25)
+                    cell.style.opacity = '0.25';
+                    cell.style.pointerEvents = 'none';
+                } else if (userRole === 'editor') {
+                    // Editor: 허용되지 않은 공정 셀 흐릿하게 (opacity: 0.25)
+                    if (!canEdit) {
+                        cell.style.opacity = '0.25';
+                        cell.style.pointerEvents = 'none';
+                    } else {
+                        cell.style.opacity = '1';
+                        cell.style.pointerEvents = 'auto';
+                    }
+                } else {
+                    // Admin: 모든 공정 셀 정상 표시
+                    cell.style.opacity = '1';
+                    cell.style.pointerEvents = 'auto';
+                }
+            });
+        }
+        
+        // 기둥 그리드에 공정별 권한 적용 (흐릿하게 표시)
+        function applyProcessPermissionToColumnGrid() {
+            if (!userRole || !currentProcess) return;
+            
+            const canEdit = canEditProcess(currentProcess);
+            const columnGrids = document.querySelectorAll('.column-grid');
+            
+            columnGrids.forEach(grid => {
+                if (userRole === 'viewer') {
+                    // Viewer: 모든 그리드 흐릿하게 (opacity: 0.25)
+                    grid.style.opacity = '0.25';
+                    grid.style.pointerEvents = 'none';
+                } else if (userRole === 'editor') {
+                    // Editor: 허용되지 않은 공정 그리드 흐릿하게 (opacity: 0.25)
+                    if (!canEdit) {
+                        grid.style.opacity = '0.25';
+                        grid.style.pointerEvents = 'none';
+                    } else {
+                        grid.style.opacity = '1';
+                        grid.style.pointerEvents = 'auto';
+                    }
+                } else {
+                    // Admin: 모든 그리드 정상 표시
+                    grid.style.opacity = '1';
+                    grid.style.pointerEvents = 'auto';
                 }
             });
         }
@@ -3217,7 +4628,6 @@
             const roleColors = {
                 'viewer': '#9e9e9e',
                 'editor': '#2196f3',
-                'approver': '#ff9800',
                 'admin': '#f44336'
             };
             badge.style.background = roleColors[role] || '#333';
@@ -3227,7 +4637,6 @@
                 const defaultLabels = {
                     'viewer': '열람자 - 읽기 전용',
                     'editor': '편집자',
-                    'approver': '승인자 - 일일입력 및 승인 가능',
                     'admin': '관리자 - 모든 권한'
                 };
                 label = defaultLabels[role] || label || role;
@@ -3252,8 +4661,15 @@
         
         // 전역으로 노출 (콘솔에서 사용 가능)
         window.setUserRole = setUserRole;
-        window.userRole = () => userRole;
-        window.allowedProcesses = () => allowedProcesses;
+        // userRole과 allowedProcesses를 직접 접근 가능하도록 Object.defineProperty 사용
+        Object.defineProperty(window, 'userRole', {
+            get: () => userRole,
+            configurable: true
+        });
+        Object.defineProperty(window, 'allowedProcesses', {
+            get: () => allowedProcesses,
+            configurable: true
+        });
 
         // 역할 상세 정보 모달 표시 (제거됨 - Firebase 관련)
         function showRoleDetails(role) {
@@ -3276,21 +4692,18 @@
             const roleNames = {
                 'viewer': '열람자',
                 'editor': '편집자',
-                'approver': '승인자',
                 'admin': '관리자'
             };
             
             const roleDescriptions = {
                 'viewer': '공정표 열람만 가능합니다. 일일입력 및 수정은 불가능합니다.',
                 'editor': '허용된 공정에 대해서만 일일입력 및 수정이 가능합니다.',
-                'approver': '모든 공정에 대해 일일입력 및 변경사항 승인이 가능합니다.',
                 'admin': '모든 권한을 가지고 있습니다. 사용자 및 권한 관리가 가능합니다.'
             };
             
             const roleColors = {
                 'viewer': '#9e9e9e',
                 'editor': '#2196f3',
-                'approver': '#ff9800',
                 'admin': '#f44336'
             };
             
@@ -3339,7 +4752,7 @@
                                 ⚠️ 역할과 데이터가 localStorage에만 저장됩니다
                             </div>
                             <div style="margin-top:8px;font-size:12px;color:#856404;">
-                                💡 Firebase 연결: <code style="background:#fff;padding:2px 6px;border-radius:4px;">loginAsAdminAnonymous()</code> 또는 헤더의 Admin UID 입력
+                                💡 Firebase 연결: 로그인 페이지에서 로그인하거나 콘솔에서 <code style="background:#fff;padding:2px 6px;border-radius:4px;">firebase.auth().signInWithEmailAndPassword("email","password").then(() => location.reload())</code> 후 헤더의 Admin UID 입력
                             </div>
                         </div>
                     </div>
@@ -3515,6 +4928,9 @@
 
         document.addEventListener('DOMContentLoaded', async function() {
             try {
+                // 로그인 모달 초기화 (다른 DOMContentLoaded에서도 호출)
+                initializeLoginModal();
+                
                 const badge = document.getElementById('project-badge');
                 if (badge) badge.textContent = getProjectName();
 
@@ -3530,6 +4946,162 @@
                 
                 // Admin UID 입력 필드 및 버튼 이벤트 추가
                 const adminUIDInput = document.getElementById('admin-uid-input');
+                // 로그인 버튼 이벤트
+                const loginBtn = document.getElementById('login-btn');
+                const logoutBtn = document.getElementById('logout-btn');
+                const loginEmailInput = document.getElementById('login-email-input');
+                const loginPasswordInput = document.getElementById('login-password-input');
+                const loginStatus = document.getElementById('login-status');
+                const userInfo = document.getElementById('user-info');
+                const userEmail = document.getElementById('user-email');
+                const userRoleBadge = document.getElementById('user-role-badge');
+                
+                if (loginBtn) {
+                    loginBtn.addEventListener('click', async function() {
+                        const email = loginEmailInput.value.trim();
+                        const password = loginPasswordInput.value.trim();
+                        
+                        if (!email || !password) {
+                            showToast('이메일과 비밀번호를 입력해주세요.', 'warning');
+                            if (loginStatus) {
+                                loginStatus.textContent = '❌ 이메일과 비밀번호를 입력해주세요.';
+                                loginStatus.style.color = '#ffcdd2';
+                            }
+                            return;
+                        }
+                        
+                        if (loginStatus) {
+                            loginStatus.textContent = '⏳ 로그인 중...';
+                            loginStatus.style.color = '#fff9c4';
+                        }
+                        
+                        try {
+                            const userCredential = await firebaseAuth.signInWithEmailAndPassword(email, password);
+                            const user = userCredential.user;
+                            
+                            // Firestore에서 역할 확인
+                            const roleData = await loadUserRoleFromFirebase();
+                            if (roleData) {
+                                userRole = roleData.role;
+                                allowedProcesses = roleData.allowedProcesses;
+                                applyRoleBasedUI();
+                            }
+                            
+                            if (user) {
+                                showToast('로그인 성공!', 'success');
+                                if (loginStatus) {
+                                    loginStatus.textContent = '✅ 로그인 성공';
+                                    loginStatus.style.color = '#c8e6c9';
+                                }
+                                
+                                // 입력 필드 초기화
+                                loginEmailInput.value = '';
+                                loginPasswordInput.value = '';
+                                
+                                // UI 업데이트
+                                updateLoginUI();
+                            } else {
+                                showToast('로그인 실패. 이메일과 비밀번호를 확인하세요.', 'error');
+                                if (loginStatus) {
+                                    loginStatus.textContent = '❌ 로그인 실패';
+                                    loginStatus.style.color = '#ffcdd2';
+                                }
+                            }
+                        } catch (error) {
+                            console.error('로그인 오류:', error);
+                            showToast('로그인 오류: ' + error.message, 'error');
+                            if (loginStatus) {
+                                loginStatus.textContent = '❌ 로그인 오류';
+                                loginStatus.style.color = '#ffcdd2';
+                            }
+                        }
+                    });
+                }
+                
+                if (logoutBtn) {
+                    logoutBtn.addEventListener('click', async function() {
+                        try {
+                            await logoutFromFirebase();
+                            showToast('로그아웃 완료', 'info');
+                            updateLoginUI();
+                        } catch (error) {
+                            console.error('로그아웃 오류:', error);
+                            showToast('로그아웃 오류: ' + error.message, 'error');
+                        }
+                    });
+                }
+                
+                // Enter 키로 로그인
+                if (loginPasswordInput) {
+                    loginPasswordInput.addEventListener('keypress', function(e) {
+                        if (e.key === 'Enter' && loginBtn) {
+                            loginBtn.click();
+                        }
+                    });
+                }
+                
+                // 로그인 UI 업데이트 함수
+                function updateLoginUI() {
+                    if (!initFirebase()) return;
+                    
+                    const user = firebaseAuth.currentUser;
+                    if (user && !user.isAnonymous) {
+                        // 로그인 상태
+                        if (loginEmailInput) loginEmailInput.style.display = 'none';
+                        if (loginPasswordInput) loginPasswordInput.style.display = 'none';
+                        if (loginBtn) loginBtn.style.display = 'none';
+                        if (logoutBtn) logoutBtn.style.display = 'inline-block';
+                        if (userInfo) userInfo.style.display = 'block';
+                        if (userEmail) userEmail.textContent = user.email || user.uid.substring(0, 20) + '...';
+                        
+                        // 역할 표시
+                        loadUserRoleFromFirebase().then(roleData => {
+                            if (roleData) {
+                                const roleNames = {
+                                    'admin': '관리자 - 모든 권한',
+                                    'editor': '편집자',
+                                    'viewer': '열람자 - 읽기 전용'
+                                };
+                                if (userRoleBadge) {
+                                    userRoleBadge.textContent = roleNames[roleData.role] || roleData.role;
+                                    userRoleBadge.style.color = roleData.role === 'admin' ? '#f44336' : 
+                                                               roleData.role === 'editor' ? '#2196f3' : '#4caf50';
+                                }
+                            }
+                        });
+                    } else {
+                        // 로그아웃 상태
+                        if (loginEmailInput) loginEmailInput.style.display = 'block';
+                        if (loginPasswordInput) loginPasswordInput.style.display = 'block';
+                        if (loginBtn) loginBtn.style.display = 'inline-block';
+                        if (logoutBtn) logoutBtn.style.display = 'none';
+                        if (userInfo) userInfo.style.display = 'none';
+                        if (loginStatus) {
+                            loginStatus.textContent = '로그인이 필요합니다.';
+                            loginStatus.style.color = '#fff9c4';
+                        }
+                    }
+                }
+                
+                // 초기 UI 업데이트
+                updateLoginUI();
+                
+                // Firebase 인증 상태 변경 시 UI 업데이트
+                if (initFirebase()) {
+                    firebaseAuth.onAuthStateChanged((user) => {
+                        updateLoginUI();
+                        if (user && !user.isAnonymous) {
+                            hideLoginModal();
+                        } else {
+                            showLoginModal();
+                        }
+                    });
+                }
+                
+                // 로그인 모달 초기화는 initializeLoginModal() 함수에서 처리됨
+                // 중복 등록 방지를 위해 여기서는 호출만 함
+                console.log('ℹ️ 로그인 모달 초기화는 initializeLoginModal()에서 처리됩니다.');
+                
                 const adminSetupBtn = document.getElementById('admin-setup-btn');
                 
                 if (adminUIDInput) {
@@ -3713,6 +5285,25 @@
         
         // 모든 공정에서 기둥 선택/해제 토글
         function toggleColumnSelection(columnId) {
+            // 🔒 [가드] 권한 체크: Viewer는 선택 불가
+            if (userRole === 'viewer') {
+                alert('⚠️ 권한 없음\n\nViewer는 기둥을 선택할 수 없습니다. (읽기 전용)');
+                return;
+            }
+            
+            // 🔒 [가드] 권한 체크: Editor는 허용된 공정만 선택 가능
+            if (userRole === 'editor' && currentProcess) {
+                if (!canEditProcess(currentProcess)) {
+                    const proc = PROCESSES.find(p => p.id === currentProcess);
+                    const procName = proc ? proc.name : `공정 ${currentProcess}`;
+                    alert(`⚠️ 권한 없음\n\nEditor는 ${procName}에서 기둥을 선택할 수 없습니다.\n\n허용된 공정: ${allowedProcesses.map(p => {
+                        const pr = PROCESSES.find(pr => pr.id === p);
+                        return pr ? `${p}.${pr.name}` : `${p}`;
+                    }).join(', ')}\n\n보기만 가능합니다.`);
+                    return;
+                }
+            }
+            
             // 휴무일 체크
             const workDate = document.getElementById('work-date')?.value;
             if (workDate && isHoliday(workDate)) {
@@ -3933,16 +5524,17 @@
                 return;
             }
             
-            // Admin과 Approver는 모든 공정에서 입력 가능
-            // Editor의 경우 허용된 공정만 저장 가능
-            if (userRole === 'editor' && !allowedProcesses.includes(currentProcess)) {
-                const proc = PROCESSES.find(p => p.id === currentProcess);
-                const procName = proc ? proc.name : `공정 ${currentProcess}`;
-                alert(`⚠️ 권한 없음\n\nEditor는 ${procName}을 수정할 수 없습니다.\n\n허용된 공정: ${allowedProcesses.map(p => {
-                    const pr = PROCESSES.find(pr => pr.id === p);
-                    return pr ? `${p}.${pr.name}` : `${p}`;
-                }).join(', ')}`);
-                return;
+            // 🔒 [가드] 권한 체크: Editor는 허용된 공정만 저장 가능
+            if (userRole === 'editor' && currentProcess) {
+                if (!canEditProcess(currentProcess)) {
+                    const proc = PROCESSES.find(p => p.id === currentProcess);
+                    const procName = proc ? proc.name : `공정 ${currentProcess}`;
+                    alert(`⚠️ 권한 없음\n\nEditor는 ${procName}을 수정할 수 없습니다.\n\n허용된 공정: ${allowedProcesses.map(p => {
+                        const pr = PROCESSES.find(pr => pr.id === p);
+                        return pr ? `${p}.${pr.name}` : `${p}`;
+                    }).join(', ')}`);
+                    return;
+                }
             }
             
             if (selectedColumns.length === 0) {
@@ -4590,6 +6182,9 @@
                 container.appendChild(div);
             }
             
+            // 기둥 그리드 렌더링 후 공정별 권한 적용
+            applyProcessPermissionToColumnGrid();
+            
             // 가이드 통계 업데이트
             if (containerId === 'column-grid-input') {
                 const statsDiv = document.getElementById('guide-stats');
@@ -4617,6 +6212,20 @@
 
         // 수정 모드 활성화/비활성화
         function enableEditMode() {
+            // 🔒 [가드] 권한 체크: Viewer는 수정 모드 활성화 불가
+            if (userRole === 'viewer') {
+                alert('⚠️ 권한 없음\n\nViewer는 수정 모드를 사용할 수 없습니다. (읽기 전용)');
+                return;
+            }
+            
+            // 🔒 [가드] 권한 체크: Editor는 허용된 공정이 있을 때만 수정 모드 활성화 가능
+            if (userRole === 'editor') {
+                if (!Array.isArray(allowedProcesses) || allowedProcesses.length === 0) {
+                    alert('⚠️ 권한 없음\n\nEditor는 허용된 공정이 없습니다.\n\n관리자에게 문의하세요.');
+                    return;
+                }
+            }
+            
             editMode = !editMode;
             const btn = document.getElementById('edit-mode-btn');
             if (!btn) {
@@ -4677,6 +6286,25 @@
         }
 
         function selectProcessForDelete(processNum) {
+            // 🔒 [가드] 권한 체크: Viewer는 삭제 불가
+            if (userRole === 'viewer') {
+                alert('⚠️ 권한 없음\n\nViewer는 공정 데이터를 삭제할 수 없습니다. (읽기 전용)');
+                hideProcessSelectionModal();
+                return;
+            }
+            
+            // 🔒 [가드] 권한 체크: Editor는 허용된 공정만 삭제 가능
+            if (userRole === 'editor' && !canEditProcess(processNum)) {
+                const proc = PROCESSES.find(p => p.id === processNum);
+                const procName = proc ? proc.name : `공정 ${processNum}`;
+                alert(`⚠️ 권한 없음\n\nEditor는 ${procName}을 삭제할 수 없습니다.\n\n허용된 공정: ${allowedProcesses.map(p => {
+                    const pr = PROCESSES.find(pr => pr.id === p);
+                    return pr ? `${p}.${pr.name}` : `${p}`;
+                }).join(', ')}`);
+                hideProcessSelectionModal();
+                return;
+            }
+            
             if (!pendingDeleteInfo) {
                 hideProcessSelectionModal();
                 return;
@@ -4700,6 +6328,23 @@
 
         // 실제 삭제 실행 함수
         function executeProcessDelete(columnNum, dateStr, processToDelete) {
+            // 🔒 [가드] 권한 체크: Viewer는 삭제 불가
+            if (userRole === 'viewer') {
+                alert('⚠️ 권한 없음\n\nViewer는 공정 데이터를 삭제할 수 없습니다. (읽기 전용)');
+                return;
+            }
+            
+            // 🔒 [가드] 권한 체크: Editor는 허용된 공정만 삭제 가능
+            if (userRole === 'editor' && !canEditProcess(processToDelete)) {
+                const proc = PROCESSES.find(p => p.id === processToDelete);
+                const procName = proc ? proc.name : `공정 ${processToDelete}`;
+                alert(`⚠️ 권한 없음\n\nEditor는 ${procName}을 삭제할 수 없습니다.\n\n허용된 공정: ${allowedProcesses.map(p => {
+                    const pr = PROCESSES.find(pr => pr.id === p);
+                    return pr ? `${p}.${pr.name}` : `${p}`;
+                }).join(', ')}`);
+                return;
+            }
+            
             const colId = columnNum + 'C';
             const processNames = ['', '주기둥커팅', '소부재가공', '주기둥조립', '소부재조립', '현장배송', '현장설치'];
             
@@ -4758,6 +6403,12 @@
 
         // Gantt 차트 셀 삭제 핸들러
         function handleGanttCellDelete(columnNum, dateStr) {
+            // 🔒 [가드] 권한 체크: Viewer는 삭제 불가
+            if (userRole === 'viewer') {
+                alert('⚠️ 권한 없음\n\nViewer는 공정 데이터를 삭제할 수 없습니다. (읽기 전용)');
+                return;
+            }
+            
             if (!deleteMode) {
                 alert('삭제 모드를 먼저 활성화해주세요.');
                 return;
@@ -4771,6 +6422,31 @@
                 const dayData = dailyData[dateStr]?.[p];
                 if (dayData && (dayData.includes(columnNum) || dayData.includes(colId) || dayData.includes(String(columnNum)))) {
                     completedProcesses.push(p);
+                }
+            }
+            
+            // 🔒 [가드] 권한 체크: Editor는 허용된 공정만 삭제 가능
+            if (userRole === 'editor') {
+                const deletableProcesses = completedProcesses.filter(p => canEditProcess(p));
+                if (deletableProcesses.length === 0) {
+                    const processList = completedProcesses.map(p => {
+                        const proc = PROCESSES.find(pr => pr.id === p);
+                        return proc ? `${p}.${proc.name}` : `${p}`;
+                    }).join(', ');
+                    alert(`⚠️ 권한 없음\n\nEditor는 다음 공정을 삭제할 수 없습니다: ${processList}\n\n허용된 공정: ${allowedProcesses.map(p => {
+                        const pr = PROCESSES.find(pr => pr.id === p);
+                        return pr ? `${p}.${pr.name}` : `${p}`;
+                    }).join(', ')}`);
+                    return;
+                }
+                // 삭제 가능한 공정만 남김
+                if (deletableProcesses.length < completedProcesses.length) {
+                    const nonDeletable = completedProcesses.filter(p => !canEditProcess(p));
+                    const nonDeletableNames = nonDeletable.map(p => {
+                        const proc = PROCESSES.find(pr => pr.id === p);
+                        return proc ? `${p}.${proc.name}` : `${p}`;
+                    }).join(', ');
+                    alert(`⚠️ 일부 공정 삭제 불가\n\n다음 공정은 권한이 없어 삭제할 수 없습니다: ${nonDeletableNames}\n\n삭제 가능한 공정만 삭제합니다.`);
                 }
             }
             
@@ -4799,7 +6475,19 @@
                     // 다른 중복 공정인 경우 기존 로직 사용 (가장 높은 공정을 남기고 나머지 삭제)
                     const processList = completedProcesses.map(p => `${p}.${processNames[p]}`).join(', ');
                     const maxProcess = Math.max(...completedProcesses);
-                    const processesToDelete = completedProcesses.filter(p => p !== maxProcess);
+                    let processesToDelete = completedProcesses.filter(p => p !== maxProcess);
+                    
+                    // 🔒 [가드] Editor는 허용된 공정만 삭제 가능
+                    if (userRole === 'editor') {
+                        processesToDelete = processesToDelete.filter(p => canEditProcess(p));
+                        if (processesToDelete.length === 0) {
+                            alert(`⚠️ 권한 없음\n\nEditor는 삭제할 수 있는 공정이 없습니다.\n\n허용된 공정: ${allowedProcesses.map(p => {
+                                const pr = PROCESSES.find(pr => pr.id === p);
+                                return pr ? `${p}.${pr.name}` : `${p}`;
+                            }).join(', ')}`);
+                            return;
+                        }
+                    }
                     
                     if (confirm(`⚠️ 중복된 데이터 삭제\n\n${colId}의 ${dateStr}에 중복 입력된 공정을 삭제하시겠습니까?\n\n유지할 공정: ${maxProcess}.${processNames[maxProcess]}\n삭제할 공정: ${processesToDelete.map(p => `${p}.${processNames[p]}`).join(', ')}\n\n⚠️ 일일입력에서도 강제 삭제됩니다.`)) {
                         // 기존 로직: 여러 공정 삭제
@@ -5059,6 +6747,17 @@
                 const processNum = completedProcesses[0];
                 const processName = processNames[processNum];
                 
+                // 🔒 [가드] 권한 체크: Editor는 허용된 공정만 삭제 가능
+                if (userRole === 'editor' && !canEditProcess(processNum)) {
+                    const proc = PROCESSES.find(p => p.id === processNum);
+                    const procName = proc ? proc.name : `공정 ${processNum}`;
+                    alert(`⚠️ 권한 없음\n\nEditor는 ${procName}을 삭제할 수 없습니다.\n\n허용된 공정: ${allowedProcesses.map(p => {
+                        const pr = PROCESSES.find(pr => pr.id === p);
+                        return pr ? `${p}.${pr.name}` : `${p}`;
+                    }).join(', ')}`);
+                    return;
+                }
+                
                 if (confirm(`⚠️ 데이터 삭제\n\n${colId}의 ${dateStr}에 완료된 ${processNum}.${processName} 공정을 삭제하시겠습니까?\n\n⚠️ 일일입력에서도 강제 삭제됩니다.`)) {
                     // 해당 공정 삭제
                     if (dailyData[dateStr] && dailyData[dateStr][processNum]) {
@@ -5139,6 +6838,25 @@
 
         // Open Column Modal
         function openColumnModal(columnId) {
+            // 🔒 [가드] 권한 체크: Viewer는 모달 열기 불가
+            if (userRole === 'viewer') {
+                alert('⚠️ 권한 없음\n\nViewer는 기둥 정보를 수정할 수 없습니다. (읽기 전용)');
+                return;
+            }
+            
+            // 🔒 [가드] 권한 체크: Editor는 허용된 공정만 모달 열기 가능
+            if (userRole === 'editor' && currentProcess) {
+                if (!canEditProcess(currentProcess)) {
+                    const proc = PROCESSES.find(p => p.id === currentProcess);
+                    const procName = proc ? proc.name : `공정 ${currentProcess}`;
+                    alert(`⚠️ 권한 없음\n\nEditor는 ${procName}에서 기둥 정보를 수정할 수 없습니다.\n\n허용된 공정: ${allowedProcesses.map(p => {
+                        const pr = PROCESSES.find(pr => pr.id === p);
+                        return pr ? `${p}.${pr.name}` : `${p}`;
+                    }).join(', ')}\n\n보기만 가능합니다.`);
+                    return;
+                }
+            }
+            
             // 현장배송(process 5)은 운송차수계획에서 관리되므로 모달 열기 비활성화
             if (currentProcess === 5 && !editMode) {
                 alert('현장배송은 운송차수계획에서 이미 설정되었으므로 별도 입력이 없습니다.\n\n운송차수계획 탭에서 배송 일정을 확인하세요.');
@@ -5283,18 +7001,22 @@
                 return;
             }
             
-            // Admin과 Approver는 모든 공정에서 입력 가능
+            // Admin은 모든 공정에서 입력 가능
             // Editor의 경우 허용된 공정만 저장 가능
             const selectedStatus = parseInt(document.getElementById('modal-process-select').value);
             const newStatus = editMode ? selectedStatus : (currentProcess || selectedStatus);
-            if (userRole === 'editor' && !allowedProcesses.includes(newStatus)) {
-                const proc = PROCESSES.find(p => p.id === newStatus);
-                const procName = proc ? proc.name : `공정 ${newStatus}`;
-                alert(`⚠️ 권한 없음\n\nEditor는 ${procName}을 수정할 수 없습니다.\n\n허용된 공정: ${allowedProcesses.map(p => {
-                    const pr = PROCESSES.find(pr => pr.id === p);
-                    return pr ? `${p}.${pr.name}` : `${p}`;
-                }).join(', ')}`);
-                return;
+            
+            // 🔒 [가드] 권한 체크: Editor는 허용된 공정만 저장 가능
+            if (userRole === 'editor' && newStatus > 0) {
+                if (!canEditProcess(newStatus)) {
+                    const proc = PROCESSES.find(p => p.id === newStatus);
+                    const procName = proc ? proc.name : `공정 ${newStatus}`;
+                    alert(`⚠️ 권한 없음\n\nEditor는 ${procName}을 수정할 수 없습니다.\n\n허용된 공정: ${allowedProcesses.map(p => {
+                        const pr = PROCESSES.find(pr => pr.id === p);
+                        return pr ? `${p}.${pr.name}` : `${p}`;
+                    }).join(', ')}`);
+                    return;
+                }
             }
             if (!selectedColumn) {
                 alert('기둥이 선택되지 않았습니다.');
@@ -5768,8 +7490,8 @@
                             // 주기둥커팅(1)과 소부재가공(2)이 모두 있는 경우 두 개의 div로 분할 표시
                             if (cellClass === 'gantt-cell both') {
                                 bodyHtml += `<div style="display:flex;width:100%;height:20px;border-radius:0;">`;
-                                bodyHtml += `<div class="gantt-cell p1" style="flex:1;height:20px;min-width:0;cursor:pointer;" onclick="selectProcess(1); showPanel('input', null);" onmouseover="this.style.opacity='0.8';" onmouseout="this.style.opacity='1';"></div>`;
-                                bodyHtml += `<div class="gantt-cell p2" style="flex:1;height:20px;min-width:0;cursor:pointer;" onclick="selectProcess(2); showPanel('input', null);" onmouseover="this.style.opacity='0.8';" onmouseout="this.style.opacity='1';"></div>`;
+                                bodyHtml += `<div class="gantt-cell p1" data-process="1" style="flex:1;height:20px;min-width:0;cursor:pointer;" onclick="selectProcess(1); showPanel('input', null);" onmouseover="this.style.opacity='0.8';" onmouseout="this.style.opacity='1';"></div>`;
+                                bodyHtml += `<div class="gantt-cell p2" data-process="2" style="flex:1;height:20px;min-width:0;cursor:pointer;" onclick="selectProcess(2); showPanel('input', null);" onmouseover="this.style.opacity='0.8';" onmouseout="this.style.opacity='1';"></div>`;
                                 bodyHtml += `</div>`;
                             } else {
                                 // process 5 (현장배송)인 경우 차수번호 또는 "O" 표시
@@ -5790,7 +7512,17 @@
                                     }
                                 }
                                 
-                                bodyHtml += `<div class="${cellClass}" style="${cellStyle}">${cellText}</div>`;
+                                // 공정 번호 추출 (p1, p2, p3, p4, p5, p6)
+                                let processNo = null;
+                                if (cellClass.includes('p1')) processNo = 1;
+                                else if (cellClass.includes('p2')) processNo = 2;
+                                else if (cellClass.includes('p3')) processNo = 3;
+                                else if (cellClass.includes('p4')) processNo = 4;
+                                else if (cellClass.includes('p5')) processNo = 5;
+                                else if (cellClass.includes('p6')) processNo = 6;
+                                
+                                const dataProcessAttr = processNo ? `data-process="${processNo}"` : '';
+                                bodyHtml += `<div class="${cellClass}" ${dataProcessAttr} style="${cellStyle}">${cellText}</div>`;
                             }
                         }
                         bodyHtml += '</td>';
@@ -5822,6 +7554,9 @@
             footerHtml += '</tr></tfoot>';
             
             table.innerHTML = headerHtml + bodyHtml + footerHtml;
+            
+            // 간트 차트 렌더링 후 공정별 권한 적용
+            applyProcessPermissionToGantt();
         }
 
         // Render Charts
@@ -6186,6 +7921,24 @@
         }
 
         async function saveToStorage() {
+            // 🔒 [가드] 권한 체크: Viewer는 저장 불가
+            if (userRole === 'viewer') {
+                console.warn('⚠️ [가드] Viewer는 데이터를 저장할 수 없습니다.');
+                return;
+            }
+            
+            // 🔒 [가드] 권한 체크: Editor는 허용된 공정만 저장 가능
+            if (userRole === 'editor' && currentProcess) {
+                if (!canEditProcess(currentProcess)) {
+                    console.warn(`⚠️ [가드] Editor는 공정 ${currentProcess}을 저장할 수 없습니다.`);
+                    alert(`⚠️ 권한 없음\n\nEditor는 현재 공정을 저장할 수 없습니다.\n\n허용된 공정: ${allowedProcesses.map(p => {
+                        const pr = PROCESSES.find(pr => pr.id === p);
+                        return pr ? `${p}.${pr.name}` : `${p}`;
+                    }).join(', ')}`);
+                    return;
+                }
+            }
+            
             try {
                 // 항상 localStorage에 먼저 저장 (백업)
                 localStorage.setItem(kcolKey('steelColumnData'), JSON.stringify(columnData));
@@ -6195,9 +7948,25 @@
                 localStorage.setItem(kcolKey('actualDeliveryDate'), JSON.stringify(actualDeliveryDate));
                 console.log('✅ localStorage 저장 완료');
                 
-                // Firebase Firestore에도 저장 시도
+                // Firebase Firestore에도 저장 시도 (인증된 사용자만, 익명 사용자 차단)
                 if (initFirebase() && firebaseAuth.currentUser) {
+                    // 익명 사용자 차단
+                    if (firebaseAuth.currentUser.isAnonymous) {
+                        console.warn('⚠️ 익명 로그인 상태에서는 Firebase에 저장할 수 없습니다. localStorage에만 저장됩니다.');
+                        const modeEl = document.getElementById('current-mode');
+                        if (modeEl) {
+                            modeEl.textContent = '🔴 익명 로그인 (Firebase 저장 불가)';
+                            modeEl.style.color = '#f44336';
+                        }
+                        return; // Firebase 저장 건너뛰기
+                    }
+                    
                     try {
+                        const projectRef = firebaseDb.collection('projects').doc(PROJECT_ID);
+                        
+                        // 문서 존재 여부 확인
+                        const docSnapshot = await projectRef.get();
+                        
                         const projectData = {
                             columnData: columnData,
                             dailyData: dailyData,
@@ -6209,8 +7978,15 @@
                             updatedBy: firebaseAuth.currentUser.uid
                         };
                         
-                        await firebaseDb.collection('projects').doc(PROJECT_ID).set(projectData, { merge: true });
-                        console.log('✅ Firestore 저장 완료:', PROJECT_ID);
+                        // 문서가 있으면 updateDoc, 없으면 setDoc 사용 (덮어쓰기 방지)
+                        if (docSnapshot.exists) {
+                            await projectRef.update(projectData);
+                            console.log('✅ Firestore 업데이트 완료:', PROJECT_ID);
+                        } else {
+                            // 문서가 없을 때만 setDoc 사용 (초기 생성)
+                            await projectRef.set(projectData);
+                            console.log('✅ Firestore 생성 완료:', PROJECT_ID);
+                        }
                         
                         // 연결 상태 업데이트
                         const modeEl = document.getElementById('current-mode');
@@ -6220,6 +7996,9 @@
                         }
                     } catch (firebaseError) {
                         console.warn('⚠️ Firestore 저장 실패 (localStorage는 저장됨):', firebaseError);
+                        if (firebaseError.code === 'permission-denied') {
+                            console.error('❌ Firestore 권한 오류: 로그인 상태와 권한을 확인하세요.');
+                        }
                     }
                 } else {
                     // Firebase가 연결되지 않은 경우 상태 업데이트
@@ -6285,6 +8064,12 @@
         
         // 배송확인 토글 함수
         function toggleDeliveryConfirmation(columnId) {
+            // 🔒 [가드] 권한 체크: Admin만 배송확인 가능
+            if (userRole !== 'admin') {
+                alert('⚠️ 권한 없음\n\n배송확인은 관리자(Admin)만 가능합니다.');
+                return;
+            }
+            
             // 운송차수계획에 있는 기둥만 배송확인 가능
             let hasTransportPlan = false;
             for (let date in dailyData) {
@@ -6394,42 +8179,51 @@
         }
 
         async function loadFromLocalStorage() {
-            // Firebase Firestore에서 먼저 로드 시도
+            // Firebase Firestore에서 먼저 로드 시도 (인증된 사용자만, 익명 사용자 차단)
             if (initFirebase() && firebaseAuth.currentUser) {
-                try {
-                    const projectDoc = await firebaseDb.collection('projects').doc(PROJECT_ID).get();
-                    
-                    if (projectDoc.exists) {
-                        const projectData = projectDoc.data();
-                        console.log('✅ Firestore에서 데이터 로드 완료:', PROJECT_ID);
+                // 익명 사용자 차단
+                if (firebaseAuth.currentUser.isAnonymous) {
+                    console.warn('⚠️ 익명 로그인 상태에서는 Firestore에서 데이터를 로드할 수 없습니다. localStorage를 사용합니다.');
+                    // localStorage 로드로 계속 진행
+                } else {
+                    try {
+                        const projectDoc = await firebaseDb.collection('projects').doc(PROJECT_ID).get();
                         
-                        columnData = projectData.columnData || {};
-                        dailyData = projectData.dailyData || {};
-                        columnCoordinates = projectData.columnCoordinates || {};
-                        deliveryConfirmed = projectData.deliveryConfirmed || {};
-                        actualDeliveryDate = projectData.actualDeliveryDate || {};
-                        transportPlan = projectData.transportPlan || {};
-                        
-                        // localStorage에도 동기화 (백업)
-                        localStorage.setItem(kcolKey('steelColumnData'), JSON.stringify(columnData));
-                        localStorage.setItem(kcolKey('steelColumnDaily'), JSON.stringify(dailyData));
-                        localStorage.setItem(kcolKey('columnCoordinates'), JSON.stringify(columnCoordinates));
-                        localStorage.setItem(kcolKey('deliveryConfirmed'), JSON.stringify(deliveryConfirmed));
-                        localStorage.setItem(kcolKey('actualDeliveryDate'), JSON.stringify(actualDeliveryDate));
-                        localStorage.setItem(kcolKey('transportPlan'), JSON.stringify(transportPlan));
-                        
-                        // Firebase 연결 상태 업데이트
-                        const modeEl = document.getElementById('current-mode');
-                        if (modeEl) {
-                            modeEl.textContent = '🟢 Firebase 연결됨 (Firestore 저장)';
-                            modeEl.style.color = '#4caf50';
+                        if (projectDoc.exists) {
+                            const projectData = projectDoc.data();
+                            console.log('✅ Firestore에서 데이터 로드 완료:', PROJECT_ID);
+                            
+                            columnData = projectData.columnData || {};
+                            dailyData = projectData.dailyData || {};
+                            columnCoordinates = projectData.columnCoordinates || {};
+                            deliveryConfirmed = projectData.deliveryConfirmed || {};
+                            actualDeliveryDate = projectData.actualDeliveryDate || {};
+                            transportPlan = projectData.transportPlan || {};
+                            
+                            // localStorage에도 동기화 (백업)
+                            localStorage.setItem(kcolKey('steelColumnData'), JSON.stringify(columnData));
+                            localStorage.setItem(kcolKey('steelColumnDaily'), JSON.stringify(dailyData));
+                            localStorage.setItem(kcolKey('columnCoordinates'), JSON.stringify(columnCoordinates));
+                            localStorage.setItem(kcolKey('deliveryConfirmed'), JSON.stringify(deliveryConfirmed));
+                            localStorage.setItem(kcolKey('actualDeliveryDate'), JSON.stringify(actualDeliveryDate));
+                            localStorage.setItem(kcolKey('transportPlan'), JSON.stringify(transportPlan));
+                            
+                            // Firebase 연결 상태 업데이트
+                            const modeEl = document.getElementById('current-mode');
+                            if (modeEl) {
+                                modeEl.textContent = '🟢 Firebase 연결됨 (Firestore 저장)';
+                                modeEl.style.color = '#4caf50';
+                            }
+                            
+                            syncTransportToDailyData(false);
+                            return;
                         }
-                        
-                        syncTransportToDailyData(false);
-                        return;
+                    } catch (firebaseError) {
+                        console.warn('⚠️ Firestore 로드 실패, localStorage 사용:', firebaseError);
+                        if (firebaseError.code === 'permission-denied') {
+                            console.error('❌ Firestore 권한 오류: 로그인 상태와 권한을 확인하세요.');
+                        }
                     }
-                } catch (firebaseError) {
-                    console.warn('⚠️ Firestore 로드 실패, localStorage 사용:', firebaseError);
                 }
             }
             
@@ -7505,14 +9299,14 @@
                 return;
             }
             
-            // 권한 체크: Viewer는 업로드 불가, Admin/Approver는 모든 공정 가능
+            // 권한 체크: Viewer는 업로드 불가, Admin은 모든 공정 가능
             if (userRole === 'viewer') {
                 alert('⚠️ 권한 없음\n\nViewer는 엑셀 파일을 업로드할 수 없습니다.');
                 if (statusEl) statusEl.textContent = '⚠️ 권한 없음';
                 return;
             }
             
-            // Editor는 허용된 공정만 업로드 가능, Admin/Approver는 모든 공정 가능
+            // Editor는 허용된 공정만 업로드 가능, Admin은 모든 공정 가능
             if (userRole === 'editor') {
                 // Editor는 허용된 공정만 업로드 가능
                 // 엑셀 파일을 읽어서 어떤 공정 데이터가 포함되어 있는지 확인해야 하지만,
@@ -7617,8 +9411,8 @@
                             ];
                             
                             processDates.forEach(({ name, process, keys }) => {
-                                // 권한 체크: Editor는 허용된 공정만 처리, Admin/Approver는 모든 공정 처리
-                                if (userRole === 'editor' && !allowedProcesses.includes(process)) {
+                                // 🔒 [가드] 권한 체크: Editor는 허용된 공정만 처리, Admin은 모든 공정 처리
+                                if (!canEditProcess(process)) {
                                     skippedProcesses.add(process);
                                     skippedCount++;
                                     return; // 허용되지 않은 공정은 스킵
@@ -8416,14 +10210,14 @@
                 return;
             }
             
-            // 권한 체크: Viewer는 업로드 불가, Editor는 공정 5만 허용, Admin/Approver는 모든 공정 가능
+            // 권한 체크: Viewer는 업로드 불가, Editor는 공정 5만 허용, Admin은 모든 공정 가능
             if (userRole === 'viewer') {
                 alert('⚠️ 권한 없음\n\nViewer는 운송물량산정 파일을 업로드할 수 없습니다.');
                 if (statusEl) statusEl.textContent = '⚠️ 권한 없음';
                 return;
             }
             
-            // Editor는 공정 5만 허용, Admin/Approver는 모든 공정 가능
+            // Editor는 공정 5만 허용, Admin은 모든 공정 가능
             if (userRole === 'editor' && !allowedProcesses.includes(5)) {
                 alert('⚠️ 권한 없음\n\nEditor는 현장배송(공정 5) 파일을 업로드할 수 없습니다.\n\n허용된 공정: ' + allowedProcesses.map(p => {
                     const proc = PROCESSES.find(pr => pr.id === p);

@@ -1,46 +1,85 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // 사용자 역할 가져오기 헬퍼 함수
-    function getUserRole() {
-      let roleDoc = get(/databases/$(database)/documents/user_roles/$(request.auth.uid));
-      return roleDoc != null ? roleDoc.data.role : null;
+
+    // 이메일/비밀번호 로그인만 허용(익명 차단)
+    function isSignedInNonAnon() {
+      return request.auth != null
+        && request.auth.token.firebase.sign_in_provider != 'anonymous';
     }
-    
-    // 역할이 있는지 확인 (익명 사용자 차단)
-    function hasRole() {
-      return getUserRole() != null;
+
+    // 현재 사용자의 멤버 문서
+    function myMemberDoc(projectId) {
+      return get(/databases/$(database)/documents/projects/$(projectId)/members/$(request.auth.uid));
     }
-    
-    // 사용자 역할 관리
-    match /user_roles/{userId} {
-      // 인증된 사용자는 자신의 역할 읽기 가능
-      allow read: if request.auth != null && request.auth.uid == userId;
-      // Admin만 사용자 역할 수정 가능
-      allow write: if request.auth != null && 
-        get(/databases/$(database)/documents/user_roles/$(request.auth.uid)).data.role == 'admin';
+
+    // 프로젝트 멤버인지
+    function hasRoleInProject(projectId) {
+      return isSignedInNonAnon()
+        && exists(/databases/$(database)/documents/projects/$(projectId)/members/$(request.auth.uid));
     }
-    
-    // kcolumn collection: projectId 기반 접근 허용
-    // 경로: kcolumn/{projectId}_{suffix}
-    // 예: kcolumn/P1_columnData, kcolumn/P1_dailyData 등
-    match /kcolumn/{document=**} {
-      // 인증된 사용자는 모두 읽기 가능 (익명 사용자 포함)
-      allow read: if request.auth != null;
-      
-      // 역할이 있는 사용자만 읽기 가능 (Viewer, Editor, Approver, Admin)
-      // allow read: if request.auth != null && hasRole();
-      
-      // 인증된 사용자는 모두 쓰기 가능 (익명 사용자 포함, 테스트용)
-      // 프로덕션 환경에서는 아래 주석 처리된 규칙을 사용하세요
-      allow write: if request.auth != null;
-      
-      // Editor, Approver, Admin: 쓰기 가능 (프로덕션용)
-      // allow write: if request.auth != null && hasRole() && 
-      //   (getUserRole() == 'editor' || getUserRole() == 'approver' || getUserRole() == 'admin');
-      
-      // Admin: 모든 권한 (즉시 적용)
-      allow read, write: if request.auth != null && getUserRole() == 'admin';
+
+    // Admin인지 (문서 존재 + role 체크)
+    function isAdminInProject(projectId) {
+      return isSignedInNonAnon()
+        && myMemberDoc(projectId).exists()
+        && myMemberDoc(projectId).data.role == "admin";
+    }
+
+    // Editor인지 (참고용)
+    function isEditorInProject(projectId) {
+      return isSignedInNonAnon()
+        && myMemberDoc(projectId).exists()
+        && myMemberDoc(projectId).data.role == "editor";
+    }
+
+    // projects
+    match /projects/{projectId} {
+
+      // 멤버만 프로젝트 문서 read
+      allow read: if hasRoleInProject(projectId);
+
+      // Admin만 프로젝트 write
+      allow write: if isAdminInProject(projectId);
+
+      // members
+      match /members/{uid} {
+
+        // 본인은 자기 멤버 문서 read 가능(부트스트랩)
+        // Admin은 전체 멤버 문서 read 가능
+        allow read: if isSignedInNonAnon() && (
+          request.auth.uid == uid ||
+          isAdminInProject(projectId)
+        );
+
+        // Admin만 멤버 write
+        allow write: if isAdminInProject(projectId);
+      }
+
+      // schedules
+      match /schedules/{scheduleId} {
+
+        // 멤버만 read
+        allow read: if hasRoleInProject(projectId);
+
+        // Admin만 write
+        allow write: if isAdminInProject(projectId);
+      }
+    }
+
+    // 레거시 차단
+    match /user_roles/{document=**} {
+      allow read, write: if false;
+    }
+
+    // kcolumn: docId = P1_xxx 형태
+    function projectIdFromKcolumnId(docId) {
+      return docId.split('_')[0];
+    }
+
+    match /kcolumn/{docId} {
+      allow read: if isSignedInNonAnon() && hasRoleInProject(projectIdFromKcolumnId(docId));
+      allow write: if isSignedInNonAnon() && isAdminInProject(projectIdFromKcolumnId(docId));
     }
   }
 }
