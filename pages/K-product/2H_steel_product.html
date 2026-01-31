@@ -1698,6 +1698,13 @@
                     const allowedProcesses = userData.allowedProcesses || [];
                     
                     console.log('✅ Firebase에서 역할 로드:', role, allowedProcesses);
+                    console.log('📋 Firestore 문서 데이터:', userData);
+                    
+                    // 역할이 제대로 설정되었는지 확인
+                    if (!role || role === 'viewer') {
+                        console.warn('⚠️ 역할이 viewer이거나 설정되지 않았습니다. Firestore 문서를 확인하세요.');
+                        console.log('💡 Firestore 문서:', userData);
+                    }
                     
                     // localStorage에도 저장 (캐시)
                     localStorage.setItem('kcol:userRole', role);
@@ -1707,6 +1714,8 @@
                     return { role, allowedProcesses };
                 } else {
                     console.log('ℹ️ Firestore에 사용자 역할 문서가 없습니다. 생성이 필요합니다.');
+                    console.log('💡 UID:', user.uid);
+                    console.log('💡 Firestore 경로: user_roles/' + user.uid);
                     return null;
                 }
             } catch (error) {
@@ -1726,6 +1735,25 @@
                     if (roleData) {
                         userRole = roleData.role;
                         allowedProcesses = roleData.allowedProcesses;
+                        console.log('✅ 역할 적용:', userRole, '허용 공정:', allowedProcesses);
+                        
+                        // 역할이 제대로 로드되었는지 확인
+                        if (userRole === 'viewer') {
+                            console.warn('⚠️ 역할이 viewer로 로드되었습니다.');
+                            console.log('💡 Firestore 문서 확인: user_roles/' + user.uid);
+                            console.log('💡 Firestore 문서 데이터:', roleData);
+                        }
+                        
+                        applyRoleBasedUI();
+                    } else {
+                        console.warn('⚠️ Firestore에서 역할을 로드하지 못했습니다.');
+                        console.log('💡 Firestore 경로: user_roles/' + user.uid);
+                        console.log('💡 역할 설정이 필요합니다.');
+                        
+                        // localStorage에서 로드 시도
+                        userRole = localStorage.getItem('kcol:userRole') || 'viewer';
+                        allowedProcesses = JSON.parse(localStorage.getItem('kcol:allowedProcesses') || '[]');
+                        console.log('💡 localStorage에서 역할 로드:', userRole);
                         applyRoleBasedUI();
                     }
                     
@@ -2011,24 +2039,45 @@
             }
             
             try {
-                await firebaseDb.collection('user_roles').doc(uid).set({
+                const processesArray = allowedProcesses.map(p => parseInt(p));
+                const roleData = {
                     role: 'editor',
-                    allowedProcesses: allowedProcesses.map(p => parseInt(p)),
+                    allowedProcesses: processesArray,
                     projectId: PROJECT_ID,
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
                     createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                }, { merge: true });
+                };
                 
-                console.log('✅ Firestore에 Editor 역할 설정 완료:', uid, allowedProcesses);
+                console.log('📝 Firestore에 Editor 역할 저장 중...');
+                console.log('   UID:', uid);
+                console.log('   역할 데이터:', roleData);
+                
+                await firebaseDb.collection('user_roles').doc(uid).set(roleData, { merge: true });
+                
+                // 저장 확인
+                const savedDoc = await firebaseDb.collection('user_roles').doc(uid).get();
+                if (savedDoc.exists) {
+                    const savedData = savedDoc.data();
+                    console.log('✅ Firestore에 Editor 역할 설정 완료');
+                    console.log('   저장된 데이터:', savedData);
+                    console.log('   역할:', savedData.role);
+                    console.log('   허용 공정:', savedData.allowedProcesses);
+                } else {
+                    console.error('❌ Firestore 저장 확인 실패: 문서가 존재하지 않습니다.');
+                }
                 
                 // 현재 사용자가 해당 UID인 경우 역할 재로드
                 const currentUser = firebaseAuth.currentUser;
                 if (currentUser && currentUser.uid === uid) {
+                    console.log('🔄 현재 사용자 역할 재로드 중...');
                     const roleData = await loadUserRoleFromFirebase();
                     if (roleData) {
                         userRole = roleData.role;
                         allowedProcesses = roleData.allowedProcesses;
+                        console.log('✅ 역할 재로드 완료:', userRole, '허용 공정:', allowedProcesses);
                         applyRoleBasedUI();
+                    } else {
+                        console.warn('⚠️ 역할 재로드 실패');
                     }
                 }
                 
@@ -2502,9 +2551,23 @@
                         }
                     }, 3000);
                     
-                    // 역할 재로드
-                    await loadUserRole();
-                    applyRoleBasedUI();
+                    // 현재 사용자가 설정한 UID인 경우 역할 재로드
+                    const currentUser = firebaseAuth?.currentUser;
+                    if (currentUser && currentUser.uid === editorUID) {
+                        console.log('🔄 현재 사용자 역할 재로드 중...');
+                        await loadUserRole();
+                        applyRoleBasedUI();
+                        showToast('Editor 역할이 적용되었습니다!', 'success');
+                    } else {
+                        console.log('ℹ️ 설정한 UID와 현재 로그인한 UID가 다릅니다.');
+                        console.log('   설정한 UID:', editorUID);
+                        console.log('   현재 로그인 UID:', currentUser?.uid || '(로그인 안 됨)');
+                        console.log('💡 해당 UID로 로그인하면 Editor 권한을 사용할 수 있습니다.');
+                        
+                        // 역할 재로드 (현재 사용자용)
+                        await loadUserRole();
+                        applyRoleBasedUI();
+                    }
                 } else {
                     showToast('Editor 설정 실패. 콘솔을 확인하세요.', 'error');
                     if (statusDiv) {
@@ -2735,14 +2798,26 @@
         
         // 역할 로드 함수 (Firebase 우선, localStorage fallback)
         async function loadUserRole() {
+            console.log('🔍 역할 로드 시작...');
+            
             // 1. Firebase에서 역할 로드 시도
             const firebaseRole = await loadUserRoleFromFirebase();
             if (firebaseRole) {
                 userRole = firebaseRole.role;
                 allowedProcesses = firebaseRole.allowedProcesses;
-                console.log('✅ Firebase에서 역할 로드 완료:', userRole);
+                console.log('✅ Firebase에서 역할 로드 완료:', userRole, '허용 공정:', allowedProcesses);
+                
+                // 역할이 제대로 로드되었는지 확인
+                if (!userRole || userRole === 'viewer') {
+                    console.warn('⚠️ 역할이 viewer로 로드되었습니다. Firestore 문서를 확인하세요.');
+                    console.log('💡 현재 Firebase 사용자 UID:', firebaseAuth.currentUser?.uid);
+                    console.log('💡 Firestore 경로: user_roles/' + firebaseAuth.currentUser?.uid);
+                }
+                
                 return;
             }
+            
+            console.log('ℹ️ Firebase에서 역할을 로드하지 못했습니다. 다음 방법 시도...');
             
             // 2. UID 기반 역할 확인 (localStorage)
             const uidBasedRole = checkRoleByUID();
@@ -2754,7 +2829,13 @@
             // 3. localStorage에서 로드
             userRole = localStorage.getItem('kcol:userRole') || 'viewer';
             allowedProcesses = JSON.parse(localStorage.getItem('kcol:allowedProcesses') || '[]');
-            console.log('✅ localStorage에서 역할 로드 완료:', userRole);
+            console.log('✅ localStorage에서 역할 로드 완료:', userRole, '허용 공정:', allowedProcesses);
+            
+            // localStorage 역할이 viewer인 경우 경고
+            if (userRole === 'viewer') {
+                console.warn('⚠️ localStorage에서 viewer 역할이 로드되었습니다.');
+                console.log('💡 Firebase에 로그인하고 Editor 역할이 설정되어 있는지 확인하세요.');
+            }
         }
         
         // Firebase 인증 리스너 설정 및 초기 역할 로드
