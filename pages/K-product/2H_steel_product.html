@@ -782,15 +782,76 @@
                 <div>공사기간: 2025.12.26 ~ 2026.04.30</div>
                 <div style="margin-top:5px;">총 기둥수: <strong>50개</strong></div>
                 <div style="margin-top:10px;padding:8px;background:rgba(255,255,255,0.1);border-radius:6px;font-size:12px;">
-                    <div style="display:flex;align-items:center;gap:6px;">
-                        <input type="text" id="admin-uid-input" placeholder="Admin UID 입력" 
-                               style="flex:1;padding:6px 10px;border:1px solid rgba(255,255,255,0.3);border-radius:4px;background:rgba(255,255,255,0.9);color:#333;font-size:11px;">
-                        <button id="admin-setup-btn"
-                                style="padding:6px 12px;background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.3);border-radius:4px;color:white;cursor:pointer;font-size:11px;font-weight:600;white-space:nowrap;">
-                            Admin 설정
-                        </button>
+                    <!-- Admin 설정 -->
+                    <div style="margin-bottom:8px;">
+                        <div style="display:flex;align-items:center;gap:6px;">
+                            <input type="text" id="admin-uid-input" placeholder="Admin UID 입력" 
+                                   style="flex:1;padding:6px 10px;border:1px solid rgba(255,255,255,0.3);border-radius:4px;background:rgba(255,255,255,0.9);color:#333;font-size:11px;">
+                            <button id="admin-setup-btn"
+                                    style="padding:6px 12px;background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.3);border-radius:4px;color:white;cursor:pointer;font-size:11px;font-weight:600;white-space:nowrap;">
+                                Admin 설정
+                            </button>
+                        </div>
+                        <div id="admin-uid-status" style="margin-top:4px;font-size:10px;opacity:0.8;"></div>
                     </div>
-                    <div id="admin-uid-status" style="margin-top:4px;font-size:10px;opacity:0.8;"></div>
+                    
+                    <!-- Editor 설정 -->
+                    <div style="padding-top:8px;border-top:1px solid rgba(255,255,255,0.2);">
+                        <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
+                            <input type="text" id="editor-uid-input" placeholder="Editor UID 입력" 
+                                   style="flex:1;padding:6px 10px;border:1px solid rgba(255,255,255,0.3);border-radius:4px;background:rgba(255,255,255,0.9);color:#333;font-size:11px;">
+                            <button id="editor-setup-btn"
+                                    style="padding:6px 12px;background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.3);border-radius:4px;color:white;cursor:pointer;font-size:11px;font-weight:600;white-space:nowrap;">
+                                Editor 설정
+                            </button>
+                        </div>
+                        <div style="margin-bottom:6px;font-size:10px;color:rgba(255,255,255,0.9);">
+                            허용할 공정 선택:
+                        </div>
+                        <div id="editor-process-select" style="display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-bottom:6px;">
+                            <label style="display:flex;align-items:center;gap:4px;font-size:10px;color:rgba(255,255,255,0.9);cursor:pointer;">
+                                <input type="checkbox" value="1" class="editor-process-checkbox" style="margin:0;">
+                                <span>1. 주기둥커팅</span>
+                            </label>
+                            <label style="display:flex;align-items:center;gap:4px;font-size:10px;color:rgba(255,255,255,0.9);cursor:pointer;">
+                                <input type="checkbox" value="2" class="editor-process-checkbox" style="margin:0;">
+                                <span>2. 소부재가공</span>
+                            </label>
+                            <label style="display:flex;align-items:center;gap:4px;font-size:10px;color:rgba(255,255,255,0.9);cursor:pointer;">
+                                <input type="checkbox" value="3" class="editor-process-checkbox" style="margin:0;">
+                                <span>3. 주기둥조립</span>
+                            </label>
+                            <label style="display:flex;align-items:center;gap:4px;font-size:10px;color:rgba(255,255,255,0.9);cursor:pointer;">
+                                <input type="checkbox" value="4" class="editor-process-checkbox" style="margin:0;">
+                                <span>4. 소부재조립</span>
+                            </label>
+                            <label style="display:flex;align-items:center;gap:4px;font-size:10px;color:rgba(255,255,255,0.9);cursor:pointer;">
+                                <input type="checkbox" value="5" class="editor-process-checkbox" style="margin:0;">
+                                <span>5. 현장배송</span>
+                            </label>
+                            <label style="display:flex;align-items:center;gap:4px;font-size:10px;color:rgba(255,255,255,0.9);cursor:pointer;">
+                                <input type="checkbox" value="6" class="editor-process-checkbox" style="margin:0;">
+                                <span>6. 현장설치</span>
+                            </label>
+                        </div>
+                        <div id="editor-uid-status" style="margin-top:4px;font-size:10px;opacity:0.8;"></div>
+                    </div>
+                    
+                    <!-- Viewer 설정 -->
+                    <div style="padding-top:8px;border-top:1px solid rgba(255,255,255,0.2);">
+                        <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
+                            <input type="text" id="viewer-uid-input" placeholder="Viewer UID 입력 (여러 개는 쉼표로 구분)" 
+                                   style="flex:1;padding:6px 10px;border:1px solid rgba(255,255,255,0.3);border-radius:4px;background:rgba(255,255,255,0.9);color:#333;font-size:11px;">
+                            <button id="viewer-setup-btn"
+                                    style="padding:6px 12px;background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.3);border-radius:4px;color:white;cursor:pointer;font-size:11px;font-weight:600;white-space:nowrap;">
+                                Viewer 설정
+                            </button>
+                        </div>
+                        <div style="margin-top:4px;font-size:10px;color:rgba(255,255,255,0.8);">
+                            ℹ️ Viewer는 읽기 전용 권한입니다. 여러 UID는 쉼표(,)로 구분하세요.
+                        </div>
+                        <div id="viewer-uid-status" style="margin-top:4px;font-size:10px;opacity:0.8;"></div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1392,6 +1453,25 @@
         
         // Process Selection (공정별 선택)
         window.selectProcess = function selectProcess(processId) {
+            // 권한 체크: Editor는 허용된 공정만 선택 가능
+            if (typeof userRole !== 'undefined' && userRole === 'editor') {
+                if (typeof allowedProcesses !== 'undefined' && !allowedProcesses.includes(processId)) {
+                    const proc = typeof PROCESSES !== 'undefined' ? PROCESSES.find(p => p.id === processId) : null;
+                    const procName = proc ? proc.name : `공정 ${processId}`;
+                    alert(`⚠️ 권한 없음\n\nEditor는 ${procName}을 선택할 수 없습니다.\n\n허용된 공정: ${allowedProcesses.map(p => {
+                        const pr = typeof PROCESSES !== 'undefined' ? PROCESSES.find(pr => pr.id === p) : null;
+                        return pr ? `${p}.${pr.name}` : `${p}`;
+                    }).join(', ')}\n\n보기만 가능합니다.`);
+                    return;
+                }
+            }
+            
+            // Viewer는 공정 선택 불가
+            if (typeof userRole !== 'undefined' && userRole === 'viewer') {
+                alert('⚠️ 권한 없음\n\nViewer는 공정을 선택할 수 없습니다.\n\n읽기 전용입니다.');
+                return;
+            }
+            
             if (typeof currentProcess !== 'undefined') {
                 currentProcess = processId;
             }
@@ -1416,6 +1496,48 @@
                 processBtn.classList.add('active');
             }
             
+            // Editor가 허용되지 않은 공정을 선택한 경우 입력창 비활성화
+            if (typeof userRole !== 'undefined' && userRole === 'editor') {
+                if (typeof allowedProcesses !== 'undefined' && !allowedProcesses.includes(processId)) {
+                    // 입력창 비활성화 (보기만 가능)
+                    const workDateInput = document.getElementById('work-date');
+                    const columnGridInput = document.getElementById('column-grid-input');
+                    const saveButton = document.querySelector('#panel-input button[onclick*="saveSelectedColumns"]');
+                    
+                    if (workDateInput) {
+                        workDateInput.disabled = true;
+                        workDateInput.style.opacity = '0.5';
+                    }
+                    if (columnGridInput) {
+                        columnGridInput.style.pointerEvents = 'none';
+                        columnGridInput.style.opacity = '0.5';
+                    }
+                    if (saveButton) {
+                        saveButton.disabled = true;
+                        saveButton.style.opacity = '0.5';
+                    }
+                    return; // 입력창 비활성화 후 함수 종료
+                } else {
+                    // 허용된 공정인 경우 입력창 활성화
+                    const workDateInput = document.getElementById('work-date');
+                    const columnGridInput = document.getElementById('column-grid-input');
+                    const saveButton = document.querySelector('#panel-input button[onclick*="saveSelectedColumns"]');
+                    
+                    if (workDateInput) {
+                        workDateInput.disabled = false;
+                        workDateInput.style.opacity = '1';
+                    }
+                    if (columnGridInput) {
+                        columnGridInput.style.pointerEvents = 'auto';
+                        columnGridInput.style.opacity = '1';
+                    }
+                    if (saveButton) {
+                        saveButton.disabled = false;
+                        saveButton.style.opacity = '1';
+                    }
+                }
+            }
+            
             const processNames = {
                 1: '1. 주기둥커팅 (유석철강(충주공장))',
                 2: '2. 기둥소부재가공 (유석철강(오창공장))',
@@ -1427,6 +1549,51 @@
             const companyNameEl = document.getElementById('selected-company-name');
             if (companyNameEl) {
                 companyNameEl.textContent = '- ' + (processNames[processId] || '');
+            }
+            
+            // Editor 권한에 따른 입력창 활성화/비활성화
+            if (typeof userRole !== 'undefined' && userRole === 'editor') {
+                if (typeof allowedProcesses !== 'undefined' && !allowedProcesses.includes(processId)) {
+                    // 허용되지 않은 공정: 입력창 비활성화 (보기만 가능)
+                    const workDateInput = document.getElementById('work-date');
+                    const columnGridInput = document.getElementById('column-grid-input');
+                    const saveButton = document.querySelector('#panel-input button[onclick*="saveSelectedColumns"]');
+                    
+                    if (workDateInput) {
+                        workDateInput.disabled = true;
+                        workDateInput.style.opacity = '0.5';
+                        workDateInput.title = 'Editor는 이 공정을 수정할 수 없습니다. (보기만 가능)';
+                    }
+                    if (columnGridInput) {
+                        columnGridInput.style.pointerEvents = 'none';
+                        columnGridInput.style.opacity = '0.5';
+                    }
+                    if (saveButton) {
+                        saveButton.disabled = true;
+                        saveButton.style.opacity = '0.5';
+                        saveButton.title = 'Editor는 이 공정을 저장할 수 없습니다.';
+                    }
+                } else {
+                    // 허용된 공정: 입력창 활성화
+                    const workDateInput = document.getElementById('work-date');
+                    const columnGridInput = document.getElementById('column-grid-input');
+                    const saveButton = document.querySelector('#panel-input button[onclick*="saveSelectedColumns"]');
+                    
+                    if (workDateInput) {
+                        workDateInput.disabled = false;
+                        workDateInput.style.opacity = '1';
+                        workDateInput.title = '';
+                    }
+                    if (columnGridInput) {
+                        columnGridInput.style.pointerEvents = 'auto';
+                        columnGridInput.style.opacity = '1';
+                    }
+                    if (saveButton) {
+                        saveButton.disabled = false;
+                        saveButton.style.opacity = '1';
+                        saveButton.title = '';
+                    }
+                }
             }
             
             // 공정별 입력 안내 메시지 표시
@@ -1826,6 +1993,155 @@
             }
         }
         
+        // Firestore에 Editor 역할 설정
+        async function setEditorRoleInFirestore(uid, allowedProcesses = []) {
+            if (!initFirebase()) {
+                console.error('❌ Firebase가 초기화되지 않았습니다.');
+                return false;
+            }
+            
+            if (!uid) {
+                console.error('❌ UID를 제공해주세요.');
+                return false;
+            }
+            
+            if (!Array.isArray(allowedProcesses) || allowedProcesses.length === 0) {
+                console.error('❌ 허용할 공정을 최소 1개 이상 선택해주세요.');
+                return false;
+            }
+            
+            try {
+                await firebaseDb.collection('user_roles').doc(uid).set({
+                    role: 'editor',
+                    allowedProcesses: allowedProcesses.map(p => parseInt(p)),
+                    projectId: PROJECT_ID,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true });
+                
+                console.log('✅ Firestore에 Editor 역할 설정 완료:', uid, allowedProcesses);
+                
+                // 현재 사용자가 해당 UID인 경우 역할 재로드
+                const currentUser = firebaseAuth.currentUser;
+                if (currentUser && currentUser.uid === uid) {
+                    const roleData = await loadUserRoleFromFirebase();
+                    if (roleData) {
+                        userRole = roleData.role;
+                        allowedProcesses = roleData.allowedProcesses;
+                        applyRoleBasedUI();
+                    }
+                }
+                
+                return true;
+            } catch (error) {
+                console.error('❌ Firestore 역할 설정 실패:', error);
+                alert('역할 설정 실패: ' + error.message);
+                return false;
+            }
+        }
+        
+        // Firestore에 Viewer 역할 설정
+        async function setViewerRoleInFirestore(uid) {
+            if (!initFirebase()) {
+                console.error('❌ Firebase가 초기화되지 않았습니다.');
+                return false;
+            }
+            
+            if (!uid) {
+                console.error('❌ UID를 제공해주세요.');
+                return false;
+            }
+            
+            try {
+                await firebaseDb.collection('user_roles').doc(uid).set({
+                    role: 'viewer',
+                    allowedProcesses: [],
+                    projectId: PROJECT_ID,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true });
+                
+                console.log('✅ Firestore에 Viewer 역할 설정 완료:', uid);
+                
+                // 현재 사용자가 해당 UID인 경우 역할 재로드
+                const currentUser = firebaseAuth.currentUser;
+                if (currentUser && currentUser.uid === uid) {
+                    const roleData = await loadUserRoleFromFirebase();
+                    if (roleData) {
+                        userRole = roleData.role;
+                        allowedProcesses = roleData.allowedProcesses;
+                        applyRoleBasedUI();
+                    }
+                }
+                
+                return true;
+            } catch (error) {
+                console.error('❌ Firestore 역할 설정 실패:', error);
+                alert('역할 설정 실패: ' + error.message);
+                return false;
+            }
+        }
+        
+        // Viewer UID를 입력받아서 Firestore에 Viewer 역할 설정
+        async function setViewerByUID(viewerUID) {
+            if (!viewerUID) {
+                console.error('❌ Viewer UID를 입력해주세요.');
+                console.log('사용법: setViewerByUID("uid-here")');
+                return false;
+            }
+            
+            if (!initFirebase()) {
+                console.error('❌ Firebase가 초기화되지 않았습니다.');
+                return false;
+            }
+            
+            console.log('🔧 Viewer UID 입력:', viewerUID);
+            console.log('📝 Firestore에 Viewer 역할 설정 중...');
+            
+            const success = await setViewerRoleInFirestore(viewerUID);
+            
+            if (success) {
+                console.log('✅ Viewer 역할 설정 완료!');
+                console.log('💡 이제 해당 UID로 로그인하면 Viewer 권한(읽기 전용)을 사용할 수 있습니다.');
+            }
+            
+            return success;
+        }
+        
+        // Editor UID를 입력받아서 Firestore에 Editor 역할 설정
+        async function setEditorByUID(editorUID, allowedProcesses = []) {
+            if (!editorUID) {
+                console.error('❌ Editor UID를 입력해주세요.');
+                console.log('사용법: setEditorByUID("uid-here", [1, 2, 3])');
+                return false;
+            }
+            
+            if (!Array.isArray(allowedProcesses) || allowedProcesses.length === 0) {
+                console.error('❌ 허용할 공정을 최소 1개 이상 선택해주세요.');
+                console.log('사용법: setEditorByUID("uid-here", [1, 2, 3])');
+                return false;
+            }
+            
+            if (!initFirebase()) {
+                console.error('❌ Firebase가 초기화되지 않았습니다.');
+                return false;
+            }
+            
+            console.log('🔧 Editor UID 입력:', editorUID);
+            console.log('📝 허용 공정:', allowedProcesses);
+            console.log('📝 Firestore에 Editor 역할 설정 중...');
+            
+            const success = await setEditorRoleInFirestore(editorUID, allowedProcesses);
+            
+            if (success) {
+                console.log('✅ Editor 역할 설정 완료!');
+                console.log('💡 이제 해당 UID로 로그인하면 Editor 권한을 사용할 수 있습니다.');
+                console.log('💡 허용된 공정:', allowedProcesses.join(', '));
+            }
+            
+            return success;
+        }
+        
         // Admin UID를 입력받아서 Firestore에 Admin 역할 설정
         async function setAdminByUID(adminUID) {
             if (!adminUID) {
@@ -2111,6 +2427,286 @@
             }
         }
         
+        // Editor UID 입력 처리 (UI에서 호출)
+        async function handleEditorUIDInput() {
+            const input = document.getElementById('editor-uid-input');
+            const statusDiv = document.getElementById('editor-uid-status');
+            const checkboxes = document.querySelectorAll('.editor-process-checkbox:checked');
+            
+            if (!input) {
+                console.error('❌ Editor UID 입력 필드를 찾을 수 없습니다.');
+                showToast('Editor UID 입력 필드를 찾을 수 없습니다.', 'error');
+                return;
+            }
+            
+            const editorUID = input.value.trim();
+            
+            if (!editorUID) {
+                showToast('UID를 입력해주세요.', 'warning');
+                if (statusDiv) {
+                    statusDiv.textContent = '❌ UID를 입력해주세요.';
+                    statusDiv.style.color = '#ffcdd2';
+                }
+                return;
+            }
+            
+            // UID 형식 간단 검증
+            if (editorUID.length < 10) {
+                showToast('UID가 너무 짧습니다. 올바른 UID를 입력해주세요.', 'warning');
+                return;
+            }
+            
+            // 선택된 공정 확인
+            const selectedProcesses = Array.from(checkboxes).map(cb => parseInt(cb.value));
+            
+            if (selectedProcesses.length === 0) {
+                showToast('최소 1개 이상의 공정을 선택해주세요.', 'warning');
+                if (statusDiv) {
+                    statusDiv.textContent = '❌ 공정을 선택해주세요.';
+                    statusDiv.style.color = '#ffcdd2';
+                }
+                return;
+            }
+            
+            showToast('Editor 설정 중...', 'info');
+            
+            if (statusDiv) {
+                statusDiv.textContent = '⏳ 설정 중...';
+                statusDiv.style.color = '#fff9c4';
+            }
+            
+            try {
+                const success = await setEditorByUID(editorUID, selectedProcesses);
+                
+                if (success) {
+                    const processNames = selectedProcesses.map(p => {
+                        const proc = PROCESSES.find(pr => pr.id === p);
+                        return proc ? `${p}.${proc.name}` : `${p}`;
+                    }).join(', ');
+                    
+                    showToast(`Editor 설정 완료!\nUID: ${editorUID.substring(0, 20)}...\n공정: ${processNames}`, 'success');
+                    
+                    if (statusDiv) {
+                        statusDiv.textContent = `✅ Editor 설정 완료! (공정: ${selectedProcesses.join(', ')})`;
+                        statusDiv.style.color = '#c8e6c9';
+                    }
+                    
+                    // 입력 필드 초기화
+                    input.value = '';
+                    checkboxes.forEach(cb => cb.checked = false);
+                    
+                    // 3초 후 상태 메시지 제거
+                    setTimeout(() => {
+                        if (statusDiv) {
+                            statusDiv.textContent = '';
+                        }
+                    }, 3000);
+                    
+                    // 역할 재로드
+                    await loadUserRole();
+                    applyRoleBasedUI();
+                } else {
+                    showToast('Editor 설정 실패. 콘솔을 확인하세요.', 'error');
+                    if (statusDiv) {
+                        statusDiv.textContent = '❌ 설정 실패. 콘솔을 확인하세요.';
+                        statusDiv.style.color = '#ffcdd2';
+                    }
+                }
+            } catch (error) {
+                console.error('❌ Editor 설정 오류:', error);
+                showToast(`설정 오류: ${error.message}`, 'error');
+                if (statusDiv) {
+                    statusDiv.textContent = '❌ 오류: ' + error.message;
+                    statusDiv.style.color = '#ffcdd2';
+                }
+            }
+        }
+        
+        // 여러 Viewer UID 일괄 설정
+        async function setViewersByUIDs(viewerUIDs) {
+            if (!Array.isArray(viewerUIDs) || viewerUIDs.length === 0) {
+                console.error('❌ Viewer UID 배열을 제공해주세요.');
+                return { success: 0, failed: 0, total: 0 };
+            }
+            
+            if (!initFirebase()) {
+                console.error('❌ Firebase가 초기화되지 않았습니다.');
+                return { success: 0, failed: viewerUIDs.length, total: viewerUIDs.length };
+            }
+            
+            let successCount = 0;
+            let failedCount = 0;
+            const failedUIDs = [];
+            
+            console.log(`📝 ${viewerUIDs.length}명의 Viewer 설정 시작...`);
+            
+            for (const uid of viewerUIDs) {
+                const trimmedUID = uid.trim();
+                if (!trimmedUID || trimmedUID.length < 10) {
+                    failedCount++;
+                    failedUIDs.push(trimmedUID || '(빈 값)');
+                    continue;
+                }
+                
+                try {
+                    const success = await setViewerRoleInFirestore(trimmedUID);
+                    if (success) {
+                        successCount++;
+                        console.log(`✅ Viewer 설정 완료: ${trimmedUID.substring(0, 20)}...`);
+                    } else {
+                        failedCount++;
+                        failedUIDs.push(trimmedUID);
+                    }
+                } catch (error) {
+                    console.error(`❌ Viewer 설정 실패 (${trimmedUID}):`, error);
+                    failedCount++;
+                    failedUIDs.push(trimmedUID);
+                }
+            }
+            
+            console.log(`✅ Viewer 일괄 설정 완료: 성공 ${successCount}명, 실패 ${failedCount}명`);
+            if (failedUIDs.length > 0) {
+                console.log('❌ 실패한 UID:', failedUIDs);
+            }
+            
+            return { success: successCount, failed: failedCount, total: viewerUIDs.length, failedUIDs };
+        }
+        
+        // Viewer UID 입력 처리 (UI에서 호출) - 일괄 설정 지원
+        async function handleViewerUIDInput() {
+            const input = document.getElementById('viewer-uid-input');
+            const statusDiv = document.getElementById('viewer-uid-status');
+            
+            if (!input) {
+                console.error('❌ Viewer UID 입력 필드를 찾을 수 없습니다.');
+                showToast('Viewer UID 입력 필드를 찾을 수 없습니다.', 'error');
+                return;
+            }
+            
+            const viewerUIDInput = input.value.trim();
+            
+            if (!viewerUIDInput) {
+                showToast('UID를 입력해주세요.', 'warning');
+                if (statusDiv) {
+                    statusDiv.textContent = '❌ UID를 입력해주세요.';
+                    statusDiv.style.color = '#ffcdd2';
+                }
+                return;
+            }
+            
+            // 쉼표로 구분된 여러 UID 처리
+            const viewerUIDs = viewerUIDInput.split(',').map(uid => uid.trim()).filter(uid => uid.length > 0);
+            
+            if (viewerUIDs.length === 0) {
+                showToast('유효한 UID를 입력해주세요.', 'warning');
+                return;
+            }
+            
+            // UID 형식 간단 검증
+            const invalidUIDs = viewerUIDs.filter(uid => uid.length < 10);
+            if (invalidUIDs.length > 0) {
+                showToast(`다음 UID가 너무 짧습니다: ${invalidUIDs.join(', ')}`, 'warning');
+                return;
+            }
+            
+            if (viewerUIDs.length === 1) {
+                // 단일 Viewer 설정
+                showToast('Viewer 설정 중...', 'info');
+                
+                if (statusDiv) {
+                    statusDiv.textContent = '⏳ 설정 중...';
+                    statusDiv.style.color = '#fff9c4';
+                }
+                
+                try {
+                    const success = await setViewerByUID(viewerUIDs[0]);
+                    
+                    if (success) {
+                        showToast(`Viewer 설정 완료!\nUID: ${viewerUIDs[0].substring(0, 20)}...\n읽기 전용 권한`, 'success');
+                        
+                        if (statusDiv) {
+                            statusDiv.textContent = '✅ Viewer 설정 완료! (읽기 전용)';
+                            statusDiv.style.color = '#c8e6c9';
+                        }
+                        
+                        input.value = '';
+                        
+                        setTimeout(() => {
+                            if (statusDiv) {
+                                statusDiv.textContent = '';
+                            }
+                        }, 3000);
+                        
+                        await loadUserRole();
+                        applyRoleBasedUI();
+                    } else {
+                        showToast('Viewer 설정 실패. 콘솔을 확인하세요.', 'error');
+                        if (statusDiv) {
+                            statusDiv.textContent = '❌ 설정 실패. 콘솔을 확인하세요.';
+                            statusDiv.style.color = '#ffcdd2';
+                        }
+                    }
+                } catch (error) {
+                    console.error('❌ Viewer 설정 오류:', error);
+                    showToast(`설정 오류: ${error.message}`, 'error');
+                    if (statusDiv) {
+                        statusDiv.textContent = '❌ 오류: ' + error.message;
+                        statusDiv.style.color = '#ffcdd2';
+                    }
+                }
+            } else {
+                // 여러 Viewer 일괄 설정
+                showToast(`${viewerUIDs.length}명의 Viewer 설정 중...`, 'info');
+                
+                if (statusDiv) {
+                    statusDiv.textContent = `⏳ ${viewerUIDs.length}명 설정 중...`;
+                    statusDiv.style.color = '#fff9c4';
+                }
+                
+                try {
+                    const result = await setViewersByUIDs(viewerUIDs);
+                    
+                    if (result.success > 0) {
+                        const message = result.failed > 0 
+                            ? `Viewer 일괄 설정 완료!\n성공: ${result.success}명\n실패: ${result.failed}명`
+                            : `Viewer 일괄 설정 완료!\n${result.success}명 모두 설정되었습니다.`;
+                        
+                        showToast(message, result.failed > 0 ? 'warning' : 'success');
+                        
+                        if (statusDiv) {
+                            statusDiv.textContent = `✅ ${result.success}명 설정 완료${result.failed > 0 ? ` (${result.failed}명 실패)` : ''}`;
+                            statusDiv.style.color = result.failed > 0 ? '#fff9c4' : '#c8e6c9';
+                        }
+                        
+                        if (result.failedUIDs && result.failedUIDs.length > 0) {
+                            console.warn('❌ 실패한 UID:', result.failedUIDs);
+                        }
+                        
+                        input.value = '';
+                        
+                        setTimeout(() => {
+                            if (statusDiv) {
+                                statusDiv.textContent = '';
+                            }
+                        }, 5000);
+                    } else {
+                        showToast(`모든 Viewer 설정 실패 (${result.total}명)`, 'error');
+                        if (statusDiv) {
+                            statusDiv.textContent = `❌ 모두 실패 (${result.total}명)`;
+                            statusDiv.style.color = '#ffcdd2';
+                        }
+                    }
+                } catch (error) {
+                    console.error('❌ Viewer 일괄 설정 오류:', error);
+                    showToast(`일괄 설정 오류: ${error.message}`, 'error');
+                    if (statusDiv) {
+                        statusDiv.textContent = '❌ 오류: ' + error.message;
+                        statusDiv.style.color = '#ffcdd2';
+                    }
+                }
+            }
+        }
+        
         // 전역으로 노출
         window.addAdminUID = addAdminUID;
         window.removeAdminUID = removeAdminUID;
@@ -2120,11 +2716,18 @@
         window.loginAsAdminAnonymous = loginAsAdminAnonymous;
         window.loginAsAdmin = loginAsAdmin;
         window.setAdminRoleInFirestore = setAdminRoleInFirestore;
+        window.setEditorRoleInFirestore = setEditorRoleInFirestore;
+        window.setViewerRoleInFirestore = setViewerRoleInFirestore;
         window.setAdminByUID = setAdminByUID;
+        window.setEditorByUID = setEditorByUID;
+        window.setViewerByUID = setViewerByUID;
+        window.setViewersByUIDs = setViewersByUIDs;
         window.setCurrentUserAsAdmin = setCurrentUserAsAdmin;
         window.logoutFromFirebase = logoutFromFirebase;
         window.checkFirebaseUser = checkFirebaseUser;
         window.handleAdminUIDInput = handleAdminUIDInput;
+        window.handleEditorUIDInput = handleEditorUIDInput;
+        window.handleViewerUIDInput = handleViewerUIDInput;
         
         // 페이지 로드 시 역할 로드
         let userRole = null;
@@ -2233,19 +2836,22 @@
             const saveButton = document.querySelector('#panel-input button[onclick*="saveSelectedColumns"]');
             
             if (isViewer) {
-                // Viewer: 읽기 전용
+                // Viewer: 읽기 전용 - 모든 공정 입력창 비활성화 (흐릿하게)
                 if (workDateInput) {
                     workDateInput.disabled = true;
+                    workDateInput.style.opacity = '0.5';
                     workDateInput.title = 'Viewer는 일일입력을 할 수 없습니다.';
                 }
                 if (columnGridInput) {
                     columnGridInput.style.pointerEvents = 'none';
-                    columnGridInput.style.opacity = '0.6';
+                    columnGridInput.style.opacity = '0.5';
                 }
                 if (saveButton) {
                     saveButton.disabled = true;
+                    saveButton.style.opacity = '0.5';
                     saveButton.title = 'Viewer는 저장할 수 없습니다.';
                 }
+                // 모든 공정 버튼 비활성화 (흐릿하게)
                 disableProcessButtons([]);
                 showRoleBadge('viewer', '열람자 - 읽기 전용');
             } else if (isEditor) {
@@ -2261,6 +2867,52 @@
                     saveButton.disabled = false;
                 }
                 disableProcessButtons(allowedProcesses);
+                
+                // Excel 업로드 버튼 제어 (Editor는 허용된 공정이 있을 때만 활성화)
+                const processExcelFile = document.getElementById('process-excel-file');
+                if (processExcelFile) {
+                    if (allowedProcesses.length > 0) {
+                        processExcelFile.disabled = false;
+                        processExcelFile.style.opacity = '1';
+                        processExcelFile.style.pointerEvents = 'auto';
+                        const allowedNames = allowedProcesses.map(p => {
+                            const proc = PROCESSES.find(pr => pr.id === p);
+                            return proc ? `${p}.${proc.name}` : `${p}`;
+                        }).join(', ');
+                        processExcelFile.title = `엑셀 파일 선택 (*.xlsx)\n허용된 공정: ${allowedNames}\n허용되지 않은 공정 데이터는 자동으로 무시됩니다.`;
+                    } else {
+                        processExcelFile.disabled = true;
+                        processExcelFile.style.opacity = '0.5';
+                        processExcelFile.style.pointerEvents = 'none';
+                        processExcelFile.title = 'Editor는 허용된 공정이 없습니다. 관리자에게 문의하세요.';
+                    }
+                }
+                
+                // 운송물량산정 Excel 업로드 제어 (Editor는 공정 5만 허용)
+                const transportVolumeFile = document.getElementById('transport-volume-file');
+                if (transportVolumeFile) {
+                    if (allowedProcesses.includes(5)) {
+                        transportVolumeFile.disabled = false;
+                        transportVolumeFile.style.opacity = '1';
+                        transportVolumeFile.style.pointerEvents = 'auto';
+                        transportVolumeFile.title = '엑셀 파일 선택 (*.xlsx)\n현장배송(공정 5) 데이터만 업로드 가능합니다.';
+                    } else {
+                        transportVolumeFile.disabled = true;
+                        transportVolumeFile.style.opacity = '0.5';
+                        transportVolumeFile.style.pointerEvents = 'none';
+                        transportVolumeFile.title = 'Editor는 현장배송(공정 5) 권한이 없습니다.';
+                    }
+                }
+                
+                // 운송차수계획은 Editor 사용 불가 (이미 showPanel에서 차단됨)
+                const transportPlanFile = document.getElementById('transport-plan-file');
+                if (transportPlanFile) {
+                    transportPlanFile.disabled = true;
+                    transportPlanFile.style.opacity = '0.5';
+                    transportPlanFile.style.pointerEvents = 'none';
+                    transportPlanFile.title = '운송차수계획은 관리자(Admin)만 사용할 수 있습니다.';
+                }
+                
                 const allowedNames = allowedProcesses.map(p => {
                     const proc = PROCESSES.find(pr => pr.id === p);
                     return proc ? `${p}.${proc.name}` : `${p}`;
@@ -2404,27 +3056,34 @@
             processButtons.forEach(btn => {
                 const processId = parseInt(btn.dataset.process);
                 if (userRole === 'viewer') {
+                    // Viewer: 모든 공정 버튼 비활성화 (흐릿하게)
                     btn.disabled = true;
                     btn.style.opacity = '0.5';
                     btn.style.cursor = 'not-allowed';
-                    btn.title = 'Viewer는 공정을 선택할 수 없습니다.';
+                    btn.style.pointerEvents = 'none';
+                    btn.title = 'Viewer는 공정을 선택할 수 없습니다. (읽기 전용)';
                 } else if (userRole === 'editor') {
+                    // Editor: 허용된 공정만 활성화, 나머지는 비활성화 (흐릿하게)
                     if (allowedProcesses.includes(processId)) {
                         btn.disabled = false;
                         btn.style.opacity = '1';
                         btn.style.cursor = 'pointer';
+                        btn.style.pointerEvents = 'auto';
                         btn.title = '';
                     } else {
                         btn.disabled = true;
                         btn.style.opacity = '0.5';
                         btn.style.cursor = 'not-allowed';
+                        btn.style.pointerEvents = 'none';
                         const proc = PROCESSES.find(p => p.id === processId);
-                        btn.title = `Editor는 ${proc ? proc.name : `공정 ${processId}`}을 수정할 수 없습니다.`;
+                        btn.title = `Editor는 ${proc ? proc.name : `공정 ${processId}`}을 수정할 수 없습니다. (보기만 가능)`;
                     }
                 } else {
+                    // Admin/Approver: 모든 공정 버튼 활성화
                     btn.disabled = false;
                     btn.style.opacity = '1';
                     btn.style.cursor = 'pointer';
+                    btn.style.pointerEvents = 'auto';
                     btn.title = '';
                 }
             });
@@ -2814,6 +3473,66 @@
                         } else {
                             console.error('handleAdminUIDInput 함수를 찾을 수 없습니다.');
                             alert('Admin 설정 기능을 사용할 수 없습니다. 페이지를 새로고침해주세요.');
+                        }
+                    });
+                }
+                
+                // Editor UID 입력 필드 및 버튼 이벤트 추가
+                const editorUIDInput = document.getElementById('editor-uid-input');
+                const editorSetupBtn = document.getElementById('editor-setup-btn');
+                
+                if (editorUIDInput) {
+                    // Enter 키 이벤트
+                    editorUIDInput.addEventListener('keypress', function(e) {
+                        if (e.key === 'Enter') {
+                            if (typeof handleEditorUIDInput === 'function') {
+                                handleEditorUIDInput();
+                            } else {
+                                console.error('handleEditorUIDInput 함수를 찾을 수 없습니다.');
+                            }
+                        }
+                    });
+                }
+                
+                if (editorSetupBtn) {
+                    // 버튼 클릭 이벤트
+                    editorSetupBtn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        if (typeof handleEditorUIDInput === 'function') {
+                            handleEditorUIDInput();
+                        } else {
+                            console.error('handleEditorUIDInput 함수를 찾을 수 없습니다.');
+                            alert('Editor 설정 기능을 사용할 수 없습니다. 페이지를 새로고침해주세요.');
+                        }
+                    });
+                }
+                
+                // Viewer UID 입력 필드 및 버튼 이벤트 추가
+                const viewerUIDInput = document.getElementById('viewer-uid-input');
+                const viewerSetupBtn = document.getElementById('viewer-setup-btn');
+                
+                if (viewerUIDInput) {
+                    // Enter 키 이벤트
+                    viewerUIDInput.addEventListener('keypress', function(e) {
+                        if (e.key === 'Enter') {
+                            if (typeof handleViewerUIDInput === 'function') {
+                                handleViewerUIDInput();
+                            } else {
+                                console.error('handleViewerUIDInput 함수를 찾을 수 없습니다.');
+                            }
+                        }
+                    });
+                }
+                
+                if (viewerSetupBtn) {
+                    // 버튼 클릭 이벤트
+                    viewerSetupBtn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        if (typeof handleViewerUIDInput === 'function') {
+                            handleViewerUIDInput();
+                        } else {
+                            console.error('handleViewerUIDInput 함수를 찾을 수 없습니다.');
+                            alert('Viewer 설정 기능을 사용할 수 없습니다. 페이지를 새로고침해주세요.');
                         }
                     });
                 }
