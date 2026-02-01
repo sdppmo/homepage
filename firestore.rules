@@ -2,84 +2,188 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // 이메일/비밀번호 로그인만 허용(익명 차단)
+    // ===== Auth helpers =====
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    // 익명 차단(Email/Password 등만 허용)
     function isSignedInNonAnon() {
       return request.auth != null
         && request.auth.token.firebase.sign_in_provider != 'anonymous';
     }
 
-    // 현재 사용자의 멤버 문서
-    function myMemberDoc(projectId) {
-      return get(/databases/$(database)/documents/projects/$(projectId)/members/$(request.auth.uid));
+    // ===== user_roles 기반 Admin 판별(안전판/부트스트랩) =====
+    function isAdmin() {
+      return isSignedInNonAnon()
+        && exists(/databases/$(database)/documents/user_roles/$(request.auth.uid))
+        && get(/databases/$(database)/documents/user_roles/$(request.auth.uid)).data.role == "admin";
     }
 
-    // 프로젝트 멤버인지
+    // ===== projects 권한(단일 진실 소스: projects/{projectId}/members/{uid}) =====
     function hasRoleInProject(projectId) {
       return isSignedInNonAnon()
         && exists(/databases/$(database)/documents/projects/$(projectId)/members/$(request.auth.uid));
     }
 
-    // Admin인지 (문서 존재 + role 체크)
+    // ✅ 멤버 문서 가져오기 헬퍼
+    function myMemberDoc(projectId) {
+      return get(/databases/$(database)/documents/projects/$(projectId)/members/$(request.auth.uid));
+    }
+
+    // ✅ 역할 값 정규화 (대소문자/공백/이상값 방어)
+    // 허용 리스트 외에는 viewer로 강제
+    function safeRole(r) {
+      return (r in ["admin", "editor", "viewer"]) ? r : "viewer";
+    }
+
+    // ✅ 포털 역할 확인 (포털 UI/기능용)
+    // portalRole이 null/미존재면 viewer로 기본값 설정
+    function myPortalRole(projectId) {
+      let r = myMemberDoc(projectId).data.portalRole;
+      return (r in ["admin", "editor", "viewer"]) ? r : "viewer";
+    }
+
+    // ✅ 공정표 역할 확인 (공정표 권한용) - processRole 우선, 없으면 role (하위 호환)
+    // 🔥 핵심 안전장치: portal admin이 아니면 process admin 불가
+    function myProcessRole(projectId) {
+      let m = myMemberDoc(projectId).data;
+      
+      // 하위호환: processRole 우선, 없으면 role
+      let role = (m.processRole != null) ? m.processRole : m.role;
+      
+      // ✅ 역할 값 정규화 (대소문자/공백/이상값 방어)
+      role = safeRole(role);
+
+      // 🚫 정책 강제: portal admin이 아니면 process admin 불가
+      // portal editor가 공정표 admin이 되는 것을 구조적으로 차단
+      return (myPortalRole(projectId) != "admin" && role == "admin")
+        ? "editor"
+        : role;
+    }
+
+    // ✅ 공정표 admin 확인 (processRole 기반)
+    // 🔥 핵심: portalRole이 admin이어야 "공정표 admin" 인정
+    // portal editor + processRole admin은 절대 admin으로 인정되지 않음
+    function isProcessAdminInProject(projectId) {
+      return isSignedInNonAnon()
+        && exists(/databases/$(database)/documents/projects/$(projectId)/members/$(request.auth.uid))
+        && myPortalRole(projectId) == "admin"  // ✅ portalRole이 admin이어야 공정표 admin 인정
+        && myProcessRole(projectId) == "admin";
+    }
+
+    // ✅ 공정표 editor 이상 확인 (processRole 기반)
+    function canEditProcessTable(projectId) {
+      return isSignedInNonAnon()
+        && exists(/databases/$(database)/documents/projects/$(projectId)/members/$(request.auth.uid))
+        && myProcessRole(projectId) in ["editor", "admin"];
+    }
+
+    // ⚠️ 하위 호환: 기존 isAdminInProject (role 필드 사용)
     function isAdminInProject(projectId) {
       return isSignedInNonAnon()
-        && myMemberDoc(projectId).exists()
-        && myMemberDoc(projectId).data.role == "admin";
+        && exists(/databases/$(database)/documents/projects/$(projectId)/members/$(request.auth.uid))
+        && (myProcessRole(projectId) == "admin" || get(/databases/$(database)/documents/projects/$(projectId)/members/$(request.auth.uid)).data.role == "admin");
     }
 
-    // Editor인지 (참고용)
-    function isEditorInProject(projectId) {
-      return isSignedInNonAnon()
-        && myMemberDoc(projectId).exists()
-        && myMemberDoc(projectId).data.role == "editor";
+    // ===== user_roles =====
+    match /user_roles/{uid} {
+      allow read: if isSignedInNonAnon()
+        && (request.auth.uid == uid || isAdmin());
+      allow write: if isAdmin();
     }
 
-    // projects
+    // ===== Projects =====
     match /projects/{projectId} {
 
-      // 멤버만 프로젝트 문서 read
+      // ✅ 방법 A: 프로젝트 멤버면 루트 문서 read 허용 (role 무관)
       allow read: if hasRoleInProject(projectId);
 
-      // Admin만 프로젝트 write
+      // 루트 문서 write는 프로젝트 admin만(원하면 false로 잠궈도 됨)
       allow write: if isAdminInProject(projectId);
 
-      // members
+      // (1) 멤버: 프로젝트 권한의 단일 진실 소스
       match /members/{uid} {
-
-        // 본인은 자기 멤버 문서 read 가능(부트스트랩)
-        // Admin은 전체 멤버 문서 read 가능
-        allow read: if isSignedInNonAnon() && (
-          request.auth.uid == uid ||
-          isAdminInProject(projectId)
-        );
-
-        // Admin만 멤버 write
-        allow write: if isAdminInProject(projectId);
+        // 본인 문서 읽기 또는 (정책 검증된) 공정표 admin만 읽기
+        allow read: if isSignedInNonAnon()
+          && (request.auth.uid == uid || isProcessAdminInProject(projectId));
+        
+        // ✅ 멤버 문서 수정은 본인도 불가 (권한을 스스로 올리는 것 방지)
+        // (정책 검증된) 공정표 admin만 다른 멤버 권한 변경 가능
+        // ✅ 허용 필드 제한: role 관련 필드만 변경 가능
+        allow update: if isSignedInNonAnon()
+          && request.auth.uid != uid  // 본인 문서 수정 불가
+          && isProcessAdminInProject(projectId)  // (정책 검증된) 공정표 admin만 가능
+          && request.resource.data.diff(resource.data).changedKeys()
+             .hasOnly(["portalRole", "processRole", "allowedProcesses"]);  // ✅ role 관련 필드만 변경 가능
+        
+        // 생성/삭제는 (정책 검증된) 공정표 admin만
+        allow create, delete: if isSignedInNonAnon()
+          && isProcessAdminInProject(projectId);
       }
 
-      // schedules
+      // (2) 포털 역할: 참고/표시용(읽기 전용) — ✅ 본인만
+      match /portal_members/{uid} {
+        allow read: if isSignedInNonAnon() && request.auth.uid == uid;
+        allow write: if false;
+      }
+
+      // (3) 스케줄 (공정표 데이터 예시)
       match /schedules/{scheduleId} {
-
-        // 멤버만 read
-        allow read: if hasRoleInProject(projectId);
-
-        // Admin만 write
-        allow write: if isAdminInProject(projectId);
+        // 조회는 processRole이 viewer 이상이면 허용
+        allow read: if isSignedInNonAnon()
+          && hasRoleInProject(projectId)
+          && myProcessRole(projectId) in ["viewer", "editor", "admin"];
+        
+        // 입력/수정은 processRole이 editor 이상
+        allow create, update: if isSignedInNonAnon()
+          && canEditProcessTable(projectId);
+        
+        // 삭제/초기화 같은 강권한은 processRole=admin만
+        allow delete: if isSignedInNonAnon()
+          && isProcessAdminInProject(projectId);
+      }
+      
+      // (4) 공정표 데이터 (kcolumn 등도 동일한 원칙 적용)
+      match /processTable/{docId} {
+        allow read: if isSignedInNonAnon()
+          && hasRoleInProject(projectId)
+          && myProcessRole(projectId) in ["viewer", "editor", "admin"];
+        allow create, update: if isSignedInNonAnon()
+          && canEditProcessTable(projectId);
+        allow delete: if isSignedInNonAnon()
+          && isProcessAdminInProject(projectId);
       }
     }
 
-    // 레거시 차단
-    match /user_roles/{document=**} {
-      allow read, write: if false;
-    }
-
-    // kcolumn: docId = P1_xxx 형태
+    // ===== kcolumn (문서ID에 projectId가 포함: "P1_xxx") =====
     function projectIdFromKcolumnId(docId) {
       return docId.split('_')[0];
     }
 
     match /kcolumn/{docId} {
-      allow read: if isSignedInNonAnon() && hasRoleInProject(projectIdFromKcolumnId(docId));
-      allow write: if isSignedInNonAnon() && isAdminInProject(projectIdFromKcolumnId(docId));
+      // 조회는 processRole이 viewer 이상
+      allow read: if isSignedInNonAnon()
+        && hasRoleInProject(projectIdFromKcolumnId(docId))
+        && myProcessRole(projectIdFromKcolumnId(docId)) in ["viewer", "editor", "admin"];
+      
+      // 입력/수정은 processRole이 editor 이상
+      allow create, update: if isSignedInNonAnon()
+        && canEditProcessTable(projectIdFromKcolumnId(docId));
+      
+      // 삭제는 processRole=admin만
+      allow delete: if isSignedInNonAnon()
+        && isProcessAdminInProject(projectIdFromKcolumnId(docId));
+    }
+
+    // ===== 기존 /portal_members 경로 완전 차단 =====
+    match /portal_members/{document=**} {
+      allow read, write: if false;
+    }
+
+    // ✅ 강제 안전모드(선택): 위에서 허용한 컬렉션 외 전부 차단
+    match /{top=**} {
+      allow read, write: if false;
     }
   }
 }

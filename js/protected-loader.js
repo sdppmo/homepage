@@ -65,6 +65,9 @@
         title = '승인 대기 중';
       } else if (parsed.error === 'forbidden') {
         title = '권한 없음';
+      } else if (parsed.error === 'bad_request') {
+        title = '잘못된 요청';
+        message = parsed.message || '요청 형식이 올바르지 않습니다.';
       }
     } catch (e) {
       // Response is not JSON
@@ -104,6 +107,12 @@
         })
         .then(function(result) {
           if (!result.ok) {
+            // Handle 400 bad request specifically
+            if (result.status === 400) {
+              var err = parseErrorResponse(result.text);
+              showError(err.title, err.message, err.showLogin);
+              return;
+            }
             var err = parseErrorResponse(result.text);
             showError(err.title, err.message, err.showLogin);
             return;

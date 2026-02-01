@@ -221,3 +221,8 @@ supabase/.temp/
 # Supabase local
 supabase/.branches/
 supabase/.temp/
+
+# Firebase service account key (SENSITIVE - NEVER commit)
+serviceAccountKey.json
+*serviceAccount*.json
+*firebase-admin*.json

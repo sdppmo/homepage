@@ -44,8 +44,18 @@ Deno.serve(async (req) => {
     let pageId: string | null = null;
     
     if (req.method === "POST") {
-      const body = await req.json();
-      pageId = body.page || null;
+      try {
+        const body = await req.json();
+        pageId = body.page || null;
+      } catch (jsonError) {
+        return new Response(JSON.stringify({ 
+          error: "bad_request", 
+          message: "잘못된 요청 형식입니다" 
+        }), { 
+          status: 400, 
+          headers: { ...corsHeaders, "Content-Type": "application/json" } 
+        });
+      }
     } else {
       const url = new URL(req.url);
       pageId = url.searchParams.get("page");

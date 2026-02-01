@@ -1,0 +1,24 @@
+{
+  "name": "homepage",
+  "version": "1.0.0",
+  "description": "K-COL 철골기둥 설계 플랫폼 기업 웹사이트입니다.",
+  "main": "admin-role-v9.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sdppmo/homepage.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/sdppmo/homepage/issues"
+  },
+  "homepage": "https://github.com/sdppmo/homepage#readme",
+  "dependencies": {
+    "firebase-admin": "^13.6.0"
+  }
+}

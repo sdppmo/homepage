@@ -14,6 +14,14 @@ const firebaseConfig = {
 // Firebase 초기화
 firebase.initializeApp(firebaseConfig);
 
+// Auth 인스턴스
+const auth = firebase.auth();
+
+// Auth State 변경 리스너 (페이지 로드 시 즉시 UID 출력)
+auth.onAuthStateChanged((user) => {
+  console.log("current uid =", user?.uid);
+});
+
 // Firestore 인스턴스
 const db = firebase.firestore();
 

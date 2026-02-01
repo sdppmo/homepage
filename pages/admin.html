@@ -41,6 +41,12 @@
     <main class="content">
         <div id="status" class="status"></div>
 
+        <!-- Admin Panel (Admin일 때만 표시) -->
+        <div id="adminPanel" style="display:none;">
+          <input id="adminUidInput" placeholder="Admin UID 입력" />
+          <button id="setAdminBtn">Admin 지정</button>
+        </div>
+
         <!-- Users Tab -->
         <div class="tab-content active" id="tab-users">
             <!-- User List Card -->
@@ -183,5 +189,8 @@
     <script src="../js/auth-config.js"></script>
     <script src="../js/auth.js"></script>
     <script src="../js/admin.js"></script>
+    <!-- Admin Role Management (v9 Modular SDK) -->
+    <script type="module" src="../js/firebase.js"></script>
+    <script type="module" src="../js/admin-role.js"></script>
 </body>
 </html>

@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - 관리자 대시보드</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            font-weight: 600;
+        }
+        
+        .admin-badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .card h2 {
+            font-size: 20px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        
+        .admin-only {
+            display: none; /* 기본적으로 숨김, Admin일 때만 표시 */
+        }
+        
+        #adminPanel {
+            display: none; /* 기본적으로 숨김, Admin일 때만 표시 */
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #555;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #5568d3;
+        }
+        
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+        
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .status-message {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        
+        .status-success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #6ee7b7;
+        }
+        
+        .status-error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fca5a5;
+        }
+        
+        .status-info {
+            background: #dbeafe;
+            color: #1e40af;
+            border: 1px solid #93c5fd;
+        }
+        
+        .user-list {
+            margin-top: 20px;
+        }
+        
+        .user-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+        
+        .user-info {
+            flex: 1;
+        }
+        
+        .user-uid {
+            font-family: monospace;
+            font-size: 12px;
+            color: #666;
+            margin-top: 4px;
+        }
+        
+        .user-actions {
+            display: flex;
+            gap: 10px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <h1>
+            관리자 대시보드
+            <span class="admin-badge" id="adminBadge">Admin</span>
+        </h1>
+    </header>
+    
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Status Message -->
+        <div id="statusMessage" class="status-message" style="display: none;"></div>
+        
+        <!-- Admin Panel (Admin일 때만 표시) -->
+        <div id="adminPanel" class="admin-only">
+            <!-- Admin Role 부여 -->
+            <div class="card">
+                <h2>Admin Role 부여</h2>
+                <div class="form-group">
+                    <label for="targetUID">대상 사용자 UID</label>
+                    <input 
+                        type="text" 
+                        id="targetUID" 
+                        placeholder="사용자 UID를 입력하세요"
+                    >
+                </div>
+                <button class="btn btn-primary" id="grantAdminBtn">
+                    Admin Role 부여
+                </button>
+            </div>
+            
+            <!-- Admin Role 제거 -->
+            <div class="card">
+                <h2>Admin Role 제거</h2>
+                <div class="form-group">
+                    <label for="revokeUID">대상 사용자 UID</label>
+                    <input 
+                        type="text" 
+                        id="revokeUID" 
+                        placeholder="사용자 UID를 입력하세요"
+                    >
+                </div>
+                <button class="btn btn-danger" id="revokeAdminBtn">
+                    Admin Role 제거
+                </button>
+            </div>
+            
+            <!-- 현재 Admin 목록 (선택사항) -->
+            <div class="card">
+                <h2>현재 Admin 목록</h2>
+                <div id="adminList" class="user-list">
+                    <p style="color: #666;">로딩 중...</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 일반 사용자 메시지 (Admin이 아닐 때) -->
+        <div id="nonAdminMessage" class="card">
+            <h2>접근 권한 없음</h2>
+            <p style="color: #666; margin-top: 10px;">
+                이 페이지는 Admin만 접근할 수 있습니다.
+            </p>
+        </div>
+    </div>
+    
+    <!-- Firebase SDK -->
+    <script type="module">
+        // Firebase 초기화 (firebaseConfig는 별도 파일에서 import)
+        import { initializeApp } from "firebase/app";
+        import { getAuth } from "firebase/auth";
+        import { getFirestore } from "firebase/firestore";
+        import { isAdmin, grantAdminRole, revokeAdminRole, setupAdminPanelControl } from "./admin-role-v9.js";
+        
+        // Firebase Config (실제 프로젝트 설정으로 변경)
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            projectId: "YOUR_PROJECT_ID",
+            // ... 기타 설정
+        };
+        
+        // Firebase 초기화
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        
+        // Admin Panel 제어 설정
+        setupAdminPanelControl();
+        
+        // Admin Role 부여 버튼
+        document.getElementById("grantAdminBtn").addEventListener("click", async () => {
+            const targetUID = document.getElementById("targetUID").value.trim();
+            
+            if (!targetUID) {
+                showStatus("UID를 입력하세요.", "error");
+                return;
+            }
+            
+            const result = await grantAdminRole(targetUID);
+            showStatus(result.message, result.success ? "success" : "error");
+            
+            if (result.success) {
+                document.getElementById("targetUID").value = "";
+                loadAdminList(); // 목록 새로고침
+            }
+        });
+        
+        // Admin Role 제거 버튼
+        document.getElementById("revokeAdminBtn").addEventListener("click", async () => {
+            const revokeUID = document.getElementById("revokeUID").value.trim();
+            
+            if (!revokeUID) {
+                showStatus("UID를 입력하세요.", "error");
+                return;
+            }
+            
+            const result = await revokeAdminRole(revokeUID);
+            showStatus(result.message, result.success ? "success" : "error");
+            
+            if (result.success) {
+                document.getElementById("revokeUID").value = "";
+                loadAdminList(); // 목록 새로고침
+            }
+        });
+        
+        // 상태 메시지 표시
+        function showStatus(message, type) {
+            const statusEl = document.getElementById("statusMessage");
+            statusEl.textContent = message;
+            statusEl.className = `status-message status-${type}`;
+            statusEl.style.display = "block";
+            
+            setTimeout(() => {
+                statusEl.style.display = "none";
+            }, 5000);
+        }
+        
+        // Admin 목록 로드 (선택사항)
+        async function loadAdminList() {
+            // Firestore에서 모든 Admin 조회
+            // 구현 생략 (필요시 추가)
+        }
+    </script>
+</body>
+</html>

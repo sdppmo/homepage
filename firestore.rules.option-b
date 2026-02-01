@@ -1,0 +1,72 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    // 익명 차단이 필요한 곳은 여기 함수로 통일
+    function isSignedInNonAnon() {
+      return request.auth != null
+        && request.auth.token.firebase.sign_in_provider != 'anonymous';
+    }
+
+    // ===== user_roles 기반 Admin 판별 (안전판) =====
+    function isAdmin() {
+      return signedIn()
+        && exists(/databases/$(database)/documents/user_roles/$(request.auth.uid))
+        && get(/databases/$(database)/documents/user_roles/$(request.auth.uid)).data.role == "admin";
+    }
+
+    // ===== projects 내부 role 판별도 exists()로 통일 =====
+    function hasRoleInProject(projectId) {
+      return isSignedInNonAnon()
+        && exists(/databases/$(database)/documents/projects/$(projectId)/members/$(request.auth.uid));
+    }
+
+    function isAdminInProject(projectId) {
+      return isSignedInNonAnon()
+        && exists(/databases/$(database)/documents/projects/$(projectId)/members/$(request.auth.uid))
+        && get(/databases/$(database)/documents/projects/$(projectId)/members/$(request.auth.uid)).data.role == "admin";
+    }
+
+    match /projects/{projectId} {
+      allow read: if hasRoleInProject(projectId);
+      allow write: if isAdminInProject(projectId);
+
+      match /members/{uid} {
+        allow read: if isSignedInNonAnon() && (request.auth.uid == uid || isAdminInProject(projectId));
+        allow write: if isAdminInProject(projectId);
+      }
+
+      match /schedules/{scheduleId} {
+        allow read: if hasRoleInProject(projectId);
+        allow write: if isAdminInProject(projectId);
+      }
+    }
+
+    // ===== 여기! user_roles rules =====
+    match /user_roles/{uid} {
+      allow read: if signedIn() && (request.auth.uid == uid || isAdmin());
+      allow write: if isAdmin();  // admin이면 targetUid 누구든 write 가능
+    }
+
+    // ===== Portal Members (루트 레벨, 읽기 전용) =====
+    // 프로젝트 권한의 단일 진실 소스는 projects/{projectId}/members/{uid}로 유지
+    // 포털 역할은 참고/표시 용도로만 사용
+    match /portal_members/{uid} {
+      allow read: if isSignedInNonAnon() && request.auth.uid == uid;
+      allow write: if false; // 쓰기 완전 차단 (읽기 전용)
+    }
+
+    function projectIdFromKcolumnId(docId) {
+      return docId.split('_')[0];
+    }
+
+    match /kcolumn/{docId} {
+      allow read: if isSignedInNonAnon() && hasRoleInProject(projectIdFromKcolumnId(docId));
+      allow write: if isSignedInNonAnon() && isAdminInProject(projectIdFromKcolumnId(docId));
+    }
+  }
+}

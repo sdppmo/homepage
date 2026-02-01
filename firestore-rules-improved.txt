@@ -1,0 +1,53 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ============================================================
+    // Helper Functions
+    // ============================================================
+
+    // 로그인 확인
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    // 현재 사용자의 user_roles 문서 가져오기
+    function myUserRoleDoc() {
+      return get(/databases/$(database)/documents/user_roles/$(request.auth.uid));
+    }
+
+    // Admin 여부 확인 (user_roles 기반)
+    function isAdmin() {
+      return signedIn()
+        && myUserRoleDoc().exists
+        && myUserRoleDoc().data.role == "admin";
+    }
+
+    // ============================================================
+    // user_roles Collection Rules
+    // ============================================================
+
+    match /user_roles/{uid} {
+      // 읽기: 본인은 자신의 문서 읽기 가능, Admin은 모든 문서 읽기 가능
+      allow read: if signedIn() && (request.auth.uid == uid || isAdmin());
+
+      // 쓰기: Admin만 가능 (생성, 업데이트, 삭제 모두)
+      allow write: if isAdmin();
+    }
+
+    // ============================================================
+    // 기타 컬렉션 규칙 (필요시 추가)
+    // ============================================================
+
+    // 예시: Admin만 접근 가능한 컬렉션
+    // match /admin_data/{document=**} {
+    //   allow read, write: if isAdmin();
+    // }
+
+    // 예시: 일반 사용자 데이터
+    // match /users/{userId} {
+    //   allow read: if signedIn() && (request.auth.uid == userId || isAdmin());
+    //   allow write: if signedIn() && request.auth.uid == userId;
+    // }
+  }
+}
