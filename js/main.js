@@ -285,70 +285,29 @@
     // Removed all auth state listeners since menu is now public
   }
 
-  // Initialize db-button: show only for admins
+  // Initialize db-button: K-COL Product Schedule로 연결
   function initDbButton() {
     var dbButton = document.querySelector('.db-button');
     if (!dbButton) return;
     
-    // Initially hide the button
-    dbButton.style.display = 'none';
+    // ✅ 버튼은 표시
+    dbButton.style.display = '';
+    dbButton.style.cursor = 'pointer';
     
-    // Check if user is admin and show button if admin
-    function checkAdminAndShowButton() {
-      if (!window.SDP || !window.SDP.auth) {
-        // Auth not available, keep hidden
-        return;
+    // ✅ K-COL Product Schedule 링크로 연결
+    dbButton.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      var scheduleLink = document.getElementById('kcol-product-schedule-link');
+      if (scheduleLink) {
+        // 링크 요소의 클릭 이벤트를 트리거하여 모달이 열리도록 함
+        scheduleLink.click();
+      } else {
+        // 링크가 없으면 직접 경로로 이동
+        window.location.href = 'pages/K-product/2H_steel_product.html';
       }
-      
-      window.SDP.auth.getSession().then(function(session) {
-        if (!session) {
-          // Not logged in, keep hidden
-          return;
-        }
-        
-        // Check if user is admin
-        return window.SDP.auth.getProfile().then(function(profile) {
-          if (profile && window.SDP.auth.isAdmin()) {
-            // User is admin, show button
-            dbButton.style.display = '';
-            dbButton.style.cursor = 'pointer';
-            
-            // Add click handler
-            dbButton.addEventListener('click', function() {
-              window.location.href = '/pages/admin.html';
-            });
-          } else {
-            // Not admin, keep hidden
-            dbButton.style.display = 'none';
-          }
-        }).catch(function(err) {
-          // Error getting profile, keep hidden
-          console.debug('Error checking admin status for db-button:', err);
-        });
-      }).catch(function(err) {
-        // Error getting session, keep hidden
-        console.debug('Error getting session for db-button:', err);
-      });
-    }
-    
-    // Wait for auth to be ready, then check
-    if (window.SDP && window.SDP.auth) {
-      // Auth is available, check immediately
-      checkAdminAndShowButton();
-    } else {
-      // Wait for auth to load
-      var checkInterval = setInterval(function() {
-        if (window.SDP && window.SDP.auth) {
-          clearInterval(checkInterval);
-          checkAdminAndShowButton();
-        }
-      }, 100);
-      
-      // Stop checking after 5 seconds
-      setTimeout(function() {
-        clearInterval(checkInterval);
-      }, 5000);
-    }
+    });
   }
 
   // Init on DOM ready

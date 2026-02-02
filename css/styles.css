@@ -877,6 +877,22 @@ a.brochure-btn.white:hover {
   font-size: 12px;
   color: #000;
   font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  justify-content: center;
+}
+
+.db-button .main-text .db-icon {
+  width: 70px;
+  height: 70px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.db-button .main-text .db-text {
+  line-height: 1.2;
+  text-align: left;
 }
 
 /* Company Logos - 3 columns × 2 rows grid */
