@@ -51,9 +51,26 @@
 
   function go(id) {
     setLast(id);
-    var url = new URL(link.getAttribute('href'), window.location.href);
-    url.searchParams.set('project', id);
-    window.location.href = url.toString();
+    
+    // 현재 페이지가 공정표 페이지인 경우 redirect 없이 프로젝트만 변경
+    var currentPath = window.location.pathname;
+    var isProductSchedulePage = currentPath.includes('2H_steel_product.html') || 
+                                currentPath.includes('K-product');
+    
+    if (isProductSchedulePage) {
+      // 현재 페이지에서 프로젝트 파라미터만 변경하고 새로고침
+      var url = new URL(window.location.href);
+      url.searchParams.set('project', id);
+      // history.pushState로 URL만 변경하고 새로고침 (redirect 없음)
+      window.history.pushState({ project: id }, '', url.toString());
+      // 프로젝트 ID 업데이트 후 페이지 새로고침
+      window.location.reload();
+    } else {
+      // 다른 페이지에서 공정표로 이동하는 경우에만 redirect
+      var url = new URL(link.getAttribute('href'), window.location.href);
+      url.searchParams.set('project', id);
+      window.location.href = url.toString();
+    }
   }
 
   // Render project cards
