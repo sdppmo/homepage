@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=1200, initial-scale=1.0">
     <title>K-COLUMN 공정관리 시스템</title>
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -20,11 +20,13 @@
             font-family: 'Malgun Gothic', 'Segoe UI', Arial, sans-serif;
             background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
             min-height: 100vh;
+            min-width: 1200px; /* 데스크톱 최소 너비 보장 */
             color: #333;
         }
 
         .container {
             max-width: 1600px;
+            min-width: 1200px; /* 데스크톱 최소 너비 보장 */
             margin: 0 auto;
             padding: 20px;
         }
@@ -839,6 +841,22 @@
         // ✅ TDZ 방지: 전역 1회 선언 (var 추천)
         // 혹시 선언 순서가 또 꼬여도 typeof currentProcess가 절대 터지지 않게 하기 위함
         var currentProcess = null;
+        
+        // =====================================================
+        // ✅ 최종 통합본: 로그인 시 소실 방지 + 중복 저장 루프 차단
+        // (1) 초기 로딩 저장 차단 (isInitialLoad)
+        // (2) 빈 객체 필드 제거 (omitEmptyObjects)
+        // (3) safePayload 비면 저장 안 함
+        // (4) merge:true 저장
+        // (+) onSnapshot 원격 반영 중 저장 차단 (isApplyingRemoteData)
+        // =====================================================
+        
+        // 전역/상단
+        let projectRef = null;
+        let realtimeUnsubscribe = null;
+        
+        let isInitialLoad = true;          // ① 첫 스냅샷 전 저장 금지
+        let isApplyingRemoteData = false;  // + 원격 반영 중 저장 금지(루프 차단)
     </script>
     
     <script>
@@ -2308,7 +2326,7 @@
         }
         
         // Firebase 실시간 동기화 리스너 (onSnapshot)
-        let realtimeUnsubscribe = null;
+        // ✅ realtimeUnsubscribe는 상단 전역 변수로 이미 선언됨 (856번 라인)
         let realtimeStatusCheckInterval = null;
         let lastRealtimeUpdateTime = null;
         
@@ -2566,7 +2584,8 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
             }
             
             try {
-                const projectRef = firebaseDb.collection('projects').doc(window.PROJECT_ID);
+                // ✅ projectRef 전역 설정
+                projectRef = firebaseDb.collection('projects').doc(window.PROJECT_ID);
                 const readPath = `projects/${window.PROJECT_ID}`;
                 
                 // ✅ 읽기 경로 로그 (권한 오류 진단용)
@@ -2599,127 +2618,8 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
                 console.log('👤 현재 사용자:', firebaseAuth.currentUser.uid, firebaseAuth.currentUser.email);
                 console.log('✅ [가드] 멤버 확인 완료 후 onSnapshot 시작');
                 
-                // onSnapshot으로 실시간 데이터 감지
-                realtimeUnsubscribe = projectRef.onSnapshot(
-                    (docSnapshot) => {
-                        // 실시간 연결 활성 상태 표시 (데이터 수신 시마다)
-                        lastRealtimeUpdateTime = Date.now();
-                        updateRealtimeConnectionStatus(true);
-                        console.log('📡 Firebase 실시간 데이터 수신:', window.PROJECT_ID, 'exists:', docSnapshot.exists);
-                        
-                        // 첫 데이터 수신 시 상태 체크 시작
-                        if (!realtimeStatusCheckInterval) {
-                            startRealtimeStatusCheck();
-                        }
-                        
-                        // 역할 확인 (클라이언트 측 보안)
-                        if (!userRole) {
-                            console.warn('⚠️ 사용자 역할이 설정되지 않았습니다. 데이터 접근을 제한합니다.');
-                            return;
-                        }
-                        
-                        if (docSnapshot.exists) {
-                            const projectData = docSnapshot.data();
-                            console.log('📡 Firebase 실시간 데이터 수신:', window.PROJECT_ID);
-                            
-                            // ============================================================
-                            // ⚠️ 중요: "자기 업데이트 스킵" 로직은 데이터 렌더 최적화에만 사용됩니다.
-                            // role/UI 갱신에는 절대 적용되지 않습니다.
-                            // 
-                            // ✅ 데이터 렌더링: 자기 업데이트면 스킵 (최적화)
-                            // ❌ role/UI: 자기 업데이트라도 항상 재적용 (필수)
-                            // ============================================================
-                            // 현재 사용자가 업데이트한 경우는 데이터 렌더링만 건너뜀 (자신의 변경사항)
-                            // ⚠️ 이 가드는 role/UI 갱신에는 절대 적용되지 않습니다.
-                            const updatedBy = projectData.updatedBy;
-                            const currentUser = firebaseAuth.currentUser;
-                            
-                            if (updatedBy && currentUser && updatedBy === currentUser.uid) {
-                                console.log('ℹ️ [데이터 렌더] 자신이 업데이트한 프로젝트 데이터이므로 UI 업데이트 건너뜀 (최적화)');
-                                console.log('💡 [role/UI] role/UI는 별도 members 리스너에서 항상 재적용됩니다.');
-                                return; // ✅ 데이터 렌더링만 스킵 (role/UI는 별도 처리)
-                            }
-                            
-                            // 프로젝트 데이터 업데이트 (role/UI와 무관)
-                            const newColumnData = projectData.columnData || {};
-                            const newDailyData = projectData.dailyData || {};
-                            const newColumnCoordinates = projectData.columnCoordinates || {};
-                            const newDeliveryConfirmed = projectData.deliveryConfirmed || {};
-                            const newActualDeliveryDate = projectData.actualDeliveryDate || {};
-                            const newTransportPlan = projectData.transportPlan || {};
-                            
-                            // 데이터가 변경되었는지 확인
-                            const dataChanged = 
-                                JSON.stringify(columnData) !== JSON.stringify(newColumnData) ||
-                                JSON.stringify(dailyData) !== JSON.stringify(newDailyData) ||
-                                JSON.stringify(columnCoordinates) !== JSON.stringify(newColumnCoordinates) ||
-                                JSON.stringify(deliveryConfirmed) !== JSON.stringify(newDeliveryConfirmed) ||
-                                JSON.stringify(actualDeliveryDate) !== JSON.stringify(newActualDeliveryDate) ||
-                                JSON.stringify(transportPlan) !== JSON.stringify(newTransportPlan);
-                            
-                            if (dataChanged) {
-                                console.log('🔄 실시간 데이터 변경 감지 - UI 업데이트 중...');
-                                
-                                // 데이터 업데이트
-                                columnData = newColumnData;
-                                dailyData = newDailyData;
-                                columnCoordinates = newColumnCoordinates;
-                                deliveryConfirmed = newDeliveryConfirmed;
-                                actualDeliveryDate = newActualDeliveryDate;
-                                transportPlan = newTransportPlan;
-                                
-                                // localStorage에도 동기화 (백업)
-                                localStorage.setItem(kcolKey('steelColumnData'), JSON.stringify(columnData));
-                                localStorage.setItem(kcolKey('steelColumnDaily'), JSON.stringify(dailyData));
-                                localStorage.setItem(kcolKey('columnCoordinates'), JSON.stringify(columnCoordinates));
-                                localStorage.setItem(kcolKey('deliveryConfirmed'), JSON.stringify(deliveryConfirmed));
-                                localStorage.setItem(kcolKey('actualDeliveryDate'), JSON.stringify(actualDeliveryDate));
-                                localStorage.setItem(kcolKey('transportPlan'), JSON.stringify(transportPlan));
-                                
-                                // UI 업데이트
-                                syncTransportToDailyData(false);
-                                renderColumnGrid('column-grid-overview');
-                                renderColumnGrid('column-grid-input');
-                                renderGanttChart();
-                                updateProgressBars();
-                                
-                                // 실시간 업데이트 알림
-                                showToast('🔄 실시간 데이터 업데이트됨', 'info');
-                                
-                                console.log('✅ 실시간 데이터 업데이트 완료');
-                            }
-                        } else {
-                            console.log('ℹ️ Firestore 문서가 아직 생성되지 않았습니다.');
-                        }
-                    },
-                    (error) => {
-                        // ✅ 상세 에러 로그 (권한 오류 진단용)
-                        console.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-                        console.error('[READ ERROR]', error.code, error.message);
-                        console.error('[READ PATH]', `projects/${window.PROJECT_ID}`);
-                        console.error('[ROLE]', memberRoleData.role, '[UID]', firebaseAuth.currentUser?.uid);
-                        console.error('[PROJECT_ID]', window.PROJECT_ID);
-                        console.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-                        
-                        // 실시간 연결 오류 상태 표시
-                        updateRealtimeConnectionStatus(false, error.message);
-                        
-                        if (error.code === 'permission-denied') {
-                            console.error('❌ Firestore 권한 오류: 로그인 상태와 권한을 확인하세요.');
-                            console.error('💡 위의 [READ PATH]와 [ROLE] 정보를 확인하여 Firestore Security Rules를 점검하세요.');
-                            showToast('⚠️ 실시간 동기화 권한 오류', 'error');
-                            
-                            // ✅ permission-denied 시 즉시 리스너 해제 (반복 에러 방지)
-                            if (realtimeUnsubscribe) {
-                                console.warn('🔒 permission-denied 오류로 인해 리스너를 즉시 해제합니다.');
-                                realtimeUnsubscribe();
-                                realtimeUnsubscribe = null;
-                            }
-                        } else {
-                            showToast('⚠️ 실시간 동기화 오류: ' + error.message, 'error');
-                        }
-                    }
-                );
+                // ✅ initProjectRealtime 함수로 통일된 실시간 구독 초기화
+                initProjectRealtime(window.PROJECT_ID);
                 
                 console.log('✅ Firebase 실시간 동기화 리스너 설정 완료');
                 console.log('💡 실시간 동기화가 활성화되었습니다. 다른 사용자의 변경사항이 자동으로 반영됩니다.');
@@ -9477,7 +9377,265 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
             return userRole === 'admin' || userRole === 'editor';
         }
         
+        // ===============================
+        // 🔒 안전한 프로젝트 데이터 저장 (최종본)
+        // ===============================
+        
+        // ② 빈 객체 필드 제거 헬퍼
+        function omitEmptyObjects(obj) {
+            const out = { ...obj };
+
+            const isPlainObject = (v) =>
+                v !== null && typeof v === "object" && !Array.isArray(v);
+
+            const isEmptyPlainObject = (v) =>
+                isPlainObject(v) && Object.keys(v).length === 0;
+
+            if (!out.columnData || isEmptyPlainObject(out.columnData)) delete out.columnData;
+            if (!out.dailyData  || isEmptyPlainObject(out.dailyData))  delete out.dailyData;
+            if (!out.transportPlan || isEmptyPlainObject(out.transportPlan)) delete out.transportPlan;
+
+            return out;
+        }
+        
+        // projectRef + 실시간 구독 초기화 (PROJECT_ID 확보 후 1회 호출)
+        function initProjectRealtime(projectId) {
+            if (!projectId) throw new Error("projectId missing");
+
+            // 기존 리스너 정리
+            if (realtimeUnsubscribe) {
+                realtimeUnsubscribe();
+                realtimeUnsubscribe = null;
+            }
+
+            // projectRef 설정
+            projectRef = firebaseDb.collection("projects").doc(projectId);
+
+            // 초기 상태 리셋
+            isInitialLoad = true;
+            isApplyingRemoteData = false;
+
+            // 실시간 수신
+            realtimeUnsubscribe = projectRef.onSnapshot(
+                (docSnapshot) => {
+                    // 원격 데이터 적용 시작
+                    isApplyingRemoteData = true;
+
+                    // ✅ 최초 스냅샷 수신 시점부터 저장 허용
+                    if (isInitialLoad) {
+                        isInitialLoad = false;
+                        console.log("✅ 초기 로딩 완료 - 저장 가능 상태로 전환");
+                    }
+
+                    // 실시간 연결 활성 상태 표시 (데이터 수신 시마다)
+                    if (typeof lastRealtimeUpdateTime !== 'undefined') {
+                        lastRealtimeUpdateTime = Date.now();
+                    }
+                    if (typeof updateRealtimeConnectionStatus === 'function') {
+                        updateRealtimeConnectionStatus(true);
+                    }
+                    console.log('📡 Firebase 실시간 데이터 수신:', projectId, 'exists:', docSnapshot.exists);
+
+                    // 첫 데이터 수신 시 상태 체크 시작
+                    if (typeof startRealtimeStatusCheck === 'function') {
+                        if (typeof realtimeStatusCheckInterval === 'undefined' || !realtimeStatusCheckInterval) {
+                            startRealtimeStatusCheck();
+                        }
+                    }
+
+                    // 역할 확인 (클라이언트 측 보안)
+                    if (typeof userRole === 'undefined' || !userRole) {
+                        console.warn('⚠️ 사용자 역할이 설정되지 않았습니다. 데이터 접근을 제한합니다.');
+                        isApplyingRemoteData = false;
+                        return;
+                    }
+
+                    if (docSnapshot.exists) {
+                        const projectData = docSnapshot.data();
+                        console.log('📡 Firebase 실시간 데이터 수신:', projectId);
+
+                        // ============================================================
+                        // ⚠️ 중요: "자기 업데이트 스킵" 로직은 데이터 렌더 최적화에만 사용됩니다.
+                        // role/UI 갱신에는 절대 적용되지 않습니다.
+                        // ============================================================
+                        const updatedBy = projectData.updatedBy;
+                        const currentUser = (typeof firebaseAuth !== 'undefined' && firebaseAuth) ? firebaseAuth.currentUser : null;
+
+                        if (updatedBy && currentUser && updatedBy === currentUser.uid) {
+                            console.log('ℹ️ [데이터 렌더] 자신이 업데이트한 프로젝트 데이터이므로 UI 업데이트 건너뜀 (최적화)');
+                            console.log('💡 [role/UI] role/UI는 별도 members 리스너에서 항상 재적용됩니다.');
+                            isApplyingRemoteData = false;
+                            return; // ✅ 데이터 렌더링만 스킵 (role/UI는 별도 처리)
+                        }
+
+                        // ✅ 여기서 docSnapshot.data()를 UI/state에 반영
+                        const newColumnData = projectData.columnData || {};
+                        const newDailyData = projectData.dailyData || {};
+                        const newColumnCoordinates = projectData.columnCoordinates || {};
+                        const newDeliveryConfirmed = projectData.deliveryConfirmed || {};
+                        const newActualDeliveryDate = projectData.actualDeliveryDate || {};
+                        const newTransportPlan = projectData.transportPlan || {};
+
+                        // 데이터가 변경되었는지 확인 (전역 변수가 정의되어 있는지 확인)
+                        const currentColumnData = (typeof columnData !== 'undefined') ? columnData : {};
+                        const currentDailyData = (typeof dailyData !== 'undefined') ? dailyData : {};
+                        const currentColumnCoordinates = (typeof columnCoordinates !== 'undefined') ? columnCoordinates : {};
+                        const currentDeliveryConfirmed = (typeof deliveryConfirmed !== 'undefined') ? deliveryConfirmed : {};
+                        const currentActualDeliveryDate = (typeof actualDeliveryDate !== 'undefined') ? actualDeliveryDate : {};
+                        const currentTransportPlan = (typeof transportPlan !== 'undefined') ? transportPlan : {};
+                        
+                        const dataChanged = 
+                            JSON.stringify(currentColumnData) !== JSON.stringify(newColumnData) ||
+                            JSON.stringify(currentDailyData) !== JSON.stringify(newDailyData) ||
+                            JSON.stringify(currentColumnCoordinates) !== JSON.stringify(newColumnCoordinates) ||
+                            JSON.stringify(currentDeliveryConfirmed) !== JSON.stringify(newDeliveryConfirmed) ||
+                            JSON.stringify(currentActualDeliveryDate) !== JSON.stringify(newActualDeliveryDate) ||
+                            JSON.stringify(currentTransportPlan) !== JSON.stringify(newTransportPlan);
+
+                        if (dataChanged) {
+                            console.log('🔄 실시간 데이터 변경 감지 - UI 업데이트 중...');
+
+                            // 데이터 업데이트 (전역 변수가 정의되어 있는 경우에만)
+                            if (typeof columnData !== 'undefined') columnData = newColumnData;
+                            if (typeof dailyData !== 'undefined') dailyData = newDailyData;
+                            if (typeof columnCoordinates !== 'undefined') columnCoordinates = newColumnCoordinates;
+                            if (typeof deliveryConfirmed !== 'undefined') deliveryConfirmed = newDeliveryConfirmed;
+                            if (typeof actualDeliveryDate !== 'undefined') actualDeliveryDate = newActualDeliveryDate;
+                            if (typeof transportPlan !== 'undefined') transportPlan = newTransportPlan;
+                            
+                            // 전역 변수가 없으면 window 객체에 할당
+                            if (typeof columnData === 'undefined') window.columnData = newColumnData;
+                            if (typeof dailyData === 'undefined') window.dailyData = newDailyData;
+                            if (typeof columnCoordinates === 'undefined') window.columnCoordinates = newColumnCoordinates;
+                            if (typeof deliveryConfirmed === 'undefined') window.deliveryConfirmed = newDeliveryConfirmed;
+                            if (typeof actualDeliveryDate === 'undefined') window.actualDeliveryDate = newActualDeliveryDate;
+                            if (typeof transportPlan === 'undefined') window.transportPlan = newTransportPlan;
+                            
+                            // 참조 업데이트
+                            const finalColumnData = (typeof columnData !== 'undefined') ? columnData : window.columnData;
+                            const finalDailyData = (typeof dailyData !== 'undefined') ? dailyData : window.dailyData;
+                            const finalColumnCoordinates = (typeof columnCoordinates !== 'undefined') ? columnCoordinates : window.columnCoordinates;
+                            const finalDeliveryConfirmed = (typeof deliveryConfirmed !== 'undefined') ? deliveryConfirmed : window.deliveryConfirmed;
+                            const finalActualDeliveryDate = (typeof actualDeliveryDate !== 'undefined') ? actualDeliveryDate : window.actualDeliveryDate;
+                            const finalTransportPlan = (typeof transportPlan !== 'undefined') ? transportPlan : window.transportPlan;
+
+                            // localStorage에도 동기화 (백업)
+                            if (typeof kcolKey === 'function') {
+                                localStorage.setItem(kcolKey('steelColumnData'), JSON.stringify(finalColumnData));
+                                localStorage.setItem(kcolKey('steelColumnDaily'), JSON.stringify(finalDailyData));
+                                localStorage.setItem(kcolKey('columnCoordinates'), JSON.stringify(finalColumnCoordinates));
+                                localStorage.setItem(kcolKey('deliveryConfirmed'), JSON.stringify(finalDeliveryConfirmed));
+                                localStorage.setItem(kcolKey('actualDeliveryDate'), JSON.stringify(finalActualDeliveryDate));
+                                localStorage.setItem(kcolKey('transportPlan'), JSON.stringify(finalTransportPlan));
+                            }
+
+                            // UI 업데이트
+                            if (typeof syncTransportToDailyData === 'function') {
+                                syncTransportToDailyData(false);
+                            }
+                            if (typeof renderColumnGrid === 'function') {
+                                renderColumnGrid('column-grid-overview');
+                                renderColumnGrid('column-grid-input');
+                            }
+                            if (typeof renderGanttChart === 'function') {
+                                renderGanttChart();
+                            }
+                            if (typeof updateProgressBars === 'function') {
+                                updateProgressBars();
+                            }
+
+                            // 실시간 업데이트 알림
+                            if (typeof showToast === 'function') {
+                                showToast('🔄 실시간 데이터 업데이트됨', 'info');
+                            }
+
+                            console.log('✅ 실시간 데이터 업데이트 완료');
+                        }
+                    } else {
+                        console.log('ℹ️ Firestore 문서가 아직 생성되지 않았습니다.');
+                    }
+
+                    // 원격 데이터 적용 종료
+                    isApplyingRemoteData = false;
+                },
+                (error) => {
+                    console.error("❌ onSnapshot error:", error);
+                    // 에러 시에도 원격 적용 플래그만 해제 (isInitialLoad는 함부로 false로 바꾸지 않음)
+                    isApplyingRemoteData = false;
+                    
+                    // 실시간 연결 오류 상태 표시
+                    if (typeof updateRealtimeConnectionStatus === 'function') {
+                        updateRealtimeConnectionStatus(false, error.message);
+                    }
+                    
+                    if (error.code === 'permission-denied') {
+                        console.error('❌ Firestore 권한 오류: 로그인 상태와 권한을 확인하세요.');
+                        if (typeof showToast === 'function') {
+                            showToast('⚠️ 실시간 동기화 권한 오류', 'error');
+                        }
+                        
+                        // ✅ permission-denied 시 즉시 리스너 해제 (반복 에러 방지)
+                        if (realtimeUnsubscribe) {
+                            console.warn('🔒 permission-denied 오류로 인해 리스너를 즉시 해제합니다.');
+                            realtimeUnsubscribe();
+                            realtimeUnsubscribe = null;
+                        }
+                    } else {
+                        if (typeof showToast === 'function') {
+                            showToast('⚠️ 실시간 동기화 오류: ' + error.message, 'error');
+                        }
+                    }
+                }
+            );
+        }
+        
+        // ③④(+루프차단) 최종 저장 함수: 반드시 이것으로만 저장
+        async function saveProjectData(projectData) {
+            // projectRef 준비 전 저장 금지
+            if (!projectRef) {
+                console.warn("⛔ projectRef not ready → save blocked");
+                return;
+            }
+
+            // ① 첫 스냅샷 전 저장 금지
+            if (isInitialLoad) {
+                console.warn("⏸ initial load → save blocked");
+                return;
+            }
+
+            // + 원격 스냅샷 반영 중 저장 금지 (저장 루프 차단 핵심)
+            if (isApplyingRemoteData) {
+                console.warn("⏸ remote snapshot applying → save blocked");
+                return;
+            }
+
+            // ② 빈 객체 제거
+            const safePayload = omitEmptyObjects(projectData);
+
+            // ③ payload 자체가 비어 있으면 저장 안 함
+            if (Object.keys(safePayload).length === 0) {
+                console.warn("⛔ empty payload → save skipped");
+                return;
+            }
+
+            // ④ 덮어쓰기 방지 merge 저장
+            await projectRef.set(safePayload, { merge: true });
+        }
+        
+        // 3️⃣ 안전 저장 함수 (빈 데이터 완전 차단 + merge 저장)
         async function saveToStorage() {
+            // ✅ 원격 데이터 적용 중 저장 차단 (최우선 체크)
+            if (isApplyingRemoteData) {
+                console.warn("⏸ remote snapshot 적용 중 → 저장 차단");
+                return;
+            }
+            
+            // 1️⃣ 초기 로딩 중 저장 차단
+            if (isInitialLoad) {
+                console.warn("⏸ 초기 로딩 중 저장 차단");
+                return;
+            }
+            
             // ✅ [가드 1] permission-denied 플래그 체크 (재시도 방지)
             if (window.__writeBlocked) {
                 console.warn('[WRITE BLOCKED] 이전 permission-denied 오류로 인해 쓰기가 차단되었습니다.');
@@ -9538,7 +9696,11 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
                             }
                         }
                         
-                        const projectRef = firebaseDb.collection('projects').doc(window.PROJECT_ID);
+                        // ✅ projectRef가 초기화되지 않았으면 초기화
+                        if (!projectRef) {
+                            projectRef = firebaseDb.collection('projects').doc(window.PROJECT_ID);
+                        }
+                        
                         const writePath = `projects/${window.PROJECT_ID}`;
                         
                         // ✅ 쓰기 경로 로그 (권한 오류 진단용)
@@ -9551,39 +9713,25 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
                         console.log('💡 이 경로의 write 권한이 Firestore Security Rules에서 허용되어야 합니다.');
                         console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
                         
-                        // 문서 존재 여부 확인
-                        const docSnapshot = await projectRef.get();
-                        
+                        // ✅ 안전한 기본값으로 projectData 생성
                         const projectData = {
-                            columnData: columnData,
-                            dailyData: dailyData,
-                            columnCoordinates: columnCoordinates,
-                            deliveryConfirmed: deliveryConfirmed,
-                            actualDeliveryDate: actualDeliveryDate,
+                            columnData: columnData || {},
+                            dailyData: dailyData || {},
+                            columnCoordinates: columnCoordinates || {},
+                            deliveryConfirmed: deliveryConfirmed ?? false,
+                            actualDeliveryDate: actualDeliveryDate ?? null,
                             transportPlan: transportPlan || {},
                             lastUpdated: firebase.firestore.FieldValue.serverTimestamp(),
-                            updatedBy: firebaseAuth.currentUser.uid
+                            updatedBy: firebaseAuth.currentUser?.uid || null
                         };
-                        
-                        // 문서가 있으면 updateDoc, 없으면 setDoc 사용 (덮어쓰기 방지)
-                        if (docSnapshot.exists) {
-                            await projectRef.update(projectData);
-                            console.log('✅ Firestore 업데이트 완료:', window.PROJECT_ID);
-                            console.log('✅ 저장된 데이터 크기:', {
-                                columnData: Object.keys(columnData).length,
-                                dailyData: Object.keys(dailyData).length,
-                                transportPlan: Object.keys(transportPlan).length
-                            });
-                        } else {
-                            // 문서가 없을 때만 setDoc 사용 (초기 생성)
-                            await projectRef.set(projectData);
-                            console.log('✅ Firestore 생성 완료:', window.PROJECT_ID);
-                            console.log('✅ 저장된 데이터 크기:', {
-                                columnData: Object.keys(columnData).length,
-                                dailyData: Object.keys(dailyData).length,
-                                transportPlan: Object.keys(transportPlan).length
-                            });
-                        }
+
+                        // ✅ saveProjectData 함수로 통일된 저장
+                        await saveProjectData(projectData);
+                        console.log('✅ 저장된 데이터 크기:', {
+                            columnData: Object.keys(columnData || {}).length,
+                            dailyData: Object.keys(dailyData || {}).length,
+                            transportPlan: Object.keys(transportPlan || {}).length
+                        });
                         
                         // 저장 확인: 저장 직후 다시 읽어서 확인
                         const verifyDoc = await projectRef.get();

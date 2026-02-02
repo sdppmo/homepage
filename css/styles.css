@@ -35,6 +35,7 @@ html, body {
   margin: 0;
   padding: 0;
   overflow: hidden;
+  min-width: 1200px; /* 데스크톱 최소 너비 보장 */
   -webkit-text-size-adjust: 100%; /* Prevent font scaling in landscape on iOS */
   -webkit-tap-highlight-color: transparent; /* Remove tap highlight on mobile */
 }
@@ -47,6 +48,7 @@ html, body {
   display: flex;
   flex-direction: column;
   width: 100vw;
+  min-width: 1200px; /* 데스크톱 최소 너비 보장 */
   height: 100vh; /* Fallback for older browsers */
   height: 100dvh; /* Dynamic viewport height for modern browsers */
   margin: 0;
