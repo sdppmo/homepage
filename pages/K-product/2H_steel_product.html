@@ -36,7 +36,7 @@
             background: linear-gradient(135deg, #2c4a7c, #4a6fa5);
             color: white;
             padding: 20px 30px;
-            padding-left: 140px;
+            padding-left: 320px;
             border-radius: 12px;
             margin-bottom: 20px;
             display: flex;
@@ -53,12 +53,13 @@
         .header-info {
             text-align: right;
             font-size: 14px;
+            padding-bottom: 60px;
         }
 
         .home-btn {
             position: absolute;
-            top: 20px;
-            left: 20px;
+            bottom: 20px;
+            right: 30px;
             padding: 10px 20px;
             background: rgba(255, 255, 255, 0.2);
             color: white;
@@ -103,7 +104,7 @@
         }
 
         .company-btn {
-            padding: 15px 30px;
+            padding: 15px 20px;
             border: none;
             border-radius: 8px;
             font-size: 16px;
@@ -111,7 +112,9 @@
             cursor: pointer;
             transition: all 0.3s;
             flex: 1;
-            min-width: 200px;
+            min-width: 0;
+            transform: scale(0.932);
+            transform-origin: center;
         }
 
         .company-btn.yuseok {
@@ -167,13 +170,13 @@
         }
 
         .company-btn:hover {
-            transform: translateY(-2px);
+            transform: scale(0.932) translateY(-2px);
             box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }
 
         .company-btn.active {
             box-shadow: 0 0 0 4px rgba(255,255,255,0.5), 0 4px 15px rgba(0,0,0,0.3);
-            transform: scale(1.02);
+            transform: scale(0.956);
         }
 
         .company-btn small {
@@ -191,11 +194,11 @@
         }
 
         .tab-btn {
-            padding: 12px 25px;
+            padding: 19.382px 41.188px;
             background: white;
             border: none;
             border-radius: 8px;
-            font-size: 14px;
+            font-size: 22.613px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s;
@@ -891,17 +894,26 @@
         <!-- 로그인 모달 (페이지 접근 시 표시) -->
         <!-- 로그인 모달 (페이지 접근 시 표시) -->
         <div id="login-modal" style="display:flex;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:10000;flex-direction:column;align-items:center;justify-content:center;">
-            <div style="background:white;padding:40px;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,0.3);max-width:400px;width:90%;">
-                <h2 style="margin:0 0 20px 0;color:#2c4a7c;font-size:24px;text-align:center;">🔐 로그인 필요</h2>
-                <p style="margin:0 0 30px 0;color:#666;text-align:center;font-size:14px;">
+            <div style="background:linear-gradient(135deg, #2c4a7c, #4a6fa5);padding:40px;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,0.3);max-width:400px;width:90%;">
+                <h2 style="margin:0 0 20px 0;color:white;font-size:24px;text-align:center;">🔐 로그인 필요</h2>
+                <p style="margin:0 0 30px 0;color:rgba(255,255,255,0.9);text-align:center;font-size:13.58px;">
                     공정표에 접근하려면 Firebase 로그인이 필요합니다.<br>
-                    <span style="font-size:12px;color:#999;">Email/Password로 로그인하세요.</span>
+                    <span style="font-size:12px;color:rgba(255,255,255,0.8);">Email/Password로 로그인하세요.</span>
                 </p>
                 <div style="display:flex;flex-direction:column;gap:15px;">
                     <input type="email" id="modal-login-email" placeholder="이메일" 
                            style="padding:12px;border:2px solid #ddd;border-radius:6px;font-size:14px;" autocomplete="email">
-                    <input type="password" id="modal-login-password" placeholder="비밀번호" 
-                           style="padding:12px;border:2px solid #ddd;border-radius:6px;font-size:14px;" autocomplete="current-password">
+                    <div style="position:relative;">
+                        <input type="password" id="modal-login-password" placeholder="비밀번호" 
+                               style="padding:12px;padding-right:45px;border:2px solid #ddd;border-radius:6px;font-size:14px;width:100%;box-sizing:border-box;" autocomplete="current-password">
+                        <button type="button" id="modal-login-password-toggle" 
+                                onclick="togglePasswordVisibility('modal-login-password', 'modal-login-password-toggle')"
+                                style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:18px;padding:4px 8px;color:#666;transition:color 0.2s;"
+                                onmouseover="this.style.color='#2196f3';" onmouseout="this.style.color='#666';"
+                                title="비밀번호 보기/숨기기">
+                            👁️
+                        </button>
+                    </div>
                     <button id="modal-login-btn" 
                             style="padding:12px;background:#2c4a7c;color:white;border:none;border-radius:6px;font-size:16px;font-weight:600;cursor:pointer;transition:background 0.3s;">
                         로그인
@@ -915,13 +927,15 @@
         </div>
 
         <div class="header" style="position: relative;">
+            <img src="../../assets/images/songdo_logo_transparent.png" alt="송도파트너스피엠오" style="position: absolute; top: 20px; left: 20px; height: 45.6192px; width: auto; z-index: 5;">
             <a href="../../index.html" class="home-btn">
                 <span>🏠</span>
                 <span>홈으로</span>
             </a>
             <div>
                 <h1>🏗️ K-COLUMN 공정관리 시스템 <span id="project-badge" style="margin-left:10px;font-size:12px;font-weight:800;background:rgba(255,255,255,0.18);padding:6px 10px;border-radius:999px;">PROJECT</span></h1>
-                <p style="margin-top:5px;opacity:0.9;">K-COLUMN 50EA 제작 및 설치 공정</p>
+                <p style="margin-top:5px;opacity:0.9;">K-COLUMN 100개 (상부 50)+(하부 50) 제작 및 설치 공정</p>
+                <p style="margin-top:5px;opacity:0.9;font-size:13px;">자료협조 : (주) 지덕이엔지  /  (주) 주신산업</p>
             </div>
             <div class="header-info">
                 <div>공사기간: 2025.12.26 ~ 2026.04.30</div>
@@ -1044,13 +1058,20 @@
             </div>
         </div>
 
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab-btn active" onclick="showPanel('overview', this)">📊 전체 현황</button>
+            <button class="tab-btn" onclick="showPanel('transport', this)">🚚 운송차수계획</button>
+            <button class="tab-btn" onclick="showPanel('gantt', this)">📅 공정표 (Gantt)</button>
+            <button class="tab-btn" onclick="showPanel('chart', this)">📈 진행률 차트</button>
+            <button class="tab-btn" onclick="showPanel('transportVolume', this)">📦 운송물량산정</button>
+            <button class="tab-btn" onclick="showPanel('installation', this)">🏗️ 현장설치현황도</button>
+        </div>
+
         <!-- Company Selector -->
         <div class="company-selector">
-                <div style="display:flex;align-items:center;gap:15px;margin-bottom:15px;">
+            <div class="company-buttons" style="display:grid;grid-template-columns:auto repeat(6,1fr);gap:8px;align-items:center;">
                     <button class="tab-btn active" onclick="showPanel('input', this)" style="margin:0;">✏️ 일일 입력</button>
-                    <p style="margin:0;color:#666;font-size:13px;">아래 데이터(1~6) 입력을 위해 "일일입력"을 먼저 클릭하고 해당공정으로 들어가시기 바랍니다.</p>
-                </div>
-            <div class="company-buttons" style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px;">
                 <button class="company-btn process-btn p1" data-process="1" onclick="onCurrentProcessReady(1); selectPreocess(1); showPanel('input', null);">
                     1. 주기둥커팅
                     <small>유석철강(충주공장)</small>
@@ -1076,16 +1097,6 @@
                     <small>진흥기업</small>
                 </button>
             </div>
-        </div>
-
-        <!-- Tabs -->
-        <div class="tabs">
-            <button class="tab-btn active" onclick="showPanel('overview', this)">📊 전체 현황</button>
-            <button class="tab-btn" onclick="showPanel('transport', this)">🚚 운송차수계획</button>
-            <button class="tab-btn" onclick="showPanel('gantt', this)">📅 공정표 (Gantt)</button>
-            <button class="tab-btn" onclick="showPanel('chart', this)">📈 진행률 차트</button>
-            <button class="tab-btn" onclick="showPanel('transportVolume', this)">📦 운송물량산정</button>
-            <button class="tab-btn" onclick="showPanel('installation', this)">🏗️ 현장설치현황도</button>
         </div>
 
         <!-- Overview Panel -->
@@ -1467,6 +1478,7 @@
             <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px;">
                 <input type="file" accept=".xlsx,.xls,.csv" id="transport-volume-file" onchange="handleTransportVolumeFile(event)" style="padding:8px;border:1px solid #ccc;border-radius:6px;">
                 <button class="action-btn primary" onclick="downloadTransportVolumeTemplate()">📄 템플릿 다운로드</button>
+                <button class="action-btn" onclick="setDefaultTransportVolumeData()" style="background:#2196f3;color:white;">💾 기본값으로 저장</button>
                 <button class="action-btn" onclick="adjustTo25Ton()" style="background:#ff9800;color:white;">최대운송25톤</button>
                 <div id="transport-volume-adjustment-panel" style="flex:1;min-width:300px;padding:12px;background:#f5f5f5;border-radius:6px;border:1px solid #ddd;display:none;">
                     <div style="font-weight:600;color:#2c4a7c;margin-bottom:8px;font-size:14px;">📊 조정 결과</div>
@@ -1764,17 +1776,22 @@
                     renderTransportTrips();
                 }
             } else if (typeof renderTransportVolumeTable === 'function' && panelId === 'transportVolume') {
-                // 저장된 데이터가 있으면 로드
-                const savedTransportVolumeData = localStorage.getItem(kcolKey('transportVolumeData'));
-                if (savedTransportVolumeData) {
-                    try {
-                        const parsedData = JSON.parse(savedTransportVolumeData);
-                        if (parsedData && parsedData.length > 0) {
-                            transportVolumeData = parsedData;
-                            console.log('✅ 운송물량산정 데이터 로드 완료:', transportVolumeData.length, '개');
+                // 먼저 기본값이 있으면 기본값 로드 시도
+                const defaultLoaded = typeof loadDefaultTransportVolumeData === 'function' ? loadDefaultTransportVolumeData() : false;
+                
+                // 기본값이 없거나 로드 실패한 경우, 일반 저장된 데이터 로드
+                if (!defaultLoaded) {
+                    const savedTransportVolumeData = localStorage.getItem(kcolKey('transportVolumeData'));
+                    if (savedTransportVolumeData) {
+                        try {
+                            const parsedData = JSON.parse(savedTransportVolumeData);
+                            if (parsedData && parsedData.length > 0) {
+                                transportVolumeData = parsedData;
+                                console.log('✅ 운송물량산정 데이터 로드 완료:', transportVolumeData.length, '개');
+                            }
+                        } catch (e) {
+                            console.error('❌ transportVolumeData 파싱 실패:', e);
                         }
-                    } catch (e) {
-                        console.error('❌ transportVolumeData 파싱 실패:', e);
                     }
                 }
                 renderTransportVolumeTable();
@@ -3789,6 +3806,23 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
             if (modal) {
                 modal.style.display = 'none';
                 console.log('✅ 로그인 모달 숨김');
+            }
+        }
+        
+        // 비밀번호 보기/숨기기 토글 함수
+        function togglePasswordVisibility(inputId, buttonId) {
+            const passwordInput = document.getElementById(inputId);
+            const toggleButton = document.getElementById(buttonId);
+            if (passwordInput && toggleButton) {
+                if (passwordInput.type === 'password') {
+                    passwordInput.type = 'text';
+                    toggleButton.textContent = '🙈';
+                    toggleButton.title = '비밀번호 숨기기';
+                } else {
+                    passwordInput.type = 'password';
+                    toggleButton.textContent = '👁️';
+                    toggleButton.title = '비밀번호 보기';
+                }
             }
         }
         
@@ -10675,47 +10709,61 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
                 adjustedTransportPlan = adjustedTransportPlan || {};
             }
             
-            if (savedTransportVolumeData) {
+            // 먼저 기본값이 있으면 기본값 로드 시도
+            const defaultLoaded = loadDefaultTransportVolumeData();
+            
+            // 기본값이 없거나 로드 실패한 경우, 일반 저장된 데이터 로드
+            if (!defaultLoaded) {
+                if (savedTransportVolumeData) {
+                    try {
+                        const parsedTransportVolumeData = JSON.parse(savedTransportVolumeData);
+                        transportVolumeData = parsedTransportVolumeData;
+                        console.log('✅ localStorage transportVolumeData 로드 완료:', transportVolumeData.length, '개');
+                        
+                        // 저장된 데이터가 있으면 차수별 집계 테이블도 렌더링
+                        if (transportVolumeData.length > 0 && typeof renderTransportVolumeTripSummary === 'function') {
+                            renderTransportVolumeTripSummary(transportVolumeData);
+                        }
+                        // 조정된 차수계획 테이블도 렌더링
+                        if (typeof renderAdjustedTransportVolumeTripSummary === 'function') {
+                            renderAdjustedTransportVolumeTripSummary();
+                        }
+                    } catch (e) {
+                        console.error('❌ localStorage transportVolumeData 파싱 실패:', e);
+                        transportVolumeData = transportVolumeData || [];
+                    }
+                }
+            } else {
+                // 기본값이 로드된 경우에도 테이블 렌더링
+                if (transportVolumeData.length > 0 && typeof renderTransportVolumeTripSummary === 'function') {
+                    renderTransportVolumeTripSummary(transportVolumeData);
+                }
+                if (typeof renderAdjustedTransportVolumeTripSummary === 'function') {
+                    renderAdjustedTransportVolumeTripSummary();
+                }
+            }
+            
+            // 규격별 필터 선택 상태 로드
+            const savedSelectedSizes = localStorage.getItem(kcolKey('selectedSizes'));
+            if (savedSelectedSizes) {
                 try {
-                    const parsedTransportVolumeData = JSON.parse(savedTransportVolumeData);
-                    transportVolumeData = parsedTransportVolumeData;
-                    console.log('✅ localStorage transportVolumeData 로드 완료:', transportVolumeData.length, '개');
-                    
-                    // 저장된 데이터가 있으면 차수별 집계 테이블도 렌더링
-                    if (transportVolumeData.length > 0 && typeof renderTransportVolumeTripSummary === 'function') {
-                        renderTransportVolumeTripSummary(transportVolumeData);
-                    }
-                    // 조정된 차수계획 테이블도 렌더링
-                    if (typeof renderAdjustedTransportVolumeTripSummary === 'function') {
-                        renderAdjustedTransportVolumeTripSummary();
-                    }
+                    selectedSizes = JSON.parse(savedSelectedSizes);
+                    console.log('✅ 규격별 필터 선택 상태 로드 완료:', selectedSizes);
                 } catch (e) {
-                    console.error('❌ localStorage transportVolumeData 파싱 실패:', e);
-                    transportVolumeData = transportVolumeData || [];
+                    console.error('❌ selectedSizes 파싱 실패:', e);
+                    selectedSizes = [];
                 }
-                
-                // 규격별 필터 선택 상태 로드
-                const savedSelectedSizes = localStorage.getItem(kcolKey('selectedSizes'));
-                if (savedSelectedSizes) {
-                    try {
-                        selectedSizes = JSON.parse(savedSelectedSizes);
-                        console.log('✅ 규격별 필터 선택 상태 로드 완료:', selectedSizes);
-                    } catch (e) {
-                        console.error('❌ selectedSizes 파싱 실패:', e);
-                        selectedSizes = [];
-                    }
-                }
-                
-                // 차수별 필터 선택 상태 로드
-                const savedSelectedTrips = localStorage.getItem(kcolKey('selectedTrips'));
-                if (savedSelectedTrips) {
-                    try {
-                        selectedTrips = JSON.parse(savedSelectedTrips);
-                        console.log('✅ 차수별 필터 선택 상태 로드 완료:', selectedTrips);
-                    } catch (e) {
-                        console.error('❌ selectedTrips 파싱 실패:', e);
-                        selectedTrips = [];
-                    }
+            }
+            
+            // 차수별 필터 선택 상태 로드
+            const savedSelectedTrips = localStorage.getItem(kcolKey('selectedTrips'));
+            if (savedSelectedTrips) {
+                try {
+                    selectedTrips = JSON.parse(savedSelectedTrips);
+                    console.log('✅ 차수별 필터 선택 상태 로드 완료:', selectedTrips);
+                } catch (e) {
+                    console.error('❌ selectedTrips 파싱 실패:', e);
+                    selectedTrips = [];
                 }
             }
             
@@ -11599,6 +11647,71 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
             
             // 자동 저장 (확인 없이)
             saveTransportPlan();
+        }
+
+        // 운송물량산정: 현재 값을 기본값으로 저장
+        function setDefaultTransportVolumeData() {
+            if (!transportVolumeData || transportVolumeData.length === 0) {
+                alert('⚠️ 저장할 데이터가 없습니다.\n\n먼저 엑셀 파일을 업로드해주세요.');
+                return;
+            }
+            
+            try {
+                // 현재 transportVolumeData를 기본값으로 저장
+                const defaultData = JSON.parse(JSON.stringify(transportVolumeData));
+                localStorage.setItem(kcolKey('defaultTransportVolumeData'), JSON.stringify(defaultData));
+                
+                // adjustedTransportPlan도 기본값으로 저장
+                if (adjustedTransportPlan && Object.keys(adjustedTransportPlan).length > 0) {
+                    const defaultAdjustedPlan = JSON.parse(JSON.stringify(adjustedTransportPlan));
+                    localStorage.setItem(kcolKey('defaultAdjustedTransportPlan'), JSON.stringify(defaultAdjustedPlan));
+                }
+                
+                alert('✅ 현재 물량산정 값이 기본값으로 저장되었습니다.\n\n페이지를 새로고침하면 기본값이 자동으로 표시됩니다.');
+                console.log('✅ 기본값 저장 완료:', defaultData.length, '개 부재');
+            } catch (error) {
+                console.error('기본값 저장 오류:', error);
+                alert('❌ 기본값 저장 중 오류가 발생했습니다.\n\n' + error.message);
+            }
+        }
+        
+        // 운송물량산정: 기본값 로드
+        function loadDefaultTransportVolumeData() {
+            try {
+                const savedDefaultData = localStorage.getItem(kcolKey('defaultTransportVolumeData'));
+                if (savedDefaultData) {
+                    const parsedData = JSON.parse(savedDefaultData);
+                    if (parsedData && parsedData.length > 0) {
+                        transportVolumeData = parsedData;
+                        localStorage.setItem(kcolKey('transportVolumeData'), JSON.stringify(transportVolumeData));
+                        console.log('✅ 기본값 로드 완료:', transportVolumeData.length, '개 부재');
+                        
+                        // 기본 조정된 차수계획도 로드
+                        const savedDefaultAdjustedPlan = localStorage.getItem(kcolKey('defaultAdjustedTransportPlan'));
+                        if (savedDefaultAdjustedPlan) {
+                            const parsedAdjustedPlan = JSON.parse(savedDefaultAdjustedPlan);
+                            if (parsedAdjustedPlan && Object.keys(parsedAdjustedPlan).length > 0) {
+                                adjustedTransportPlan = parsedAdjustedPlan;
+                                localStorage.setItem(kcolKey('adjustedTransportPlan'), JSON.stringify(adjustedTransportPlan));
+                                console.log('✅ 기본 조정된 차수계획 로드 완료');
+                            }
+                        }
+                        
+                        // 테이블 렌더링
+                        if (typeof renderTransportVolumeTable === 'function') {
+                            renderTransportVolumeTable();
+                        }
+                        if (typeof renderAdjustedTransportVolumeTripSummary === 'function') {
+                            renderAdjustedTransportVolumeTripSummary();
+                        }
+                        
+                        return true;
+                    }
+                }
+            } catch (error) {
+                console.error('기본값 로드 오류:', error);
+            }
+            return false;
         }
 
         // 운송물량산정: 템플릿 다운로드
@@ -15121,8 +15234,8 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
                 
                 for (let sub = 1; sub <= SUB_ITEMS_PER_COLUMN; sub++) {
                     const colId = getColumnId(i, sub);
-                    const colData = columnData[colId] || {};
-                    const status = colData.status || 0;
+                const colData = columnData[colId] || {};
+                const status = colData.status || 0;
                     maxStatus = Math.max(maxStatus, status);
                     
                     if (status === 6) hasInstalled = true;
@@ -15208,8 +15321,8 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
                 
                 for (let sub = 1; sub <= SUB_ITEMS_PER_COLUMN; sub++) {
                     const colId = getColumnId(i, sub);
-                    const colData = columnData[colId] || {};
-                    const status = colData.status || 0;
+                const colData = columnData[colId] || {};
+                const status = colData.status || 0;
                     maxStatus = Math.max(maxStatus, status);
                     if (status === 6) isInstalled = true;
                 }
@@ -15220,13 +15333,13 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
                         if (dailyData[date] && dailyData[date][6]) {
                             for (let sub = 1; sub <= SUB_ITEMS_PER_COLUMN; sub++) {
                                 const colId = getColumnId(i, sub);
-                                if (dailyData[date][6].includes(colId) || 
-                                    dailyData[date][6].includes(i) || 
-                                    dailyData[date][6].includes(String(i)) ||
+                            if (dailyData[date][6].includes(colId) || 
+                                dailyData[date][6].includes(i) || 
+                                dailyData[date][6].includes(String(i)) ||
                                     dailyData[date][6].includes(mainColId)) {
-                                    isInstalled = true;
-                                    break;
-                                }
+                                isInstalled = true;
+                                break;
+                            }
                             }
                             if (isInstalled) break;
                         }
