@@ -25,4 +25,4 @@ echo.
 
 :: Go to project root (parent of scripts directory)
 cd /d "%~dp0.."
-python -m http.server 8080
+py -m http.server 8080
