@@ -438,6 +438,7 @@
         .gantt-cell.p4 { background: #00bcd4; }
         .gantt-cell.p5 { background: #e1bee7; } /* 진한 마젠타 - 배송계획 */
         .gantt-cell.p5.confirmed { background: #9c27b0; } /* 짙은 마젠타 - 배송확인 */
+        .gantt-cell.p5.adjusted { background: #ff9800; } /* 오렌지 - 조정된 공정표 */
         .gantt-cell.p6 { background: #4caf50; }
 
         /* 휴무일 스타일 */
@@ -1319,8 +1320,9 @@
                 <div style="margin-bottom:12px;font-weight:700;color:#2c4a7c;font-size:16px;">📊 엑셀 일괄 업로드</div>
                 <div style="margin-bottom:15px;padding:10px;background:rgba(255,255,255,0.7);border-radius:6px;font-size:13px;color:#555;line-height:1.6;">
                     엑셀 파일로 운송차수계획을 한꺼번에 업로드할 수 있습니다.<br>
-                    <strong style="color:#2c4a7c;">엑셀 형식:</strong> 첫 행에 <strong style="color:#d32f2f;">기둥번호, 차수, 운송날짜</strong> 헤더를 넣어주세요.<br>
-                    <strong style="color:#2c4a7c;">파일 확장자:</strong> <strong style="color:#d32f2f;">*.xlsx</strong> (엑셀 2007 이상 형식)
+                    <strong style="color:#2c4a7c;">엑셀 형식:</strong> 첫 행에 <strong style="color:#d32f2f;">공종, 도면번호, 기둥번호, 규격, 길이(mm), 중량(kg), 운송차수계획(13차), 조정된 차수계획(12차)</strong> 헤더를 넣어주세요.<br>
+                    <strong style="color:#2c4a7c;">파일 확장자:</strong> <strong style="color:#d32f2f;">*.xlsx</strong> (엑셀 2007 이상 형식)<br>
+                    <span style="color:#666;font-size:12px;">※ 기둥번호와 운송차수계획(XX차) 컬럼이 필수입니다.</span>
                 </div>
                     <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;padding-top:10px;border-top:1px solid rgba(76,175,80,0.3);">
                         <input type="file" accept=".xlsx,.xls,.csv" id="transport-plan-file" onchange="handleTransportPlanFile(event)" style="padding:10px 15px;border:2px solid #4caf50;border-radius:6px;background:white;font-size:14px;cursor:pointer;min-width:200px;" title="엑셀 파일 선택 (*.xlsx)">
@@ -1449,8 +1451,8 @@
             <div style="margin-bottom:16px;padding:12px;border:1px solid #e0e0e0;border-radius:8px;background:#f9fafb;">
                 <div style="margin-bottom:8px;font-weight:600;color:#2c4a7c;">입력 안내 (엑셀 업로드)</div>
                 <div style="color:#555;font-size:13px;line-height:1.5;">
-                    1) 엑셀 첫 행에 아래 순서로 헤더를 넣어주세요: <strong>기둥번호, 사이즈, 길이(mm), 소부재예상물량</strong><br>
-                    2) 최대 50개 기둥까지 표시됩니다. 추가 데이터는 무시됩니다.<br>
+                    1) 엑셀 첫 행에 아래 순서로 헤더를 넣어주세요: <strong>공종, 도면번호, 기둥번호, 규격, 길이(mm), 중량(kg), 운송차수계획(13차), 조정된 차수계획(12차)</strong><br>
+                    2) 최대 100개 기둥까지 표시됩니다. 추가 데이터는 무시됩니다.<br>
                     3) 업로드 후 표에서 내용을 즉시 확인할 수 있습니다.
                 </div>
             </div>
@@ -1458,23 +1460,112 @@
             <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px;">
                 <input type="file" accept=".xlsx,.xls,.csv" id="transport-volume-file" onchange="handleTransportVolumeFile(event)" style="padding:8px;border:1px solid #ccc;border-radius:6px;">
                 <button class="action-btn primary" onclick="downloadTransportVolumeTemplate()">📄 템플릿 다운로드</button>
-                <span id="transport-volume-status" style="color:#555;font-size:13px;">파일을 업로드해주세요.</span>
+                <button class="action-btn" onclick="adjustTo25Ton()" style="background:#ff9800;color:white;">최대운송25톤</button>
+                <div id="transport-volume-adjustment-panel" style="flex:1;min-width:300px;padding:12px;background:#f5f5f5;border-radius:6px;border:1px solid #ddd;display:none;">
+                    <div style="font-weight:600;color:#2c4a7c;margin-bottom:8px;font-size:14px;">📊 조정 결과</div>
+                    <div id="transport-volume-adjustment-info" style="font-size:13px;color:#555;line-height:1.6;">
+                        <!-- 조정 결과 정보가 여기에 표시됩니다 -->
+                    </div>
+                </div>
+                <div id="adjusted-plan-toggle" style="padding:12px;background:#fff;border-radius:6px;border:1px solid #ddd;cursor:pointer;transition:all 0.2s;" onclick="toggleAdjustedPlan()" onmouseover="this.style.borderColor='#2196f3';this.style.background='#f5f5f5';" onmouseout="this.style.borderColor='#ddd';this.style.background='#fff';">
+                    <div style="font-weight:600;color:#2c4a7c;margin-bottom:4px;font-size:14px;">병기공정표</div>
+                    <div style="font-size:12px;color:#666;">(원공정표<->조정공정표)</div>
+                    <div id="adjusted-plan-status" style="font-size:12px;color:#666;margin-top:2px;">원공정표 표시 중</div>
+                </div>
+                <div id="export-adjusted-plan-panel" style="padding:12px;background:#fff;border-radius:6px;border:1px solid #ddd;">
+                    <div style="font-weight:600;color:#2c4a7c;margin-bottom:8px;font-size:14px;">조정된 차수계획 엑셀파일생성</div>
+                    <button class="action-btn" onclick="showAdjustedPlanSummary()" style="padding:6px 12px;background:#2196f3;color:white;border:none;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;width:100%;margin-bottom:8px;">
+                        📊 차수별 정보 확인
+                    </button>
+                    <button class="action-btn" onclick="exportAdjustedPlanToExcel()" style="padding:6px 12px;background:#4caf50;color:white;border:none;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;width:100%;margin-bottom:8px;">
+                        📥 엑셀 다운로드
+                    </button>
+                    <input type="file" accept=".xlsx,.xls,.csv" id="verify-adjusted-plan-file" onchange="verifyAdjustedPlanFromExcel(event)" style="padding:6px;border:1px solid #ddd;border-radius:4px;font-size:11px;width:100%;" title="엑셀 파일 선택하여 일치 여부 확인">
+                    <div id="adjusted-plan-verify-result" style="margin-top:8px;font-size:11px;color:#666;display:none;"></div>
+                </div>
+                <div id="transport-volume-size-filter" style="padding:12px;background:#fff;border-radius:6px;border:1px solid #ddd;">
+                    <div style="font-weight:600;color:#2c4a7c;margin-bottom:8px;font-size:14px;">규격별 부재</div>
+                    <div id="transport-volume-size-toggles" style="display:flex;gap:8px;flex-wrap:wrap;">
+                        <!-- 규격별 토글 버튼이 여기에 동적으로 생성됩니다 -->
+                    </div>
+                </div>
             </div>
 
             <div style="overflow-x:auto;">
                 <table class="gantt-table" style="min-width:600px;">
                     <thead>
                         <tr>
-                            <th style="width:80px;">기둥번호</th>
-                            <th>사이즈</th>
-                            <th>길이(mm)</th>
-                            <th>소부재 예상물량</th>
+                            <th style="width:80px;">공종</th>
+                            <th style="width:100px;">도면번호</th>
+                            <th style="width:100px;">기둥번호</th>
+                            <th style="width:120px;">규격</th>
+                            <th style="width:100px;">길이(mm)</th>
+                            <th style="width:100px;">중량(kg)</th>
+                            <th style="width:150px;">운송차수계획(13차)</th>
+                            <th style="width:150px;">조정된 차수계획(12차)</th>
                         </tr>
                     </thead>
                     <tbody id="transport-volume-tbody">
-                        <tr><td colspan="4" style="text-align:center;color:#888;padding:16px;">엑셀을 업로드하면 여기에서 50개 기둥 데이터가 표시됩니다.</td></tr>
+                        <tr><td colspan="8" style="text-align:center;color:#888;padding:16px;">엑셀을 업로드하면 여기에서 100개 기둥 데이터가 표시됩니다.</td></tr>
                     </tbody>
                 </table>
+            </div>
+
+            <!-- 통계 정보 -->
+            <div id="transport-volume-stats" style="margin-top:20px;padding:20px;background:#f5f5f5;border-radius:8px;border:2px solid #2196f3;display:flex;justify-content:space-around;align-items:center;flex-wrap:wrap;gap:20px;">
+                <div style="text-align:center;flex:1;min-width:200px;">
+                    <div style="font-size:14px;color:#666;margin-bottom:8px;">전체합산중량</div>
+                    <div id="total-weight" style="font-size:24px;font-weight:bold;color:#2196f3;">0 kg</div>
+                </div>
+                <div style="text-align:center;flex:1;min-width:200px;">
+                    <div style="font-size:14px;color:#666;margin-bottom:8px;">총부재수</div>
+                    <div id="total-count" style="font-size:24px;font-weight:bold;color:#4caf50;">0 개</div>
+                </div>
+                <div style="text-align:center;flex:1;min-width:200px;">
+                    <div style="font-size:14px;color:#666;margin-bottom:8px;">부재1개당 평균중량</div>
+                    <div id="average-weight" style="font-size:24px;font-weight:bold;color:#ff9800;">0 kg</div>
+                </div>
+            </div>
+
+            <!-- 차수별 집계 테이블 -->
+            <div style="margin-top:20px;overflow-x:auto;">
+                <table class="gantt-table" style="min-width:800px;width:100%;table-layout:fixed;">
+                    <thead>
+                        <tr>
+                            <th>차수</th>
+                            <th>부재수</th>
+                            <th>차수합산중량(ton)</th>
+                            <th>25톤 초과여부</th>
+                            <th>추가운송여유중량(ton)</th>
+                            <th>운송날짜</th>
+                        </tr>
+                    </thead>
+                    <tbody id="transport-volume-trip-summary-tbody">
+                        <tr><td colspan="6" style="text-align:center;color:#888;padding:16px;">엑셀을 업로드하면 차수별 집계 정보가 표시됩니다.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 최대운송 25톤시 차수 조정 테이블 -->
+            <div style="margin-top:30px;">
+                <h4 style="margin-bottom:16px;color:#2c4a7c;font-size:16px;font-weight:600;">최대운송 25톤시 차수 조정</h4>
+                <div style="overflow-x:auto;">
+                    <table class="gantt-table" style="min-width:800px;width:100%;table-layout:fixed;">
+                        <thead>
+                            <tr>
+                                <th>차수</th>
+                                <th>부재수</th>
+                                <th>차수합산중량(ton)</th>
+                                <th>25톤 초과여부</th>
+                                <th>추가운송여유중량(ton)</th>
+                                <th>운송날짜</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adjusted-transport-volume-trip-summary-tbody">
+                            <tr><td colspan="6" style="text-align:center;color:#888;padding:16px;">"최대운송25톤" 버튼을 클릭하면 조정된 차수계획이 표시됩니다.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
@@ -1637,7 +1728,24 @@
                     renderTransportTrips();
                 }
             } else if (typeof renderTransportVolumeTable === 'function' && panelId === 'transportVolume') {
+                // 저장된 데이터가 있으면 로드
+                const savedTransportVolumeData = localStorage.getItem(kcolKey('transportVolumeData'));
+                if (savedTransportVolumeData) {
+                    try {
+                        const parsedData = JSON.parse(savedTransportVolumeData);
+                        if (parsedData && parsedData.length > 0) {
+                            transportVolumeData = parsedData;
+                            console.log('✅ 운송물량산정 데이터 로드 완료:', transportVolumeData.length, '개');
+                        }
+                    } catch (e) {
+                        console.error('❌ transportVolumeData 파싱 실패:', e);
+                    }
+                }
                 renderTransportVolumeTable();
+                // 조정된 차수계획 테이블도 렌더링
+                if (typeof renderAdjustedTransportVolumeTripSummary === 'function') {
+                    renderAdjustedTransportVolumeTripSummary();
+                }
             } else if (typeof renderInstallationStatus === 'function' && panelId === 'installation') {
                 renderInstallationStatus();
             }
@@ -4849,11 +4957,9 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
             console.log('🔍 [가드] 페이지 로드 시 로그인 체크 시작...');
             console.log('🔍 [가드] 프로젝트 ID:', window.PROJECT_ID);
             
-            // 먼저 로그인 모달을 표시 (로그인되지 않은 경우를 대비)
-            showLoginModal();
-            
             if (!initFirebase()) {
                 console.warn('⚠️ [가드] Firebase가 초기화되지 않았습니다. 로그인 모달 표시.');
+                showLoginModal();
                 return;
             }
             
@@ -4863,7 +4969,8 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
             if (!user || user.isAnonymous) {
                 console.warn('⚠️ [가드] 로그인하지 않았거나 익명 사용자입니다.');
                 console.log('🔒 [가드] /login 시나리오 (정적 HTML이므로 로그인 모달 표시)');
-                // 로그인 모달은 이미 표시됨
+                // 로그인되지 않은 경우에만 모달 표시
+                showLoginModal();
             } else {
                 console.log('✅ [가드] 로그인된 사용자 확인:', user.uid, user.email);
                 console.log('🔍 [가드] 멤버 확인 대기 중... (setupFirebaseAuthListener에서 처리)');
@@ -4893,8 +5000,14 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
                 return;
             }
             
-            // 로그인 모달 강제 표시 (로그인되지 않은 경우)
-            if (!initFirebase() || !firebaseAuth || !firebaseAuth.currentUser) {
+            // 로그인 모달은 checkLoginOnPageLoad()에서 상태 확인 후 표시/숨김 처리
+            // 여기서는 초기 상태를 숨김으로 설정 (로그인 상태 확인 후 필요시 표시)
+            if (initFirebase() && firebaseAuth && firebaseAuth.currentUser && !firebaseAuth.currentUser.isAnonymous) {
+                // 이미 로그인된 경우 모달 숨김
+                modal.style.display = 'none';
+                console.log('✅ 로그인 모달 숨김 (이미 로그인됨)');
+            } else {
+                // 로그인되지 않은 경우에만 모달 표시
                 modal.style.display = 'flex';
                 modal.style.flexDirection = 'column';
                 modal.style.alignItems = 'center';
@@ -6312,6 +6425,9 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
         let columnData = {}; // { columnId: { status: 0-5, date: '2025-12-26', notes: '' } }
         let dailyData = {}; // { '2025-12-26': { 1: [columnIds completed p1], 2: [...], ... } }
         let transportPlan = {}; // { tripNumber: { columns: [columnIds], date: 'YYYY-MM-DD' } } - 예: { 1: { columns: [1,2,3], date: '2025-01-15' }, 2: { columns: [10,11,12], date: '2025-01-20' } }
+        let originalTransportPlan = {}; // 원본 운송계획 백업
+        let adjustedTransportPlan = {}; // { tripNumber: { columns: [columnIds], date: 'YYYY-MM-DD' } } - 25톤 기준으로 조정된 차수계획
+        let isShowingAdjustedPlan = false; // 현재 조정된 계획을 표시 중인지 여부
         let deliveryConfirmed = {}; // { columnId: true/false } - 배송확인된 기둥 (짙은 마젠타 색상)
         let actualDeliveryDate = {}; // { columnId: 'YYYY-MM-DD' } - 실제 배송 날짜 (운송차수계획 날짜와 다를 수 있음)
         let currentTransportTrip = 1; // 현재 선택된 차수
@@ -6320,6 +6436,7 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
         let companyChart = null;
         let transportVolumeData = []; // 운송 물량 산정용 데이터 (엑셀 업로드)
         let selectedColumns = []; // 주기둥커팅에서 선택된 기둥들 (다중 선택)
+        let selectedSizes = []; // 규격별 필터: 선택된 규격 목록
 
         // Initialize
         // Status display function
@@ -6368,6 +6485,12 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
                     console.log('✅ 기둥 그리드 렌더링 완료');
                 } else {
                     console.warn('⚠️ renderColumnGrid 함수를 찾을 수 없습니다.');
+                }
+                
+                // 운송물량산정 데이터가 있으면 차수별 집계 테이블도 렌더링
+                if (transportVolumeData && transportVolumeData.length > 0 && typeof renderTransportVolumeTripSummary === 'function') {
+                    renderTransportVolumeTripSummary(transportVolumeData);
+                    console.log('✅ 차수별 집계 테이블 렌더링 완료');
                 }
                 
                 // 진행률 바 업데이트
@@ -8745,8 +8868,11 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
                 loadTransportPlan();
             }
             
-            // 디버깅: dailyData 확인
+            // 디버깅: transportPlan과 dailyData 확인
             console.log('공정표 렌더링 시작');
+            console.log('현재 transportPlan 차수 목록:', Object.keys(transportPlan).map(k => parseInt(k)).sort((a, b) => a - b));
+            console.log('현재 transportPlan:', transportPlan);
+            console.log('isShowingAdjustedPlan:', isShowingAdjustedPlan);
             console.log('dailyData:', dailyData);
             let process5Count = 0;
             for (let date in dailyData) {
@@ -8873,9 +8999,14 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
                         // dailyData에 기록이 없고 실제 배송일도 아닐 때만 운송계획 확인
                         let tripNumber = null; // 차수번호 저장 변수
                         if (!cellClass) {
-                            // transportPlan에서 해당 기둥의 운송날짜 확인
+                            // transportPlan에서 해당 기둥의 운송날짜 확인 (12차까지만)
                             if (transportPlan && typeof transportPlan === 'object' && Object.keys(transportPlan).length > 0) {
                                 for (let tripNum in transportPlan) {
+                                    const tripNumInt = parseInt(tripNum);
+                                    // 13차 이상은 제외
+                                    if (tripNumInt > 12) {
+                                        continue;
+                                    }
                                     const tripData = transportPlan[tripNum];
                                     if (tripData && typeof tripData === 'object') {
                                         const columns = tripData.columns;
@@ -8929,6 +9060,12 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
                                 dayData.includes(`${c}C`) || dayData.includes(`${c}TC`))) {
                                 if (transportPlan && typeof transportPlan === 'object' && Object.keys(transportPlan).length > 0) {
                                     for (let tripNum in transportPlan) {
+                                        const tripNumInt = parseInt(tripNum);
+                                        // 13차 이상은 제외
+                                        if (tripNumInt > 12) {
+                                            continue;
+                                        }
+                                        
                                         const tripData = transportPlan[tripNum];
                                         if (tripData && typeof tripData === 'object') {
                                             const columns = tripData.columns;
@@ -8992,6 +9129,12 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
                                 // process 5 (현장배송)인 경우 차수번호 또는 "O" 표시
                                 const isP5 = cellClass.includes('p5');
                                 const isActualDelivery = cellClass === 'gantt-cell p5 confirmed';
+                                
+                                // 조정된 공정표 표시 중이면 p5에 adjusted 클래스 추가
+                                if (isP5 && isShowingAdjustedPlan && !isActualDelivery) {
+                                    cellClass = cellClass.replace('p5', 'p5 adjusted');
+                                }
+                                
                                 let cellText = '';
                                 let cellStyle = '';
                                 
@@ -9726,6 +9869,7 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
                 localStorage.setItem(kcolKey('columnCoordinates'), JSON.stringify(columnCoordinates));
                 localStorage.setItem(kcolKey('deliveryConfirmed'), JSON.stringify(deliveryConfirmed));
                 localStorage.setItem(kcolKey('actualDeliveryDate'), JSON.stringify(actualDeliveryDate));
+                localStorage.setItem(kcolKey('transportVolumeData'), JSON.stringify(transportVolumeData));
                 console.log('✅ localStorage 저장 완료');
                 
                 // Firebase Firestore에도 저장 시도 (인증된 사용자만, 익명 사용자 차단)
@@ -10231,6 +10375,7 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
             const savedCoordinates = localStorage.getItem(kcolKey('columnCoordinates'));
             const savedDeliveryConfirmed = localStorage.getItem(kcolKey('deliveryConfirmed'));
             const savedActualDeliveryDate = localStorage.getItem(kcolKey('actualDeliveryDate'));
+            const savedTransportVolumeData = localStorage.getItem(kcolKey('transportVolumeData'));
             
             // localStorage 데이터 파싱 및 병합
             if (savedColumnData) {
@@ -10267,6 +10412,59 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
                 }
             } else {
                 transportPlan = transportPlan || {};
+            }
+            
+            // 원본 운송계획 백업 (처음 한 번만)
+            if (!originalTransportPlan || Object.keys(originalTransportPlan).length === 0) {
+                originalTransportPlan = JSON.parse(JSON.stringify(transportPlan)); // 깊은 복사
+                console.log('✅ 원본 운송계획 백업 완료');
+            }
+            
+            // 조정된 차수계획 로드
+            const savedAdjustedTransportPlan = localStorage.getItem(kcolKey('adjustedTransportPlan'));
+            if (savedAdjustedTransportPlan) {
+                try {
+                    const parsedAdjustedTransportPlan = JSON.parse(savedAdjustedTransportPlan);
+                    adjustedTransportPlan = parsedAdjustedTransportPlan;
+                    console.log('✅ localStorage adjustedTransportPlan 로드 완료');
+                } catch (e) {
+                    console.error('❌ localStorage adjustedTransportPlan 파싱 실패:', e);
+                    adjustedTransportPlan = adjustedTransportPlan || {};
+                }
+            } else {
+                adjustedTransportPlan = adjustedTransportPlan || {};
+            }
+            
+            if (savedTransportVolumeData) {
+                try {
+                    const parsedTransportVolumeData = JSON.parse(savedTransportVolumeData);
+                    transportVolumeData = parsedTransportVolumeData;
+                    console.log('✅ localStorage transportVolumeData 로드 완료:', transportVolumeData.length, '개');
+                    
+                    // 저장된 데이터가 있으면 차수별 집계 테이블도 렌더링
+                    if (transportVolumeData.length > 0 && typeof renderTransportVolumeTripSummary === 'function') {
+                        renderTransportVolumeTripSummary(transportVolumeData);
+                    }
+                    // 조정된 차수계획 테이블도 렌더링
+                    if (typeof renderAdjustedTransportVolumeTripSummary === 'function') {
+                        renderAdjustedTransportVolumeTripSummary();
+                    }
+                } catch (e) {
+                    console.error('❌ localStorage transportVolumeData 파싱 실패:', e);
+                    transportVolumeData = transportVolumeData || [];
+                }
+                
+                // 규격별 필터 선택 상태 로드
+                const savedSelectedSizes = localStorage.getItem(kcolKey('selectedSizes'));
+                if (savedSelectedSizes) {
+                    try {
+                        selectedSizes = JSON.parse(savedSelectedSizes);
+                        console.log('✅ 규격별 필터 선택 상태 로드 완료:', selectedSizes);
+                    } catch (e) {
+                        console.error('❌ selectedSizes 파싱 실패:', e);
+                        selectedSizes = [];
+                    }
+                }
             }
             
             if (savedCoordinates) {
@@ -10544,6 +10742,30 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
                 }
             } else {
                 transportPlan = {};
+            }
+            
+            // 조정된 차수계획 로드
+            const savedAdjusted = localStorage.getItem(kcolKey('adjustedTransportPlan'));
+            if (savedAdjusted) {
+                try {
+                    const data = JSON.parse(savedAdjusted);
+                    adjustedTransportPlan = {};
+                    for (let tripNum in data) {
+                        if (Array.isArray(data[tripNum])) {
+                            adjustedTransportPlan[tripNum] = {
+                                columns: data[tripNum],
+                                date: ''
+                            };
+                        } else {
+                            adjustedTransportPlan[tripNum] = data[tripNum];
+                        }
+                    }
+                } catch (e) {
+                    console.error('❌ adjustedTransportPlan 파싱 실패:', e);
+                    adjustedTransportPlan = {};
+                }
+            } else {
+                adjustedTransportPlan = {};
             }
             
             // 운송차수계획을 dailyData의 현장배송(process 5)에 동기화
@@ -11129,10 +11351,10 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
 
         // 운송물량산정: 템플릿 다운로드
         function downloadTransportVolumeTemplate() {
-            const headers = ['기둥번호', '사이즈', '길이(mm)', '소부재예상물량'];
+            const headers = ['공종', '도면번호', '기둥번호', '규격', '길이(mm)', '중량(kg)', '운송차수계획(13차)', '조정된 차수계획(12차)'];
             const sample = [
-                ['1', 'H-400x200x8x13', '12000', '예: 3개'],
-                ['2', 'H-350x175x7x11', '11500', '예: 2개']
+                ['기둥', 'DWG-001', '1C001', 'H-400x200x8x13', '12000', '850', '13', '12'],
+                ['기둥', 'DWG-002', '1C002', 'H-350x175x7x11', '11500', '720', '13', '12']
             ];
             const csv = [headers.join(','), ...sample.map(r => r.join(','))].join('\n');
             const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
@@ -11145,6 +11367,140 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
             link.click();
             document.body.removeChild(link);
             URL.revokeObjectURL(url);
+        }
+        
+        // 25톤으로 조정 함수
+        function adjustTo25Ton() {
+            if (!transportVolumeData || transportVolumeData.length === 0) {
+                alert('⚠️ 운송물량산정 데이터가 없습니다.\n\n먼저 엑셀 파일을 업로드해주세요.');
+                return;
+            }
+            
+            // 항상 엑셀 순서대로 중량을 합산하여 25톤 기준으로 차수 배치
+            // 각 차수별로 25톤에 맞게 기둥 재배치 (순서대로 합산)
+            const adjustedPlan = {}; // { tripNum: { columns: [], date: '', totalWeight: 0 } }
+            const allColumns = []; // 모든 기둥과 중량 정보 (순서대로)
+            
+            // 엑셀 원본 순서 유지 (엑셀순서 필드로 정렬)
+            const sortedData = [...transportVolumeData].sort((a, b) => {
+                const orderA = a.엑셀순서 !== undefined ? a.엑셀순서 : 999999;
+                const orderB = b.엑셀순서 !== undefined ? b.엑셀순서 : 999999;
+                return orderA - orderB;
+            });
+            
+            // 모든 기둥의 중량 정보 수집 (엑셀 순서대로)
+            sortedData.forEach(item => {
+                const colId = item.no || '';
+                if (!colId) return;
+                
+                const weight = parseFloat(String(item.weight).replace(/,/g, '')) || 0; // kg (천 단위 구분 기호 제거)
+                if (weight <= 0) return;
+                
+                allColumns.push({
+                    colId: colId,
+                    weightKg: weight // kg 단위로 저장
+                });
+            });
+            
+            // 순서대로 합산하여 25톤(25,000kg) 기준으로 차수 배치 (1차부터 시작)
+            let currentTripNum = 1;
+            const MAX_WEIGHT_KG = 25000; // 25톤 = 25,000kg
+            
+            allColumns.forEach(col => {
+                // 현재 차수가 없으면 생성
+                if (!adjustedPlan[currentTripNum]) {
+                    adjustedPlan[currentTripNum] = {
+                        columns: [],
+                        date: transportPlan[currentTripNum]?.date || '',
+                        totalWeight: 0 // kg 단위
+                    };
+                }
+                
+                // 현재 차수에 추가해도 25톤 이하인지 확인
+                if (adjustedPlan[currentTripNum].totalWeight + col.weightKg <= MAX_WEIGHT_KG) {
+                    // 25톤 이하이면 현재 차수에 추가
+                    adjustedPlan[currentTripNum].columns.push(col.colId);
+                    adjustedPlan[currentTripNum].totalWeight += col.weightKg;
+                } else {
+                    // 25톤을 넘으면 다음 차수로 이동
+                    currentTripNum++;
+                    adjustedPlan[currentTripNum] = {
+                        columns: [col.colId],
+                        date: transportPlan[currentTripNum]?.date || '',
+                        totalWeight: col.weightKg
+                    };
+                }
+            });
+            
+            // 조정 결과 확인 (25톤 = 25,000kg, MAX_WEIGHT_KG는 위에서 이미 선언됨)
+            let over25Count = 0;
+            for (let tripNum in adjustedPlan) {
+                if (adjustedPlan[tripNum].totalWeight > MAX_WEIGHT_KG) {
+                    over25Count++;
+                }
+            }
+            
+            if (over25Count > 0) {
+                alert(`⚠️ 주의: ${over25Count}개 차수가 25톤을 초과합니다.\n\n개별 기둥의 중량이 25톤을 초과하는 경우 자동 조정이 불가능합니다.`);
+            }
+            
+            // 조정된 계획 적용
+            if (confirm(`25톤 기준으로 차수를 재조정하시겠습니까?\n\n조정된 차수계획이 별도로 저장됩니다.\n기존 운송차수계획은 변경되지 않습니다.`)) {
+                // adjustedTransportPlan에 조정된 계획 저장 (기존 transportPlan은 유지)
+                adjustedTransportPlan = {};
+                for (let tripNum in adjustedPlan) {
+                    adjustedTransportPlan[tripNum] = {
+                        columns: adjustedPlan[tripNum].columns,
+                        date: adjustedPlan[tripNum].date
+                    };
+                }
+                
+                // 차수별 기둥 개수 확인 및 출력
+                console.log('=== 조정된 차수계획 생성 완료 - 차수별 기둥 개수 ===');
+                const sortedTripNums = Object.keys(adjustedTransportPlan)
+                    .map(k => parseInt(k))
+                    .sort((a, b) => a - b);
+                
+                let totalCount = 0;
+                sortedTripNums.forEach(tripNum => {
+                    const tripData = adjustedTransportPlan[tripNum];
+                    const count = tripData && tripData.columns ? tripData.columns.length : 0;
+                    totalCount += count;
+                    console.log(`${tripNum}차수: ${count}개`);
+                });
+                console.log(`전체: ${totalCount}개`);
+                console.log('==========================================');
+                
+                // localStorage에 저장
+                localStorage.setItem(kcolKey('adjustedTransportPlan'), JSON.stringify(adjustedTransportPlan));
+                
+                // 화면 업데이트
+                if (typeof renderTransportVolumeTable === 'function') {
+                    renderTransportVolumeTable();
+                }
+                if (typeof renderAdjustedTransportVolumeTripSummary === 'function') {
+                    renderAdjustedTransportVolumeTripSummary();
+                }
+                
+                // 조정 결과 패널 표시
+                const adjustmentPanel = document.getElementById('transport-volume-adjustment-panel');
+                const adjustmentInfo = document.getElementById('transport-volume-adjustment-info');
+                if (adjustmentPanel && adjustmentInfo) {
+                    const totalTrips = Object.keys(adjustedPlan).length;
+                    const totalColumns = Object.values(adjustedPlan).reduce((sum, trip) => sum + (trip.columns?.length || 0), 0);
+                    const avgWeightPerTrip = totalTrips > 0 ? (Object.values(adjustedPlan).reduce((sum, trip) => sum + (trip.totalWeight || 0), 0) / totalTrips / 1000).toFixed(2) : 0;
+                    
+                    adjustmentInfo.innerHTML = `
+                        <div style="margin-bottom:4px;"><strong>총 차수:</strong> ${totalTrips}개</div>
+                        <div style="margin-bottom:4px;"><strong>총 부재수:</strong> ${totalColumns.toLocaleString('ko-KR')}개</div>
+                        <div style="margin-bottom:4px;"><strong>차수당 평균 중량:</strong> ${avgWeightPerTrip}톤</div>
+                        ${over25Count > 0 ? `<div style="color:#f44336;font-weight:bold;">⚠️ ${over25Count}개 차수가 25톤 초과</div>` : '<div style="color:#4caf50;">✅ 모든 차수가 25톤 이하</div>'}
+                    `;
+                    adjustmentPanel.style.display = 'block';
+                }
+                
+                alert('✅ 25톤 기준으로 차수가 재조정되었습니다.\n\n조정된 차수계획이 "조정된 차수계획" 컬럼에 표시됩니다.');
+            }
         }
 
         // XLSX 라이브러리 로드 확인 및 대기
@@ -12119,10 +12475,68 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
                     // 엑셀 데이터 파싱
                     rows.forEach((row, idx) => {
                         try {
-                            // 헤더: 기둥번호, 차수, 운송날짜 (3개만 사용)
-                            const colNo = row['기둥번호'];
-                            const tripNum = row['차수'];
-                            const date = row['운송날짜'];
+                            // 헤더 형식 확인: "기둥번호, 차수, 운송날짜" 또는 "운송차수계획(XX차)" 형식 지원
+                            const colNo = row['기둥번호'] || row['기둥번호'] || '';
+                            
+                            // 차수 추출: "차수" 컬럼 또는 "운송차수계획(XX차)" 형식
+                            let tripNum = null;
+                            let date = '';
+                            
+                            // 1. "차수" 컬럼에서 직접 추출 (새 형식)
+                            if (row['차수']) {
+                                const tripStr = String(row['차수']).trim();
+                                const tripMatch = tripStr.match(/(\d+)/);
+                                if (tripMatch) {
+                                    tripNum = tripMatch[1];
+                                }
+                            }
+                            
+                            // 2. "운송날짜" 컬럼에서 날짜 추출 (새 형식)
+                            // 다양한 헤더명 지원 (대소문자, 공백 무시)
+                            const dateKeys = ['운송날짜', '운송 날짜', '날짜', 'date', 'Date', 'DATE', '운송일', '운송 일'];
+                            for (const key of dateKeys) {
+                                if (row[key]) {
+                                    date = String(row[key]).trim();
+                                    break;
+                                }
+                            }
+                            
+                            // 헤더명에 "날짜" 또는 "date"가 포함된 경우도 찾기
+                            if (!date) {
+                                const dateKey = Object.keys(row).find(key => {
+                                    const normalized = key.trim().toLowerCase();
+                                    return normalized.includes('날짜') || normalized.includes('date');
+                                });
+                                if (dateKey) {
+                                    date = String(row[dateKey]).trim();
+                                }
+                            }
+                            
+                            // 3. "운송차수계획(XX차)" 형식에서 차수 추출 (기존 형식 호환)
+                            if (!tripNum) {
+                                const transportPlanKey = Object.keys(row).find(key => 
+                                    key.includes('운송차수계획') && key.includes('차')
+                                );
+                                if (transportPlanKey) {
+                                    const match = transportPlanKey.match(/\((\d+)차\)/);
+                                    if (match) {
+                                        tripNum = match[1];
+                                    }
+                                }
+                            }
+                            
+                            // 4. "조정된 차수계획(12차)" 형식도 확인 (우선순위 낮음)
+                            if (!tripNum) {
+                                const adjustedPlanKey = Object.keys(row).find(key => 
+                                    key.includes('조정된') && key.includes('차수계획') && key.includes('차')
+                                );
+                                if (adjustedPlanKey) {
+                                    const match = adjustedPlanKey.match(/\((\d+)차\)/);
+                                    if (match) {
+                                        tripNum = match[1];
+                                    }
+                                }
+                            }
                             
                             if (!colNo) {
                                 errorCount++;
@@ -12239,9 +12653,17 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
                                 transportPlan[tripNumber].columns.push(colId);
                             }
                             
-                            // 날짜가 있으면 차수의 날짜로 설정 (같은 차수 내에서 마지막 날짜로 업데이트)
+                            // 날짜가 있으면 차수의 날짜로 설정 (같은 차수 내에서 첫 번째 유효한 날짜 사용, 없으면 마지막 날짜로 업데이트)
                             if (formattedDate) {
-                                transportPlan[tripNumber].date = formattedDate;
+                                // 차수에 날짜가 없거나, 현재 날짜가 더 이전 날짜인 경우 업데이트 (첫 번째 날짜 우선)
+                                if (!transportPlan[tripNumber].date || formattedDate < transportPlan[tripNumber].date) {
+                                    transportPlan[tripNumber].date = formattedDate;
+                                }
+                            }
+                            
+                            // 디버깅: 첫 번째 행과 마지막 행의 날짜 정보 출력
+                            if (idx === 0 || idx === rows.length - 1) {
+                                console.log(`행 ${idx + 2}: 차수=${tripNumber}, 원본날짜="${date}", 변환된날짜="${formattedDate}", 기둥번호="${colNo}"`);
                             }
                             
                             successCount++;
@@ -12265,6 +12687,14 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
                             });
                         }
                     }
+                    
+                    // 디버깅: 최종 저장된 차수별 날짜 정보 출력
+                    console.log('📅 엑셀 업로드 후 차수별 날짜 정보:');
+                    const sortedTrips = Object.keys(transportPlan).map(Number).sort((a, b) => a - b);
+                    sortedTrips.forEach(tripNum => {
+                        const tripData = transportPlan[tripNum];
+                        console.log(`  ${tripNum}차: ${tripData.date || '(날짜 없음)'}, 기둥 ${tripData.columns?.length || 0}개`);
+                    });
                     
                     // 화면 업데이트
                     renderTransportTrips();
@@ -12316,21 +12746,1120 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
             if (!tbody) return;
             
             if (!data || data.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#888;padding:16px;">엑셀을 업로드하면 여기에서 50개 기둥 데이터가 표시됩니다.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#888;padding:16px;">엑셀을 업로드하면 여기에서 100개 기둥 데이터가 표시됩니다.</td></tr>';
                 return;
             }
             
-            const rows = data.slice(0, 50).map(item => {
-                const colNo = item.no ?? item.column ?? item.id ?? '';
+            // 규격별 필터 적용
+            let filteredData = data;
+            if (selectedSizes && selectedSizes.length > 0) {
+                filteredData = data.filter(item => {
+                    const size = String(item.size || '').trim();
+                    return selectedSizes.includes(size);
+                });
+            }
+            
+            const dataSlice = filteredData.slice(0, 100);
+            const rows = dataSlice.map((item, itemIdx) => {
+                const isLastRow = itemIdx === dataSlice.length - 1;
+                const nextItem = itemIdx < dataSlice.length - 1 ? dataSlice[itemIdx + 1] : null;
+                // 정규화된 필드명으로 먼저 접근, 없으면 원본 데이터에서 찾기
+                const workType = item.workType || '';
+                const drawingNo = item.drawingNo || '';
+                const colNo = item.no || '';
+                const size = item.size || '';
+                const length = item.length || '';
+                const weight = item.weight || '';
+                
+                // 숫자 포맷팅 (천 단위 구분 기호)
+                const formatNumber = (val) => {
+                    if (!val || val === '') return '';
+                    const num = parseFloat(String(val).replace(/,/g, ''));
+                    if (isNaN(num)) return val;
+                    return num.toLocaleString('ko-KR');
+                };
+                
+                const formattedLength = formatNumber(length);
+                const formattedWeight = formatNumber(weight);
+                // 기둥번호와 일치하는 운송차수계획의 차수 찾기
+                let actualTransportPlanTrip = null;
+                let transportPlanDate = '';
+                let isInTransportPlan = false;
+                let transportPlanStatus = '';
+                
+                if (colNo) {
+                    // 전역 transportPlan 변수에서 해당 기둥이 속한 차수 찾기
+                    const colId = colNo;
+                    const colIndex = getColumnIndexFromId(colId);
+                    const colSubIndex = getSubIndexFromId(colId);
+                    
+                    // 모든 차수를 순회하며 해당 기둥 찾기
+                    for (let tripNum in transportPlan) {
+                        const tripData = transportPlan[tripNum];
+                        if (tripData && tripData.columns && tripData.columns.length > 0) {
+                            const found = tripData.columns.some(col => {
+                                if (col === colId) return true; // 정확히 일치
+                                
+                                const colStr = String(col);
+                                if (colStr === colId) return true; // 문자열로 일치
+                                
+                                // colId 형식 비교
+                                const storedColIndex = getColumnIndexFromId(colStr);
+                                const storedColSubIndex = getSubIndexFromId(colStr);
+                                if (colIndex && storedColIndex && colIndex === storedColIndex) {
+                                    // 서브 인덱스도 비교 (둘 다 있으면)
+                                    if (colSubIndex && storedColSubIndex) {
+                                        return colSubIndex === storedColSubIndex;
+                                    }
+                                    // 서브 인덱스가 없으면 기둥 번호만 일치하면 OK
+                                    return true;
+                                }
+                                
+                                // 숫자만 추출하여 비교
+                                const colNum = parseInt(colStr.replace(/[^0-9]/g, ''));
+                                const colIdNum = parseInt(colId.replace(/[^0-9]/g, ''));
+                                if (colNum && colIdNum && colNum === colIdNum) return true;
+                                
+                                return false;
+                            });
+                            
+                            if (found) {
+                                actualTransportPlanTrip = parseInt(tripNum);
+                                transportPlanDate = tripData.date || '';
+                                isInTransportPlan = true;
+                                break;
+                            }
+                        }
+                    }
+                    
+                    if (isInTransportPlan) {
+                        transportPlanStatus = '';
+                    } else {
+                        transportPlanStatus = '';
+                    }
+                }
+                
+                // 조정된 차수계획 확인 (adjustedTransportPlan에서 찾기)
+                let actualAdjustedPlanTrip = null;
+                let adjustedPlanDate = '';
+                let isInAdjustedPlan = false;
+                let adjustedPlanStatus = '';
+                
+                // 조정된 차수계획은 adjustedTransportPlan에서 찾기
+                if (colNo && adjustedTransportPlan && Object.keys(adjustedTransportPlan).length > 0) {
+                    const colId = colNo;
+                    const colIndex = getColumnIndexFromId(colId);
+                    const colSubIndex = getSubIndexFromId(colId);
+                    
+                    // 모든 차수를 순회하며 해당 기둥 찾기
+                    for (let tripNum in adjustedTransportPlan) {
+                        const tripData = adjustedTransportPlan[tripNum];
+                        if (tripData && tripData.columns && tripData.columns.length > 0) {
+                            const found = tripData.columns.some(col => {
+                                if (col === colId) return true;
+                                const colStr = String(col);
+                                if (colStr === colId) return true;
+                                const storedColIndex = getColumnIndexFromId(colStr);
+                                const storedColSubIndex = getSubIndexFromId(colStr);
+                                if (colIndex && storedColIndex && colIndex === storedColIndex) {
+                                    if (colSubIndex && storedColSubIndex) {
+                                        return colSubIndex === storedColSubIndex;
+                                    }
+                                    return true;
+                                }
+                                const colNum = parseInt(colStr.replace(/[^0-9]/g, ''));
+                                const colIdNum = parseInt(colId.replace(/[^0-9]/g, ''));
+                                if (colNum && colIdNum && colNum === colIdNum) return true;
+                                return false;
+                            });
+                            
+                            if (found) {
+                                actualAdjustedPlanTrip = parseInt(tripNum);
+                                adjustedPlanDate = tripData.date || '';
+                                isInAdjustedPlan = true;
+                                break;
+                            }
+                        }
+                    }
+                    
+                    if (isInAdjustedPlan) {
+                        adjustedPlanStatus = '';
+                    } else {
+                        adjustedPlanStatus = '';
+                    }
+                }
+                
+                // 다음 행의 조정된 차수계획 확인 (차수 변경 감지용)
+                let nextAdjustedPlanTrip = null;
+                if (nextItem && adjustedTransportPlan && Object.keys(adjustedTransportPlan).length > 0) {
+                    const nextColNo = nextItem.no || '';
+                    if (nextColNo) {
+                        const nextColId = nextColNo;
+                        const nextColIndex = getColumnIndexFromId(nextColId);
+                        const nextColSubIndex = getSubIndexFromId(nextColId);
+                        
+                        for (let tripNum in adjustedTransportPlan) {
+                            const tripData = adjustedTransportPlan[tripNum];
+                            if (tripData && tripData.columns && tripData.columns.length > 0) {
+                                const found = tripData.columns.some(col => {
+                                    if (col === nextColId) return true;
+                                    const colStr = String(col);
+                                    if (colStr === nextColId) return true;
+                                    const storedColIndex = getColumnIndexFromId(colStr);
+                                    const storedColSubIndex = getSubIndexFromId(colStr);
+                                    if (nextColIndex && storedColIndex && nextColIndex === storedColIndex) {
+                                        if (nextColSubIndex && storedColSubIndex) {
+                                            return nextColSubIndex === storedColSubIndex;
+                                        }
+                                        return true;
+                                    }
+                                    const colNum = parseInt(colStr.replace(/[^0-9]/g, ''));
+                                    const colIdNum = parseInt(nextColId.replace(/[^0-9]/g, ''));
+                                    if (colNum && colIdNum && colNum === colIdNum) return true;
+                                    return false;
+                                });
+                                
+                                if (found) {
+                                    nextAdjustedPlanTrip = parseInt(tripNum);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                // 차수가 바뀌는지 확인 (1~11차의 마지막 셀에 검은색 라인 표시)
+                const isTripChanged = actualTransportPlanTrip !== actualAdjustedPlanTrip;
+                const isNextTripDifferent = nextAdjustedPlanTrip !== null && actualAdjustedPlanTrip !== null && nextAdjustedPlanTrip !== actualAdjustedPlanTrip;
+                // 1~11차의 마지막 셀인지 확인
+                const isTargetTrip = actualAdjustedPlanTrip !== null && actualAdjustedPlanTrip >= 1 && actualAdjustedPlanTrip <= 11;
+                const isLastCellOfTrip = isNextTripDifferent && isTargetTrip;
+                const shouldShowBorder = isLastCellOfTrip;
+                
                 return `
                     <tr>
+                        <td style="text-align:center;">${workType || ''}</td>
+                        <td style="text-align:center;">${drawingNo || ''}</td>
                         <td style="text-align:center;">${colNo || ''}</td>
-                        <td>${item.size || ''}</td>
-                        <td style="text-align:right;">${item.length || ''}</td>
-                        <td>${item.sub || ''}</td>
+                        <td>${size || ''}</td>
+                        <td style="text-align:right;">${formattedLength || ''}</td>
+                        <td style="text-align:right;">${formattedWeight || ''}</td>
+                        <td style="text-align:center;${actualTransportPlanTrip && [2, 4, 6, 8, 10, 12].includes(actualTransportPlanTrip) ? 'background:#f5f5f5;' : ''}${shouldShowBorder ? 'border-bottom:2px solid #000;' : ''}" title="${actualTransportPlanTrip ? (isInTransportPlan ? `${actualTransportPlanTrip}차수에 선택됨` : `${actualTransportPlanTrip}차수에 선택되지 않음`) : '차수 정보 없음'}">
+                            ${actualTransportPlanTrip ? `${actualTransportPlanTrip}${transportPlanDate ? ' - ' + transportPlanDate : ''}` : ''}
+                        </td>
+                        <td style="text-align:center;${shouldShowBorder ? 'border-bottom:2px solid #000;' : ''}" title="${actualAdjustedPlanTrip ? (isInAdjustedPlan ? `${actualAdjustedPlanTrip}차수에 선택됨` : `${actualAdjustedPlanTrip}차수에 선택되지 않음`) : '차수 정보 없음'}">
+                            ${actualAdjustedPlanTrip ? `${actualAdjustedPlanTrip}${adjustedPlanDate ? ' - ' + adjustedPlanDate : ''}` : ''}
+                        </td>
                     </tr>
                 `;
             });
+            tbody.innerHTML = rows.join('');
+            
+            // 규격별 토글 버튼 생성
+            renderSizeFilterToggles(data);
+            
+            // 통계 정보 업데이트
+            updateTransportVolumeStats(filteredData);
+            
+            // 차수별 집계 테이블 업데이트
+            renderTransportVolumeTripSummary(filteredData);
+            
+            // 조정된 차수계획 테이블 업데이트
+            if (typeof renderAdjustedTransportVolumeTripSummary === 'function') {
+                renderAdjustedTransportVolumeTripSummary();
+            }
+        }
+        
+        // 규격별 필터 토글 버튼 렌더링
+        function renderSizeFilterToggles(data = transportVolumeData) {
+            const togglesContainer = document.getElementById('transport-volume-size-toggles');
+            if (!togglesContainer) return;
+            
+            if (!data || data.length === 0) {
+                togglesContainer.innerHTML = '<div style="font-size:12px;color:#888;">엑셀을 업로드하면 규격별 필터가 표시됩니다.</div>';
+                return;
+            }
+            
+            // 고유한 규격 추출
+            const uniqueSizes = [];
+            const sizeMap = new Map();
+            
+            data.forEach(item => {
+                const size = String(item.size || '').trim();
+                if (size && !sizeMap.has(size)) {
+                    sizeMap.set(size, true);
+                    uniqueSizes.push(size);
+                }
+            });
+            
+            // 규격별 개수 계산
+            const sizeCounts = {};
+            data.forEach(item => {
+                const size = String(item.size || '').trim();
+                if (size) {
+                    sizeCounts[size] = (sizeCounts[size] || 0) + 1;
+                }
+            });
+            
+            // 상위 4개 규격만 표시 (개수가 많은 순서로)
+            const sortedSizes = uniqueSizes
+                .sort((a, b) => (sizeCounts[b] || 0) - (sizeCounts[a] || 0))
+                .slice(0, 4);
+            
+            if (sortedSizes.length === 0) {
+                togglesContainer.innerHTML = '<div style="font-size:12px;color:#888;">규격 정보가 없습니다.</div>';
+                return;
+            }
+            
+            // 토글 버튼 생성
+            const toggles = sortedSizes.map(size => {
+                const isSelected = selectedSizes && selectedSizes.includes(size);
+                const count = sizeCounts[size] || 0;
+                // 특수문자 이스케이프 처리
+                const escapedSize = size.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '&quot;').replace(/\n/g, ' ').replace(/\r/g, '');
+                return `
+                    <button 
+                        class="size-toggle-btn" 
+                        data-size="${escapedSize}"
+                        onclick="toggleSizeFilter('${escapedSize}')"
+                        style="padding:6px 12px;border:2px solid ${isSelected ? '#2196f3' : '#ddd'};border-radius:6px;background:${isSelected ? '#e3f2fd' : '#fff'};color:${isSelected ? '#2196f3' : '#666'};cursor:pointer;font-size:12px;font-weight:${isSelected ? '600' : '400'};transition:all 0.2s;white-space:nowrap;"
+                        onmouseover="this.style.borderColor='#2196f3';this.style.background='${isSelected ? '#e3f2fd' : '#f5f5f5'}';"
+                        onmouseout="this.style.borderColor='${isSelected ? '#2196f3' : '#ddd'}';this.style.background='${isSelected ? '#e3f2fd' : '#fff'}';">
+                        ${size} (${count})
+                    </button>
+                `;
+            }).join('');
+            
+            togglesContainer.innerHTML = toggles;
+        }
+        
+        // 규격별 필터 토글 함수
+        function toggleSizeFilter(size) {
+            if (!selectedSizes) {
+                selectedSizes = [];
+            }
+            
+            const index = selectedSizes.indexOf(size);
+            if (index > -1) {
+                // 이미 선택된 경우 제거
+                selectedSizes.splice(index, 1);
+            } else {
+                // 선택되지 않은 경우 추가
+                selectedSizes.push(size);
+            }
+            
+            // localStorage에 저장
+            localStorage.setItem(kcolKey('selectedSizes'), JSON.stringify(selectedSizes));
+            
+            // 테이블 다시 렌더링
+            if (typeof renderTransportVolumeTable === 'function') {
+                renderTransportVolumeTable();
+            }
+        }
+        
+        // 조정된 차수계획 토글 함수
+        function toggleAdjustedPlan() {
+            if (isShowingAdjustedPlan) {
+                // 조정된 계획 표시 중 → 원래 계획으로 복원
+                if (originalTransportPlan && Object.keys(originalTransportPlan).length > 0) {
+                    transportPlan = JSON.parse(JSON.stringify(originalTransportPlan)); // 깊은 복사
+                    isShowingAdjustedPlan = false;
+                    console.log('✅ 원래 차수계획으로 복원');
+                    console.log('원래 차수계획 차수 목록:', Object.keys(transportPlan).map(k => parseInt(k)).sort((a, b) => a - b));
+                } else {
+                    alert('⚠️ 원본 차수계획 데이터를 찾을 수 없습니다.');
+                    return;
+                }
+            } else {
+                // 원래 계획 표시 중 → 조정된 계획으로 전환
+                // 조정차수계획 엑셀 파일 업로드 요청
+                const message = '조정공정표는 방금전에 다운받은 조정차수계획 엑셀을 사용하여 공정표에 새로이 표시합니다.';
+                if (!confirm(message + '\n\n조정차수계획 엑셀 파일을 선택하시겠습니까?')) {
+                    return;
+                }
+                
+                // 파일 입력 요소 생성 및 클릭
+                const fileInput = document.createElement('input');
+                fileInput.type = 'file';
+                fileInput.accept = '.xlsx,.xls,.csv';
+                fileInput.style.display = 'none';
+                fileInput.onchange = function(e) {
+                    const file = e.target.files[0];
+                    if (!file) return;
+                    
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        try {
+                            const data = new Uint8Array(e.target.result);
+                            const workbook = XLSX.read(data, { type: 'array' });
+                            const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                            const rows = XLSX.utils.sheet_to_json(firstSheet, { header: 1, defval: '' });
+                            
+                            if (rows.length < 2) {
+                                alert('❌ 엑셀 파일에 데이터가 없습니다.');
+                                return;
+                            }
+                            
+                            // 헤더 확인
+                            const headers = rows[0].map(h => String(h).trim().toLowerCase());
+                            const colNoIdx = headers.findIndex(h => h.includes('기둥번호') || h.includes('기둥') || h === 'colno' || h === 'no');
+                            const tripIdx = headers.findIndex(h => h.includes('차수') || h === 'trip' || h === '차수번호');
+                            const dateIdx = headers.findIndex(h => h.includes('날짜') || h.includes('운송날짜') || h === 'date' || h.includes('date'));
+                            
+                            if (colNoIdx === -1 || tripIdx === -1 || dateIdx === -1) {
+                                alert('❌ 엑셀 파일 형식이 올바르지 않습니다.\n\n헤더: 기둥번호, 차수, 운송날짜');
+                                return;
+                            }
+                            
+                            // 엑셀 데이터 파싱하여 adjustedTransportPlan 생성
+                            const excelAdjustedPlan = {};
+                            for (let i = 1; i < rows.length; i++) {
+                                const row = rows[i];
+                                if (!row || row.length === 0) continue;
+                                
+                                const colNo = String(row[colNoIdx] || '').trim();
+                                const tripNum = parseInt(String(row[tripIdx] || '').trim());
+                                let date = String(row[dateIdx] || '').trim();
+                                
+                                if (!colNo || isNaN(tripNum) || tripNum < 1 || tripNum > 12) continue;
+                                
+                                // 날짜 파싱 (다양한 형식 지원)
+                                if (date) {
+                                    // Excel 날짜 형식 처리
+                                    if (typeof date === 'number') {
+                                        // Excel serial date
+                                        const excelEpoch = new Date(1899, 11, 30);
+                                        const excelDate = new Date(excelEpoch.getTime() + date * 24 * 60 * 60 * 1000);
+                                        date = excelDate.toISOString().split('T')[0];
+                                    } else if (date instanceof Date) {
+                                        date = date.toISOString().split('T')[0];
+                                    } else {
+                                        // 문자열 날짜 정규화 (YYYY-MM-DD 형식으로)
+                                        const dateMatch = date.match(/(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})/);
+                                        if (dateMatch) {
+                                            const year = dateMatch[1];
+                                            const month = String(dateMatch[2]).padStart(2, '0');
+                                            const day = String(dateMatch[3]).padStart(2, '0');
+                                            date = `${year}-${month}-${day}`;
+                                        }
+                                    }
+                                }
+                                
+                                if (!excelAdjustedPlan[tripNum]) {
+                                    excelAdjustedPlan[tripNum] = { columns: [], date: date || '' };
+                                }
+                                
+                                if (!excelAdjustedPlan[tripNum].columns.includes(colNo)) {
+                                    excelAdjustedPlan[tripNum].columns.push(colNo);
+                                }
+                                
+                                // 날짜는 첫 번째로 발견된 날짜 사용 (같은 차수면 동일해야 함)
+                                if (!excelAdjustedPlan[tripNum].date && date) {
+                                    excelAdjustedPlan[tripNum].date = date;
+                                }
+                            }
+                            
+                            // 원본 백업 (처음 한 번만)
+                            if (!originalTransportPlan || Object.keys(originalTransportPlan).length === 0) {
+                                originalTransportPlan = JSON.parse(JSON.stringify(transportPlan)); // 깊은 복사
+                                console.log('✅ 원본 차수계획 백업 완료');
+                            }
+                            
+                            // 엑셀에서 읽은 데이터를 adjustedTransportPlan에 저장
+                            adjustedTransportPlan = excelAdjustedPlan;
+                            
+                            // localStorage에 저장
+                            localStorage.setItem(kcolKey('adjustedTransportPlan'), JSON.stringify(adjustedTransportPlan));
+                            
+                            // transportPlan 업데이트 (12차까지만)
+                            const cleanedAdjustedPlan = {};
+                            for (let tripNum in adjustedTransportPlan) {
+                                const tripNumInt = parseInt(tripNum);
+                                if (tripNumInt <= 12) { // 12차까지만 포함
+                                    cleanedAdjustedPlan[tripNum] = JSON.parse(JSON.stringify(adjustedTransportPlan[tripNum]));
+                                }
+                            }
+                            
+                            transportPlan = cleanedAdjustedPlan;
+                            isShowingAdjustedPlan = true;
+                            
+                            console.log('✅ 조정된 차수계획 엑셀 파일에서 로드 완료');
+                            console.log('조정된 차수계획 차수 목록:', Object.keys(transportPlan).map(k => parseInt(k)).sort((a, b) => a - b));
+                            console.log('조정된 차수계획 상세:', transportPlan);
+                            
+                            // 상태 텍스트 업데이트
+                            const statusEl = document.getElementById('adjusted-plan-status');
+                            if (statusEl) {
+                                statusEl.textContent = '조정공정표 표시 중';
+                                statusEl.style.color = '#2196f3';
+                            }
+                            
+                            // dailyData 동기화
+                            if (typeof syncTransportToDailyData === 'function') {
+                                console.log('dailyData 동기화 시작, transportPlan:', transportPlan);
+                                syncTransportToDailyData(false);
+                                console.log('dailyData 동기화 완료');
+                            }
+                            
+                            // 공정표 업데이트
+                            if (typeof renderGanttChart === 'function') {
+                                console.log('공정표 렌더링 시작, 현재 transportPlan:', transportPlan);
+                                renderGanttChart();
+                                console.log('공정표 렌더링 완료');
+                            }
+                            
+                            // 운송차수계획 패널도 업데이트
+                            if (typeof renderTransportColumnGrid === 'function') {
+                                renderTransportColumnGrid();
+                            }
+                            if (typeof renderTransportTrips === 'function') {
+                                renderTransportTrips();
+                            }
+                            
+                            // 운송물량산정 테이블도 업데이트
+                            if (typeof renderTransportVolumeTable === 'function') {
+                                renderTransportVolumeTable();
+                            }
+                            if (typeof renderAdjustedTransportVolumeTripSummary === 'function') {
+                                renderAdjustedTransportVolumeTripSummary();
+                            }
+                            
+                            alert('✅ 조정차수계획 엑셀 파일을 사용하여 조정공정표가 표시되었습니다.');
+                        } catch (error) {
+                            console.error('엑셀 파일 읽기 오류:', error);
+                            alert('❌ 엑셀 파일을 읽는 중 오류가 발생했습니다.\n\n' + error.message);
+                        }
+                    };
+                    reader.readAsArrayBuffer(file);
+                };
+                document.body.appendChild(fileInput);
+                fileInput.click();
+                document.body.removeChild(fileInput);
+                return;
+            }
+            
+            // 상태 텍스트 업데이트
+            const statusEl = document.getElementById('adjusted-plan-status');
+            if (statusEl) {
+                statusEl.textContent = isShowingAdjustedPlan ? '조정공정표 표시 중' : '원공정표 표시 중';
+                statusEl.style.color = isShowingAdjustedPlan ? '#2196f3' : '#666';
+            }
+            
+            // dailyData 동기화
+            if (typeof syncTransportToDailyData === 'function') {
+                console.log('dailyData 동기화 시작, transportPlan:', transportPlan);
+                syncTransportToDailyData(false);
+                console.log('dailyData 동기화 완료');
+            }
+            
+            // 차수별 기둥 개수 확인 및 출력
+            if (isShowingAdjustedPlan) {
+                console.log('=== 조정된 차수계획 차수별 기둥 개수 확인 ===');
+                const sortedTripNums = Object.keys(transportPlan)
+                    .map(k => parseInt(k))
+                    .sort((a, b) => a - b);
+                
+                let totalCount = 0;
+                sortedTripNums.forEach(tripNum => {
+                    const tripData = transportPlan[tripNum];
+                    const count = tripData && tripData.columns ? tripData.columns.length : 0;
+                    totalCount += count;
+                    console.log(`${tripNum}차수: ${count}개`);
+                });
+                console.log(`전체: ${totalCount}개`);
+                console.log('==========================================');
+            }
+            
+            // 공정표 업데이트
+            if (typeof renderGanttChart === 'function') {
+                console.log('공정표 렌더링 시작, 현재 transportPlan:', transportPlan);
+                renderGanttChart();
+                console.log('공정표 렌더링 완료');
+            }
+            
+            // 운송차수계획 패널도 업데이트
+            if (typeof renderTransportColumnGrid === 'function') {
+                renderTransportColumnGrid();
+            }
+            if (typeof renderTransportTrips === 'function') {
+                renderTransportTrips();
+            }
+        }
+        
+        // 조정된 차수별 기둥 개수와 운송날짜 확인 함수
+        function showAdjustedPlanSummary() {
+            if (!adjustedTransportPlan || Object.keys(adjustedTransportPlan).length === 0) {
+                alert('⚠️ 조정된 차수계획이 없습니다.\n\n먼저 "최대운송25톤" 버튼을 클릭하여 조정된 계획을 생성해주세요.');
+                return;
+            }
+            
+            // 차수별 정보 수집
+            const sortedTripNums = Object.keys(adjustedTransportPlan)
+                .map(k => parseInt(k))
+                .sort((a, b) => a - b);
+            
+            let summaryText = '📊 조정된 차수별 기둥 개수 및 운송날짜\n\n';
+            let totalCount = 0;
+            
+            sortedTripNums.forEach(tripNum => {
+                const tripData = adjustedTransportPlan[tripNum];
+                if (tripData && tripData.columns) {
+                    const count = tripData.columns.length;
+                    const date = tripData.date || '(날짜 없음)';
+                    totalCount += count;
+                    summaryText += `${tripNum}차수: ${count}개 기둥, 운송날짜: ${date}\n`;
+                }
+            });
+            
+            summaryText += `\n총 기둥 수: ${totalCount}개`;
+            summaryText += `\n총 차수: ${sortedTripNums.length}개`;
+            
+            // 콘솔에도 출력
+            console.log('=== 조정된 차수별 기둥 개수 및 운송날짜 ===');
+            sortedTripNums.forEach(tripNum => {
+                const tripData = adjustedTransportPlan[tripNum];
+                if (tripData && tripData.columns) {
+                    const count = tripData.columns.length;
+                    const date = tripData.date || '(날짜 없음)';
+                    console.log(`${tripNum}차수: ${count}개 기둥, 운송날짜: ${date}`);
+                }
+            });
+            console.log(`총 기둥 수: ${totalCount}개`);
+            console.log(`총 차수: ${sortedTripNums.length}개`);
+            console.log('==========================================');
+            
+            alert(summaryText);
+        }
+        
+        // 조정된 차수계획을 엑셀 파일로 다운로드
+        function exportAdjustedPlanToExcel() {
+            // adjustedTransportPlan이 없으면 경고
+            if (!adjustedTransportPlan || Object.keys(adjustedTransportPlan).length === 0) {
+                alert('⚠️ 조정된 차수계획이 없습니다.\n\n먼저 "최대운송25톤" 버튼을 클릭하여 조정된 계획을 생성해주세요.');
+                return;
+            }
+            
+            try {
+                // 엑셀 데이터 준비
+                const rows = [];
+                
+                // 헤더 추가
+                rows.push(['기둥번호', '차수', '운송날짜']);
+                
+                // 각 차수별로 데이터 추가
+                const sortedTripNums = Object.keys(adjustedTransportPlan)
+                    .map(k => parseInt(k))
+                    .sort((a, b) => a - b);
+                
+                sortedTripNums.forEach(tripNum => {
+                    const tripData = adjustedTransportPlan[tripNum];
+                    if (tripData && tripData.columns && Array.isArray(tripData.columns) && tripData.columns.length > 0) {
+                        const date = tripData.date || '';
+                        
+                        tripData.columns.forEach(colId => {
+                            // colId를 문자열로 변환 (1C001, 7TC001 등)
+                            const colIdStr = String(colId);
+                            rows.push([colIdStr, tripNum, date]);
+                        });
+                    }
+                });
+                
+                // 워크북 생성
+                const wb = XLSX.utils.book_new();
+                const ws = XLSX.utils.aoa_to_sheet(rows);
+                
+                // 컬럼 너비 설정
+                ws['!cols'] = [
+                    { wch: 15 }, // 기둥번호
+                    { wch: 10 }, // 차수
+                    { wch: 15 }  // 운송날짜
+                ];
+                
+                // 워크시트를 워크북에 추가
+                XLSX.utils.book_append_sheet(wb, ws, '조정된차수계획');
+                
+                // 파일명 생성 (현재 날짜 포함)
+                const dateStr = new Date().toISOString().split('T')[0].replace(/-/g, '');
+                const fileName = `조정된차수계획_${dateStr}.xlsx`;
+                
+                // 파일 다운로드
+                XLSX.writeFile(wb, fileName);
+                
+                alert(`✅ 조정된 차수계획 엑셀 파일이 다운로드되었습니다.\n\n파일명: ${fileName}\n총 ${rows.length - 1}개 기둥`);
+            } catch (error) {
+                console.error('엑셀 파일 생성 오류:', error);
+                alert('❌ 엑셀 파일 생성 중 오류가 발생했습니다.\n\n' + error.message);
+            }
+        }
+        
+        // 조정된 차수계획 엑셀 파일과 현재 조정된 공정표 일치 여부 확인
+        function verifyAdjustedPlanFromExcel(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const resultEl = document.getElementById('adjusted-plan-verify-result');
+            if (!resultEl) return;
+            
+            resultEl.style.display = 'block';
+            resultEl.innerHTML = '<div style="color:#666;">엑셀 파일을 읽는 중...</div>';
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const rows = XLSX.utils.sheet_to_json(firstSheet, { header: 1, defval: '' });
+                    
+                    if (rows.length < 2) {
+                        resultEl.innerHTML = '<div style="color:#f44336;">❌ 엑셀 파일에 데이터가 없습니다.</div>';
+                        return;
+                    }
+                    
+                    // 헤더 확인
+                    const headers = rows[0].map(h => String(h).trim().toLowerCase());
+                    const colNoIdx = headers.findIndex(h => h.includes('기둥번호') || h.includes('기둥') || h === 'colno' || h === 'no');
+                    const tripIdx = headers.findIndex(h => h.includes('차수') || h === 'trip' || h === '차수번호');
+                    const dateIdx = headers.findIndex(h => h.includes('날짜') || h.includes('운송날짜') || h === 'date' || h.includes('date'));
+                    
+                    if (colNoIdx === -1 || tripIdx === -1 || dateIdx === -1) {
+                        resultEl.innerHTML = '<div style="color:#f44336;">❌ 엑셀 파일 형식이 올바르지 않습니다.<br>헤더: 기둥번호, 차수, 운송날짜</div>';
+                        return;
+                    }
+                    
+                    // 엑셀 데이터 파싱
+                    const excelData = {};
+                    for (let i = 1; i < rows.length; i++) {
+                        const row = rows[i];
+                        if (!row || row.length === 0) continue;
+                        
+                        const colNo = String(row[colNoIdx] || '').trim();
+                        const tripNum = parseInt(String(row[tripIdx] || '').trim());
+                        const date = String(row[dateIdx] || '').trim();
+                        
+                        if (!colNo || isNaN(tripNum) || !date) continue;
+                        
+                        if (!excelData[tripNum]) {
+                            excelData[tripNum] = { columns: [], date: date };
+                        }
+                        
+                        if (!excelData[tripNum].columns.includes(colNo)) {
+                            excelData[tripNum].columns.push(colNo);
+                        }
+                        
+                        // 날짜는 첫 번째로 발견된 날짜 사용 (같은 차수면 동일해야 함)
+                        if (!excelData[tripNum].date) {
+                            excelData[tripNum].date = date;
+                        }
+                    }
+                    
+                    // 현재 adjustedTransportPlan과 비교
+                    if (!adjustedTransportPlan || Object.keys(adjustedTransportPlan).length === 0) {
+                        resultEl.innerHTML = '<div style="color:#f44336;">❌ 조정된 차수계획이 없습니다.<br>먼저 "최대운송25톤" 버튼을 클릭하세요.</div>';
+                        return;
+                    }
+                    
+                    // 비교 결과
+                    const differences = [];
+                    const missingInExcel = [];
+                    const missingInPlan = [];
+                    const dateMismatches = [];
+                    
+                    // adjustedTransportPlan에 있는 차수 확인
+                    for (let tripNum in adjustedTransportPlan) {
+                        const tripData = adjustedTransportPlan[tripNum];
+                        const excelTripData = excelData[tripNum];
+                        
+                        if (!excelTripData) {
+                            missingInExcel.push(tripNum);
+                            continue;
+                        }
+                        
+                        // 날짜 비교
+                        if (tripData.date !== excelTripData.date) {
+                            dateMismatches.push({
+                                tripNum: tripNum,
+                                planDate: tripData.date || '(없음)',
+                                excelDate: excelTripData.date
+                            });
+                        }
+                        
+                        // 기둥 비교
+                        const planColumns = (tripData.columns || []).map(c => String(c).trim()).sort();
+                        const excelColumns = (excelTripData.columns || []).map(c => String(c).trim()).sort();
+                        
+                        const planSet = new Set(planColumns);
+                        const excelSet = new Set(excelColumns);
+                        
+                        // 엑셀에 없는 기둥
+                        planColumns.forEach(col => {
+                            if (!excelSet.has(col)) {
+                                missingInPlan.push({ tripNum: tripNum, colNo: col });
+                            }
+                        });
+                        
+                        // 계획에 없는 기둥
+                        excelColumns.forEach(col => {
+                            if (!planSet.has(col)) {
+                                differences.push({ tripNum: tripNum, colNo: col, type: '엑셀에만 있음' });
+                            }
+                        });
+                    }
+                    
+                    // 엑셀에만 있는 차수
+                    for (let tripNum in excelData) {
+                        if (!adjustedTransportPlan[tripNum]) {
+                            differences.push({ tripNum: tripNum, type: '엑셀에만 있는 차수' });
+                        }
+                    }
+                    
+                    // 결과 표시 및 완전 일치 시 날짜 업데이트
+                    let resultHtml = '';
+                    if (differences.length === 0 && missingInExcel.length === 0 && missingInPlan.length === 0 && dateMismatches.length === 0) {
+                        // 완전 일치: 엑셀 파일의 날짜로 adjustedTransportPlan 업데이트
+                        for (let tripNum in excelData) {
+                            if (adjustedTransportPlan[tripNum]) {
+                                adjustedTransportPlan[tripNum].date = excelData[tripNum].date;
+                            }
+                        }
+                        
+                        // localStorage에 저장
+                        localStorage.setItem(kcolKey('adjustedTransportPlan'), JSON.stringify(adjustedTransportPlan));
+                        
+                        // 조정된 공정표가 표시 중이면 transportPlan도 업데이트하고 공정표 다시 렌더링
+                        if (isShowingAdjustedPlan) {
+                            transportPlan = JSON.parse(JSON.stringify(adjustedTransportPlan));
+                            
+                            // dailyData 동기화
+                            if (typeof syncTransportToDailyData === 'function') {
+                                syncTransportToDailyData(false);
+                            }
+                            
+                            // 공정표 업데이트
+                            if (typeof renderGanttChart === 'function') {
+                                renderGanttChart();
+                            }
+                        }
+                        
+                        resultHtml = '<div style="color:#4caf50;font-weight:600;">✅ 완전 일치</div>';
+                        resultHtml += `<div style="margin-top:4px;color:#666;">총 ${Object.keys(adjustedTransportPlan).length}개 차수, 모든 기둥과 날짜가 일치합니다.</div>`;
+                        resultHtml += `<div style="margin-top:4px;color:#4caf50;font-size:10px;">엑셀 파일의 날짜로 조정된 차수계획이 업데이트되었습니다.</div>`;
+                    } else {
+                        resultHtml = '<div style="color:#ff9800;font-weight:600;">⚠️ 일부 불일치 발견</div>';
+                        
+                        if (missingInExcel.length > 0) {
+                            resultHtml += `<div style="margin-top:4px;color:#f44336;">엑셀에 없는 차수: ${missingInExcel.sort((a,b)=>a-b).join(', ')}차</div>`;
+                        }
+                        
+                        if (dateMismatches.length > 0) {
+                            resultHtml += `<div style="margin-top:4px;color:#f44336;">날짜 불일치:</div>`;
+                            dateMismatches.forEach(m => {
+                                resultHtml += `<div style="margin-left:8px;font-size:10px;">${m.tripNum}차: 계획(${m.planDate}) vs 엑셀(${m.excelDate})</div>`;
+                            });
+                        }
+                        
+                        if (missingInPlan.length > 0) {
+                            resultHtml += `<div style="margin-top:4px;color:#f44336;">계획에 없는 기둥: ${missingInPlan.length}개</div>`;
+                            const grouped = {};
+                            missingInPlan.forEach(m => {
+                                if (!grouped[m.tripNum]) grouped[m.tripNum] = [];
+                                grouped[m.tripNum].push(m.colNo);
+                            });
+                            Object.keys(grouped).forEach(tripNum => {
+                                resultHtml += `<div style="margin-left:8px;font-size:10px;">${tripNum}차: ${grouped[tripNum].join(', ')}</div>`;
+                            });
+                        }
+                        
+                        if (differences.length > 0) {
+                            resultHtml += `<div style="margin-top:4px;color:#f44336;">엑셀에만 있는 항목: ${differences.length}개</div>`;
+                        }
+                    }
+                    
+                    resultEl.innerHTML = resultHtml;
+                    
+                } catch (error) {
+                    console.error('엑셀 파일 읽기 오류:', error);
+                    resultEl.innerHTML = '<div style="color:#f44336;">❌ 엑셀 파일 읽기 중 오류가 발생했습니다.<br>' + error.message + '</div>';
+                }
+            };
+            
+            reader.readAsArrayBuffer(file);
+        }
+        
+        // 운송물량산정 통계 정보 업데이트
+        function updateTransportVolumeStats(data = transportVolumeData) {
+            const totalWeightEl = document.getElementById('total-weight');
+            const totalCountEl = document.getElementById('total-count');
+            const averageWeightEl = document.getElementById('average-weight');
+            
+            if (!totalWeightEl || !totalCountEl || !averageWeightEl) return;
+            
+            if (!data || data.length === 0) {
+                totalWeightEl.textContent = '0 kg';
+                totalCountEl.textContent = '0 개';
+                averageWeightEl.textContent = '0 kg';
+                return;
+            }
+            
+            // 전체 합산 중량 계산 (kg)
+            let totalWeight = 0;
+            let validCount = 0;
+            
+            data.forEach(item => {
+                const weight = parseFloat(item.weight) || parseFloat(item['중량(kg)']) || 0;
+                if (weight > 0) {
+                    totalWeight += weight;
+                    validCount++;
+                }
+            });
+            
+            // 총 부재수 (중량이 있는 항목만)
+            const totalCount = validCount;
+            
+            // 부재 1개당 평균 중량
+            const averageWeight = totalCount > 0 ? totalWeight / totalCount : 0;
+            
+            // 표시 (소수점 2자리까지, 천 단위 구분 기호 적용)
+            totalWeightEl.textContent = totalWeight.toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' kg';
+            totalCountEl.textContent = totalCount.toLocaleString('ko-KR') + ' 개';
+            averageWeightEl.textContent = averageWeight.toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' kg';
+        }
+        
+        // 차수별 집계 테이블 렌더링
+        function renderTransportVolumeTripSummary(data = transportVolumeData) {
+            const tbody = document.getElementById('transport-volume-trip-summary-tbody');
+            if (!tbody) return;
+            
+            if (!data || data.length === 0 || !transportPlan || Object.keys(transportPlan).length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#888;padding:16px;">엑셀을 업로드하면 차수별 집계 정보가 표시됩니다.</td></tr>';
+                return;
+            }
+            
+            // 차수별 집계 데이터 생성
+            const tripSummary = {}; // { tripNum: { count: 0, totalWeight: 0, date: '' } }
+            
+            // transportPlan의 모든 차수에 대해 집계
+            for (let tripNum in transportPlan) {
+                const tripData = transportPlan[tripNum];
+                if (tripData && tripData.columns) {
+                    tripSummary[tripNum] = {
+                        count: 0,
+                        totalWeight: 0, // ton 단위
+                        date: tripData.date || ''
+                    };
+                    
+                    // 해당 차수에 속한 기둥들의 중량 합산
+                    tripData.columns.forEach(col => {
+                        // colId 형식으로 변환
+                        let colId = null;
+                        if (typeof col === 'number') {
+                            colId = getColumnId(col, 1);
+                        } else {
+                            const colStr = String(col);
+                            if (colStr.match(/^\d+(?:TC|C)\d+$/i)) {
+                                colId = colStr;
+                            } else {
+                                const colNum = parseInt(colStr.replace(/[^0-9]/g, ''));
+                                if (colNum) {
+                                    colId = getColumnId(colNum, 1);
+                                }
+                            }
+                        }
+                        
+                        // transportVolumeData에서 해당 기둥 찾기
+                        if (colId) {
+                            const item = data.find(d => {
+                                const itemColId = d.no || '';
+                                return itemColId === colId || 
+                                       getColumnIndexFromId(itemColId) === getColumnIndexFromId(colId);
+                            });
+                            
+                            if (item) {
+                                const weight = parseFloat(item.weight) || 0; // kg
+                                if (weight > 0) {
+                                    tripSummary[tripNum].count++;
+                                    tripSummary[tripNum].totalWeight += weight / 1000; // ton으로 변환
+                                }
+                            }
+                        }
+                    });
+                }
+            }
+            
+            // 차수 번호로 정렬
+            const sortedTrips = Object.keys(tripSummary)
+                .map(Number)
+                .sort((a, b) => a - b);
+            
+            if (sortedTrips.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#888;padding:16px;">차수별 집계 정보가 없습니다.</td></tr>';
+                return;
+            }
+            
+            // 테이블 행 생성
+            const rows = sortedTrips.map(tripNum => {
+                const summary = tripSummary[tripNum];
+                const totalWeightTon = summary.totalWeight;
+                const isOver25Ton = totalWeightTon > 25;
+                const excessWeight = isOver25Ton ? (totalWeightTon - 25) : 0;
+                const availableWeight = isOver25Ton ? 0 : (25 - totalWeightTon);
+                
+                return `
+                    <tr>
+                        <td style="text-align:center;font-weight:bold;">${tripNum}</td>
+                        <td style="text-align:center;">${summary.count.toLocaleString('ko-KR')} 개</td>
+                        <td style="text-align:right;">${totalWeightTon.toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ton</td>
+                        <td style="text-align:center;color:#000;${isOver25Ton ? 'font-weight:bold;' : ''}">${isOver25Ton ? '초과' : '정상'}</td>
+                        <td style="text-align:right;color:#000;">${(availableWeight > 0 ? availableWeight : excessWeight).toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ton</td>
+                        <td style="text-align:center;">${summary.date || ''}</td>
+                    </tr>
+                `;
+            });
+            
+            tbody.innerHTML = rows.join('');
+        }
+        
+        // 최대운송 25톤시 차수 조정 테이블 렌더링
+        function renderAdjustedTransportVolumeTripSummary() {
+            const tbody = document.getElementById('adjusted-transport-volume-trip-summary-tbody');
+            if (!tbody) return;
+            
+            if (!transportVolumeData || transportVolumeData.length === 0 || !adjustedTransportPlan || Object.keys(adjustedTransportPlan).length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#888;padding:16px;">"최대운송25톤" 버튼을 클릭하면 조정된 차수계획이 표시됩니다.</td></tr>';
+                return;
+            }
+            
+            // 차수별 집계 데이터 생성
+            const tripSummary = {}; // { tripNum: { count: 0, totalWeight: 0, date: '' } }
+            
+            // adjustedTransportPlan의 모든 차수에 대해 집계
+            for (let tripNum in adjustedTransportPlan) {
+                const tripData = adjustedTransportPlan[tripNum];
+                if (tripData && tripData.columns) {
+                    tripSummary[tripNum] = {
+                        count: 0,
+                        totalWeight: 0, // ton 단위
+                        date: tripData.date || ''
+                    };
+                    
+                    // 해당 차수에 속한 기둥들의 중량 합산
+                    tripData.columns.forEach(col => {
+                        // colId 형식으로 변환
+                        let colId = null;
+                        if (typeof col === 'number') {
+                            colId = getColumnId(col, 1);
+                        } else {
+                            const colStr = String(col);
+                            if (colStr.match(/^\d+(?:TC|C)\d+$/i)) {
+                                colId = colStr;
+                            } else {
+                                const colNum = parseInt(colStr.replace(/[^0-9]/g, ''));
+                                if (colNum) {
+                                    colId = getColumnId(colNum, 1);
+                                }
+                            }
+                        }
+                        
+                        // transportVolumeData에서 해당 기둥 찾기
+                        if (colId) {
+                            const item = transportVolumeData.find(d => {
+                                const itemColId = d.no || '';
+                                return itemColId === colId || 
+                                       getColumnIndexFromId(itemColId) === getColumnIndexFromId(colId);
+                            });
+                            
+                            if (item) {
+                                const weight = parseFloat(String(item.weight).replace(/,/g, '')) || 0; // kg (천 단위 구분 기호 제거)
+                                if (weight > 0) {
+                                    tripSummary[tripNum].count++;
+                                    tripSummary[tripNum].totalWeight += weight / 1000; // ton으로 변환
+                                }
+                            }
+                        }
+                    });
+                }
+            }
+            
+            // 차수 번호로 정렬
+            const sortedTrips = Object.keys(tripSummary)
+                .map(Number)
+                .sort((a, b) => a - b);
+            
+            if (sortedTrips.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#888;padding:16px;">조정된 차수계획 정보가 없습니다.</td></tr>';
+                return;
+            }
+            
+            // 기존 운송차수계획 테이블의 부재수 계산 (비교용)
+            const originalTripCounts = {}; // { tripNum: count }
+            if (transportPlan && Object.keys(transportPlan).length > 0 && transportVolumeData && transportVolumeData.length > 0) {
+                for (let tripNum in transportPlan) {
+                    const tripData = transportPlan[tripNum];
+                    if (tripData && tripData.columns) {
+                        let count = 0;
+                        tripData.columns.forEach(col => {
+                            let colId = null;
+                            if (typeof col === 'number') {
+                                colId = getColumnId(col, 1);
+                            } else {
+                                const colStr = String(col);
+                                if (colStr.match(/^\d+(?:TC|C)\d+$/i)) {
+                                    colId = colStr;
+                                } else {
+                                    const colNum = parseInt(colStr.replace(/[^0-9]/g, ''));
+                                    if (colNum) {
+                                        colId = getColumnId(colNum, 1);
+                                    }
+                                }
+                            }
+                            
+                            if (colId) {
+                                const item = transportVolumeData.find(d => {
+                                    const itemColId = d.no || '';
+                                    return itemColId === colId || 
+                                           getColumnIndexFromId(itemColId) === getColumnIndexFromId(colId);
+                                });
+                                if (item) {
+                                    const weight = parseFloat(String(item.weight).replace(/,/g, '')) || 0;
+                                    if (weight > 0) {
+                                        count++;
+                                    }
+                                }
+                            }
+                        });
+                        originalTripCounts[tripNum] = count;
+                    }
+                }
+            }
+            
+            // 테이블 행 생성
+            const rows = sortedTrips.map(tripNum => {
+                const summary = tripSummary[tripNum];
+                const totalWeightTon = summary.totalWeight;
+                const isOver25Ton = totalWeightTon > 25;
+                const excessWeight = isOver25Ton ? (totalWeightTon - 25) : 0;
+                const availableWeight = isOver25Ton ? 0 : (25 - totalWeightTon);
+                
+                // 기존 운송차수계획과 비교
+                const originalCount = originalTripCounts[tripNum] || 0;
+                const adjustedCount = summary.count;
+                const increase = adjustedCount > originalCount ? adjustedCount - originalCount : 0;
+                const countDisplay = increase > 0 
+                    ? `${adjustedCount.toLocaleString('ko-KR')} 개 <span style="color:#f44336;font-weight:bold;">(+${increase})</span>`
+                    : `${adjustedCount.toLocaleString('ko-KR')} 개`;
+                
+                return `
+                    <tr>
+                        <td style="text-align:center;font-weight:bold;">${tripNum}</td>
+                        <td style="text-align:center;">${countDisplay}</td>
+                        <td style="text-align:right;">${totalWeightTon.toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ton</td>
+                        <td style="text-align:center;color:#000;${isOver25Ton ? 'font-weight:bold;' : ''}">${isOver25Ton ? '초과' : '정상'}</td>
+                        <td style="text-align:right;color:#000;">${(availableWeight > 0 ? availableWeight : excessWeight).toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ton</td>
+                        <td style="text-align:center;">${summary.date || ''}</td>
+                    </tr>
+                `;
+            });
+            
             tbody.innerHTML = rows.join('');
         }
 
@@ -12515,17 +14044,14 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
         // 운송물량산정: 엑셀 업로드 처리
         function handleTransportVolumeFile(event) {
             const file = event.target.files[0];
-            const statusEl = document.getElementById('transport-volume-status');
             
             if (!file) {
-                if (statusEl) statusEl.textContent = '파일을 업로드해주세요.';
                 return;
             }
             
             // 권한 체크: Viewer는 업로드 불가, Editor는 공정 5만 허용, Admin은 모든 공정 가능
             if (userRole === 'viewer') {
                 alert('⚠️ 권한 없음\n\nViewer는 운송물량산정 파일을 업로드할 수 없습니다.');
-                if (statusEl) statusEl.textContent = '⚠️ 권한 없음';
                 return;
             }
             
@@ -12535,15 +14061,12 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
                     const proc = PROCESSES.find(pr => pr.id === p);
                     return proc ? `${p}.${proc.name}` : `${p}`;
                 }).join(', '));
-                if (statusEl) statusEl.textContent = '⚠️ 권한 없음';
                 return;
             }
             if (typeof XLSX === 'undefined') {
                 alert('엑셀 라이브러리를 불러오지 못했습니다. 인터넷 연결을 확인해주세요.');
                 return;
             }
-            
-            if (statusEl) statusEl.textContent = '파일을 읽는 중...';
             
             const reader = new FileReader();
             reader.onload = function(e) {
@@ -12554,31 +14077,109 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
                     const sheet = workbook.Sheets[firstSheet];
                     const rows = XLSX.utils.sheet_to_json(sheet, { defval: '' });
                     
-                    transportVolumeData = rows.slice(0, 50).map((row, idx) => {
-                        const norm = {};
-                        Object.keys(row).forEach(k => {
-                            norm[k.trim().toLowerCase()] = row[k];
-                        });
+                    // 디버깅: 첫 번째 행의 키 확인
+                    if (rows.length > 0) {
+                        console.log('엑셀 첫 번째 행 키:', Object.keys(rows[0]));
+                        console.log('엑셀 첫 번째 행 데이터:', rows[0]);
+                    }
+                    
+                    transportVolumeData = rows.slice(0, 100).map((row, idx) => {
+                        // 원본 row의 모든 키를 확인하여 데이터 추출
+                        const rowKeys = Object.keys(row);
                         
-                        const colNo = row['기둥번호'] || row['기둥'] || row['번호'] || row['Column'] || row['No'] || norm['기둥번호'] || norm['기둥'] || norm['번호'] || norm['column'] || norm['no'];
-                        const size = row['사이즈'] || row['규격'] || row['size'] || norm['사이즈'] || norm['규격'] || norm['size'];
-                        const lengthVal = row['길이(mm)'] || row['길이'] || row['length'] || row['len'] || norm['길이(mm)'] || norm['길이'] || norm['length'] || norm['len'];
-                        const sub = row['소부재예상물량'] || row['소부재'] || row['예상물량'] || row['sub'] || norm['소부재예상물량'] || norm['소부재'] || norm['예상물량'] || norm['sub'];
+                        // 헤더 매칭 함수 (대소문자, 공백 무시, 공백 제거 후 비교)
+                        const findKey = (patterns) => {
+                            for (let pattern of patterns) {
+                                const found = rowKeys.find(key => {
+                                    // 키와 패턴 모두 공백 제거 후 소문자로 변환하여 비교
+                                    const normalizedKey = key.trim().replace(/\s+/g, '').toLowerCase();
+                                    const normalizedPattern = pattern.trim().replace(/\s+/g, '').toLowerCase();
+                                    return normalizedKey === normalizedPattern || 
+                                           normalizedKey.includes(normalizedPattern);
+                                });
+                                if (found) {
+                                    const value = row[found];
+                                    // 값이 숫자면 그대로, 문자열이면 trim
+                                    return typeof value === 'string' ? value.trim() : value;
+                                }
+                            }
+                            return '';
+                        };
+                        
+                        // 새로운 헤더 형식: 공종, 도면번호, 기둥번호, 규격, 길이(mm), 중량(kg), 운송차수계획(13차), 조정된 차수계획(12차)
+                        const workType = findKey(['공종']) || '';
+                        const drawingNo = findKey(['도면번호']) || '';
+                        // 기둥번호가 비어있으면 도면번호를 기둥번호로 사용
+                        let colNo = findKey(['기둥번호', '기둥', '번호', 'Column', 'No']) || '';
+                        if (!colNo && drawingNo) {
+                            colNo = drawingNo; // 도면번호를 기둥번호로 사용
+                        }
+                        const size = findKey(['규격', '사이즈', 'size']) || '';
+                        const lengthVal = findKey(['길이(mm)', '길이', 'length', 'len']) || '';
+                        const weight = findKey(['중량(kg)', '중량', 'weight']) || '';
+                        
+                        // 운송차수계획(13차) 형식에서 차수 추출
+                        let transportPlan = '';
+                        const transportPlanKey = rowKeys.find(key => {
+                            const normalized = key.trim().toLowerCase();
+                            return normalized.includes('운송차수계획') && normalized.includes('차');
+                        });
+                        if (transportPlanKey) {
+                            const match = transportPlanKey.match(/\((\d+)차\)/);
+                            if (match) {
+                                transportPlan = match[1];
+                            } else {
+                                transportPlan = String(row[transportPlanKey] || '').trim();
+                            }
+                        }
+                        
+                        // 조정된 차수계획(12차) 또는 조정된 운송차수(12차) 형식에서 차수 추출
+                        let adjustedPlan = '';
+                        const adjustedPlanKey = rowKeys.find(key => {
+                            const normalized = key.trim().toLowerCase();
+                            return (normalized.includes('조정된') && (normalized.includes('차수계획') || normalized.includes('운송차수')) && normalized.includes('차'));
+                        });
+                        if (adjustedPlanKey) {
+                            const match = adjustedPlanKey.match(/\((\d+)차\)/);
+                            if (match) {
+                                adjustedPlan = match[1];
+                            } else {
+                                adjustedPlan = String(row[adjustedPlanKey] || '').trim();
+                            }
+                        }
                         
                         return {
+                            workType: workType || '',
+                            drawingNo: drawingNo || '',
                             no: colNo || (idx + 1),
                             size: size || '',
                             length: lengthVal || '',
-                            sub: sub || ''
+                            weight: weight || '',
+                            transportPlan: transportPlan || '',
+                            adjustedPlan: adjustedPlan || '',
+                            // 원본 데이터도 저장 (원본 헤더명으로 접근 가능)
+                            원본: row,
+                            // 엑셀 원본 순서 유지 (인덱스)
+                            엑셀순서: idx
                         };
                     });
                     
+                    // 디버깅: 변환된 첫 번째 데이터 확인
+                    if (transportVolumeData.length > 0) {
+                        console.log('변환된 첫 번째 데이터:', transportVolumeData[0]);
+                        console.log('변환된 데이터 개수:', transportVolumeData.length);
+                        console.log('변환된 데이터 샘플 (처음 3개):', transportVolumeData.slice(0, 3));
+                    }
+                    
+                    // localStorage에 저장
+                    localStorage.setItem(kcolKey('transportVolumeData'), JSON.stringify(transportVolumeData));
+                    console.log('✅ 운송물량산정 데이터 localStorage 저장 완료');
+                    
                     renderTransportVolumeTable();
-                    if (statusEl) statusEl.textContent = `업로드 완료: ${transportVolumeData.length}개 (최대 50개 표시)`;
+                    console.log('테이블 렌더링 완료');
                 } catch (err) {
                     console.error('운송물량 엑셀 처리 오류:', err);
                     alert('파일을 읽는 중 오류가 발생했습니다. 템플릿 형식을 확인해주세요.');
-                    if (statusEl) statusEl.textContent = '⚠️ 파일을 읽는 중 오류가 발생했습니다.';
                 }
             };
             reader.readAsArrayBuffer(file);
@@ -12750,8 +14351,15 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
                 }
             }
             
-            // 2단계: transportPlan의 각 차수를 dailyData에 동기화 (동일한 일정으로 복사)
+            // 2단계: transportPlan의 각 차수를 dailyData에 동기화 (12차까지만, 동일한 일정으로 복사)
             for (let tripNum in transportPlan) {
+                const tripNumInt = parseInt(tripNum);
+                // 13차 이상은 제외 (조정된 차수계획은 12차까지만)
+                if (tripNumInt > 12) {
+                    console.log(`⚠️ 차수 ${tripNum}는 12차를 초과하므로 제외됩니다.`);
+                    continue;
+                }
+                
                 const tripData = transportPlan[tripNum];
                 if (!tripData || !tripData.date || !tripData.columns || tripData.columns.length === 0) {
                     continue;
