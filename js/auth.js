@@ -32,6 +32,13 @@
     });
   }
 
+  // Abort 에러 감지 (태블릿 등에서 "Signal is aborted without reason" 발생 시 재시도용)
+  function isAbortError(e) {
+    if (!e) return false;
+    var msg = (e.message || '').toString();
+    return msg.indexOf('abort') !== -1 || msg.indexOf('Abort') !== -1 || e.name === 'AbortError';
+  }
+
   // Get or create Supabase client
   function getClient() {
     if (clientPromise) return clientPromise;
@@ -49,6 +56,12 @@
         sessionCache = result.data ? result.data.session : null;
         return clientInstance;
       });
+    }).catch(function(err) {
+      if (isAbortError(err)) {
+        clientPromise = null;
+        clientInstance = null;
+      }
+      throw err;
     });
     return clientPromise;
   }

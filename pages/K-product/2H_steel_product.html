@@ -9,6 +9,8 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -194,20 +196,52 @@
         }
 
         .tab-btn {
-            padding: 19.382px 41.188px;
+            padding: 19.382px 42.424px;
             background: white;
             border: none;
             border-radius: 8px;
-            font-size: 22.613px;
+            font-size: 21.5px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s;
             color: #666;
         }
 
+        /* 상단 탭 버튼만 2단 배치 (이모지 위 / 글자 아래) */
+        .tabs > .tab-btn {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            line-height: 1.35;
+            min-height: 4.5em;
+        }
+
         .tab-btn.active {
             background: #2c4a7c;
             color: white;
+        }
+        .tabs .tab-btn-icon {
+            width: 63px !important;
+            height: 63px !important;
+            min-width: 63px;
+            min-height: 63px;
+        }
+        .tab-btn.active .tab-btn-icon {
+            filter: brightness(0) invert(1);
+        }
+        .tab-btn.tab-btn-icon-left .tab-btn-inner {
+            display: inline-flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .tab-btn.tab-btn-icon-left .tab-btn-text-2line {
+            display: block;
+            text-align: center;
+            line-height: 1.35;
         }
 
         .tab-btn:hover:not(.active) {
@@ -462,6 +496,64 @@
             color: #c62828;
             white-space: nowrap;
             font-weight: bold;
+        }
+        
+        /* 운송물량 테이블 폰트 (PDF/화면 공통 — html2canvas가 적용된 CSS 그대로 캡처) */
+        #transport-volume-table-wrapper {
+            font-family: 'Pretendard', 'Noto Sans KR', 'Malgun Gothic', sans-serif;
+            font-size: 12px;
+            line-height: 1.45;
+            letter-spacing: 0.02em;
+        }
+
+        /* 테이블 레이아웃 안정화 (PDF 캡처 시 컬럼 깨짐 방지) */
+        #transport-volume-table-wrapper table {
+            table-layout: fixed;
+            width: 100%;
+        }
+
+        /* 헤더 가독성 */
+        #transport-volume-table-wrapper th {
+            font-weight: 600;
+            text-align: center;
+        }
+
+        /* 숫자 컬럼 정렬 */
+        #transport-volume-table-wrapper td:nth-child(5),
+        #transport-volume-table-wrapper td:nth-child(6) {
+            text-align: right;
+            font-family: 'Roboto', 'Consolas', 'Malgun Gothic', sans-serif;
+        }
+
+        /* 셀 여백·행간 (따붙음 방지) */
+        #transport-volume-table-wrapper td,
+        #transport-volume-table-wrapper th {
+            padding: 6px 8px;
+            line-height: 1.45;
+        }
+
+        /* 차수요약 섹션 (Page3 하단) 가독성 */
+        #transport-volume-adjustment-section {
+            font-family: 'Pretendard', 'Noto Sans KR', 'Malgun Gothic', sans-serif;
+            line-height: 1.5;
+            letter-spacing: 0.02em;
+        }
+        #transport-volume-adjustment-section th,
+        #transport-volume-adjustment-section td {
+            padding: 6px 8px;
+            line-height: 1.45;
+        }
+
+        #transport-volume-table-wrapper::-webkit-scrollbar {
+            display: none;
+        }
+        .trip-select-no-scrollbar {
+            font-size: 9px;
+            padding: 1px 2px;
+            min-width: 52px;
+        }
+        .trip-select-no-scrollbar::-webkit-scrollbar {
+            display: none;
         }
 
         /* Progress Summary */
@@ -817,6 +909,31 @@
         #toast-msg {
             word-break: keep-all;
         }
+
+        /* 화면에서는 숨김, 인쇄 시에만 페이지 반복 헤더로 사용 */
+        .print-header {
+            display: none;
+        }
+        @media print {
+            .print-header {
+                display: block !important;
+                position: fixed !important;
+                top: 0 !important;
+                left: 0 !important;
+                right: 0 !important;
+                z-index: 9999;
+                background: #fff !important;
+                padding: 8px 12px;
+                border-bottom: 1px solid #ddd;
+                font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
+                color: #000;
+                box-sizing: border-box;
+                height: 52px;
+            }
+            body {
+                margin-top: 52px !important;
+            }
+        }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
@@ -883,6 +1000,12 @@
     </script>
 </head>
 <body>
+    <!-- 인쇄 시 모든 페이지 상단 반복 (position:fixed → @media print). Puppeteer 사용 시 pdf({ displayHeaderFooter: true, headerTemplate: '...' }) 로 하면 더 확실함 -->
+    <div id="print-header" class="print-header">
+        <div style="font-size:16px;font-weight:bold;margin-bottom:4px;">K-COLUMN 공정관리 시스템</div>
+        <div style="font-size:11px;margin-bottom:2px;">K-COLUMN 100개 (상부 50)+(하부 50) 제작 및 설치 공정</div>
+        <div style="font-size:10px;">자료협조 : (주) 지덕이엔지 / (주) 유석철강산업 / (주) 주신산업</div>
+    </div>
     <!-- 토스트 메시지 (액션 버튼 포함) -->
     <div id="toast" role="status" aria-live="polite">
         <span id="toast-msg"></span>
@@ -935,7 +1058,7 @@
             <div>
                 <h1>🏗️ K-COLUMN 공정관리 시스템 <span id="project-badge" style="margin-left:10px;font-size:12px;font-weight:800;background:rgba(255,255,255,0.18);padding:6px 10px;border-radius:999px;">PROJECT</span></h1>
                 <p style="margin-top:5px;opacity:0.9;">K-COLUMN 100개 (상부 50)+(하부 50) 제작 및 설치 공정</p>
-                <p style="margin-top:5px;opacity:0.9;font-size:13px;">자료협조 : (주) 지덕이엔지  /  (주) 주신산업</p>
+                <p style="margin-top:5px;opacity:0.9;font-size:13px;">자료협조 : (주) 지덕이엔지 / (주) 유석철강산업 / (주) 주신산업</p>
             </div>
             <div class="header-info">
                 <div>공사기간: 2025.12.26 ~ 2026.04.30</div>
@@ -1060,12 +1183,13 @@
 
         <!-- Tabs -->
         <div class="tabs">
-            <button class="tab-btn active" onclick="showPanel('overview', this)">📊 전체 현황</button>
-            <button class="tab-btn" onclick="showPanel('transport', this)">🚚 운송차수계획</button>
-            <button class="tab-btn" onclick="showPanel('gantt', this)">📅 공정표 (Gantt)</button>
-            <button class="tab-btn" onclick="showPanel('chart', this)">📈 진행률 차트</button>
-            <button class="tab-btn" onclick="showPanel('transportVolume', this)">📦 운송물량산정</button>
-            <button class="tab-btn" onclick="showPanel('installation', this)">🏗️ 현장설치현황도</button>
+            <button class="tab-btn active" onclick="showPanel('overview', this)">📊<br>전체<br>현황</button>
+            <button class="tab-btn tab-btn-icon-left" onclick="showPanel('transport', this)"><span class="tab-btn-inner"><img src="../../assets/images/favicon-운송차수계획.png" alt="" class="tab-btn-icon" style="width:63px;height:63px;object-fit:contain;flex-shrink:0;"><span class="tab-btn-text-2line">운송차수<br>계획</span></span></button>
+            <button class="tab-btn" onclick="showPanel('gantt', this)">📅<br>공정표 (Gantt)</button>
+            <button class="tab-btn tab-btn-icon-left" onclick="showPanel('transportVolume', this)"><span class="tab-btn-inner"><img src="../../assets/images/favicon-운송물량산정.png" alt="" class="tab-btn-icon" style="width:63px;height:63px;object-fit:contain;flex-shrink:0;"><span class="tab-btn-text-2line">운송차수조정<br>계획</span></span></button>
+            <button class="tab-btn" onclick="showPanel('chart', this)">📈<br>진행률<br>차트</button>
+            <button class="tab-btn" onclick="showPanel('installation', this)">🏗️<br>현장설치<br>현황도</button>
+            <button class="tab-btn" onclick="showPanel('transportVolumePdf', this)">📄<br>PDF<br>출력</button>
         </div>
 
         <!-- Company Selector -->
@@ -1118,7 +1242,7 @@
                     <div class="progress-bar-container">
                         <div class="progress-label">
                             <span>완료</span>
-                            <span id="progress-p1-text">0 / 50</span>
+                            <span id="progress-p1-text">0 / 100</span>
                         </div>
                         <div class="progress-bar">
                             <div class="progress-bar-fill p1" id="progress-p1" style="width:0%">0%</div>
@@ -1134,7 +1258,7 @@
                     <div class="progress-bar-container">
                         <div class="progress-label">
                             <span>완료</span>
-                            <span id="progress-p2-text">0 / 50</span>
+                            <span id="progress-p2-text">0 / 100</span>
                         </div>
                         <div class="progress-bar">
                             <div class="progress-bar-fill p2" id="progress-p2" style="width:0%">0%</div>
@@ -1150,7 +1274,7 @@
                     <div class="progress-bar-container">
                         <div class="progress-label">
                             <span>완료</span>
-                            <span id="progress-p3-text">0 / 50</span>
+                            <span id="progress-p3-text">0 / 100</span>
                         </div>
                         <div class="progress-bar">
                             <div class="progress-bar-fill p3" id="progress-p3" style="width:0%">0%</div>
@@ -1166,7 +1290,7 @@
                     <div class="progress-bar-container">
                         <div class="progress-label">
                             <span>완료</span>
-                            <span id="progress-p4-text">0 / 50</span>
+                            <span id="progress-p4-text">0 / 100</span>
                         </div>
                         <div class="progress-bar">
                             <div class="progress-bar-fill p4" id="progress-p4" style="width:0%">0%</div>
@@ -1182,7 +1306,7 @@
                     <div class="progress-bar-container">
                         <div class="progress-label">
                             <span>완료</span>
-                            <span id="progress-p5-text">0 / 50</span>
+                            <span id="progress-p5-text">0 / 100</span>
                         </div>
                         <div class="progress-bar">
                             <div class="progress-bar-fill p5" id="progress-p5" style="width:0%">0%</div>
@@ -1198,7 +1322,7 @@
                     <div class="progress-bar-container">
                         <div class="progress-label">
                             <span>완료</span>
-                            <span id="progress-p6-text">0 / 50</span>
+                            <span id="progress-p6-text">0 / 100</span>
                         </div>
                         <div class="progress-bar">
                             <div class="progress-bar-fill p6" id="progress-p6" style="width:0%">0%</div>
@@ -1450,19 +1574,6 @@
             </div>
         </div>
 
-        <!-- Chart Panel -->
-        <div class="panel" id="panel-chart">
-            <div class="chart-container">
-                <h3>📈 일별 누적 진행률</h3>
-                <canvas id="progressChart"></canvas>
-            </div>
-
-            <div class="chart-container">
-                <h3>📊 업체별 공정 현황</h3>
-                <canvas id="companyChart"></canvas>
-            </div>
-        </div>
-
         <!-- Transport Volume Panel -->
         <div class="panel" id="panel-transportVolume">
             <h3 style="margin-bottom:16px;color:#2c4a7c;">📦 운송물량산정</h3>
@@ -1539,7 +1650,7 @@
                 </div>
             </div>
 
-            <div style="overflow-x:auto;">
+            <div id="transport-volume-table-wrapper" style="overflow-x:auto;scrollbar-width:none;-ms-overflow-style:none;">
                 <table class="gantt-table" style="min-width:600px;">
                     <thead>
                         <tr>
@@ -1574,6 +1685,9 @@
                     <div id="average-weight" style="font-size:24px;font-weight:bold;color:#ff9800;">0 kg</div>
                 </div>
             </div>
+
+            <div id="transport-volume-adjustment-section">
+            <h4 style="margin-top:20px;margin-bottom:16px;color:#2c4a7c;font-size:16px;font-weight:600;">현재 운송차수계획 (13차)</h4>
 
             <!-- 차수별 집계 테이블 -->
             <div style="margin-top:20px;overflow-x:auto;">
@@ -1614,6 +1728,63 @@
                         </tbody>
                     </table>
                 </div>
+            </div>
+            </div>
+        </div>
+
+        <!-- Chart Panel -->
+        <div class="panel" id="panel-chart">
+            <div class="chart-container">
+                <h3>📈 일별 누적 진행률</h3>
+                <canvas id="progressChart"></canvas>
+            </div>
+            <div class="chart-container">
+                <h3>📊 업체별 공정 현황</h3>
+                <canvas id="companyChart"></canvas>
+            </div>
+        </div>
+
+        <!-- PDF 출력 패널 (출력 유형 선택 후 하나씩 출력) -->
+        <div class="panel" id="panel-transportVolumePdf">
+            <h3 style="margin-bottom:16px;color:#2c4a7c;">📄 PDF 출력</h3>
+            <p style="margin-bottom:12px;color:#555;font-size:14px;">출력할 항목을 선택한 뒤 PDF로 다운로드합니다. 한 번에 하나씩만 출력됩니다.</p>
+            <div style="margin-bottom:16px;padding:12px;background:#f8f9fa;border-radius:8px;border:1px solid #e0e0e0;">
+                <div style="font-weight:600;margin-bottom:8px;color:#2c4a7c;">출력 항목 선택</div>
+                <div style="display:flex;flex-wrap:wrap;gap:12px;">
+                    <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:14px;">
+                        <input type="radio" name="pdfExportType" value="gantt" style="margin:0;"> 📅 공정표
+                    </label>
+                    <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:14px;">
+                        <input type="radio" name="pdfExportType" value="transportVolume" checked style="margin:0;"> 📦 운송차수조정계획
+                    </label>
+                    <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:14px;">
+                        <input type="radio" name="pdfExportType" value="chart" style="margin:0;"> 📈 진행률 차트
+                    </label>
+                    <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:14px;">
+                        <input type="radio" name="pdfExportType" value="installation" style="margin:0;"> 🏗️ 현장설치현황도
+                    </label>
+                </div>
+            </div>
+            <div id="pdf-export-preview" style="position:relative;padding:30px;background:#fff;border:1px solid #ddd;border-radius:8px;overflow:auto;max-height:70vh;">
+                <!-- 선택 항목별 미리보기 (동적 생성) -->
+            </div>
+            <div style="margin-top:16px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;">
+                <button class="action-btn primary" onclick="exportSelectedPdf()" style="background:#e91e63;">📥 PDF 다운로드</button>
+                <button type="button" class="action-btn secondary" onclick="showPdfExportHtml()" style="background:#607d8b;color:#fff;">📋 PDF 생성 HTML 보기/복사</button>
+            </div>
+            <div id="pdf-export-html-wrap" style="display:none;margin-top:16px;padding:12px;background:#f5f5f5;border:1px solid #ddd;border-radius:8px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                    <span style="font-size:13px;color:#2c4a7c;font-weight:600;">PDF 1페이지에 사용되는 HTML (복사 가능)</span>
+                    <button type="button" onclick="copyPdfExportHtmlToClipboard()" style="padding:6px 12px;font-size:12px;background:#2c4a7c;color:white;border:none;border-radius:6px;cursor:pointer;">클립보드에 복사</button>
+                </div>
+                <textarea id="pdf-export-html-textarea" readonly style="width:100%;height:240px;font-family:Consolas,monospace;font-size:11px;padding:10px;border:1px solid #ccc;border-radius:4px;resize:vertical;"></textarea>
+                <div style="margin-top:6px;font-size:11px;color:#666;">위 HTML을 복사하여 Puppeteer 등에서 사용할 수 있습니다.</div>
+            </div>
+            <!-- 관리자 전용: PDF 출력 기록 -->
+            <div id="pdf-export-history-wrap" style="display:none;margin-top:24px;padding:16px;background:#f0f4f8;border-radius:8px;border:1px solid #d0d7de;">
+                <h4 style="margin-bottom:12px;color:#2c4a7c;font-size:14px;">📋 PDF 출력 기록 (관리자)</h4>
+                <div id="pdf-export-history-list" style="font-size:12px;color:#555;max-height:200px;overflow:auto;"></div>
+                <button type="button" onclick="loadPdfExportHistory()" style="margin-top:8px;padding:6px 12px;font-size:12px;background:#2c4a7c;color:white;border:none;border-radius:6px;cursor:pointer;">🔄 기록 새로고침</button>
             </div>
         </div>
 
@@ -1760,8 +1931,6 @@
                 if (typeof renderGanttChart === 'function') {
                     renderGanttChart();
                 }
-            } else if (typeof renderCharts === 'function' && panelId === 'chart') {
-                renderCharts();
             } else if (typeof renderColumnGrid === 'function' && panelId === 'overview') {
                 renderColumnGrid('column-grid-overview');
                 if (typeof updateProgressBars === 'function') {
@@ -1801,6 +1970,34 @@
                 }
             } else if (typeof renderInstallationStatus === 'function' && panelId === 'installation') {
                 renderInstallationStatus();
+            } else if (panelId === 'chart' && typeof renderCharts === 'function') {
+                renderCharts();
+            } else if (panelId === 'transportVolumePdf') {
+                if (typeof renderTransportVolumeTable === 'function') {
+                    renderTransportVolumeTable();
+                    if (typeof renderTransportVolumeTripSummary === 'function') renderTransportVolumeTripSummary();
+                    if (typeof renderAdjustedTransportVolumeTripSummary === 'function') renderAdjustedTransportVolumeTripSummary();
+                }
+                if (typeof refreshPdfExportPreview === 'function') {
+                    const t = document.querySelector('input[name="pdfExportType"]:checked')?.value || 'transportVolume';
+                    refreshPdfExportPreview(t);
+                }
+                document.querySelectorAll('input[name="pdfExportType"]').forEach(function (radio) {
+                    radio.removeEventListener('change', window._pdfExportTypeChange);
+                });
+                window._pdfExportTypeChange = function () {
+                    if (typeof refreshPdfExportPreview === 'function') refreshPdfExportPreview(document.querySelector('input[name="pdfExportType"]:checked')?.value);
+                };
+                document.querySelectorAll('input[name="pdfExportType"]').forEach(function (radio) {
+                    radio.addEventListener('change', window._pdfExportTypeChange);
+                });
+                var historyWrap = document.getElementById('pdf-export-history-wrap');
+                if (historyWrap && typeof userRole !== 'undefined' && userRole === 'admin') {
+                    historyWrap.style.display = 'block';
+                    if (typeof loadPdfExportHistory === 'function') loadPdfExportHistory();
+                } else if (historyWrap) {
+                    historyWrap.style.display = 'none';
+                }
             }
             
             console.log('✅ showPanel 완료');
@@ -2021,8 +2218,9 @@
         };
 
         // Constants
-        const TOTAL_COLUMNS = 50; // 기둥 개수 (각 기둥마다 2개 서브 항목 = 총 100개)
+        const TOTAL_COLUMNS = 50; // 기둥 개수 (각 기둥마다 2개 서브 항목)
         const SUB_ITEMS_PER_COLUMN = 2; // 각 기둥당 서브 항목 개수
+        const TOTAL_PROGRESS_ITEMS = 100; // 전체 기둥수 100개 기준 진행률(100개 완료 = 100%)
         const START_DATE = new Date('2025-12-26');
         const END_DATE = new Date('2026-04-30');
         
@@ -2041,10 +2239,182 @@
             return match ? parseInt(match[1]) : null;
         }
         
+        // dailyData 기준으로 해당 기둥의 최대 완료 공정 번호 반환 (소부재조립(4) 포함)
+        function getColumnStatus(colId) {
+            const colStr = String(colId);
+            const colNum = getColumnIndexFromId(colStr) || parseInt(colStr.replace(/[^0-9]/g, ''), 10);
+            let maxStatus = 0;
+            for (let date in dailyData) {
+                if (!dailyData[date]) continue;
+                for (let p = 1; p <= 6; p++) {
+                    const arr = dailyData[date][p];
+                    if (!arr || !Array.isArray(arr)) continue;
+                    const has = arr.some(col => {
+                        if (col === colId || col === colStr) return true;
+                        if (typeof col === 'number' && col === colNum) return true;
+                        if (String(col) === colStr) return true;
+                        const cNum = getColumnIndexFromId(String(col)) || parseInt(String(col).replace(/[^0-9]/g, ''), 10);
+                        return !isNaN(cNum) && cNum === colNum;
+                    });
+                    if (has) maxStatus = Math.max(maxStatus, p);
+                }
+            }
+            return maxStatus;
+        }
+        
         // 기둥 ID에서 서브 인덱스 추출: "1C001" 또는 "7TC001" -> 1
         function getSubIndexFromId(colId) {
             const match = colId.match(/(?:TC|C)(\d+)$/);
             return match ? parseInt(match[1]) : null;
+        }
+        
+        // 기둥 매칭: col(adjustedTransportPlan 내)와 colNo(transportVolumeData)가 같은 기둥인지
+        function columnsMatch(col, colNo) {
+            if (!colNo) return false;
+            const colStr = String(col);
+            const colNoStr = String(colNo);
+            if (colStr === colNoStr) return true;
+            const colIndex = getColumnIndexFromId(colNoStr);
+            const colSubIndex = getSubIndexFromId(colNoStr);
+            const storedColIndex = getColumnIndexFromId(colStr);
+            const storedColSubIndex = getSubIndexFromId(colStr);
+            if (colIndex && storedColIndex && colIndex === storedColIndex) {
+                if (colSubIndex && storedColSubIndex) return colSubIndex === storedColSubIndex;
+                return true;
+            }
+            const colNum = parseInt(colStr.replace(/[^0-9]/g, ''));
+            const colNoNum = parseInt(colNoStr.replace(/[^0-9]/g, ''));
+            return colNum && colNoNum && colNum === colNoNum;
+        }
+        
+        // 조정된 차수계획: 특정 기둥의 차수를 변경 (1~12차 선택 시)
+        function updateAdjustedPlanTripForColumn(colNo, newTripNum) {
+            if (!colNo) return;
+            if (!adjustedTransportPlan) adjustedTransportPlan = {};
+            const colId = String(colNo).trim();
+            // 기존 차수에서 제거
+            for (let tripNum in adjustedTransportPlan) {
+                const tripData = adjustedTransportPlan[tripNum];
+                if (tripData && tripData.columns) {
+                    tripData.columns = tripData.columns.filter(col => !columnsMatch(col, colId));
+                    if (tripData.columns.length === 0) delete adjustedTransportPlan[tripNum];
+                }
+            }
+            const trip = parseInt(newTripNum);
+            if (trip >= 1 && trip <= 12) {
+                if (!adjustedTransportPlan[trip]) {
+                    adjustedTransportPlan[trip] = { columns: [], date: transportPlan[trip]?.date || '' };
+                }
+                if (!adjustedTransportPlan[trip].columns.some(c => columnsMatch(c, colId))) {
+                    adjustedTransportPlan[trip].columns.push(colId);
+                    adjustedTransportPlan[trip].columns.sort((a, b) => {
+                        const numA = getColumnIndexFromId(String(a)) || parseInt(String(a).replace(/[^0-9]/g, '')) || 0;
+                        const numB = getColumnIndexFromId(String(b)) || parseInt(String(b).replace(/[^0-9]/g, '')) || 0;
+                        if (numA !== numB) return numA - numB;
+                        const subA = getSubIndexFromId(String(a)) || 1;
+                        const subB = getSubIndexFromId(String(b)) || 1;
+                        return subA - subB;
+                    });
+                }
+                adjustedTransportPlan[trip].date = adjustedTransportPlan[trip].date || transportPlan[trip]?.date || '';
+            }
+            localStorage.setItem(kcolKey('adjustedTransportPlan'), JSON.stringify(adjustedTransportPlan));
+            if (typeof renderTransportVolumeTable === 'function') renderTransportVolumeTable();
+            if (typeof renderAdjustedTransportVolumeTripSummary === 'function') renderAdjustedTransportVolumeTripSummary();
+            if (typeof renderTransportVolumeTripSummary === 'function') renderTransportVolumeTripSummary();
+        }
+        
+        // 조정된 차수계획: 부재수 +/- 조정 (-2,-1,0,+1,+2). 부재순(엑셀순서)대로 차수 재배치
+        function adjustAdjustedTripCount(tripNum, deltaStr) {
+            const newDelta = deltaStr === '' ? 0 : parseInt(deltaStr);
+            if (isNaN(newDelta) || newDelta < -3 || newDelta > 3) return;
+            const trip = parseInt(tripNum);
+            if (!adjustedTransportPlan || !transportVolumeData || transportVolumeData.length === 0) return;
+            
+            const oldDelta = tripCountDeltas[trip] || 0;
+            const change = newDelta - oldDelta;
+            if (change === 0) return;
+            
+            tripCountDeltas[trip] = newDelta;
+            
+            // 모든 차수의 컬럼을 엑셀순서로 정렬한 순서 구하기
+            const getExcelOrder = (colId) => {
+                const item = transportVolumeData.find(d => {
+                    const no = d.no || '';
+                    return no === colId || (getColumnIndexFromId(no) === getColumnIndexFromId(colId) && (!getSubIndexFromId(no) || getSubIndexFromId(no) === getSubIndexFromId(colId)));
+                });
+                return item && item.엑셀순서 !== undefined ? item.엑셀순서 : 999999;
+            };
+            
+            const sortedTrips = Object.keys(adjustedTransportPlan).map(Number).sort((a, b) => a - b);
+            const allColumns = [];
+            sortedTrips.forEach(tn => {
+                const cols = adjustedTransportPlan[tn]?.columns || [];
+                cols.forEach(col => {
+                    const c = typeof col === 'number' ? getColumnId(col, 1) : String(col);
+                    if (c) allColumns.push({ colId: c, trip: tn, order: getExcelOrder(c) });
+                });
+            });
+            allColumns.sort((a, b) => a.order - b.order);
+            
+            // 차수별 경계 인덱스: trip 1은 0..b[1]-1, trip 2는 b[1]..b[2]-1, ...
+            const boundaries = [0];
+            sortedTrips.forEach(tn => {
+                const count = (adjustedTransportPlan[tn]?.columns || []).length;
+                boundaries.push(boundaries[boundaries.length - 1] + count);
+            });
+            
+            const tripIdx = sortedTrips.indexOf(trip);
+            if (tripIdx < 0 || tripIdx >= sortedTrips.length - 1) return; // 마지막 차수는 다음 차수 없음
+            const nextTrip = sortedTrips[tripIdx + 1];
+            const currStart = boundaries[tripIdx];
+            const currEnd = boundaries[tripIdx + 1];
+            const nextEnd = boundaries[tripIdx + 2];
+            
+            if (change > 0) {
+                // 이번 차수에 추가: 다음 차수에서 앞에서부터 가져옴
+                const takeCount = Math.min(change, nextEnd - currEnd);
+                const toMove = allColumns.slice(currEnd, currEnd + takeCount).map(x => x.colId);
+                toMove.forEach(colId => {
+                    const nextCols = adjustedTransportPlan[nextTrip].columns;
+                    const idx = nextCols.findIndex(c => columnsMatch(c, colId));
+                    if (idx >= 0) {
+                        nextCols.splice(idx, 1);
+                        if (!adjustedTransportPlan[trip]) adjustedTransportPlan[trip] = { columns: [], date: '' };
+                        adjustedTransportPlan[trip].columns.push(colId);
+                    }
+                });
+            } else if (change < 0) {
+                // 이번 차수에서 제거: 다음 차수 앞에 붙임
+                const giveCount = Math.min(-change, currEnd - currStart);
+                const toMove = allColumns.slice(currEnd - giveCount, currEnd).map(x => x.colId);
+                toMove.forEach(colId => {
+                    const currCols = adjustedTransportPlan[trip].columns;
+                    const idx = currCols.findIndex(c => columnsMatch(c, colId));
+                    if (idx >= 0) {
+                        currCols.splice(idx, 1);
+                        if (!adjustedTransportPlan[nextTrip]) adjustedTransportPlan[nextTrip] = { columns: [], date: transportPlan[nextTrip]?.date || '' };
+                        adjustedTransportPlan[nextTrip].columns.unshift(colId);
+                    }
+                });
+            }
+            
+            // 정렬 유지
+            [trip, nextTrip].forEach(tn => {
+                if (adjustedTransportPlan[tn]?.columns) {
+                    adjustedTransportPlan[tn].columns.sort((a, b) => {
+                        const oa = getExcelOrder(typeof a === 'number' ? getColumnId(a, 1) : a);
+                        const ob = getExcelOrder(typeof b === 'number' ? getColumnId(b, 1) : b);
+                        return oa - ob;
+                    });
+                }
+            });
+            
+            localStorage.setItem(kcolKey('adjustedTransportPlan'), JSON.stringify(adjustedTransportPlan));
+            localStorage.setItem(kcolKey('tripCountDeltas'), JSON.stringify(tripCountDeltas));
+            if (typeof renderTransportVolumeTable === 'function') renderTransportVolumeTable();
+            if (typeof renderAdjustedTransportVolumeTripSummary === 'function') renderAdjustedTransportVolumeTripSummary();
+            if (typeof renderTransportVolumeTripSummary === 'function') renderTransportVolumeTripSummary();
         }
 
         // Project scoping (6 projects)
@@ -2519,6 +2889,115 @@
         // ✅ role 변경 감지용 리스너 (self-update 가드 무시)
         let memberRoleUnsubscribe = null;
         let myMemberDocUnsubscribe = null;
+
+        // ---------- [A] projects 리스너: 지수 백오프 재시도 ----------
+        let listenRetryTimer = null;
+        let listenRetryCount = 0;
+        function _clearProjectRetry() {
+            if (listenRetryTimer) { clearTimeout(listenRetryTimer); listenRetryTimer = null; }
+        }
+        function _scheduleProjectRetry(startFn) {
+            _clearProjectRetry();
+            listenRetryCount += 1;
+            var delay = Math.min(30000, 1000 * Math.pow(2, Math.min(5, listenRetryCount)));
+            console.warn('⚠️ [PROJECT] Listen 재시도 예약: ' + delay + 'ms (count=' + listenRetryCount + ')');
+            listenRetryTimer = setTimeout(function() { startFn(); }, delay);
+        }
+        function startProjectListener(projectRef, onData, label) {
+            label = label || 'PROJECT';
+            if (realtimeUnsubscribe) { try { realtimeUnsubscribe(); } catch (e) {} realtimeUnsubscribe = null; }
+            _clearProjectRetry();
+            console.log('🔄 Firebase 실시간 동기화 시작:', projectRef.id);
+            realtimeUnsubscribe = projectRef.onSnapshot(
+                function(docSnapshot) {
+                    listenRetryCount = 0;
+                    onData(docSnapshot);
+                },
+                function(err) {
+                    console.error('❌ [' + label + '] onSnapshot error:', err);
+                    isApplyingRemoteData = false;
+                    if (typeof updateRealtimeConnectionStatus === 'function') updateRealtimeConnectionStatus(false, err && err.message);
+                    if (err && err.code === 'permission-denied') {
+                        console.warn('🔒 permission-denied - 재시도하지 않습니다.');
+                        if (typeof showToast === 'function') showToast('⚠️ 실시간 동기화 권한 오류', 'error');
+                        return;
+                    }
+                    if (typeof showToast === 'function') showToast('⚠️ 실시간 동기화 오류 - 재시도 예정', 'error');
+                    _scheduleProjectRetry(function() { startProjectListener(projectRef, onData, label); });
+                }
+            );
+            console.log('✅ Firebase 실시간 동기화 리스너 설정 완료');
+            return realtimeUnsubscribe;
+        }
+        function stopProjectListener() {
+            _clearProjectRetry();
+            if (realtimeUnsubscribe) { try { realtimeUnsubscribe(); } catch (e) {} realtimeUnsubscribe = null; }
+            console.log('🛑 [PROJECT] 리스너 중지 완료');
+        }
+
+        // ---------- [B] members 역할 리스너: 지수 백오프 재시도 ----------
+        let roleRetryTimer = null;
+        let roleRetryCount = 0;
+        function _clearRoleRetry() {
+            if (roleRetryTimer) { clearTimeout(roleRetryTimer); roleRetryTimer = null; }
+        }
+        function _scheduleRoleRetry(startFn) {
+            _clearRoleRetry();
+            roleRetryCount += 1;
+            var delay = Math.min(30000, 1000 * Math.pow(2, Math.min(5, roleRetryCount)));
+            console.warn('⚠️ [ROLE] members 리스너 재시도 예약: ' + delay + 'ms (count=' + roleRetryCount + ')');
+            roleRetryTimer = setTimeout(function() { startFn(); }, delay);
+        }
+        function startMyMemberDocListener(projectId, uid) {
+            if (myMemberDocUnsubscribe) { try { myMemberDocUnsubscribe(); } catch (e) {} myMemberDocUnsubscribe = null; }
+            if (memberRoleUnsubscribe) { try { memberRoleUnsubscribe(); } catch (e) {} memberRoleUnsubscribe = null; }
+            _clearRoleRetry();
+            if (!projectId || !uid) { console.warn('[ROLE] projectId 또는 uid 없음'); return null; }
+            var ref = firebaseDb.collection('projects').doc(projectId).collection('members').doc(uid);
+            console.log('✅ [ROLE] members role 리스너 시작: projects/' + projectId + '/members/' + uid);
+            myMemberDocUnsubscribe = ref.onSnapshot(
+                function(snap) {
+                    roleRetryCount = 0;
+                    var d = snap.exists ? (snap.data() || {}) : null;
+                    var processRole = 'viewer';
+                    if (d && d.processRole != null) {
+                        processRole = normalizeRole(d.processRole, 'viewer');
+                        console.log('[watchMyMemberDoc] ✅ processRole 사용:', processRole);
+                    } else if (d && d.role != null) {
+                        processRole = normalizeRole(d.role, 'viewer');
+                        console.warn('[watchMyMemberDoc] ⚠️ 기존 role 사용(processRole로 마이그레이션 필요):', processRole);
+                    }
+                    var portalRole = (d && d.portalRole != null) ? normalizeRole(d.portalRole, 'viewer') : 'viewer';
+                    if (portalRole !== 'admin' && processRole === 'admin') {
+                        console.warn('[watchMyMemberDoc] 🚫 portalRole!=admin & processRole=admin => editor로 강등');
+                        processRole = 'editor';
+                    }
+                    var allowed = (d && Array.isArray(d.allowedProcesses)) ? d.allowedProcesses.map(function(x) { return parseInt(x, 10); }).filter(function(n) { return Number.isFinite(n); }) : [];
+                    var effectiveRole = processRole;
+                    if (!d && typeof showToast === 'function') showToast('⚠️ 프로젝트 멤버가 아닙니다. 읽기 전용 모드로 전환되었습니다.', 'warning');
+                    if (typeof applyRoleBasedUI === 'function') applyRoleBasedUI(effectiveRole, allowed);
+                    else if (typeof applyRole === 'function') applyRole(processRole, allowed, portalRole);
+                    else { window.userRole = effectiveRole; window.allowedProcesses = allowed; }
+                    if (!window.currentProcess && typeof onCurrentProcessReady === 'function' && typeof selectPreocess === 'function' && typeof showPanel === 'function') {
+                        onCurrentProcessReady(1); selectPreocess(1); showPanel('input', null);
+                    }
+                    console.log('📡 [ROLE] members 문서 변경 감지:', snap.exists, { portalRole: portalRole, processRole: processRole, effectiveRole: effectiveRole, allowed: allowed });
+                },
+                function(err) {
+                    console.error('❌ [ROLE] onSnapshot error:', err);
+                    if (err && err.code === 'permission-denied') return;
+                    _scheduleRoleRetry(function() { startMyMemberDocListener(projectId, uid); });
+                }
+            );
+            console.log('✅ [ROLE] members role 리스너 설정 완료');
+            return myMemberDocUnsubscribe;
+        }
+        function stopMyMemberDocListener() {
+            _clearRoleRetry();
+            if (myMemberDocUnsubscribe) { try { myMemberDocUnsubscribe(); } catch (e) {} myMemberDocUnsubscribe = null; }
+            if (memberRoleUnsubscribe) { try { memberRoleUnsubscribe(); } catch (e) {} memberRoleUnsubscribe = null; }
+            console.log('🛑 [ROLE] members 리스너 중지 완료');
+        }
         
         // Firebase 인증 상태 리스너 관리 (중복 등록 방지)
         let authListenerUnsubscribe = null;
@@ -2678,12 +3157,9 @@
                 console.log('🔒 [가드] 해당 경로에 멤버 문서가 존재하지 않습니다.');
                 console.log('🔒 [가드] memberRoleData:', memberRoleData);
                 
-                // 실시간 리스너 해제
-                if (realtimeUnsubscribe) {
-                    realtimeUnsubscribe();
-                    realtimeUnsubscribe = null;
-                }
-                
+                stopProjectListener();
+                stopMyMemberDocListener();
+
                 // 에러 메시지 표시
                 const errorMessage = `프로젝트 ${window.PROJECT_ID}에 대한 접근 권한이 없습니다. 관리자에게 문의하세요.`;
                 showToast(errorMessage, 'error');
@@ -2755,20 +3231,10 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
             console.log('✅ [가드] members 확인 완료 - 공정표 읽기 시작');
             console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
             
-            // 기존 리스너가 있으면 해제
-            if (realtimeUnsubscribe) {
-                console.log('🔄 기존 실시간 리스너 해제');
-                realtimeUnsubscribe();
-                realtimeUnsubscribe = null;
-            }
-            
-            // ✅ 기존 members role 리스너 해제
-            if (memberRoleUnsubscribe) {
-                console.log('🔄 기존 members role 리스너 해제');
-                memberRoleUnsubscribe();
-                memberRoleUnsubscribe = null;
-            }
-            
+            stopProjectListener();
+            stopMyMemberDocListener();
+            console.log('🔄 기존 리스너 정리 완료');
+
             try {
                 // ✅ projectRef 전역 설정
                 projectRef = firebaseDb.collection('projects').doc(window.PROJECT_ID);
@@ -2810,81 +3276,8 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
                 console.log('✅ Firebase 실시간 동기화 리스너 설정 완료');
                 console.log('💡 실시간 동기화가 활성화되었습니다. 다른 사용자의 변경사항이 자동으로 반영됩니다.');
                 
-                // ✅ members/{uid} 문서에 대한 role 변경 감지 리스너 추가
-                // ⚠️ role/권한 관련 UI는 self-update라도 반드시 다시 렌더링해야 함
-                const memberRef = firebaseDb.collection('projects').doc(window.PROJECT_ID)
-                    .collection('members').doc(firebaseAuth.currentUser.uid);
-                
-                // 기존 members 리스너가 있으면 해제
-                if (memberRoleUnsubscribe) {
-                    console.log('🔄 기존 members role 리스너 해제');
-                    memberRoleUnsubscribe();
-                    memberRoleUnsubscribe = null;
-                }
-                
-                memberRoleUnsubscribe = memberRef.onSnapshot(
-                    (memberSnapshot) => {
-                        console.log('📡 [ROLE] members 문서 변경 감지:', memberSnapshot.exists);
-                        
-                        if (memberSnapshot.exists) {
-                            const memberData = memberSnapshot.data();
-                            
-                            // ✅ processRole 우선, 없으면 role (하위 호환)
-                            let processRole = "viewer";
-                            if (memberData.processRole != null) {
-                                processRole = normalizeRole(memberData.processRole, "viewer");
-                            } else if (memberData.role != null) {
-                                processRole = normalizeRole(memberData.role, "viewer");
-                            }
-                            
-                            // ✅ portalRole 확인
-                            const portalRole = normalizeRole(memberData.portalRole, "viewer");
-                            
-                            // ✅ 핵심 안전장치: portal editor가 공정표 admin이 되는 것 방지
-                            if (portalRole !== "admin" && processRole === "admin") {
-                                console.warn("[ROLE] 🚫 portalRole!=admin 인데 processRole=admin => editor로 강등");
-                                processRole = "editor";
-                            }
-                            
-                            const latestAllowedProcesses = Array.isArray(memberData.allowedProcesses)
-                                ? memberData.allowedProcesses.map(x => parseInt(x, 10)).filter(n => Number.isFinite(n))
-                                : [];
-                            
-                            // ✅ role/UI는 항상 재적용 (self-update 가드 절대 사용 금지)
-                            // ❌ 금지: role/UI 적용까지 건너뛰면 창마다 UI가 어긋남
-                            // if (isSelfUpdate) return; // ❌ 이런 가드는 절대 사용하지 말 것
-                            
-                            // ✅ 정답: role/UI는 항상 재적용 (processRole만 전달)
-                            onMemberDocChanged(processRole, latestAllowedProcesses);
-                            
-                            // 변경 알림 (선택사항)
-                            const roleChanged = window.userRole !== processRole || 
-                                JSON.stringify(window.allowedProcesses) !== JSON.stringify(latestAllowedProcesses);
-                            if (roleChanged) {
-                                showToast(`🔄 역할이 변경되었습니다: ${processRole}`, 'info');
-                            }
-                        } else {
-                            // members 문서가 삭제된 경우 viewer로 설정
-                            console.warn('⚠️ [ROLE] members 문서가 삭제되었습니다. viewer로 설정합니다.');
-                            // ✅ role/UI는 항상 재적용
-                            onMemberDocChanged('viewer', []);
-                            showToast('⚠️ 프로젝트 멤버가 아닙니다. 읽기 전용 모드로 전환되었습니다.', 'warning');
-                        }
-                    },
-                    (error) => {
-                        console.error('❌ [ROLE] members 문서 리스너 오류:', error.code, error.message);
-                        if (error.code === 'permission-denied') {
-                            console.error('❌ [ROLE] members 문서 읽기 권한 오류');
-                            // permission-denied 시 리스너 해제
-                            if (memberRoleUnsubscribe) {
-                                memberRoleUnsubscribe();
-                                memberRoleUnsubscribe = null;
-                            }
-                        }
-                    }
-                );
-                
-                console.log('✅ [ROLE] members role 변경 감지 리스너 설정 완료');
+                // ✅ members/{uid} 문서에 대한 role 변경 감지 리스너 (지수 백오프 재시도 포함)
+                startMyMemberDocListener(window.PROJECT_ID, firebaseAuth.currentUser.uid);
                 
                 // 리스너 설정 성공 시 연결 상태 표시 (초기 상태)
                 updateRealtimeConnectionStatus(true);
@@ -2971,9 +3364,23 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
                 // ✅ STEP 1: Supabase 포탈 로그인 체크 (필수)
                 let portalSession = null;
                 try {
-                    // Supabase 포탈 로그인 확인
+                    // Supabase 포탈 로그인 확인 (태블릿: "Signal is aborted" 시 재시도)
                     if (window.SDP && window.SDP.auth) {
-                        portalSession = await window.SDP.auth.getSession();
+                        let lastErr = null;
+                        for (let attempt = 0; attempt < 3; attempt++) {
+                            try {
+                                portalSession = await window.SDP.auth.getSession();
+                                break;
+                            } catch (e) {
+                                lastErr = e;
+                                const msg = (e && e.message) ? String(e.message) : '';
+                                if ((msg.includes('abort') || msg.includes('Abort') || (e && e.name === 'AbortError')) && attempt < 2) {
+                                    await new Promise(r => setTimeout(r, 500 + attempt * 500));
+                                    continue;
+                                }
+                                throw e;
+                            }
+                        }
                         if (!portalSession) {
                             console.warn("[AUTH] ⚠️ Supabase 포탈 로그인이 필요합니다.");
                             lockScheduleTabs("⚠️ 포탈 로그인이 필요합니다.\n로그인 페이지로 이동하세요.");
@@ -2995,7 +3402,12 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
                     }
                 } catch (err) {
                     console.error("[AUTH] Supabase 포탈 로그인 확인 실패:", err);
-                    lockScheduleTabs("⚠️ 포탈 로그인 확인 중 오류가 발생했습니다.\n로그인 페이지로 이동하세요.");
+                    const isAbort = err && (String(err.message || '').includes('abort') || err.name === 'AbortError');
+                    lockScheduleTabs(
+                        isAbort
+                            ? "⚠️ 네트워크가 불안정할 수 있습니다.\n잠시 후 다시 시도하거나, 페이지를 새로고침해 주세요."
+                            : "⚠️ 포탈 로그인 확인 중 오류가 발생했습니다.\n로그인 페이지로 이동하세요."
+                    );
                     showLoginModal();
                     setAuthLoading(false);
                     return;
@@ -3003,27 +3415,9 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
                 
                 if (!user) {
                     console.log("[AUTH] Firebase 로그인 대기 중 (포탈 로그인은 완료됨)");
-                    
-                    // 로그아웃 시 정리
-                    if (myMemberDocUnsubscribe) {
-                        console.log('🔄 로그아웃 - myMemberDoc 리스너 해제');
-                        myMemberDocUnsubscribe();
-                        myMemberDocUnsubscribe = null;
-                    }
-                    
-                    // 실시간 리스너 해제
-                    if (realtimeUnsubscribe) {
-                        console.log('🔄 로그아웃 - 실시간 리스너 해제');
-                        realtimeUnsubscribe();
-                        realtimeUnsubscribe = null;
-                    }
-                    
-                    // members role 리스너 해제
-                    if (memberRoleUnsubscribe) {
-                        console.log('🔄 로그아웃 - members role 리스너 해제');
-                        memberRoleUnsubscribe();
-                        memberRoleUnsubscribe = null;
-                    }
+                    console.log('🔄 로그아웃 - 리스너 해제');
+                    stopProjectListener();
+                    stopMyMemberDocListener();
                     
                     // 실시간 상태 확인 중지
                     stopRealtimeStatusCheck();
@@ -4731,19 +5125,8 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
                 return false;
             }
             
-            // 기존 리스너 해제
-            if (realtimeUnsubscribe) {
-                realtimeUnsubscribe();
-                realtimeUnsubscribe = null;
-            }
-            
-            // ✅ members role 리스너 해제
-            if (memberRoleUnsubscribe) {
-                memberRoleUnsubscribe();
-                memberRoleUnsubscribe = null;
-            }
-            
-            // 상태 체크 중지
+            stopProjectListener();
+            stopMyMemberDocListener();
             stopRealtimeStatusCheck();
             
             // 리스너 재시작
@@ -5454,83 +5837,9 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
         //   사용자 화면에서 즉시 권한 반영
         // ============================================================
         function watchMyMemberDoc() {
-            const projectId = window.PROJECT_ID;
-            const uid = firebaseAuth.currentUser?.uid; // auth에서 직접
-
-            if (!projectId || !uid) {
-                console.warn("[watchMyMemberDoc] projectId 또는 uid가 없습니다.", { projectId, uid });
-                return null;
-            }
-
-            // 기존 리스너 해제 (중복 구독 방지)
-            if (myMemberDocUnsubscribe) {
-                myMemberDocUnsubscribe();
-                myMemberDocUnsubscribe = null;
-            }
-
-            // members/{uid} 문서를 onSnapshot으로 구독
-            myMemberDocUnsubscribe = firebaseDb
-                .collection("projects").doc(projectId)
-                .collection("members").doc(uid)
-                .onSnapshot((snap) => {
-                    const d = snap.exists ? (snap.data() || {}) : null;
-
-                    // ✅ processRole 우선, 없으면 role (하위 호환)
-                    let processRole = "viewer";
-                    if (d?.processRole != null) {
-                        processRole = normalizeRole(d.processRole, "viewer");
-                        console.log("[watchMyMemberDoc] ✅ processRole 사용:", processRole);
-                    } else if (d?.role != null) {
-                        processRole = normalizeRole(d.role, "viewer");
-                        console.warn("[watchMyMemberDoc] ⚠️ 기존 role 사용 (processRole로 마이그레이션 필요):", processRole);
-                    }
-                    
-                    // ✅ portalRole 확인
-                    const portalRole = normalizeRole(d?.portalRole, "viewer");
-                    
-                    // ✅ 핵심 안전장치: portal editor가 공정표 admin이 되는 것 방지
-                    if (portalRole !== "admin" && processRole === "admin") {
-                        console.warn("[watchMyMemberDoc] 🚫 portalRole!=admin 인데 processRole=admin => editor로 강등");
-                        processRole = "editor";
-                    }
-                    
-                    const allowed = (d && Array.isArray(d.allowedProcesses))
-                        ? d.allowedProcesses.map(x => parseInt(x, 10)).filter(n => Number.isFinite(n))
-                        : [];
-
-                    // ✅ effectiveRole 계산 (portalRole 정책 적용 후 최종 역할)
-                    let effectiveRole = processRole;
-                    if (portalRole !== "admin" && processRole === "admin") {
-                        effectiveRole = "editor"; // portal editor가 공정표 admin이 되는 것 방지
-                    }
-                    
-                    // ✅ 상세 로그 출력
-                    console.log("[watchMyMemberDoc] members 문서 변경 감지:", {
-                        portalRole: portalRole,
-                        processRole: processRole,
-                        legacyRole: d?.role || "(없음)",
-                        effectiveRole: effectiveRole,
-                        allowedProcesses: allowed,
-                        exists: snap.exists
-                    });
-
-                    // ✅ applyRole 함수 사용 (processRole만 전달, 안전장치 적용됨)
-                    applyRole(processRole, allowed, portalRole);
-
-                    // ✅ A안: 권한 확정 후 기본 공정(1) 자동 선택 (currentProcess not ready 방지)
-                    if (!window.currentProcess) {
-                        console.log("[BOOT] default process -> 1");
-                        onCurrentProcessReady(1);
-                        selectPreocess(1);
-                        showPanel('input', null);
-                    }
-
-                    console.log("[watchMyMemberDoc] role/allowedProcesses 변경 감지:", processRole, allowed, { uid, projectId });
-                }, (err) => {
-                    console.error("[watchMyMemberDoc] 오류:", err);
-                });
-
-            return myMemberDocUnsubscribe;
+            var projectId = window.PROJECT_ID;
+            var uid = firebaseAuth.currentUser ? firebaseAuth.currentUser.uid : null;
+            return startMyMemberDocListener(projectId, uid);
         }
         
         // ============================================================
@@ -6504,10 +6813,11 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
         let duplicateColumns = {}; // { columnId: [tripNumbers] } - 중복된 기둥 정보
         let progressChart = null;
         let companyChart = null;
-        let transportVolumeData = []; // 운송 물량 산정용 데이터 (엑셀 업로드)
+        let transportVolumeData = []; // 운송 물량 산정용 데이터 (엑셀 업로드, 최대 100개)
         let selectedColumns = []; // 주기둥커팅에서 선택된 기둥들 (다중 선택)
         let selectedSizes = []; // 규격별 필터: 선택된 규격 목록
         let selectedTrips = []; // 차수별 필터: 선택된 차수 목록 (운송차수계획 13차, 조정된 차수계획 12차)
+        let tripCountDeltas = {}; // 조정된 차수계획 부재수 조정: { tripNum: -3..+3 }
 
         // Initialize
         // Status display function
@@ -8912,23 +9222,39 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
             showConnectionStatus(`✅ ${selectedColumn} - ${processNames[newStatus]} 완료! (${dateDisplay})`);
         }
 
-        // Update Progress Bars
+        // Update Progress Bars (진행률: 주기둥커팅·소부재커팅·주기둥조립·소부재조립·현장배송·현장설치 포함)
+        // dailyData 기준 집계, 공정표와 동일하게 서브 100개 기준(47% = 47/100)
         function updateProgressBars() {
-            for (let p = 1; p <= 6; p++) {
-                let count = 0;
-                const totalItems = TOTAL_COLUMNS * SUB_ITEMS_PER_COLUMN; // 총 100개
-                for (let c = 1; c <= TOTAL_COLUMNS; c++) {
-                    for (let sub = 1; sub <= SUB_ITEMS_PER_COLUMN; sub++) {
-                        const colId = getColumnId(c, sub);
-                    if (columnData[colId]?.status >= p) count++;
+            const totalItems = TOTAL_PROGRESS_ITEMS; // 전체 기둥수 100개 (100개 완료 = 100%)
+            const progressProcesses = [1, 2, 3, 4, 5, 6]; // 소부재조립(4) 포함
+            for (const p of progressProcesses) {
+                const completedSet = new Set(); // 해당 공정 p 이상 완료한 서브 식별자(공정표와 동일)
+                for (let date in dailyData) {
+                    if (!dailyData[date]) continue;
+                    for (let q = p; q <= 6; q++) {
+                        const arr = dailyData[date][q];
+                        if (!arr || !Array.isArray(arr)) continue;
+                        arr.forEach(col => {
+                            if (typeof col === 'number') {
+                                completedSet.add(getColumnId(col, 1));
+                                completedSet.add(getColumnId(col, 2));
+                            } else {
+                                completedSet.add(String(col));
+                            }
+                        });
+                    }
                 }
-                }
-                const percent = Math.round((count / totalItems) * 100);
-                
-                document.getElementById(`progress-p${p}`).style.width = percent + '%';
-                document.getElementById(`progress-p${p}`).textContent = percent + '%';
-                document.getElementById(`progress-p${p}-text`).textContent = `${count} / ${TOTAL_COLUMNS}`;
+                const count = completedSet.size;
+                const percent = totalItems > 0 ? Math.round((count / totalItems) * 100) : 0;
+                const el = document.getElementById(`progress-p${p}`);
+                const elText = document.getElementById(`progress-p${p}-text`);
+                if (el) el.style.width = percent + '%';
+                if (el) el.textContent = percent + '%';
+                if (elText) elText.textContent = `${count} / ${totalItems}`;
             }
+            // 소부재조립(process 4) 카드 표시
+            const p4Card = document.getElementById('progress-p4')?.closest('.progress-card');
+            if (p4Card) p4Card.style.display = '';
         }
 
         // Render Gantt Chart
@@ -9392,8 +9718,9 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
             // Generate date labels and data
             const dates = [];
             const datasets = [];
-            const colors = ['#e74c3c', '#ff9800', '#2196f3', '#00bcd4', '#9c27b0', '#4caf50']; // process 5는 마젠타
-            const processNames = ['주기둥커팅', '소부재커팅', '주기둥조립', '소부재조립', '현장배송', '현장설치'];
+            const processNames = { 1: '주기둥커팅', 2: '소부재커팅', 3: '주기둥조립', 4: '소부재조립', 5: '현장배송', 6: '현장설치' };
+            const progressProcesses = [1, 2, 3, 4, 5, 6]; // 소부재조립(4) 포함
+            const colors = ['#e74c3c', '#ff9800', '#2196f3', '#00bcd4', '#9c27b0', '#4caf50'];
             
             let currentDate = new Date(START_DATE);
             while (currentDate <= new Date()) {
@@ -9401,23 +9728,29 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
                 currentDate.setDate(currentDate.getDate() + 1);
             }
             
-            // Calculate cumulative data for each process
-            for (let p = 1; p <= 6; p++) {
+            // 일별 배열의 유효 개수: 숫자(열번호)는 1열=2서브이므로 2로 계산
+            function effectiveDailyCount(arr) {
+                if (!arr || !Array.isArray(arr)) return 0;
+                return arr.reduce((sum, col) => sum + (typeof col === 'number' ? 2 : 1), 0);
+            }
+            // Calculate cumulative data for each process (소부재조립 포함, 100개=100%)
+            for (let i = 0; i < progressProcesses.length; i++) {
+                const p = progressProcesses[i];
                 const data = [];
                 let cumulative = 0;
                 
                 dates.forEach(dateStr => {
                     if (dailyData[dateStr]?.[p]) {
-                        cumulative += dailyData[dateStr][p].length;
+                        cumulative += effectiveDailyCount(dailyData[dateStr][p]);
                     }
                     data.push(cumulative);
                 });
                 
                 datasets.push({
-                    label: processNames[p-1],
+                    label: processNames[p],
                     data: data,
-                    borderColor: colors[p-1],
-                    backgroundColor: colors[p-1] + '20',
+                    borderColor: colors[i],
+                    backgroundColor: colors[i] + '20',
                     fill: true,
                     tension: 0.3
                 });
@@ -9441,7 +9774,7 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
                     scales: {
                         y: {
                             beginAtZero: true,
-                            max: TOTAL_COLUMNS * SUB_ITEMS_PER_COLUMN, // 100개
+                            max: TOTAL_PROGRESS_ITEMS, // 전체 기둥수 100개
                             title: {
                                 display: true,
                                 text: '완료 기둥 수'
@@ -9761,32 +10094,38 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
         function renderCompanyChart() {
             const ctx = document.getElementById('companyChart').getContext('2d');
             
-            // Calculate company progress
-            const companyProgress = {
-                'yuseok': { p1: 0, p2: 0, p3: 0, p4: 0, p5: 0 },
-                'jinhung': { p6: 0 }
-            };
-            
-            // 50개 기둥 × 2개 서브 항목 = 총 100개
-            for (let c = 1; c <= TOTAL_COLUMNS; c++) {
-                for (let sub = 1; sub <= SUB_ITEMS_PER_COLUMN; sub++) {
-                    const colId = getColumnId(c, sub);
-                const status = columnData[colId]?.status || 0;
-                if (status >= 1) companyProgress.yuseok.p1++;
-                if (status >= 2) companyProgress.yuseok.p2++;
-                if (status >= 3) companyProgress.yuseok.p3++;
-                if (status >= 4) companyProgress.yuseok.p4++;
-                if (status >= 5) companyProgress.yuseok.p5++;
-                if (status >= 6) companyProgress.jinhung.p6++;
+            // Calculate company progress from dailyData (소부재조립(4) 포함)
+            const countByProcess = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 };
+            for (let p = 1; p <= 6; p++) {
+                const set = new Set();
+                for (let date in dailyData) {
+                    if (!dailyData[date]) continue;
+                    for (let q = p; q <= 6; q++) {
+                        const arr = dailyData[date][q];
+                        if (!arr || !Array.isArray(arr)) continue;
+                        arr.forEach(col => {
+                            if (typeof col === 'number') {
+                                set.add(getColumnId(col, 1));
+                                set.add(getColumnId(col, 2));
+                            } else {
+                                set.add(String(col));
+                            }
+                        });
+                    }
                 }
+                countByProcess[p] = set.size;
             }
+            const companyProgress = {
+                'yuseok': { p1: countByProcess[1], p2: countByProcess[2], p3: countByProcess[3], p4: countByProcess[4], p5: countByProcess[5] },
+                'jinhung': { p6: countByProcess[6] }
+            };
             
             if (companyChart) companyChart.destroy();
             
             companyChart = new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: ['유석철강(충주)\n(커팅)', '유석철강(오창)\n(소부재)', '유석철강(음성)\n(조립)', '유석철강(음성)\n(소부재조립)', '유석철강(음성)\n(배송)', '진흥기업\n(설치)'],
+                    labels: ['유석철강(충주)\n(커팅)', '유석철강(오창)\n(소부재)', '유석철강(음성)\n(주기둥조립)', '유석철강(음성)\n(소부재조립)', '유석철강(음성)\n(배송)', '진흥기업\n(설치)'],
                     datasets: [{
                         label: '완료 기둥 수',
                         data: [
@@ -9797,7 +10136,7 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
                             companyProgress.yuseok.p5,
                             companyProgress.jinhung.p6
                         ],
-                        backgroundColor: ['#e74c3c', '#ff9800', '#2196f3', '#00bcd4', '#9c27b0', '#4caf50'] // process 5는 마젠타
+                        backgroundColor: ['#e74c3c', '#ff9800', '#2196f3', '#00bcd4', '#9c27b0', '#4caf50']
                     }]
                 },
                 options: {
@@ -9810,7 +10149,7 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
                     scales: {
                         y: {
                             beginAtZero: true,
-                            max: TOTAL_COLUMNS * SUB_ITEMS_PER_COLUMN, // 100개
+                            max: TOTAL_PROGRESS_ITEMS, // 전체 기둥수 100개
                             title: {
                                 display: true,
                                 text: '완료 기둥 수'
@@ -9878,12 +10217,6 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
         function initProjectRealtime(projectId) {
             if (!projectId) throw new Error("projectId missing");
 
-            // 기존 리스너 정리
-            if (realtimeUnsubscribe) {
-                realtimeUnsubscribe();
-                realtimeUnsubscribe = null;
-            }
-
             // projectRef 설정
             projectRef = firebaseDb.collection("projects").doc(projectId);
 
@@ -9891,9 +10224,8 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
             isInitialLoad = true;
             isApplyingRemoteData = false;
 
-            // 실시간 수신
-            realtimeUnsubscribe = projectRef.onSnapshot(
-                (docSnapshot) => {
+            // 실시간 수신 (지수 백오프 재시도 포함)
+            startProjectListener(projectRef, function(docSnapshot) {
                     // 원격 데이터 적용 시작
                     isApplyingRemoteData = true;
 
@@ -10033,36 +10365,7 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
 
                     // 원격 데이터 적용 종료
                     isApplyingRemoteData = false;
-                },
-                (error) => {
-                    console.error("❌ onSnapshot error:", error);
-                    // 에러 시에도 원격 적용 플래그만 해제 (isInitialLoad는 함부로 false로 바꾸지 않음)
-                    isApplyingRemoteData = false;
-                    
-                    // 실시간 연결 오류 상태 표시
-                    if (typeof updateRealtimeConnectionStatus === 'function') {
-                        updateRealtimeConnectionStatus(false, error.message);
-                    }
-                    
-                    if (error.code === 'permission-denied') {
-                        console.error('❌ Firestore 권한 오류: 로그인 상태와 권한을 확인하세요.');
-                        if (typeof showToast === 'function') {
-                            showToast('⚠️ 실시간 동기화 권한 오류', 'error');
-                        }
-                        
-                        // ✅ permission-denied 시 즉시 리스너 해제 (반복 에러 방지)
-                        if (realtimeUnsubscribe) {
-                            console.warn('🔒 permission-denied 오류로 인해 리스너를 즉시 해제합니다.');
-                            realtimeUnsubscribe();
-                            realtimeUnsubscribe = null;
-                        }
-                    } else {
-                        if (typeof showToast === 'function') {
-                            showToast('⚠️ 실시간 동기화 오류: ' + error.message, 'error');
-                        }
-                    }
-                }
-            );
+                }, 'PROJECT');
         }
         
         // ③④(+루프차단) 최종 저장 함수: 반드시 이것으로만 저장
@@ -10755,7 +11058,7 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
                 }
             }
             
-            // 차수별 필터 선택 상태 로드
+            // 차수별 필터 선택 상태 로드 (초기 load 시 원13차수는 항상 ON - 전체 선택)
             const savedSelectedTrips = localStorage.getItem(kcolKey('selectedTrips'));
             if (savedSelectedTrips) {
                 try {
@@ -10764,6 +11067,34 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
                 } catch (e) {
                     console.error('❌ selectedTrips 파싱 실패:', e);
                     selectedTrips = [];
+                }
+            }
+            if (!selectedTrips || selectedTrips.length === 0) {
+                selectedTrips = [];
+                if (transportPlan && Object.keys(transportPlan).length > 0) {
+                    Object.keys(transportPlan).forEach(tripNum => {
+                        const n = parseInt(tripNum);
+                        if (n >= 1 && n <= 13) selectedTrips.push('original_' + n);
+                    });
+                }
+                if (adjustedTransportPlan && Object.keys(adjustedTransportPlan).length > 0) {
+                    Object.keys(adjustedTransportPlan).forEach(tripNum => {
+                        const n = parseInt(tripNum);
+                        if (n >= 1 && n <= 13) selectedTrips.push('adjusted_' + n);
+                    });
+                }
+                if (selectedTrips.length > 0) {
+                    localStorage.setItem(kcolKey('selectedTrips'), JSON.stringify(selectedTrips));
+                }
+            }
+            
+            // 조정된 차수계획 부재수 조정값 로드
+            const savedTripCountDeltas = localStorage.getItem(kcolKey('tripCountDeltas'));
+            if (savedTripCountDeltas) {
+                try {
+                    tripCountDeltas = JSON.parse(savedTripCountDeltas);
+                } catch (e) {
+                    tripCountDeltas = {};
                 }
             }
             
@@ -11667,7 +11998,20 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
                     localStorage.setItem(kcolKey('defaultAdjustedTransportPlan'), JSON.stringify(defaultAdjustedPlan));
                 }
                 
-                alert('✅ 현재 물량산정 값이 기본값으로 저장되었습니다.\n\n페이지를 새로고침하면 기본값이 자동으로 표시됩니다.');
+                // 차수/규격 필터 초기화하여 전체 데이터 표시
+                selectedTrips = [];
+                selectedSizes = [];
+                localStorage.setItem(kcolKey('selectedTrips'), JSON.stringify(selectedTrips));
+                localStorage.setItem(kcolKey('selectedSizes'), JSON.stringify(selectedSizes));
+                
+                // 테이블·필터 토글 다시 렌더링
+                if (typeof renderTransportVolumeTable === 'function') renderTransportVolumeTable();
+                if (typeof renderTripFilterToggles === 'function') renderTripFilterToggles();
+                if (typeof renderSizeFilterToggles === 'function') renderSizeFilterToggles();
+                if (typeof updateAllTripsToggleButtons === 'function') updateAllTripsToggleButtons();
+                if (typeof renderAdjustedTransportVolumeTripSummary === 'function') renderAdjustedTransportVolumeTripSummary();
+                
+                alert('✅ 현재 물량산정 값이 기본값으로 저장되었습니다.\n\n전체 데이터가 표시됩니다.');
                 console.log('✅ 기본값 저장 완료:', defaultData.length, '개 부재');
             } catch (error) {
                 console.error('기본값 저장 오류:', error);
@@ -11686,6 +12030,12 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
                         localStorage.setItem(kcolKey('transportVolumeData'), JSON.stringify(transportVolumeData));
                         console.log('✅ 기본값 로드 완료:', transportVolumeData.length, '개 부재');
                         
+                        // 차수/규격 필터 초기화하여 전체 데이터 표시
+                        selectedTrips = [];
+                        selectedSizes = [];
+                        localStorage.setItem(kcolKey('selectedTrips'), JSON.stringify(selectedTrips));
+                        localStorage.setItem(kcolKey('selectedSizes'), JSON.stringify(selectedSizes));
+                        
                         // 기본 조정된 차수계획도 로드
                         const savedDefaultAdjustedPlan = localStorage.getItem(kcolKey('defaultAdjustedTransportPlan'));
                         if (savedDefaultAdjustedPlan) {
@@ -11693,6 +12043,8 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
                             if (parsedAdjustedPlan && Object.keys(parsedAdjustedPlan).length > 0) {
                                 adjustedTransportPlan = parsedAdjustedPlan;
                                 localStorage.setItem(kcolKey('adjustedTransportPlan'), JSON.stringify(adjustedTransportPlan));
+                                tripCountDeltas = {}; // 기본값 로드 시 부재수 조정 초기화
+                                localStorage.setItem(kcolKey('tripCountDeltas'), JSON.stringify(tripCountDeltas));
                                 console.log('✅ 기본 조정된 차수계획 로드 완료');
                             }
                         }
@@ -11712,6 +12064,763 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
                 console.error('기본값 로드 오류:', error);
             }
             return false;
+        }
+
+        // PDF 출력 패널: 선택 유형별 미리보기 갱신
+        function refreshPdfExportPreview(type) {
+            const preview = document.getElementById('pdf-export-preview');
+            if (!preview) return;
+            type = type || (document.querySelector('input[name="pdfExportType"]:checked')?.value || 'transportVolume');
+            preview.innerHTML = '';
+            preview.style.position = 'relative';
+
+            if (type === 'gantt') {
+                const ganttContainer = document.querySelector('.gantt-container');
+                if (ganttContainer) {
+                    const title = document.createElement('h4');
+                    title.textContent = '📅 공정표 (Gantt)';
+                    title.style.cssText = 'margin-bottom:12px;color:#2c4a7c;font-size:16px;';
+                    preview.appendChild(title);
+                    preview.appendChild(ganttContainer.cloneNode(true));
+                } else {
+                    preview.innerHTML = '<p style="color:#888;">공정표 데이터를 불러온 뒤 다시 시도하세요.</p>';
+                }
+            } else if (type === 'transportVolume') {
+                const tableWrapper = document.getElementById('transport-volume-table-wrapper');
+                const stats = document.getElementById('transport-volume-stats');
+                const tripSummary = document.getElementById('transport-volume-trip-summary-tbody')?.closest('table')?.parentElement;
+                const adjustedSection = document.getElementById('adjusted-transport-volume-trip-summary-tbody')?.closest('table')?.parentElement?.parentElement;
+                const title = document.createElement('h4');
+                title.textContent = '📦 운송물량산정';
+                title.style.cssText = 'margin-bottom:12px;color:#2c4a7c;font-size:16px;';
+                preview.appendChild(title);
+                if (tableWrapper) preview.appendChild(tableWrapper.cloneNode(true));
+                if (stats) { const st = stats.cloneNode(true); st.style.marginTop = '16px'; preview.appendChild(st); }
+                var subTitle = document.createElement('h4');
+                subTitle.textContent = '현재 운송차수계획 (13차)';
+                subTitle.style.cssText = 'margin-top:20px;margin-bottom:16px;color:#2c4a7c;font-size:16px;font-weight:600;';
+                preview.appendChild(subTitle);
+                if (tripSummary) { const ts = tripSummary.cloneNode(true); ts.style.marginTop = '16px'; preview.appendChild(ts); }
+                if (adjustedSection) { const adj = adjustedSection.cloneNode(true); adj.style.marginTop = '20px'; preview.appendChild(adj); }
+            } else if (type === 'chart') {
+                const chartPanel = document.getElementById('panel-chart');
+                if (chartPanel) {
+                    const clone = chartPanel.cloneNode(true);
+                    clone.querySelectorAll('canvas').forEach(c => {
+                        const ctx = c.getContext('2d');
+                        if (ctx && c.id === 'progressChart' && typeof progressChart !== 'undefined' && progressChart) {
+                            try { progressChart.resize(c.offsetWidth, c.offsetHeight); } catch (e) {}
+                        }
+                    });
+                    preview.appendChild(clone);
+                } else {
+                    preview.innerHTML = '<p style="color:#888;">진행률 차트를 불러온 뒤 다시 시도하세요.</p>';
+                }
+            } else if (type === 'installation') {
+                const progressSummary = document.getElementById('installation-progress-summary');
+                const floorPlan = document.getElementById('installation-floor-plan-image');
+                const columnList = document.getElementById('installation-column-list');
+                const title = document.createElement('h4');
+                title.textContent = '🏗️ 현장설치현황도';
+                title.style.cssText = 'margin-bottom:12px;color:#2c4a7c;font-size:16px;';
+                preview.appendChild(title);
+                if (progressSummary) { const ps = progressSummary.cloneNode(true); ps.style.marginBottom = '16px'; preview.appendChild(ps); }
+                if (floorPlan) preview.appendChild(floorPlan.cloneNode(true));
+                if (columnList) { const cl = columnList.cloneNode(true); cl.style.marginTop = '16px'; preview.appendChild(cl); }
+            }
+        }
+
+        function refreshTransportVolumePdfPreview() {
+            refreshPdfExportPreview('transportVolume');
+        }
+
+        // 선택한 항목 하나만 PDF로 출력 (좌하단 송도파트너스 로고, 우측하단 진흥기업 로고 + 출력시간)
+        const PDF_EXPORT_NAMES = { gantt: '공정표', transportVolume: '운송물량산정', chart: '진행률차트', installation: '현장설치현황도' };
+        const SONGDO_LOGO_PATH = '../../assets/images/송도파트너스 로고 디자인.png';
+        const JINHUNG_LOGO_PATH = '../../assets/images/진흥기업.png';
+
+        // ---------- 0x0 캡처 방지 + 슬라이스(페이지분할) + 헤더/푸터 반복 ----------
+        function sleepFrame(times) {
+            times = times || 2;
+            return new Promise(function(resolve) {
+                function step() {
+                    if (times-- <= 0) return resolve();
+                    requestAnimationFrame(step);
+                }
+                step();
+            });
+        }
+        function isVisible(el) {
+            if (!el) return false;
+            var s = window.getComputedStyle(el);
+            if (s.display === 'none' || s.visibility === 'hidden' || s.opacity === '0') return false;
+            var r = el.getBoundingClientRect();
+            return r.width > 0 && r.height > 0;
+        }
+        function pickVisibleContainer(selectors) {
+            for (var i = 0; i < selectors.length; i++) {
+                var el = document.querySelector(selectors[i]);
+                if (isVisible(el)) return el;
+            }
+            return null;
+        }
+        async function ensureTransportVolumePanelVisible() {
+            if (typeof showPanel === 'function') showPanel('transportVolume');
+            await sleepFrame(2);
+        }
+        async function ensurePdfPanelVisible(type) {
+            if (typeof showPanel === 'function' && type) showPanel(type);
+            await sleepFrame(2);
+        }
+
+        function canvasCrop(src, y, h) {
+            var c = document.createElement('canvas');
+            c.width = src.width;
+            c.height = h;
+            c.getContext('2d').drawImage(src, 0, y, src.width, h, 0, 0, src.width, h);
+            return c;
+        }
+        function canvasToSlices(srcCanvas, sliceHpx) {
+            var out = [];
+            var y = 0;
+            while (y < srcCanvas.height) {
+                var h = Math.min(sliceHpx, srcCanvas.height - y);
+                if (h < 1) h = 1;
+                var c = document.createElement('canvas');
+                c.width = srcCanvas.width;
+                c.height = h;
+                c.getContext('2d').drawImage(srcCanvas, 0, y, srcCanvas.width, h, 0, 0, srcCanvas.width, h);
+                out.push(c);
+                y += h;
+            }
+            return out;
+        }
+        function canvasToSlicesFrom(srcCanvas, startY, sliceHpx) {
+            var out = [];
+            var y = startY;
+            while (y < srcCanvas.height) {
+                var h = Math.min(sliceHpx, srcCanvas.height - y);
+                if (h < 1) h = 1;
+                var c = document.createElement('canvas');
+                c.width = srcCanvas.width;
+                c.height = h;
+                c.getContext('2d').drawImage(srcCanvas, 0, y, srcCanvas.width, h, 0, 0, srcCanvas.width, h);
+                out.push(c);
+                y += h;
+            }
+            return out;
+        }
+        function forceShowForCapture(el) {
+            var prev = { display: el.style.display, visibility: el.style.visibility, position: el.style.position, left: el.style.left, top: el.style.top, zIndex: el.style.zIndex, transform: el.style.transform };
+            el.style.display = 'block';
+            el.style.visibility = 'visible';
+            el.style.position = 'fixed';
+            el.style.left = '-100000px';
+            el.style.top = '0';
+            el.style.zIndex = '999999';
+            el.style.transform = 'none';
+            return function() {
+                el.style.display = prev.display;
+                el.style.visibility = prev.visibility;
+                el.style.position = prev.position;
+                el.style.left = prev.left;
+                el.style.top = prev.top;
+                el.style.zIndex = prev.zIndex;
+                el.style.transform = prev.transform;
+            };
+        }
+        // 큰 캔버스는 PNG 시 "Incomplete or corrupt PNG file" 발생 → 슬라이스/헤더는 JPEG 사용
+        function canvasToPdfDataUrl(canvas) {
+            if (!canvas || !canvas.width || !canvas.height) return { dataUrl: '', format: 'JPEG' };
+            var pixels = canvas.width * canvas.height;
+            var useJpeg = pixels > 150000;
+            if (useJpeg) {
+                try {
+                    var jpeg = canvas.toDataURL('image/jpeg', 0.92);
+                    if (jpeg && jpeg.indexOf('data:image/jpeg') === 0) return { dataUrl: jpeg, format: 'JPEG' };
+                } catch (e) { /* ignore */ }
+            }
+            try {
+                var png = canvas.toDataURL('image/png');
+                if (png && png.indexOf('data:image/png') === 0 && png.length > 200) return { dataUrl: png, format: 'PNG' };
+            } catch (e2) { /* ignore */ }
+            try {
+                var jpeg2 = canvas.toDataURL('image/jpeg', 0.92);
+                if (jpeg2 && jpeg2.indexOf('data:image/jpeg') === 0) return { dataUrl: jpeg2, format: 'JPEG' };
+            } catch (e3) { /* ignore */ }
+            return { dataUrl: '', format: 'JPEG' };
+        }
+
+        function findAdjustmentContainer() {
+            var needle = '차수조정';
+            var all = document.querySelectorAll('h1,h2,h3,h4,div,span,td,th');
+            for (var i = 0; i < all.length; i++) {
+                var text = (all[i].textContent || '').replace(/\s+/g, '');
+                if (text.indexOf(needle) !== -1) return (all[i].closest && all[i].closest('section, article, .panel, .panel-content, .content, div')) || all[i];
+            }
+            return null;
+        }
+
+        function drawPdfLogoHeader(pdf, opts) {
+            if (!opts.headerDataUrl) return;
+            var logoHeaderH = opts.logoHeaderH != null ? opts.logoHeaderH : (opts.headerH || 20);
+            pdf.setFillColor(255, 255, 255);
+            pdf.rect(0, 0, opts.pageW, opts.topMargin + logoHeaderH, 'F');
+            pdf.addImage(opts.headerDataUrl, 'PNG', opts.margin, opts.topMargin, opts.headerW || 80, opts.headerImgH || 18);
+        }
+
+        // ---------- PDF 생성: 웹헤더 반복 + 슬라이스 + 차수조정(숨김 시 강제 표시 후 캡처) ----------
+        async function exportPdf(container, fileName, opts) {
+            console.log('[PDF] exportPdf CALLED');
+            opts = opts || {};
+            opts.margin = opts.margin != null ? opts.margin : 10;
+            opts.topMargin = opts.topMargin != null ? opts.topMargin : 5;
+            opts.headerH = opts.headerH != null ? opts.headerH : 20;
+            opts.headerImgH = opts.headerImgH != null ? opts.headerImgH : 18;
+            opts.logoHeaderH = opts.logoHeaderH != null ? opts.logoHeaderH : opts.headerH;
+            if (!opts.footer && opts.footerInfo === undefined) opts.footer = {};
+
+            await sleepFrame(2);
+            var rect = container.getBoundingClientRect();
+            var w = Math.ceil(rect.width);
+            var h = Math.ceil(container.scrollHeight || rect.height);
+            if (!w || !h) throw new Error('캡처된 영역 크기가 0입니다. 패널이 보이는 상태에서 다시 시도해 주세요.');
+
+            var html2canvasOpts = { scale: 2, useCORS: true, allowTaint: true, logging: false, backgroundColor: '#ffffff', width: w, height: h };
+            try { html2canvasOpts.windowWidth = w; html2canvasOpts.windowHeight = h; html2canvasOpts.scrollY = -window.scrollY; } catch (e) {}
+            var mainCanvas = await html2canvas(container, html2canvasOpts);
+            if (!mainCanvas.width || !mainCanvas.height) throw new Error('html2canvas 결과가 0입니다.');
+
+            var jsPDF = window.jspdf ? window.jspdf.jsPDF : null;
+            if (!jsPDF) { console.error('jsPDF not loaded'); return; }
+            var pdf = new jsPDF('p', 'mm', 'a4');
+            opts.pageW = pdf.internal.pageSize.getWidth();
+            opts.pageH = pdf.internal.pageSize.getHeight();
+            opts.contentW = opts.pageW - opts.margin * 2;
+
+            var repeatWebHeaderPx = opts.repeatWebHeaderPx != null ? opts.repeatWebHeaderPx : 240;
+            var webHeaderPx = Math.min(repeatWebHeaderPx, mainCanvas.height);
+            var webHeaderCanvas = canvasCrop(mainCanvas, 0, webHeaderPx);
+            var webHeaderOut = canvasToPdfDataUrl(webHeaderCanvas);
+            var webHeaderImg = webHeaderOut.dataUrl;
+            var webHeaderFormat = webHeaderOut.format || 'JPEG';
+            var webHeaderH_mm = (webHeaderCanvas.height * opts.contentW) / webHeaderCanvas.width;
+            var startY = webHeaderPx;
+
+            var footerH_mm = 22;
+            var gap_mm = 2;
+            var bodyTop_mm = opts.topMargin + webHeaderH_mm + gap_mm;
+            var usableH_mm = opts.pageH - bodyTop_mm - footerH_mm;
+            var sliceH_px = Math.max(1, Math.floor((usableH_mm * mainCanvas.width) / opts.contentW));
+            var slices = canvasToSlicesFrom(mainCanvas, startY, sliceH_px);
+
+            var adjustCanvas = null;
+            var adjustEl = null;
+            if (!opts.skipAdjustment) {
+                adjustEl = opts.adjustSelector ? document.querySelector(opts.adjustSelector) : null;
+                if (!adjustEl) adjustEl = document.getElementById('panel-transportVolumePdf') || findAdjustmentContainer();
+            }
+            if (adjustEl) {
+                var restore = null;
+                if (!isVisible(adjustEl)) restore = forceShowForCapture(adjustEl);
+                await sleepFrame(2);
+                await new Promise(function(r) { setTimeout(r, 150); });
+                var ar = adjustEl.getBoundingClientRect();
+                var aw = Math.ceil(ar.width);
+                var ah = Math.ceil(adjustEl.scrollHeight || ar.height);
+                if (aw > 0 && ah > 0) {
+                    var adjScale = opts.adjustScale != null ? opts.adjustScale : 1.3;
+                    var adjOpts = { scale: adjScale, useCORS: true, allowTaint: true, logging: false, backgroundColor: '#ffffff', width: aw, height: ah };
+                    try { adjOpts.windowWidth = aw; adjOpts.windowHeight = ah; adjOpts.scrollY = -window.scrollY; } catch (e2) {}
+                    adjustCanvas = await html2canvas(adjustEl, adjOpts);
+                }
+                if (restore) restore();
+            }
+            if (adjustCanvas && (!adjustCanvas.width || !adjustCanvas.height)) adjustCanvas = null;
+
+            var adjOut = null;
+            if (adjustCanvas) {
+                adjOut = canvasToPdfDataUrl(adjustCanvas);
+                if (!adjOut.dataUrl) {
+                    console.warn('[PDF] 차수조정 이미지 변환 실패 - 차수조정 페이지 없이 PDF 저장합니다.');
+                    adjOut = null;
+                }
+            }
+            var totalPages = slices.length + (adjOut ? 1 : 0);
+
+            for (var i = 0; i < slices.length; i++) {
+                if (i > 0) pdf.addPage();
+                drawPdfLogoHeader(pdf, opts);
+                if (webHeaderH_mm > 0 && webHeaderImg) pdf.addImage(webHeaderImg, webHeaderFormat, opts.margin, opts.topMargin, opts.contentW, webHeaderH_mm);
+                var sliceCanvas = slices[i];
+                var sliceOut = canvasToPdfDataUrl(sliceCanvas);
+                if (!sliceOut.dataUrl) throw new Error('슬라이스 이미지 변환 실패 (페이지 ' + (i + 1) + ')');
+                var imgH_mm = (sliceCanvas.height * opts.contentW) / sliceCanvas.width;
+                pdf.addImage(sliceOut.dataUrl, sliceOut.format || 'JPEG', opts.margin, bodyTop_mm, opts.contentW, imgH_mm);
+                drawPageFooter(pdf, opts, i + 1, totalPages);
+            }
+
+            if (adjOut) {
+                pdf.addPage();
+                drawPdfLogoHeader(pdf, opts);
+                if (webHeaderH_mm > 0 && webHeaderImg) pdf.addImage(webHeaderImg, webHeaderFormat, opts.margin, opts.topMargin, opts.contentW, webHeaderH_mm);
+                var adjH_mm = (adjustCanvas.height * opts.contentW) / adjustCanvas.width;
+                pdf.addImage(adjOut.dataUrl, adjOut.format || 'JPEG', opts.margin, bodyTop_mm, opts.contentW, adjH_mm);
+                drawPageFooter(pdf, opts, slices.length + 1, totalPages);
+            }
+            pdf.save(fileName);
+        }
+
+        function drawPageHeader(pdf, opts) {
+            if (!opts.headerDataUrl) return;
+            var top = (opts.topMargin || 5) + (opts.headerH || 20);
+            pdf.setFillColor(255, 255, 255);
+            pdf.rect(0, 0, opts.pageW, top, 'F');
+            pdf.addImage(opts.headerDataUrl, 'PNG', opts.margin, opts.topMargin, opts.headerW || 80, opts.headerImgH || 18);
+        }
+
+        // ---------- 3페이지 PDF (LIST + 차수요약), 매 페이지 동일 헤더 ----------
+        var _transportCaptureRestore = null;
+        async function showForCapture(arg) {
+            if (arg === true) {
+                var listEl = document.getElementById('transport-volume-table-wrapper');
+                var sectionEl = document.getElementById('transport-volume-adjustment-section');
+                var restores = [];
+                if (listEl) {
+                    var p1 = { display: listEl.style.display, visibility: listEl.style.visibility };
+                    listEl.style.display = 'block';
+                    listEl.style.visibility = 'visible';
+                    restores.push(function() { listEl.style.display = p1.display; listEl.style.visibility = p1.visibility; });
+                }
+                if (sectionEl) {
+                    var p2 = { display: sectionEl.style.display, visibility: sectionEl.style.visibility };
+                    sectionEl.style.display = 'block';
+                    sectionEl.style.visibility = 'visible';
+                    restores.push(function() { sectionEl.style.display = p2.display; sectionEl.style.visibility = p2.visibility; });
+                }
+                _transportCaptureRestore = function() { restores.forEach(function(r) { r(); }); _transportCaptureRestore = null; };
+                await new Promise(function(r) { requestAnimationFrame(function() { requestAnimationFrame(r); }); });
+                return _transportCaptureRestore;
+            }
+            if (arg === false) {
+                if (_transportCaptureRestore) { _transportCaptureRestore(); }
+                return;
+            }
+            if (!arg) throw new Error('캡처 대상 엘리먼트가 없습니다.');
+            var el = arg;
+            var prev = { display: el.style.display, visibility: el.style.visibility, position: el.style.position, left: el.style.left, top: el.style.top };
+            var cs = getComputedStyle(el);
+            if (cs.display === 'none') el.style.display = 'block';
+            el.style.visibility = 'visible';
+            el.style.position = 'fixed';
+            el.style.left = '0px';
+            el.style.top = '0px';
+            await new Promise(function(r) { requestAnimationFrame(function() { requestAnimationFrame(r); }); });
+            return function() { el.style.display = prev.display; el.style.visibility = prev.visibility; el.style.position = prev.position; el.style.left = prev.left; el.style.top = prev.top; };
+        }
+        async function captureElAsJpeg(el) {
+            var restore = await showForCapture(el);
+            var canvas = await html2canvas(el, { scale: 2.5, useCORS: true, allowTaint: true, logging: false, backgroundColor: '#ffffff' });
+            restore();
+            if (!canvas || canvas.width === 0 || canvas.height === 0) throw new Error('캡처 0사이즈');
+            return { img: canvas.toDataURL('image/jpeg', 0.95), w: canvas.width, h: canvas.height };
+        }
+        function drawPageHeader3Page(pdf, headerDataUrl, opt) {
+            var pageW = pdf.internal.pageSize.getWidth();
+            var margin = opt.margin != null ? opt.margin : 10;
+            var topMargin = opt.topMargin != null ? opt.topMargin : 6;
+            var headerH = opt.headerH != null ? opt.headerH : 18;
+            var headerImgH = opt.headerImgH != null ? opt.headerImgH : 12;
+            pdf.setFillColor(255, 255, 255);
+            pdf.rect(0, 0, pageW, topMargin + headerH, 'F');
+            var headerW = pageW - margin * 2;
+            pdf.addImage(headerDataUrl, 'PNG', margin, topMargin, headerW, headerImgH);
+            pdf.setDrawColor(220);
+            pdf.line(margin, topMargin + headerH, pageW - margin, topMargin + headerH);
+            return topMargin + headerH + 3;
+        }
+        function drawBody3Page(pdf, bodyObj, startY, opt) {
+            var pageW = pdf.internal.pageSize.getWidth();
+            var pageH = pdf.internal.pageSize.getHeight();
+            var margin = opt.margin != null ? opt.margin : 10;
+            var contentW = pageW - margin * 2;
+            var bottomMargin = opt.bottomMargin != null ? opt.bottomMargin : 8;
+            var availH = pageH - startY - bottomMargin;
+            var imgH = (bodyObj.h * contentW) / bodyObj.w;
+            var drawH = imgH > availH ? availH : imgH;
+            pdf.addImage(bodyObj.img, 'JPEG', margin, startY, contentW, drawH);
+            return startY + drawH;
+        }
+        function ensureTransportSummaryWrap() {
+            var wrap = document.getElementById('transport-summary-wrap');
+            if (wrap) return wrap;
+            var section = document.getElementById('transport-volume-adjustment-section');
+            if (section) return section;
+            return null;
+        }
+        async function exportTransport_3PagesPDF(fileName, assets, opts) {
+            var jsPDF = window.jspdf ? window.jspdf.jsPDF : null;
+            if (!jsPDF) throw new Error('jsPDF not loaded');
+            var pdf = new jsPDF('p', 'mm', 'a4');
+            var opt = { margin: 10, topMargin: 6, headerH: 18, headerImgH: 12, bottomMargin: 8 };
+            var headerDataUrl = (assets && assets.headerDataUrl) ? assets.headerDataUrl : (opts && opts.headerDataUrl) ? opts.headerDataUrl : null;
+            if (!headerDataUrl) {
+                var built = await buildPdfAssets();
+                headerDataUrl = built.headerDataUrl;
+                if (!assets) assets = built;
+            }
+            if (!headerDataUrl) throw new Error('헤더 이미지를 준비할 수 없습니다.');
+
+            opts = opts || {};
+            opts.pageW = pdf.internal.pageSize.getWidth();
+            opts.pageH = pdf.internal.pageSize.getHeight();
+            opts.margin = opt.margin;
+            opts.footer = opts.footer || (assets && { songdoDataUrl: assets.songdoDataUrl, jinhungDataUrl: assets.jinhungDataUrl, timeStr: assets.timeStr, songdoSize: assets.songdoSize, jinhungSize: assets.jinhungSize });
+
+            var listEl = document.getElementById('transport-volume-table-wrapper');
+            if (!listEl) throw new Error('운송물량 LIST(#transport-volume-table-wrapper)를 찾을 수 없습니다.');
+
+            if (typeof ensureTransportVolumePanelVisible === 'function') await ensureTransportVolumePanelVisible();
+            await new Promise(function(r) { setTimeout(r, 150); });
+            if (document.fonts && document.fonts.ready) await document.fonts.ready;
+
+            await showForCapture(true);
+            try {
+                var pageSlices = [{ start: 0, end: 40 }, { start: 40, end: 80 }, { start: 80, end: 100 }];
+                for (var p = 0; p < 3; p++) {
+                    var range = pageSlices[p];
+                    renderTransportVolumeTable({ startIndex: range.start, endIndex: range.end });
+                    await new Promise(function(r) { requestAnimationFrame(function() { requestAnimationFrame(r); }); });
+                    var y = drawPageHeader3Page(pdf, headerDataUrl, opt);
+                    try {
+                        var listObj = await captureElAsJpeg(listEl);
+                        y = drawBody3Page(pdf, listObj, y, opt);
+                    } catch (e) { console.warn('[PDF] ' + (p + 1) + '페이지 LIST 캡처 실패:', e); }
+                    if (p === 2) {
+                        var summaryEl = document.getElementById('transport-volume-adjustment-section');
+                        if (summaryEl) {
+                            try {
+                                y += 3;
+                                var summaryObj = await captureElAsJpeg(summaryEl);
+                                drawBody3Page(pdf, summaryObj, y, opt);
+                            } catch (e) { console.warn('[PDF] 3페이지 차수요약(운송차수계획 13차) 캡처 실패:', e); }
+                        }
+                    }
+                    drawPageFooter(pdf, opts, p + 1, 3);
+                    if (p < 2) pdf.addPage();
+                }
+                var name = fileName || '운송물량산정_3페이지.pdf';
+                pdf.save(name);
+                try {
+                    var blob = pdf.output('blob');
+                    var url = URL.createObjectURL(blob);
+                    window.open(url, '_blank');
+                    setTimeout(function() { URL.revokeObjectURL(url); }, 30000);
+                } catch (e) { console.warn('PDF 새 탭 열기:', e); }
+            } finally {
+                renderTransportVolumeTable();
+                showForCapture(false);
+            }
+        }
+
+        function drawPageFooter(pdf, opts, pageIndex, totalPages) {
+            var footer = opts.footerInfo || opts.footer || {};
+            pdf.setFontSize(10);
+            pdf.setTextColor(60, 60, 60);
+            pdf.text('PAGE ' + pageIndex + ' of ' + totalPages, opts.pageW - opts.margin, 10, { align: 'right' });
+            if (footer.timeStr) {
+                pdf.setFontSize(9);
+                pdf.setTextColor(80, 80, 80);
+                pdf.text('Printed: ' + footer.timeStr, opts.pageW / 2, opts.pageH - 10, { align: 'center' });
+            }
+            if (footer.songdoDataUrl && footer.songdoSize) {
+                pdf.addImage(footer.songdoDataUrl, 'PNG', opts.margin, opts.pageH - 18, footer.songdoSize.w, footer.songdoSize.h);
+            }
+            if (footer.jinhungDataUrl && footer.jinhungSize) {
+                pdf.addImage(footer.jinhungDataUrl, 'PNG', opts.pageW - opts.margin - footer.jinhungSize.w, opts.pageH - 18, footer.jinhungSize.w, footer.jinhungSize.h);
+            }
+        }
+
+        function makePdfFileName(type) {
+            var now = new Date();
+            var dateStr = now.toISOString().split('T')[0].replace(/-/g, '');
+            return (PDF_EXPORT_NAMES[type] || type) + '_' + dateStr + '.pdf';
+        }
+
+        function getPdfContainerForType(type) {
+            if (type === 'gantt') return document.getElementById('panel-gantt');
+            if (type === 'transportVolume') return document.getElementById('panel-transportVolume');
+            if (type === 'chart') return document.getElementById('panel-chart');
+            if (type === 'installation') return document.getElementById('panel-installation');
+            return null;
+        }
+
+        async function buildPdfAssets() {
+            var now = new Date();
+            var timeStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0') + ' ' + String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
+            var headerDataUrl = '';
+            try {
+                var headerDiv = document.createElement('div');
+                headerDiv.style.cssText = 'position:fixed;left:-9999px;top:0;width:400px;padding:8px 12px;background:#fff;color:#000;font-family:Malgun Gothic,Apple SD Gothic Neo,sans-serif;';
+                // PDF 헤더: 지덕/유석/주신 포함 (되돌림 유지)
+                headerDiv.innerHTML = '<div style="font-size:16px;font-weight:bold;margin-bottom:4px;">K-COLUMN 공정관리 시스템</div><div style="font-size:11px;margin-bottom:2px;">K-COLUMN 100개 (상부 50)+(하부 50) 제작 및 설치 공정</div><div style="font-size:10px;">자료협조 : (주) 지덕이엔지 / (주) 유석철강산업 / (주) 주신산업</div>';
+                document.body.appendChild(headerDiv);
+                var headerCanvas = await html2canvas(headerDiv, { scale: 2, useCORS: true, logging: false, backgroundColor: '#ffffff' });
+                headerDataUrl = headerCanvas.toDataURL('image/png');
+                document.body.removeChild(headerDiv);
+            } catch (e) { console.warn('PDF header image:', e); }
+            var logo = new Image();
+            var jinhungLogo = new Image();
+            logo.src = SONGDO_LOGO_PATH;
+            jinhungLogo.src = JINHUNG_LOGO_PATH;
+            await Promise.all([
+                new Promise(function(r) { logo.onload = r; logo.onerror = r; if (logo.complete) r(); }),
+                new Promise(function(r) { jinhungLogo.onload = r; jinhungLogo.onerror = r; if (jinhungLogo.complete) r(); })
+            ]);
+            function imgToDataUrl(img) {
+                var c = document.createElement('canvas');
+                c.width = img.naturalWidth || img.width;
+                c.height = img.naturalHeight || img.height;
+                if (c.width && c.height) {
+                    var ctx = c.getContext('2d');
+                    ctx.drawImage(img, 0, 0);
+                    return c.toDataURL('image/png');
+                }
+                return '';
+            }
+            function sizeToFitMm(nw, nh, maxH) {
+                if (!nw || !nh) return { w: 28, h: 11 };
+                var aspect = nw / nh;
+                var h = maxH;
+                var w = h * aspect;
+                if (w > 50) { w = 50; h = w / aspect; }
+                return { w: Math.round(w * 10) / 10, h: Math.round(h * 10) / 10 };
+            }
+            var songdoDataUrl = imgToDataUrl(logo);
+            var jinhungDataUrl = imgToDataUrl(jinhungLogo);
+            var songdoSize = sizeToFitMm(logo.naturalWidth, logo.naturalHeight, 14);
+            var jinhungSize = sizeToFitMm(jinhungLogo.naturalWidth, jinhungLogo.naturalHeight, 12);
+            return { headerDataUrl: headerDataUrl, songdoDataUrl: songdoDataUrl, jinhungDataUrl: jinhungDataUrl, timeStr: timeStr, songdoSize: songdoSize, jinhungSize: jinhungSize };
+        }
+
+        // PDF 1페이지용 container를 동기적으로만 구성하여 HTML 문자열 반환 (보기/복사용)
+        function buildPdfExportContainerSync(type) {
+            type = type || (document.querySelector('input[name="pdfExportType"]:checked')?.value || 'transportVolume');
+            var container = document.createElement('div');
+            container.id = 'pdf-export-source';
+            container.style.cssText = 'position:fixed;left:-9999px;top:0;width:1120px;padding:30px;padding-bottom:140px;background:#fff;font-family:Malgun Gothic,Segoe UI,Arial,sans-serif;';
+
+            if (type === 'gantt') {
+                var ganttContainer = document.querySelector('.gantt-container');
+                if (!ganttContainer) return null;
+                var h = document.createElement('h3');
+                h.textContent = '📅 공정표 (Gantt)';
+                h.style.cssText = 'margin-bottom:16px;color:#2c4a7c;font-size:18px;';
+                container.appendChild(h);
+                container.appendChild(ganttContainer.cloneNode(true));
+            } else if (type === 'transportVolume') {
+                var tableWrapper = document.getElementById('transport-volume-table-wrapper');
+                var stats = document.getElementById('transport-volume-stats');
+                if (!tableWrapper || !stats) return null;
+                function replaceSelectsWithTextForPdf(node) {
+                    if (!node) return;
+                    node.querySelectorAll('select.trip-select-no-scrollbar').forEach(function(sel) {
+                        var span = document.createElement('span');
+                        var opt = sel.options[sel.selectedIndex];
+                        span.textContent = opt ? opt.text : '－';
+                        span.style.cssText = 'font-size:10px;';
+                        sel.parentNode.replaceChild(span, sel);
+                    });
+                    node.querySelectorAll('select[onchange*="adjustAdjustedTripCount"]').forEach(function(sel) {
+                        var span = document.createElement('span');
+                        span.textContent = sel.value ? sel.value : '';
+                        span.style.cssText = 'font-size:10px;';
+                        sel.parentNode.replaceChild(span, sel);
+                    });
+                }
+                var h = document.createElement('h3');
+                h.textContent = '📦 운송물량산정';
+                h.style.cssText = 'margin-bottom:16px;color:#2c4a7c;font-size:18px;';
+                container.appendChild(h);
+                var tbl = tableWrapper.cloneNode(true);
+                replaceSelectsWithTextForPdf(tbl);
+                tbl.style.marginBottom = '20px';
+                container.appendChild(tbl);
+                container.appendChild(stats.cloneNode(true));
+            } else if (type === 'chart') {
+                var progressChartEl = document.getElementById('progressChart');
+                var companyChartEl = document.getElementById('companyChart');
+                if (!progressChartEl || !companyChartEl) return null;
+                var h = document.createElement('h3');
+                h.textContent = '📈 진행률 차트';
+                h.style.cssText = 'margin-bottom:16px;color:#2c4a7c;font-size:18px;';
+                container.appendChild(h);
+                var wrap = document.createElement('div');
+                wrap.style.cssText = 'display:flex;flex-direction:column;gap:20px;';
+                function copyCanvas(src, dest) {
+                    dest.width = src.width; dest.height = src.height;
+                    var ctx = dest.getContext('2d');
+                    if (ctx) ctx.drawImage(src, 0, 0);
+                }
+                var div1 = document.createElement('div');
+                div1.className = progressChartEl.parentElement ? progressChartEl.parentElement.className : '';
+                div1.style.cssText = progressChartEl.parentElement ? (progressChartEl.parentElement.getAttribute('style') || '') : '';
+                var cap1 = progressChartEl.cloneNode(false);
+                copyCanvas(progressChartEl, cap1);
+                div1.appendChild(cap1);
+                wrap.appendChild(div1);
+                var div2 = document.createElement('div');
+                div2.className = companyChartEl.parentElement ? companyChartEl.parentElement.className : '';
+                div2.style.cssText = companyChartEl.parentElement ? (companyChartEl.parentElement.getAttribute('style') || '') : '';
+                var cap2 = companyChartEl.cloneNode(false);
+                copyCanvas(companyChartEl, cap2);
+                div2.appendChild(cap2);
+                wrap.appendChild(div2);
+                container.appendChild(wrap);
+            } else if (type === 'installation') {
+                var progressSummary = document.getElementById('installation-progress-summary');
+                var floorPlan = document.getElementById('installation-floor-plan-image');
+                var columnList = document.getElementById('installation-column-list');
+                if (!floorPlan) return null;
+                var h = document.createElement('h3');
+                h.textContent = '🏗️ 현장설치현황도';
+                h.style.cssText = 'margin-bottom:16px;color:#2c4a7c;font-size:18px;';
+                container.appendChild(h);
+                if (progressSummary) container.appendChild(progressSummary.cloneNode(true));
+                container.appendChild(floorPlan.cloneNode(true));
+                if (columnList) { var cl = columnList.cloneNode(true); cl.style.marginTop = '16px'; container.appendChild(cl); }
+            } else {
+                return null;
+            }
+            return container;
+        }
+
+        function showPdfExportHtml() {
+            var type = document.querySelector('input[name="pdfExportType"]:checked')?.value || 'transportVolume';
+            var container = buildPdfExportContainerSync(type);
+            var wrap = document.getElementById('pdf-export-html-wrap');
+            var ta = document.getElementById('pdf-export-html-textarea');
+            if (!wrap || !ta) return;
+            if (!container) {
+                alert('선택한 항목의 내용을 찾을 수 없습니다. 해당 패널을 먼저 열어 데이터를 불러온 뒤 시도하세요.');
+                return;
+            }
+            ta.value = container.innerHTML;
+            wrap.style.display = 'block';
+            ta.focus();
+        }
+
+        function copyPdfExportHtmlToClipboard() {
+            var ta = document.getElementById('pdf-export-html-textarea');
+            if (!ta || !ta.value) return;
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(ta.value).then(function() {
+                    if (typeof showToast === 'function') showToast('HTML을 클립보드에 복사했습니다.');
+                    else alert('클립보드에 복사했습니다.');
+                }).catch(function() {
+                    fallbackCopy(ta);
+                });
+            } else {
+                fallbackCopy(ta);
+            }
+        }
+        function fallbackCopy(ta) {
+            ta.select();
+            try {
+                document.execCommand('copy');
+                if (typeof showToast === 'function') showToast('HTML을 클립보드에 복사했습니다.');
+                else alert('클립보드에 복사했습니다.');
+            } catch (e) {
+                alert('복사에 실패했습니다. 위 텍스트를 직접 선택해 복사하세요.');
+            }
+        }
+
+        async function exportSelectedPdf() {
+            var type = document.querySelector('input[name="pdfExportType"]:checked')?.value || 'transportVolume';
+            await ensurePdfPanelVisible(type);
+            var panelId = (type === 'transportVolume') ? 'transportVolume' : type;
+            var container = pickVisibleContainer(['#panel-' + panelId]) || getPdfContainerForType(type);
+            if (!container) {
+                alert('선택한 항목의 패널을 찾을 수 없습니다. 해당 탭을 먼저 열어 주세요.');
+                return;
+            }
+            if (!isVisible(container) && type === 'transportVolume') await ensureTransportVolumePanelVisible();
+            var fileName = makePdfFileName(type);
+            var assets = await buildPdfAssets();
+            var opts = {
+                headerDataUrl: assets.headerDataUrl,
+                headerW: 80,
+                headerImgH: 18,
+                footer: {
+                    songdoDataUrl: assets.songdoDataUrl,
+                    jinhungDataUrl: assets.jinhungDataUrl,
+                    timeStr: assets.timeStr,
+                    songdoSize: assets.songdoSize,
+                    jinhungSize: assets.jinhungSize
+                }
+            };
+            try {
+                if (type === 'transportVolume') {
+                    await exportTransport_3PagesPDF(fileName, assets, opts);
+                } else {
+                    opts.skipAdjustment = true;
+                    await exportPdf(container, fileName, opts);
+                }
+                if (typeof savePdfExportLog === 'function') savePdfExportLog(type, fileName, assets.timeStr);
+                var historyWrap = document.getElementById('pdf-export-history-wrap');
+                if (historyWrap && historyWrap.style.display !== 'none' && typeof loadPdfExportHistory === 'function') loadPdfExportHistory();
+            } catch (e) {
+                console.error('PDF 생성 오류:', e);
+                alert('PDF 생성 중 오류가 발생했습니다: ' + (e.message || e));
+            }
+        }
+
+        async function savePdfExportLog(type, fileName, timeStr) {
+            if (!window.PROJECT_ID || !initFirebase() || !firebaseAuth?.currentUser) return;
+            try {
+                const uid = firebaseAuth.currentUser.uid;
+                const email = firebaseAuth.currentUser.email || '';
+                await firebaseDb.collection('projects').doc(window.PROJECT_ID).collection('pdfLogs').add({
+                    type: type,
+                    typeName: PDF_EXPORT_NAMES[type] || type,
+                    fileName: fileName,
+                    outputTime: timeStr,
+                    userId: uid,
+                    userEmail: email,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+            } catch (e) {
+                console.warn('PDF 출력 기록 저장 실패:', e);
+            }
+        }
+
+        async function loadPdfExportHistory() {
+            const listEl = document.getElementById('pdf-export-history-list');
+            if (!listEl || !window.PROJECT_ID || !initFirebase()) return;
+            try {
+                const snap = await firebaseDb.collection('projects').doc(window.PROJECT_ID).collection('pdfLogs')
+                    .orderBy('createdAt', 'desc').limit(50).get();
+                if (snap.empty) {
+                    listEl.innerHTML = '<p style="color:#888;">기록이 없습니다.</p>';
+                    return;
+                }
+                let html = '<table style="width:100%;border-collapse:collapse;font-size:11px;"><thead><tr><th style="text-align:left;padding:4px;border-bottom:1px solid #ccc;">Printed</th><th style="text-align:left;padding:4px;border-bottom:1px solid #ccc;">항목</th><th style="text-align:left;padding:4px;border-bottom:1px solid #ccc;">파일명</th><th style="text-align:left;padding:4px;border-bottom:1px solid #ccc;">사용자</th></tr></thead><tbody>';
+                snap.docs.forEach(d => {
+                    const d_ = d.data();
+                    const time = d_.outputTime || (d_.createdAt && d_.createdAt.toDate ? d_.createdAt.toDate().toLocaleString('ko-KR') : '-');
+                    html += '<tr><td style="padding:4px;border-bottom:1px solid #eee;">' + (time || '-') + '</td><td style="padding:4px;border-bottom:1px solid #eee;">' + (d_.typeName || d_.type || '') + '</td><td style="padding:4px;border-bottom:1px solid #eee;">' + (d_.fileName || '') + '</td><td style="padding:4px;border-bottom:1px solid #eee;">' + (d_.userEmail || d_.userId || '-') + '</td></tr>';
+                });
+                html += '</tbody></table>';
+                listEl.innerHTML = html;
+            } catch (e) {
+                console.warn('PDF 출력 기록 로드 실패:', e);
+                listEl.innerHTML = '<p style="color:#c00;">기록을 불러올 수 없습니다.</p>';
+            }
+        }
+
+        async function printTransportVolumeToPdf() {
+            document.querySelector('input[name="pdfExportType"][value="transportVolume"]')?.click();
+            await exportSelectedPdf();
         }
 
         // 운송물량산정: 템플릿 다운로드
@@ -11813,6 +12922,7 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
             if (confirm(`25톤 기준으로 차수를 재조정하시겠습니까?\n\n조정된 차수계획이 별도로 저장됩니다.\n기존 운송차수계획은 변경되지 않습니다.`)) {
                 // adjustedTransportPlan에 조정된 계획 저장 (기존 transportPlan은 유지)
                 adjustedTransportPlan = {};
+                tripCountDeltas = {}; // 부재수 조정값 초기화
                 for (let tripNum in adjustedPlan) {
                     adjustedTransportPlan[tripNum] = {
                         columns: adjustedPlan[tripNum].columns,
@@ -13106,92 +14216,89 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
         }
 
         // 운송물량산정: 표 렌더링
-        function renderTransportVolumeTable(data = transportVolumeData) {
+        // opts: 없음 | 배열(data) | { startIndex, endIndex } (PDF용 해당 범위만 tbody 렌더, thead 유지)
+        function renderTransportVolumeTable(dataOrOpts) {
             const tbody = document.getElementById('transport-volume-tbody');
             if (!tbody) return;
-            
-            if (!data || data.length === 0) {
+
+            const isPdfSlice = dataOrOpts && typeof dataOrOpts === 'object' && 'startIndex' in dataOrOpts && 'endIndex' in dataOrOpts;
+            let dataSlice;
+            let data;
+            let filteredData;
+            if (isPdfSlice) {
+                data = transportVolumeData.slice(dataOrOpts.startIndex, dataOrOpts.endIndex);
+                dataSlice = data;
+            } else {
+                data = (dataOrOpts != null && Array.isArray(dataOrOpts)) ? dataOrOpts : transportVolumeData;
+                if (!data || data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#888;padding:16px;">엑셀을 업로드하면 여기에서 100개 기둥 데이터가 표시됩니다.</td></tr>';
+                    return;
+                }
+                // 규격별 필터 적용
+                filteredData = data;
+                if (selectedSizes && selectedSizes.length > 0) {
+                    filteredData = filteredData.filter(item => {
+                        const size = String(item.size || '').trim();
+                        return selectedSizes.includes(size);
+                    });
+                }
+                // 차수별 필터 적용
+                if (selectedTrips && selectedTrips.length > 0) {
+                    filteredData = filteredData.filter(item => {
+                        const colNo = item.no || item.colNo || '';
+                        if (!colNo) return false;
+                        let foundOriginalTrip = null;
+                        if (transportPlan && Object.keys(transportPlan).length > 0) {
+                            for (let tripNum in transportPlan) {
+                                const tripData = transportPlan[tripNum];
+                                if (tripData && tripData.columns) {
+                                    const found = tripData.columns.some(col => {
+                                        const colStr = String(col);
+                                        const colNoStr = String(colNo);
+                                        if (colStr === colNoStr) return true;
+                                        const colNum = parseInt(colStr.replace(/[^0-9]/g, ''));
+                                        const colNoNum = parseInt(colNoStr.replace(/[^0-9]/g, ''));
+                                        if (colNum && colNoNum && colNum === colNoNum) return true;
+                                        return false;
+                                    });
+                                    if (found) { foundOriginalTrip = parseInt(tripNum); break; }
+                                }
+                            }
+                        }
+                        let foundAdjustedTrip = null;
+                        if (adjustedTransportPlan && Object.keys(adjustedTransportPlan).length > 0) {
+                            for (let tripNum in adjustedTransportPlan) {
+                                const tripData = adjustedTransportPlan[tripNum];
+                                if (tripData && tripData.columns) {
+                                    const found = tripData.columns.some(col => {
+                                        const colStr = String(col);
+                                        const colNoStr = String(colNo);
+                                        if (colStr === colNoStr) return true;
+                                        const colNum = parseInt(colStr.replace(/[^0-9]/g, ''));
+                                        const colNoNum = parseInt(colNoStr.replace(/[^0-9]/g, ''));
+                                        if (colNum && colNoNum && colNum === colNoNum) return true;
+                                        return false;
+                                    });
+                                    if (found) { foundAdjustedTrip = parseInt(tripNum); break; }
+                                }
+                            }
+                        }
+                        const originalTripKey = foundOriginalTrip ? `original_${foundOriginalTrip}` : null;
+                        const adjustedTripKey = foundAdjustedTrip ? `adjusted_${foundAdjustedTrip}` : null;
+                        return (originalTripKey && selectedTrips.includes(originalTripKey)) || (adjustedTripKey && selectedTrips.includes(adjustedTripKey));
+                    });
+                }
+                dataSlice = filteredData.slice(0, 100);
+            }
+
+            if (dataSlice.length === 0 && !isPdfSlice) {
                 tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#888;padding:16px;">엑셀을 업로드하면 여기에서 100개 기둥 데이터가 표시됩니다.</td></tr>';
                 return;
             }
-            
-            // 규격별 필터 적용
-            let filteredData = data;
-            if (selectedSizes && selectedSizes.length > 0) {
-                filteredData = filteredData.filter(item => {
-                    const size = String(item.size || '').trim();
-                    return selectedSizes.includes(size);
-                });
+            if (dataSlice.length === 0 && isPdfSlice) {
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#888;padding:12px;">해당 구간 데이터 없음</td></tr>';
+                return;
             }
-            
-            // 차수별 필터 적용
-            if (selectedTrips && selectedTrips.length > 0) {
-                filteredData = filteredData.filter(item => {
-                    const colNo = item.no || item.colNo || '';
-                    if (!colNo) return false;
-                    
-                    // 운송차수계획(13차)에서 차수 찾기
-                    let foundOriginalTrip = null;
-                    if (transportPlan && Object.keys(transportPlan).length > 0) {
-                        for (let tripNum in transportPlan) {
-                            const tripData = transportPlan[tripNum];
-                            if (tripData && tripData.columns) {
-                                const found = tripData.columns.some(col => {
-                                    const colStr = String(col);
-                                    const colNoStr = String(colNo);
-                                    if (colStr === colNoStr) return true;
-                                    
-                                    // 숫자만 추출하여 비교
-                                    const colNum = parseInt(colStr.replace(/[^0-9]/g, ''));
-                                    const colNoNum = parseInt(colNoStr.replace(/[^0-9]/g, ''));
-                                    if (colNum && colNoNum && colNum === colNoNum) return true;
-                                    return false;
-                                });
-                                
-                                if (found) {
-                                    foundOriginalTrip = parseInt(tripNum);
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                    
-                    // 조정된 차수계획(12차)에서 차수 찾기
-                    let foundAdjustedTrip = null;
-                    if (adjustedTransportPlan && Object.keys(adjustedTransportPlan).length > 0) {
-                        for (let tripNum in adjustedTransportPlan) {
-                            const tripData = adjustedTransportPlan[tripNum];
-                            if (tripData && tripData.columns) {
-                                const found = tripData.columns.some(col => {
-                                    const colStr = String(col);
-                                    const colNoStr = String(colNo);
-                                    if (colStr === colNoStr) return true;
-                                    
-                                    // 숫자만 추출하여 비교
-                                    const colNum = parseInt(colStr.replace(/[^0-9]/g, ''));
-                                    const colNoNum = parseInt(colNoStr.replace(/[^0-9]/g, ''));
-                                    if (colNum && colNoNum && colNum === colNoNum) return true;
-                                    return false;
-                                });
-                                
-                                if (found) {
-                                    foundAdjustedTrip = parseInt(tripNum);
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                    
-                    // 선택된 차수와 일치하는지 확인
-                    const originalTripKey = foundOriginalTrip ? `original_${foundOriginalTrip}` : null;
-                    const adjustedTripKey = foundAdjustedTrip ? `adjusted_${foundAdjustedTrip}` : null;
-                    
-                    return (originalTripKey && selectedTrips.includes(originalTripKey)) || 
-                           (adjustedTripKey && selectedTrips.includes(adjustedTripKey));
-                });
-            }
-            
-            const dataSlice = filteredData.slice(0, 100);
             const rows = dataSlice.map((item, itemIdx) => {
                 const isLastRow = itemIdx === dataSlice.length - 1;
                 const nextItem = itemIdx < dataSlice.length - 1 ? dataSlice[itemIdx + 1] : null;
@@ -13368,32 +14475,37 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
                         <td>${size || ''}</td>
                         <td style="text-align:right;">${formattedLength || ''}</td>
                         <td style="text-align:right;">${formattedWeight || ''}</td>
-                        <td style="text-align:center;${actualTransportPlanTrip && [2, 4, 6, 8, 10, 12].includes(actualTransportPlanTrip) ? 'background:#d0d0d0;' : ''}" title="${actualTransportPlanTrip ? (isInTransportPlan ? `${actualTransportPlanTrip}차수에 선택됨` : `${actualTransportPlanTrip}차수에 선택되지 않음`) : '차수 정보 없음'}">
-                            ${actualTransportPlanTrip ? `${actualTransportPlanTrip}${transportPlanDate ? ' - ' + transportPlanDate : ''}` : ''}
+                        <td style="text-align:center;${actualTransportPlanTrip && [2, 4, 6, 8, 10, 12].includes(actualTransportPlanTrip) ? 'background:#d0d0d0;' : ''}${!actualTransportPlanTrip ? 'color:#999;' : ''}" title="${actualTransportPlanTrip ? (isInTransportPlan ? `${actualTransportPlanTrip}차수에 선택됨` : `${actualTransportPlanTrip}차수에 선택되지 않음`) : '차수 정보 없음'}">
+                            ${actualTransportPlanTrip ? `${actualTransportPlanTrip}${transportPlanDate ? ' - ' + transportPlanDate : ''}` : '－'}
                         </td>
-                        <td style="text-align:center;${actualAdjustedPlanTrip && [2, 4, 6, 8, 10, 12].includes(actualAdjustedPlanTrip) ? 'background:#d0d0d0;' : ''}" title="${actualAdjustedPlanTrip ? (isInAdjustedPlan ? `${actualAdjustedPlanTrip}차수에 선택됨` : `${actualAdjustedPlanTrip}차수에 선택되지 않음`) : '차수 정보 없음'}">
-                            ${actualAdjustedPlanTrip ? `${actualAdjustedPlanTrip}${adjustedPlanDate ? ' - ' + adjustedPlanDate : ''}` : ''}
+                        <td style="text-align:center;${actualAdjustedPlanTrip && [2, 4, 6, 8, 10, 12].includes(actualAdjustedPlanTrip) ? 'background:#d0d0d0;' : ''}${!actualAdjustedPlanTrip ? 'color:#999;' : ''}" title="조정된 차수 선택">
+                            <span style="display:inline-block;margin-right:6px;">${actualAdjustedPlanTrip ? `${actualAdjustedPlanTrip}${adjustedPlanDate ? ' - ' + adjustedPlanDate : ''}` : '－'}</span>
+                            <select onchange="updateAdjustedPlanTripForColumn('${String(colNo || '').replace(/'/g, "\\'")}', this.value)" class="trip-select-no-scrollbar" style="width:auto;border:1px solid #ddd;border-radius:4px;background:#fff;cursor:pointer;vertical-align:middle;scrollbar-width:none;-ms-overflow-style:none;" title="1~12차 선택">
+                                <option value="">－</option>
+                                ${[1,2,3,4,5,6,7,8,9,10,11,12].map(t => {
+                                    const sel = actualAdjustedPlanTrip === t ? ' selected' : '';
+                                    return `<option value="${t}"${sel}>${t}차</option>`;
+                                }).join('')}
+                            </select>
                         </td>
                     </tr>
                 `;
             });
             tbody.innerHTML = rows.join('');
-            
-            // 규격별 토글 버튼 생성
-            renderSizeFilterToggles(data);
-            
-            // 차수별 토글 버튼 생성
-            renderTripFilterToggles(data);
-            
-            // 통계 정보 업데이트 (필터링된 데이터 기준)
-            updateTransportVolumeStats(filteredData);
-            
-            // 차수별 집계 테이블 업데이트
-            renderTransportVolumeTripSummary(filteredData);
-            
-            // 조정된 차수계획 테이블 업데이트
-            if (typeof renderAdjustedTransportVolumeTripSummary === 'function') {
-                renderAdjustedTransportVolumeTripSummary();
+
+            // filteredData 정의 (전역 변수 사용 금지) — !isPdfSlice일 때는 함수 상단 let filteredData, else 블록에서 필터 적용 후 할당됨
+            if (!isPdfSlice) {
+                // 규격별 토글 버튼 생성
+                renderSizeFilterToggles(data);
+                // 차수별 토글 버튼 생성
+                renderTripFilterToggles(data);
+                // 통계 정보 업데이트 (필터링된 데이터 기준)
+                updateTransportVolumeStats(filteredData);
+                // 차수별 집계 테이블 업데이트
+                renderTransportVolumeTripSummary(filteredData);
+                if (typeof renderAdjustedTransportVolumeTripSummary === 'function') {
+                    renderAdjustedTransportVolumeTripSummary();
+                }
             }
         }
         
@@ -15000,16 +16112,15 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
                 const summary = tripSummary[tripNum];
                 const totalWeightTon = summary.totalWeight;
                 const isOver25Ton = totalWeightTon > 25;
-                const excessWeight = isOver25Ton ? (totalWeightTon - 25) : 0;
-                const availableWeight = isOver25Ton ? 0 : (25 - totalWeightTon);
+                const marginWeight = 25 - totalWeightTon; // 25톤 - 차수합산중량 (초과시 마이너스)
                 
                 return `
                     <tr>
                         <td style="text-align:center;font-weight:bold;">${tripNum}</td>
                         <td style="text-align:center;">${summary.count.toLocaleString('ko-KR')} 개</td>
                         <td style="text-align:right;">${totalWeightTon.toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ton</td>
-                        <td style="text-align:center;color:#000;${isOver25Ton ? 'font-weight:bold;' : ''}">${isOver25Ton ? '초과' : '정상'}</td>
-                        <td style="text-align:right;color:#000;">${(availableWeight > 0 ? availableWeight : excessWeight).toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ton</td>
+                        <td style="text-align:center;${isOver25Ton ? 'color:#f44336;font-weight:bold;' : 'color:#000;'}">${isOver25Ton ? '초과' : '정상'}</td>
+                        <td style="text-align:right;${marginWeight < 0 ? 'color:#f44336;font-weight:bold;' : 'color:#000;'}">${marginWeight.toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ton</td>
                         <td style="text-align:center;">${summary.date || ''}</td>
                     </tr>
                 `;
@@ -15132,12 +16243,11 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
             }
             
             // 테이블 행 생성
-            const rows = sortedTrips.map(tripNum => {
+            const rows = sortedTrips.map((tripNum, idx) => {
                 const summary = tripSummary[tripNum];
                 const totalWeightTon = summary.totalWeight;
                 const isOver25Ton = totalWeightTon > 25;
-                const excessWeight = isOver25Ton ? (totalWeightTon - 25) : 0;
-                const availableWeight = isOver25Ton ? 0 : (25 - totalWeightTon);
+                const marginWeight = 25 - totalWeightTon; // 25톤 - 차수합산중량 (초과시 마이너스)
                 
                 // 기존 운송차수계획과 비교
                 const originalCount = originalTripCounts[tripNum] || 0;
@@ -15147,13 +16257,22 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
                     ? `${adjustedCount.toLocaleString('ko-KR')} 개 <span style="color:#f44336;font-weight:bold;">(+${increase})</span>`
                     : `${adjustedCount.toLocaleString('ko-KR')} 개`;
                 
+                const isLastTrip = idx === sortedTrips.length - 1;
+                const currentDelta = tripCountDeltas[tripNum] ?? 0;
+                const deltaOpts = isLastTrip ? [-3, -2, -1, 0] : [-3, -2, -1, 0, 1, 2, 3];
+                const deltaSelectHtml = `
+                    <select onchange="adjustAdjustedTripCount(${tripNum}, this.value)" style="margin-left:6px;width:auto;min-width:48px;padding:2px 4px;font-size:11px;border:1px solid #ddd;border-radius:4px;background:#fff;cursor:pointer;" title="부재수 조정">
+                        ${deltaOpts.map(d => `<option value="${d}"${currentDelta === d ? ' selected' : ''}>${d >= 0 ? '+' : ''}${d}</option>`).join('')}
+                    </select>
+                `;
+                
                 return `
                     <tr>
                         <td style="text-align:center;font-weight:bold;">${tripNum}</td>
-                        <td style="text-align:center;">${countDisplay}</td>
+                        <td style="text-align:center;">${countDisplay} ${deltaSelectHtml}</td>
                         <td style="text-align:right;">${totalWeightTon.toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ton</td>
-                        <td style="text-align:center;color:#000;${isOver25Ton ? 'font-weight:bold;' : ''}">${isOver25Ton ? '초과' : '정상'}</td>
-                        <td style="text-align:right;color:#000;">${(availableWeight > 0 ? availableWeight : excessWeight).toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ton</td>
+                        <td style="text-align:center;${isOver25Ton ? 'color:#f44336;font-weight:bold;' : 'color:#000;'}">${isOver25Ton ? '초과' : '정상'}</td>
+                        <td style="text-align:right;${marginWeight < 0 ? 'color:#f44336;font-weight:bold;' : 'color:#000;'}">${marginWeight.toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ton</td>
                         <td style="text-align:center;">${summary.date || ''}</td>
                     </tr>
                 `;
@@ -15170,14 +16289,14 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
             
             if (!columnList || !floorPlanImage) return;
             
-            // 공정율 계산 및 표시
+            // 공정율 계산 및 표시 (소부재조립(process 4) 포함)
             if (progressSummary) {
-                const processNames = ['주기둥커팅', '소부재커팅', '주기둥조립', '소부재조립', '현장배송', '현장설치'];
-                const processColors = ['#e74c3c', '#ff9800', '#2196f3', '#00bcd4', '#9c27b0', '#4caf50'];
+                const processNames = { 1: '주기둥커팅', 2: '소부재커팅', 3: '주기둥조립', 4: '소부재조립', 5: '현장배송', 6: '현장설치' };
+                const processColors = { 1: '#e74c3c', 2: '#ff9800', 3: '#2196f3', 4: '#00bcd4', 5: '#9c27b0', 6: '#4caf50' };
                 const TOTAL_COLUMNS_FOR_PROGRESS = 100; // 공정율 계산 기준: 기둥 개수 100개
                 let progressHtml = '';
-                
-                for (let p = 1; p <= 6; p++) {
+                const progressProcesses = [1, 2, 3, 4, 5, 6]; // 소부재조립(4) 포함
+                for (const p of progressProcesses) {
                     let completedCount = 0;
                     
                     if (p === 5) {
@@ -15203,11 +16322,11 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
                     
                     progressHtml += `
                         <div style="text-align:center;padding:8px;background:#f8f9fa;border-radius:6px;border:1px solid #e0e0e0;">
-                            <div style="font-size:11px;color:#666;margin-bottom:4px;">${processNames[p-1]}</div>
-                            <div style="font-size:18px;font-weight:bold;color:${processColors[p-1]};margin-bottom:4px;">${percentage}%</div>
+                            <div style="font-size:11px;color:#666;margin-bottom:4px;">${processNames[p]}</div>
+                            <div style="font-size:18px;font-weight:bold;color:${processColors[p]};margin-bottom:4px;">${percentage}%</div>
                             <div style="font-size:10px;color:#999;">${completedCount}/${TOTAL_COLUMNS_FOR_PROGRESS}</div>
                             <div style="margin-top:6px;height:4px;background:#e0e0e0;border-radius:2px;overflow:hidden;">
-                                <div style="height:100%;background:${processColors[p-1]};width:${percentage}%;transition:width 0.3s;"></div>
+                                <div style="height:100%;background:${processColors[p]};width:${percentage}%;transition:width 0.3s;"></div>
                             </div>
                         </div>
                     `;
@@ -15869,6 +16988,10 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
             renderColumnGrid('column-grid-overview');
             renderColumnGrid('column-grid-input');
             updateProgressBars();
+            // 운송물량산정 표의 운송차수계획(13차) 열도 transportPlan에서 자동 반영
+            if (typeof renderTransportVolumeTable === 'function') {
+                renderTransportVolumeTable();
+            }
         }
 
         // 공정표 강제 동기화
