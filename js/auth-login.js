@@ -97,8 +97,10 @@
             })
             .catch(function(err) {
                 var message = err.message || '로그인에 실패했습니다.';
-                // Translate common Supabase errors
-                if (message.includes('Invalid login credentials')) {
+                // 태블릿 등: signal is aborted without reason → 네트워크 안내
+                if (message.indexOf('abort') !== -1 || message.indexOf('Abort') !== -1 || (err && err.name === 'AbortError')) {
+                    message = '네트워크가 불안정합니다. Wi‑Fi/연결을 확인한 뒤 다시 시도해 주세요.';
+                } else if (message.includes('Invalid login credentials')) {
                     message = '이메일 또는 비밀번호가 올바르지 않습니다. 다시 확인해주세요.';
                 } else if (message.includes('Email not confirmed')) {
                     message = '이메일 인증이 완료되지 않았습니다. 받은 편지함을 확인해주세요.';

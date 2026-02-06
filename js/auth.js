@@ -90,17 +90,34 @@
     });
   }
 
-  // Sign in with email/password
+  // Sign in with email/password (태블릿 등에서 abort 시 최대 2회 재시도)
   function signInWithPassword(email, password) {
-    return getClient().then(function(client) {
-      return client.auth.signInWithPassword({ email: email, password: password });
-    }).then(function(result) {
-      if (result.error) throw result.error;
-      sessionCache = result.data ? result.data.session : null;
-      return getProfile().then(function(profile) {
-        return { session: sessionCache, profile: profile };
+    var attempt = 0;
+    var maxAttempts = 3;
+
+    function doSignIn() {
+      attempt += 1;
+      return getClient().then(function(client) {
+        return client.auth.signInWithPassword({ email: email, password: password });
+      }).then(function(result) {
+        if (result.error) throw result.error;
+        sessionCache = result.data ? result.data.session : null;
+        return getProfile().then(function(profile) {
+          return { session: sessionCache, profile: profile };
+        });
+      }).catch(function(err) {
+        if (isAbortError(err) && attempt < maxAttempts) {
+          return new Promise(function(resolve, reject) {
+            setTimeout(function() {
+              doSignIn().then(resolve).catch(reject);
+            }, 800 * attempt);
+          });
+        }
+        throw err;
       });
-    });
+    }
+
+    return doSignIn();
   }
 
   // Sign out

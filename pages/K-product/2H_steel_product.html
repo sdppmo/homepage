@@ -10,7 +10,10 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- jsPDF -->
+    <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+    <!-- autoTable -->
+    <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -1591,6 +1594,7 @@
                 <button class="action-btn primary" onclick="downloadTransportVolumeTemplate()">📄 템플릿 다운로드</button>
                 <button class="action-btn" onclick="setDefaultTransportVolumeData()" style="background:#2196f3;color:white;">💾 기본값으로 저장</button>
                 <button class="action-btn" onclick="adjustTo25Ton()" style="background:#ff9800;color:white;">최대운송25톤</button>
+                <button class="action-btn" onclick="exportTransportVolumePanelPdf()" style="background:#9c27b0;color:white;" title="현재 운송물량산정 화면만 PDF로 저장 (3페이지 형식과 별도)">📄 이 화면 PDF로</button>
                 <div id="transport-volume-adjustment-panel" style="flex:1;min-width:300px;padding:12px;background:#f5f5f5;border-radius:6px;border:1px solid #ddd;display:none;">
                     <div style="font-weight:600;color:#2c4a7c;margin-bottom:8px;font-size:14px;">📊 조정 결과</div>
                     <div id="transport-volume-adjustment-info" style="font-size:13px;color:#555;line-height:1.6;">
@@ -1614,11 +1618,11 @@
                     <input type="file" accept=".xlsx,.xls,.csv" id="verify-adjusted-plan-file" onchange="verifyAdjustedPlanFromExcel(event)" style="padding:6px;border:1px solid #ddd;border-radius:4px;font-size:11px;width:100%;" title="엑셀 파일 선택하여 일치 여부 확인">
                     <div id="adjusted-plan-verify-result" style="margin-top:8px;font-size:11px;color:#666;display:none;"></div>
                 </div>
-                <div id="export-filtered-data-panel" style="padding:12px;background:#fff;border-radius:6px;border:1px solid #ddd;">
-                    <div style="font-weight:600;color:#2c4a7c;margin-bottom:8px;font-size:14px;">엑셀다운로드</div>
-                    <button class="action-btn" onclick="exportFilteredDataToExcel()" style="padding:6px 12px;background:#2196f3;color:white;border:none;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;width:100%;">
-                        현 필터값 저장
+                <div id="export-filtered-data-panel" style="padding:12px;background:#fff;border-radius:6px;border:1px solid #ddd;min-width:246px;width:246px;box-sizing:border-box;text-align:center;">
+                    <button class="action-btn" onclick="exportFilteredDataToExcel()" style="padding:6px 12px;background:#2196f3;color:white;border:none;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;width:100%;box-sizing:border-box;">
+                        엑셀다운로드
                     </button>
+                    <div style="font-weight:600;color:#2c4a7c;margin-top:8px;margin-bottom:0;font-size:14px;">규격별/차수부재별 필터링</div>
                 </div>
                 <div id="transport-volume-size-filter" style="padding:12px;background:#fff;border-radius:6px;border:1px solid #ddd;">
                     <div style="font-weight:600;color:#2c4a7c;margin-bottom:8px;font-size:14px;">규격별 부재</div>
@@ -1661,7 +1665,7 @@
                             <th style="width:100px;">길이(mm)</th>
                             <th style="width:100px;">중량(kg)</th>
                             <th style="width:150px;">운송차수계획(13차)</th>
-                            <th style="width:150px;">조정된 차수계획(12차)</th>
+                            <th style="width:150px;">조정된 차수계획</th>
                         </tr>
                     </thead>
                     <tbody id="transport-volume-tbody">
@@ -1770,7 +1774,6 @@
             </div>
             <div style="margin-top:16px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;">
                 <button class="action-btn primary" onclick="exportSelectedPdf()" style="background:#e91e63;">📥 PDF 다운로드</button>
-                <button type="button" class="action-btn secondary" onclick="showPdfExportHtml()" style="background:#607d8b;color:#fff;">📋 PDF 생성 HTML 보기/복사</button>
             </div>
             <div id="pdf-export-html-wrap" style="display:none;margin-top:16px;padding:12px;background:#f5f5f5;border:1px solid #ddd;border-radius:8px;">
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
@@ -1965,9 +1968,7 @@
                 }
                 renderTransportVolumeTable();
                 // 조정된 차수계획 테이블도 렌더링
-                if (typeof renderAdjustedTransportVolumeTripSummary === 'function') {
-                    renderAdjustedTransportVolumeTripSummary();
-                }
+                renderAdjustedTripSummarySafe();
             } else if (typeof renderInstallationStatus === 'function' && panelId === 'installation') {
                 renderInstallationStatus();
             } else if (panelId === 'chart' && typeof renderCharts === 'function') {
@@ -1976,7 +1977,7 @@
                 if (typeof renderTransportVolumeTable === 'function') {
                     renderTransportVolumeTable();
                     if (typeof renderTransportVolumeTripSummary === 'function') renderTransportVolumeTripSummary();
-                    if (typeof renderAdjustedTransportVolumeTripSummary === 'function') renderAdjustedTransportVolumeTripSummary();
+                    renderAdjustedTripSummarySafe();
                 }
                 if (typeof refreshPdfExportPreview === 'function') {
                     const t = document.querySelector('input[name="pdfExportType"]:checked')?.value || 'transportVolume';
@@ -2233,10 +2234,12 @@
             return `${columnIndex}${prefix}${String(subIndex).padStart(3, '0')}`;
         }
         
-        // 기둥 ID에서 기둥 번호 추출: "1C001" 또는 "7TC001" -> 1 또는 7
+        // 기둥 ID에서 기둥 번호 추출: "1C001" 또는 "7TC001" -> 1 또는 7. "1", "2" 등 숫자만 있어도 인식
         function getColumnIndexFromId(colId) {
-            const match = colId.match(/^(\d+)(?:TC|C)/);
-            return match ? parseInt(match[1]) : null;
+            const str = String(colId ?? '').trim();
+            if (/^\d+$/.test(str)) return parseInt(str, 10);
+            const match = str.match(/^(\d+)(?:TC|C)/);
+            return match ? parseInt(match[1], 10) : null;
         }
         
         // dailyData 기준으로 해당 기둥의 최대 완료 공정 번호 반환 (소부재조립(4) 포함)
@@ -2267,24 +2270,116 @@
             const match = colId.match(/(?:TC|C)(\d+)$/);
             return match ? parseInt(match[1]) : null;
         }
-        
+
+        // col 값을 항상 매칭 가능한 문자열로 변환 (객체/문자열/숫자 모두 처리)
+        function normalizeColValue(col) {
+            if (col == null) return '';
+            if (typeof col === 'string' || typeof col === 'number') return String(col).trim();
+            const candidate = col.colId ?? col.columnId ?? col.id ?? col.col ?? col.no ?? col.dno ?? col.column ?? col.name ?? '';
+            return String(candidate ?? '').trim();
+        }
+
+        // transportVolumeData 항목에서 기둥 식별값 추출 (no 없을 때 다른 키 자동 탐색)
+        function getTransportColNo(d) {
+            if (!d) return '';
+            if (d.no != null && String(d.no).trim() !== '') return String(d.no).trim();
+            const directKeys = ['dno', 'DNO', 'col', 'COL', 'column', 'COLUMN', 'colNo', 'COLNO', 'columnNo', 'COLUMNNO', 'col_id', 'column_id'];
+            for (const k of directKeys) {
+                if (d[k] != null && String(d[k]).trim() !== '') return String(d[k]).trim();
+            }
+            const keys = Object.keys(d);
+            for (const k of keys) {
+                const lk = k.toLowerCase();
+                if (lk === 'weight') continue;
+                if (lk.includes('no') || lk.includes('col') || lk.includes('column')) {
+                    const v = d[k];
+                    if (v != null && String(v).trim() !== '') return String(v).trim();
+                }
+            }
+            return '';
+        }
+
+        /** PDF/autoTable용: 기둥번호(colNo)에 해당하는 운송차수계획(13차) 차수·날짜 */
+        function getTransportPlanTripForColumn(colNo) {
+            if (!colNo || !transportPlan || !Object.keys(transportPlan).length) return null;
+            var colNoStr = String(colNo);
+            var colIndex = getColumnIndexFromId(colNoStr);
+            var colSubIndex = getSubIndexFromId(colNoStr);
+            for (var tripNum in transportPlan) {
+                var tripData = transportPlan[tripNum];
+                if (!tripData || !tripData.columns || !tripData.columns.length) continue;
+                var found = tripData.columns.some(function(col) {
+                    var colStr = String(col);
+                    if (colStr === colNoStr) return true;
+                    var si = getColumnIndexFromId(colStr), ss = getSubIndexFromId(colStr);
+                    if (colIndex && si && colIndex === si) {
+                        if (colSubIndex && ss) return colSubIndex === ss;
+                        return true;
+                    }
+                    var cn = parseInt(colStr.replace(/[^0-9]/g, ''), 10);
+                    var cno = parseInt(colNoStr.replace(/[^0-9]/g, ''), 10);
+                    if (cn && cno && cn === cno) return true;
+                    return false;
+                });
+                if (found) return parseInt(tripNum, 10);
+            }
+            return null;
+        }
+        function getTransportPlanDateForColumn(colNo) {
+            var trip = getTransportPlanTripForColumn(colNo);
+            if (trip == null) return '';
+            var t = transportPlan[trip];
+            return (t && t.date) ? t.date : '';
+        }
+        function getAdjustedPlanTripForColumn(colNo) {
+            if (!colNo || !adjustedTransportPlan || !Object.keys(adjustedTransportPlan).length) return null;
+            var colNoStr = String(colNo);
+            var colIndex = getColumnIndexFromId(colNoStr);
+            var colSubIndex = getSubIndexFromId(colNoStr);
+            for (var tripNum in adjustedTransportPlan) {
+                var tripData = adjustedTransportPlan[tripNum];
+                if (!tripData || !tripData.columns || !tripData.columns.length) continue;
+                var found = tripData.columns.some(function(col) {
+                    var colStr = String(col);
+                    if (colStr === colNoStr) return true;
+                    var si = getColumnIndexFromId(colStr), ss = getSubIndexFromId(colStr);
+                    if (colIndex && si && colIndex === si) {
+                        if (colSubIndex && ss) return colSubIndex === ss;
+                        return true;
+                    }
+                    var cn = parseInt(colStr.replace(/[^0-9]/g, ''), 10);
+                    var cno = parseInt(colNoStr.replace(/[^0-9]/g, ''), 10);
+                    if (cn && cno && cn === cno) return true;
+                    return false;
+                });
+                if (found) return parseInt(tripNum, 10);
+            }
+            return null;
+        }
+        function getAdjustedPlanDateForColumn(colNo) {
+            var trip = getAdjustedPlanTripForColumn(colNo);
+            if (trip == null) return '';
+            var t = adjustedTransportPlan[trip];
+            return (t && t.date) ? t.date : '';
+        }
+
         // 기둥 매칭: col(adjustedTransportPlan 내)와 colNo(transportVolumeData)가 같은 기둥인지
         function columnsMatch(col, colNo) {
             if (!colNo) return false;
-            const colStr = String(col);
-            const colNoStr = String(colNo);
+            const colStr = String(col).trim();
+            const colNoStr = String(colNo).trim();
             if (colStr === colNoStr) return true;
             const colIndex = getColumnIndexFromId(colNoStr);
-            const colSubIndex = getSubIndexFromId(colNoStr);
             const storedColIndex = getColumnIndexFromId(colStr);
-            const storedColSubIndex = getSubIndexFromId(colStr);
+            const colSubIndex = typeof getSubIndexFromId === 'function' ? getSubIndexFromId(colNoStr) : null;
+            const storedColSubIndex = typeof getSubIndexFromId === 'function' ? getSubIndexFromId(colStr) : null;
             if (colIndex && storedColIndex && colIndex === storedColIndex) {
                 if (colSubIndex && storedColSubIndex) return colSubIndex === storedColSubIndex;
                 return true;
             }
-            const colNum = parseInt(colStr.replace(/[^0-9]/g, ''));
-            const colNoNum = parseInt(colNoStr.replace(/[^0-9]/g, ''));
-            return colNum && colNoNum && colNum === colNoNum;
+            const colNum = parseInt(colStr.replace(/[^0-9]/g, ''), 10);
+            const colNoNum = parseInt(colNoStr.replace(/[^0-9]/g, ''), 10);
+            return Boolean(colNum && colNoNum && colNum === colNoNum);
         }
         
         // 조정된 차수계획: 특정 기둥의 차수를 변경 (1~12차 선택 시)
@@ -2320,14 +2415,14 @@
             }
             localStorage.setItem(kcolKey('adjustedTransportPlan'), JSON.stringify(adjustedTransportPlan));
             if (typeof renderTransportVolumeTable === 'function') renderTransportVolumeTable();
-            if (typeof renderAdjustedTransportVolumeTripSummary === 'function') renderAdjustedTransportVolumeTripSummary();
+            renderAdjustedTripSummarySafe();
             if (typeof renderTransportVolumeTripSummary === 'function') renderTransportVolumeTripSummary();
         }
         
         // 조정된 차수계획: 부재수 +/- 조정 (-2,-1,0,+1,+2). 부재순(엑셀순서)대로 차수 재배치
         function adjustAdjustedTripCount(tripNum, deltaStr) {
             const newDelta = deltaStr === '' ? 0 : parseInt(deltaStr);
-            if (isNaN(newDelta) || newDelta < -3 || newDelta > 3) return;
+            if (isNaN(newDelta) || newDelta < -10 || newDelta > 10) return;
             const trip = parseInt(tripNum);
             if (!adjustedTransportPlan || !transportVolumeData || transportVolumeData.length === 0) return;
             
@@ -2413,7 +2508,7 @@
             localStorage.setItem(kcolKey('adjustedTransportPlan'), JSON.stringify(adjustedTransportPlan));
             localStorage.setItem(kcolKey('tripCountDeltas'), JSON.stringify(tripCountDeltas));
             if (typeof renderTransportVolumeTable === 'function') renderTransportVolumeTable();
-            if (typeof renderAdjustedTransportVolumeTripSummary === 'function') renderAdjustedTransportVolumeTripSummary();
+            renderAdjustedTripSummarySafe();
             if (typeof renderTransportVolumeTripSummary === 'function') renderTransportVolumeTripSummary();
         }
 
@@ -11028,9 +11123,7 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
                             renderTransportVolumeTripSummary(transportVolumeData);
                         }
                         // 조정된 차수계획 테이블도 렌더링
-                        if (typeof renderAdjustedTransportVolumeTripSummary === 'function') {
-                            renderAdjustedTransportVolumeTripSummary();
-                        }
+                        renderAdjustedTripSummarySafe();
                     } catch (e) {
                         console.error('❌ localStorage transportVolumeData 파싱 실패:', e);
                         transportVolumeData = transportVolumeData || [];
@@ -11041,9 +11134,7 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
                 if (transportVolumeData.length > 0 && typeof renderTransportVolumeTripSummary === 'function') {
                     renderTransportVolumeTripSummary(transportVolumeData);
                 }
-                if (typeof renderAdjustedTransportVolumeTripSummary === 'function') {
-                    renderAdjustedTransportVolumeTripSummary();
-                }
+                renderAdjustedTripSummarySafe();
             }
             
             // 규격별 필터 선택 상태 로드
@@ -11647,73 +11738,71 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
             saveTransportPlan();
         }
 
-        // 기둥 물량 계산 함수 (톤)
+        // 기둥 물량 계산 함수 (톤) - 엑셀 업로드 시 실제 중량(kg) 사용, 없으면 근사치
         function calculateColumnWeight(columnId) {
             if (!transportVolumeData || transportVolumeData.length === 0) {
                 return 0;
             }
             
-            // colId에서 기둥 번호 추출 (1C001 -> 1, 7TC001 -> 7)
-            let columnIndex = null;
-            if (typeof columnId === 'number') {
-                columnIndex = columnId;
-            } else {
-                columnIndex = getColumnIndexFromId(String(columnId)) || parseInt(String(columnId).replace(/[^0-9]/g, ''));
-            }
-            
-            if (!columnIndex) {
-                return 0;
-            }
-            
-            // 운송물량산정 데이터에서 해당 기둥 찾기
-            const colData = transportVolumeData.find(item => {
-                const itemNo = parseInt(item.no) || 0;
-                return itemNo === columnIndex;
+            // columnId와 매칭되는 모든 부재의 중량 합산 (동일 기둥에 상부/하부 등 여러 행 있을 수 있음)
+            const matched = transportVolumeData.filter(item => {
+                const itemNo = item.no != null ? String(item.no).trim() : '';
+                if (!itemNo) return false;
+                if (typeof columnsMatch === 'function') {
+                    return columnsMatch(columnId, itemNo);
+                }
+                const colStr = typeof columnId === 'number' ? getColumnId(columnId, 1) : String(columnId).trim();
+                const colIdx = getColumnIndexFromId(colStr);
+                const itemIdx = getColumnIndexFromId(itemNo);
+                if (colIdx != null && itemIdx != null && colIdx === itemIdx) {
+                    const colSub = getSubIndexFromId(colStr);
+                    const itemSub = getSubIndexFromId(itemNo);
+                    return (colSub == null && itemSub == null) || colSub === itemSub;
+                }
+                return colStr === itemNo;
             });
             
+            // 엑셀의 실제 중량(kg) 합산 후 톤으로 변환
+            let totalKg = 0;
+            for (let i = 0; i < matched.length; i++) {
+                const item = matched[i];
+                const w = item.weight != null ? parseFloat(String(item.weight).replace(/,/g, '')) : NaN;
+                if (!isNaN(w) && w > 0) {
+                    totalKg += w;
+                }
+            }
+            if (totalKg > 0) {
+                return totalKg / 1000; // kg → 톤
+            }
+            
+            // 매칭된 행은 있으나 weight가 없을 때: 첫 행 기준 근사치
+            const colData = matched[0];
             if (!colData) {
                 return 0;
             }
             
-            // 소부재 예상물량이 있으면 우선 사용 (kg 단위 가정)
             if (colData.sub && !isNaN(parseFloat(colData.sub))) {
-                const subWeight = parseFloat(colData.sub);
-                return subWeight / 1000; // kg을 톤으로 변환
+                return parseFloat(colData.sub) / 1000;
             }
             
-            // 소부재 예상물량이 없으면 사이즈와 길이로 근사치 계산
-            const length = parseFloat(colData.length) || 0; // mm
-            if (length === 0) {
-                return 0;
-            }
+            const length = parseFloat(colData.length) || 0;
+            if (length === 0) return 0;
             
-            // H형강 단위 중량 근사치 (kg/m) - 사이즈별 기본값
             const sizeStr = String(colData.size || '').toUpperCase();
-            let unitWeight = 0; // kg/m
-            
-            // 사이즈에서 H값 추출 (예: H400x200 -> 400)
+            let unitWeight = 0;
             const hMatch = sizeStr.match(/H(\d+)/);
             if (hMatch) {
                 const hValue = parseInt(hMatch[1]);
-                // H형강 단위 중량 근사치 (kg/m) - 규격별 대략값
-                if (hValue <= 400) unitWeight = 66;      // H400x200x8x13
-                else if (hValue <= 450) unitWeight = 76; // H450x200x9x14
-                else if (hValue <= 500) unitWeight = 89; // H500x200x10x16
-                else if (hValue <= 600) unitWeight = 106; // H600x200x11x17
-                else if (hValue <= 700) unitWeight = 125; // H700x300
-                else unitWeight = 150; // 그 외
+                if (hValue <= 400) unitWeight = 66;
+                else if (hValue <= 450) unitWeight = 76;
+                else if (hValue <= 500) unitWeight = 89;
+                else if (hValue <= 600) unitWeight = 106;
+                else if (hValue <= 700) unitWeight = 125;
+                else unitWeight = 150;
             }
-            
-            if (unitWeight === 0) {
-                return 0;
-            }
-            
-            // 무게 계산: 단위 중량(kg/m) × 길이(m) = 무게(kg)
-            const lengthM = length / 1000; // mm를 m로 변환
-            const weightKg = unitWeight * lengthM;
-            
-            // 톤으로 변환 (kg / 1000)
-            return weightKg / 1000;
+            if (unitWeight === 0) return 0;
+            const lengthM = length / 1000;
+            return (unitWeight * lengthM) / 1000;
         }
 
         // 운송용 기둥 그리드 렌더링
@@ -12009,7 +12098,7 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
                 if (typeof renderTripFilterToggles === 'function') renderTripFilterToggles();
                 if (typeof renderSizeFilterToggles === 'function') renderSizeFilterToggles();
                 if (typeof updateAllTripsToggleButtons === 'function') updateAllTripsToggleButtons();
-                if (typeof renderAdjustedTransportVolumeTripSummary === 'function') renderAdjustedTransportVolumeTripSummary();
+                renderAdjustedTripSummarySafe();
                 
                 alert('✅ 현재 물량산정 값이 기본값으로 저장되었습니다.\n\n전체 데이터가 표시됩니다.');
                 console.log('✅ 기본값 저장 완료:', defaultData.length, '개 부재');
@@ -12053,9 +12142,7 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
                         if (typeof renderTransportVolumeTable === 'function') {
                             renderTransportVolumeTable();
                         }
-                        if (typeof renderAdjustedTransportVolumeTripSummary === 'function') {
-                            renderAdjustedTransportVolumeTripSummary();
-                        }
+                        renderAdjustedTripSummarySafe();
                         
                         return true;
                     }
@@ -12269,6 +12356,40 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
             pdf.addImage(opts.headerDataUrl, 'PNG', opts.margin, opts.topMargin, opts.headerW || 80, opts.headerImgH || 18);
         }
 
+        function getJsPDF() {
+            if (typeof window === 'undefined') return null;
+            return (window.jspdf && window.jspdf.jsPDF) || window.jsPDF || null;
+        }
+
+        function loadScript(src) {
+            return new Promise(function(resolve, reject) {
+                if (document.querySelector('script[src="' + src + '"]')) {
+                    resolve();
+                    return;
+                }
+                var s = document.createElement('script');
+                s.src = src;
+                s.onload = function() { resolve(); };
+                s.onerror = function() { reject(new Error('스크립트 로드 실패: ' + src)); };
+                document.head.appendChild(s);
+            });
+        }
+
+        async function ensureJsPDFLoaded() {
+            if (getJsPDF()) return getJsPDF();
+            var jspdfUrl = 'https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js';
+            var autotableUrl = 'https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js';
+            try {
+                await loadScript(jspdfUrl);
+                await new Promise(function(r) { setTimeout(r, 50); });
+                await loadScript(autotableUrl);
+                await new Promise(function(r) { setTimeout(r, 50); });
+            } catch (e) {
+                console.warn('jsPDF 동적 로드 실패:', e);
+            }
+            return getJsPDF();
+        }
+
         // ---------- PDF 생성: 웹헤더 반복 + 슬라이스 + 차수조정(숨김 시 강제 표시 후 캡처) ----------
         async function exportPdf(container, fileName, opts) {
             console.log('[PDF] exportPdf CALLED');
@@ -12291,8 +12412,8 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
             var mainCanvas = await html2canvas(container, html2canvasOpts);
             if (!mainCanvas.width || !mainCanvas.height) throw new Error('html2canvas 결과가 0입니다.');
 
-            var jsPDF = window.jspdf ? window.jspdf.jsPDF : null;
-            if (!jsPDF) { console.error('jsPDF not loaded'); return; }
+            var jsPDF = getJsPDF();
+            if (!jsPDF) throw new Error('jsPDF가 로드되지 않았습니다. 네트워크를 확인한 뒤 새로고침 후 다시 시도해 주세요.');
             var pdf = new jsPDF('p', 'mm', 'a4');
             opts.pageW = pdf.internal.pageSize.getWidth();
             opts.pageH = pdf.internal.pageSize.getHeight();
@@ -12425,6 +12546,59 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
             if (!canvas || canvas.width === 0 || canvas.height === 0) throw new Error('캡처 0사이즈');
             return { img: canvas.toDataURL('image/jpeg', 0.95), w: canvas.width, h: canvas.height };
         }
+        async function captureElAsPng(el, scale) {
+            if (scale == null) scale = 2;
+            var canvas = await html2canvas(el, { backgroundColor: null, scale: scale, useCORS: true });
+            return canvas ? canvas.toDataURL('image/png') : '';
+        }
+        function hideHeaderUiForCapture(headerEl) {
+            if (!headerEl) return function() {};
+            var targets = headerEl.querySelectorAll('button, a, .login, .auth, .header-actions, .home, .logout, select, input');
+            var prev = [];
+            targets.forEach(function(el) {
+                prev.push([el, el.style.display, el.style.visibility]);
+                el.style.display = 'none';
+                el.style.visibility = 'hidden';
+            });
+            return function() {
+                prev.forEach(function(p) {
+                    p[0].style.display = p[1];
+                    p[0].style.visibility = p[2];
+                });
+            };
+        }
+        async function tryDrawBannerOnPage3(doc) {
+            var pageW = doc.internal.pageSize.getWidth();
+            var pageH = doc.internal.pageSize.getHeight();
+            var bottomMargin = 10;
+            var minBannerH = 18;
+            var lastY = (doc.lastAutoTable && doc.lastAutoTable.finalY) ? doc.lastAutoTable.finalY : 42;
+            var freeH = (pageH - bottomMargin) - lastY;
+            if (freeH < minBannerH) return;
+            var headerEl = document.querySelector('.header');
+            if (!headerEl) return;
+            var restore = hideHeaderUiForCapture(headerEl);
+            try {
+                var img = await captureElAsPng(headerEl, 2);
+                if (!img) return;
+                var imgProps = await new Promise(function(resolve) {
+                    var i = new Image();
+                    i.onload = function() { resolve({ width: i.naturalWidth || i.width, height: i.naturalHeight || i.height }); };
+                    i.onerror = function() { resolve({ width: 0, height: 0 }); };
+                    i.src = img;
+                });
+                if (!imgProps.width || !imgProps.height) return;
+                var targetW = pageW - 20;
+                var targetH = targetW * (imgProps.height / imgProps.width);
+                if (targetH > freeH) targetH = freeH;
+                var finalW = targetH * (imgProps.width / imgProps.height);
+                var x = (pageW - finalW) / 2;
+                var y = pageH - bottomMargin - targetH;
+                doc.addImage(img, 'PNG', x, y, finalW, targetH);
+            } finally {
+                restore();
+            }
+        }
         function drawPageHeader3Page(pdf, headerDataUrl, opt) {
             var pageW = pdf.internal.pageSize.getWidth();
             var margin = opt.margin != null ? opt.margin : 10;
@@ -12458,69 +12632,212 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
             if (section) return section;
             return null;
         }
-        async function exportTransport_3PagesPDF(fileName, assets, opts) {
-            var jsPDF = window.jspdf ? window.jspdf.jsPDF : null;
-            if (!jsPDF) throw new Error('jsPDF not loaded');
-            var pdf = new jsPDF('p', 'mm', 'a4');
-            var opt = { margin: 10, topMargin: 6, headerH: 18, headerImgH: 12, bottomMargin: 8 };
-            var headerDataUrl = (assets && assets.headerDataUrl) ? assets.headerDataUrl : (opts && opts.headerDataUrl) ? opts.headerDataUrl : null;
-            if (!headerDataUrl) {
-                var built = await buildPdfAssets();
-                headerDataUrl = built.headerDataUrl;
-                if (!assets) assets = built;
+
+        function arrayBufferToBase64(buf) {
+            var bytes = new Uint8Array(buf);
+            var binary = '';
+            for (var i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+            return btoa(binary);
+        }
+
+        /** DOM 테이블 → autoTable용 { head, body } (thead/th → head, tbody/td → body, innerText 사용 시 select 등 보이는 텍스트만 추출) */
+        function tableDomToAutoTable(tableEl) {
+            if (!tableEl) return { head: [], body: [] };
+            var head = [];
+            var body = [];
+            var ths = tableEl.querySelectorAll('thead tr th');
+            if (ths.length) head.push(Array.prototype.slice.call(ths).map(function(th) { return (th.innerText || '').trim(); }));
+            var trs = tableEl.querySelectorAll('tbody tr');
+            trs.forEach(function(tr) {
+                var tds = tr.querySelectorAll('td');
+                body.push(Array.prototype.slice.call(tds).map(function(td) {
+                    var span = td.querySelector('span');
+                    var spanText = span ? (span.innerText || '').trim() : '';
+                    if (spanText) return spanText;
+                    var select = td.querySelector('select');
+                    if (select) {
+                        var val = select.value;
+                        return val ? val + '차' : '－';
+                    }
+                    return (td.innerText || '').trim();
+                }));
+            });
+            return { head: head, body: body };
+        }
+
+        /** 한글 폰트 로드: /assets/fonts/NotoSansKR-Regular.ttf (로컬 필수, base64 → VFS 등록 후 PDF는 외부 네트워크 미의존) */
+        async function loadNotoSansFont(doc) {
+            var LOCAL = '/assets/fonts/NotoSansKR-Regular.ttf';
+            var res = await fetch(LOCAL);
+            if (!res.ok) {
+                alert([
+                    '❌ NotoSansKR 폰트 파일을 찾을 수 없습니다.',
+                    '필수 경로: ' + LOCAL,
+                    '',
+                    '해결:',
+                    '1) 프로젝트 루트에 assets/fonts/ 폴더 생성',
+                    '2) NotoSansKR-Regular.ttf를 그 폴더에 추가',
+                    '3) 로컬 서버 재시작 후 위 URL이 열리는지 확인'
+                ].join('\n'));
+                throw new Error('Font not found: ' + LOCAL + ' (' + res.status + ')');
             }
-            if (!headerDataUrl) throw new Error('헤더 이미지를 준비할 수 없습니다.');
+            var buf = await res.arrayBuffer();
+            var b64 = arrayBufferToBase64(buf);
+            doc.addFileToVFS('NotoSansKR-Regular.ttf', b64);
+            doc.addFont('NotoSansKR-Regular.ttf', 'NotoSansKR', 'normal');
+        }
 
-            opts = opts || {};
-            opts.pageW = pdf.internal.pageSize.getWidth();
-            opts.pageH = pdf.internal.pageSize.getHeight();
-            opts.margin = opt.margin;
-            opts.footer = opts.footer || (assets && { songdoDataUrl: assets.songdoDataUrl, jinhungDataUrl: assets.jinhungDataUrl, timeStr: assets.timeStr, songdoSize: assets.songdoSize, jinhungSize: assets.jinhungSize });
+        async function exportTransport_3PagesPDF(fileName, assets, opts) {
+            var jsPDF = getJsPDF();
+            if (!jsPDF) throw new Error('jsPDF가 로드되지 않았습니다. 네트워크를 확인한 뒤 새로고침 후 다시 시도해 주세요.');
+            var doc = new jsPDF('p', 'mm', 'a4');
+            try {
+                await loadNotoSansFont(doc);
+            } catch (e) {
+                alert('한글 폰트 로드 실패: ' + (e.message || e) + '\n/assets/fonts/NotoSansKR-Regular.ttf 파일을 넣어 주세요.');
+                return;
+            }
+            doc.setFont('NotoSansKR', 'normal');
 
-            var listEl = document.getElementById('transport-volume-table-wrapper');
-            if (!listEl) throw new Error('운송물량 LIST(#transport-volume-table-wrapper)를 찾을 수 없습니다.');
+            if (typeof doc.autoTable !== 'function') {
+                alert('jspdf-autotable이 로드되지 않았습니다. CDN 스크립트 포함 여부를 확인하세요.');
+                return;
+            }
+
+            var pageW = doc.internal.pageSize.getWidth();
+            var pageH = doc.internal.pageSize.getHeight();
+
+            assets = assets || (typeof buildPdfAssets === 'function' ? await buildPdfAssets() : {});
+            var logoSongdo = assets.songdoDataUrl || null;
+            var logoJinhung = assets.jinhungDataUrl || null;
+            var songdoSize = assets.songdoSize || { w: 28, h: 11 };
+            var jinhungSize = assets.jinhungSize || { w: 28, h: 11 };
+
+            var header = function(pageNo) {
+                if (logoSongdo) doc.addImage(logoSongdo, 'PNG', 12, 8, songdoSize.w, songdoSize.h);
+                if (logoJinhung) doc.addImage(logoJinhung, 'PNG', pageW - 12 - jinhungSize.w, 8, jinhungSize.w, jinhungSize.h);
+                doc.setFont('NotoSansKR', 'normal');
+                doc.setFontSize(14);
+                doc.text('운송물량 리스트', pageW / 2, 14, { align: 'center' });
+                doc.setDrawColor(200);
+                doc.line(12, 20, pageW - 12, 20);
+                doc.setFontSize(9);
+                doc.text(String(pageNo), pageW - 12, pageH - 6, { align: 'right' });
+            };
+            var footer = function() {
+                var printed = new Date();
+                var txt = 'Printed: ' + printed.getFullYear() + '-' + String(printed.getMonth() + 1).padStart(2, '0') + '-' + String(printed.getDate()).padStart(2, '0') + ' ' + String(printed.getHours()).padStart(2, '0') + ':' + String(printed.getMinutes()).padStart(2, '0');
+                doc.setFont('NotoSansKR', 'normal');
+                doc.setFontSize(9);
+                doc.text(txt, 12, pageH - 6);
+            };
+
+            var listTableOpts = {
+                startY: 22,
+                margin: { left: 10, right: 10, top: 14, bottom: 8 },
+                styles: {
+                    font: 'NotoSansKR',
+                    fontSize: 7,
+                    cellPadding: 0.5,
+                    overflow: 'ellipsize',
+                    lineWidth: 0.1
+                },
+                headStyles: {
+                    font: 'NotoSansKR',
+                    fontSize: 7,
+                    cellPadding: 0.5
+                },
+                columnStyles: { 4: { halign: 'right' }, 5: { halign: 'right' } },
+                didDrawPage: function() { footer(); }
+            };
 
             if (typeof ensureTransportVolumePanelVisible === 'function') await ensureTransportVolumePanelVisible();
+            await new Promise(function(r) { setTimeout(r, 100); });
+            renderTransportVolumeTable();
             await new Promise(function(r) { setTimeout(r, 150); });
-            if (document.fonts && document.fonts.ready) await document.fonts.ready;
 
-            await showForCapture(true);
-            try {
-                var pageSlices = [{ start: 0, end: 40 }, { start: 40, end: 80 }, { start: 80, end: 100 }];
-                for (var p = 0; p < 3; p++) {
-                    var range = pageSlices[p];
-                    renderTransportVolumeTable({ startIndex: range.start, endIndex: range.end });
-                    await new Promise(function(r) { requestAnimationFrame(function() { requestAnimationFrame(r); }); });
-                    var y = drawPageHeader3Page(pdf, headerDataUrl, opt);
-                    try {
-                        var listObj = await captureElAsJpeg(listEl);
-                        y = drawBody3Page(pdf, listObj, y, opt);
-                    } catch (e) { console.warn('[PDF] ' + (p + 1) + '페이지 LIST 캡처 실패:', e); }
-                    if (p === 2) {
-                        var summaryEl = document.getElementById('transport-volume-adjustment-section');
-                        if (summaryEl) {
-                            try {
-                                y += 3;
-                                var summaryObj = await captureElAsJpeg(summaryEl);
-                                drawBody3Page(pdf, summaryObj, y, opt);
-                            } catch (e) { console.warn('[PDF] 3페이지 차수요약(운송차수계획 13차) 캡처 실패:', e); }
-                        }
-                    }
-                    drawPageFooter(pdf, opts, p + 1, 3);
-                    if (p < 2) pdf.addPage();
+            renderTransportVolumeTable({ startIndex: 0, endIndex: 55 });
+            await new Promise(function(r) { requestAnimationFrame(function() { requestAnimationFrame(r); }); });
+            var tableEl = document.querySelector('#transport-volume-table-wrapper table');
+            var t1 = tableDomToAutoTable(tableEl);
+            header(1);
+            doc.autoTable({
+                head: t1.head,
+                body: t1.body,
+                startY: listTableOpts.startY,
+                margin: listTableOpts.margin,
+                styles: listTableOpts.styles,
+                headStyles: listTableOpts.headStyles,
+                columnStyles: listTableOpts.columnStyles,
+                didDrawPage: listTableOpts.didDrawPage
+            });
+
+            doc.addPage();
+            renderTransportVolumeTable({ startIndex: 55, endIndex: 100 });
+            await new Promise(function(r) { requestAnimationFrame(function() { requestAnimationFrame(r); }); });
+            var t2 = tableDomToAutoTable(document.querySelector('#transport-volume-table-wrapper table'));
+            header(2);
+            doc.autoTable({
+                head: t2.head,
+                body: t2.body,
+                startY: listTableOpts.startY,
+                margin: listTableOpts.margin,
+                styles: listTableOpts.styles,
+                headStyles: listTableOpts.headStyles,
+                columnStyles: listTableOpts.columnStyles,
+                didDrawPage: listTableOpts.didDrawPage
+            });
+
+            var statsY = (doc.lastAutoTable && doc.lastAutoTable.finalY) ? doc.lastAutoTable.finalY + 6 : 200;
+            var totalWeightEl = document.getElementById('total-weight');
+            var totalCountEl = document.getElementById('total-count');
+            var averageWeightEl = document.getElementById('average-weight');
+            var totalWeightStr = totalWeightEl ? (totalWeightEl.innerText || '').trim() : '0 kg';
+            var totalCountStr = totalCountEl ? (totalCountEl.innerText || '').trim() : '0 개';
+            var averageWeightStr = averageWeightEl ? (averageWeightEl.innerText || '').trim() : '0 kg';
+            doc.setFont('NotoSansKR', 'normal');
+            doc.setFontSize(9);
+            doc.text('전체합산중량: ' + totalWeightStr, 12, statsY);
+            doc.text('총부재수: ' + totalCountStr, 12, statsY + 5);
+            doc.text('부재 1개당 평균중량: ' + averageWeightStr, 12, statsY + 10);
+
+            doc.addPage();
+            header(3);
+            doc.setFont('NotoSansKR', 'normal');
+            doc.setFontSize(12);
+            doc.text('운송차수계획(13차)', 12, 28);
+            doc.setFontSize(10);
+            doc.text('최대운송 25톤 초과 시 차수 조정 필요', 12, 36);
+
+            var summaryTables = document.querySelectorAll('#transport-volume-adjustment-section table');
+            var startY = 42;
+            for (var i = 0; i < summaryTables.length; i++) {
+                var s = tableDomToAutoTable(summaryTables[i]);
+                if (s.body.length || (s.head && s.head[0] && s.head[0].length)) {
+                    doc.autoTable({
+                        head: s.head,
+                        body: s.body,
+                        startY: startY,
+                        margin: { left: 10, right: 10, top: 18, bottom: 10 },
+                        styles: { font: 'NotoSansKR', fontSize: 7.5, cellPadding: 1, overflow: 'ellipsize', lineWidth: 0.1 },
+                        headStyles: { font: 'NotoSansKR', fontSize: 7.5, cellPadding: 1 }
+                    });
+                    startY = doc.lastAutoTable.finalY + 6;
                 }
-                var name = fileName || '운송물량산정_3페이지.pdf';
-                pdf.save(name);
-                try {
-                    var blob = pdf.output('blob');
-                    var url = URL.createObjectURL(blob);
-                    window.open(url, '_blank');
-                    setTimeout(function() { URL.revokeObjectURL(url); }, 30000);
-                } catch (e) { console.warn('PDF 새 탭 열기:', e); }
-            } finally {
-                renderTransportVolumeTable();
-                showForCapture(false);
             }
+            await tryDrawBannerOnPage3(doc);
+            footer();
+
+            renderTransportVolumeTable();
+
+            var name = fileName || '운송물량_리스트_50-50_요약.pdf';
+            doc.save(name);
+            try {
+                var blob = doc.output('blob');
+                var url = URL.createObjectURL(blob);
+                window.open(url, '_blank');
+                setTimeout(function() { URL.revokeObjectURL(url); }, 30000);
+            } catch (e) { console.warn('PDF 새 탭 열기:', e); }
         }
 
         function drawPageFooter(pdf, opts, pageIndex, totalPages) {
@@ -12760,6 +13077,8 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
                 }
             };
             try {
+                await (typeof ensureJsPDFLoaded === 'function' ? ensureJsPDFLoaded() : Promise.resolve());
+                if (!getJsPDF()) throw new Error('jsPDF가 로드되지 않았습니다. 네트워크를 확인한 뒤 새로고침 후 다시 시도해 주세요.');
                 if (type === 'transportVolume') {
                     await exportTransport_3PagesPDF(fileName, assets, opts);
                 } else {
@@ -12929,7 +13248,9 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
                         date: adjustedPlan[tripNum].date
                     };
                 }
-                
+                console.log('plan keys:', Object.keys(adjustedTransportPlan || {}));
+                console.log('first trip columns:', adjustedTransportPlan?.[Object.keys(adjustedTransportPlan || {})[0]]?.columns);
+
                 // 차수별 기둥 개수 확인 및 출력
                 console.log('=== 조정된 차수계획 생성 완료 - 차수별 기둥 개수 ===');
                 const sortedTripNums = Object.keys(adjustedTransportPlan)
@@ -12953,9 +13274,7 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
                 if (typeof renderTransportVolumeTable === 'function') {
                     renderTransportVolumeTable();
                 }
-                if (typeof renderAdjustedTransportVolumeTripSummary === 'function') {
-                    renderAdjustedTransportVolumeTripSummary();
-                }
+                renderAdjustedTripSummarySafe();
                 
                 // 조정 결과 패널 표시
                 const adjustmentPanel = document.getElementById('transport-volume-adjustment-panel');
@@ -14414,7 +14733,7 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
                             
                             if (found) {
                                 actualAdjustedPlanTrip = parseInt(tripNum);
-                                adjustedPlanDate = tripData.date || '';
+                                adjustedPlanDate = tripData.date || tripData.운송날짜 || '';
                                 isInAdjustedPlan = true;
                                 break;
                             }
@@ -14427,6 +14746,9 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
                         adjustedPlanStatus = '';
                     }
                 }
+                const tp = transportPlan && (transportPlan[actualAdjustedPlanTrip] || transportPlan[String(actualAdjustedPlanTrip)]);
+                const adjustedPlanDateDisplay = adjustedPlanDate || (tp && (tp.date || tp.운송날짜 || '')) || '';
+                const adjustedPlanCellText = actualAdjustedPlanTrip ? (actualAdjustedPlanTrip + '차' + (adjustedPlanDateDisplay ? ' ' + adjustedPlanDateDisplay : '')) : '－';
                 
                 // 다음 행의 조정된 차수계획 확인 (차수 변경 감지용)
                 let nextAdjustedPlanTrip = null;
@@ -14479,7 +14801,7 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
                             ${actualTransportPlanTrip ? `${actualTransportPlanTrip}${transportPlanDate ? ' - ' + transportPlanDate : ''}` : '－'}
                         </td>
                         <td style="text-align:center;${actualAdjustedPlanTrip && [2, 4, 6, 8, 10, 12].includes(actualAdjustedPlanTrip) ? 'background:#d0d0d0;' : ''}${!actualAdjustedPlanTrip ? 'color:#999;' : ''}" title="조정된 차수 선택">
-                            <span style="display:inline-block;margin-right:6px;">${actualAdjustedPlanTrip ? `${actualAdjustedPlanTrip}${adjustedPlanDate ? ' - ' + adjustedPlanDate : ''}` : '－'}</span>
+                            <span style="display:inline-block;margin-right:6px;">${adjustedPlanCellText}</span>
                             <select onchange="updateAdjustedPlanTripForColumn('${String(colNo || '').replace(/'/g, "\\'")}', this.value)" class="trip-select-no-scrollbar" style="width:auto;border:1px solid #ddd;border-radius:4px;background:#fff;cursor:pointer;vertical-align:middle;scrollbar-width:none;-ms-overflow-style:none;" title="1~12차 선택">
                                 <option value="">－</option>
                                 ${[1,2,3,4,5,6,7,8,9,10,11,12].map(t => {
@@ -14503,9 +14825,7 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
                 updateTransportVolumeStats(filteredData);
                 // 차수별 집계 테이블 업데이트
                 renderTransportVolumeTripSummary(filteredData);
-                if (typeof renderAdjustedTransportVolumeTripSummary === 'function') {
-                    renderAdjustedTransportVolumeTripSummary();
-                }
+                renderAdjustedTripSummarySafe();
             }
         }
         
@@ -14928,9 +15248,7 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
             if (typeof renderTransportVolumeTable === 'function') {
                 renderTransportVolumeTable();
             }
-            if (typeof renderAdjustedTransportVolumeTripSummary === 'function') {
-                renderAdjustedTransportVolumeTripSummary();
-            }
+            renderAdjustedTripSummarySafe();
         }
         
         // 조정공정표 표시 함수
@@ -15095,9 +15413,7 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
                         if (typeof renderTransportVolumeTable === 'function') {
                             renderTransportVolumeTable();
                         }
-                        if (typeof renderAdjustedTransportVolumeTripSummary === 'function') {
-                            renderAdjustedTransportVolumeTripSummary();
-                        }
+                        renderAdjustedTripSummarySafe();
                         
                         alert('✅ 조정차수계획 엑셀 파일을 사용하여 조정공정표가 표시되었습니다.');
                     } catch (error) {
@@ -15226,9 +15542,7 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
                     if (typeof renderTransportVolumeTable === 'function') {
                         renderTransportVolumeTable();
                     }
-                    if (typeof renderAdjustedTransportVolumeTripSummary === 'function') {
-                        renderAdjustedTransportVolumeTripSummary();
-                    }
+                    renderAdjustedTripSummarySafe();
                     
                     return;
                 }
@@ -15391,9 +15705,7 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
                             if (typeof renderTransportVolumeTable === 'function') {
                                 renderTransportVolumeTable();
                             }
-                            if (typeof renderAdjustedTransportVolumeTripSummary === 'function') {
-                                renderAdjustedTransportVolumeTripSummary();
-                            }
+                            renderAdjustedTripSummarySafe();
                             
                             alert('✅ 조정차수계획 엑셀 파일을 사용하여 조정공정표가 표시되었습니다.');
                         } catch (error) {
@@ -15688,8 +16000,21 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
                     return;
                 }
                 
+                // 부재개수·합산중량 계산 (필터된 데이터 기준)
+                const memberCount = filteredData.length;
+                let totalWeightKg = 0;
+                filteredData.forEach(item => {
+                    const w = parseFloat(String(item.weight || '').replace(/,/g, '')) || 0;
+                    totalWeightKg += w;
+                });
+                
                 // 엑셀 데이터 준비
                 const rows = [];
+                
+                // 요약 행 추가 (부재개수, 합산중량)
+                rows.push(['부재개수', memberCount, '개']);
+                rows.push(['합산중량(kg)', totalWeightKg.toLocaleString('ko-KR', { maximumFractionDigits: 0 }), 'kg']);
+                rows.push([]); // 빈 행
                 
                 // 헤더 추가
                 rows.push(['공종', '도면번호', '기둥번호', '규격', '길이(mm)', '중량(kg)', '운송차수계획(13차)', '조정된 차수계획(12차)']);
@@ -15787,7 +16112,7 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
                 // 파일 다운로드
                 XLSX.writeFile(wb, fileName);
                 
-                alert(`✅ 필터링된 데이터가 엑셀 파일로 저장되었습니다.\n\n파일명: ${fileName}\n총 ${filteredData.length}개 부재`);
+                alert(`✅ 필터링된 데이터가 엑셀 파일로 저장되었습니다.\n\n파일명: ${fileName}\n부재개수: ${memberCount}개\n합산중량: ${totalWeightKg.toLocaleString('ko-KR', { maximumFractionDigits: 0 })} kg`);
             } catch (error) {
                 console.error('엑셀 파일 생성 오류:', error);
                 alert('❌ 엑셀 파일 생성 중 오류가 발생했습니다.\n\n' + error.message);
@@ -16127,69 +16452,105 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
             });
             
             tbody.innerHTML = rows.join('');
+            // ✅ 원본 차수표 기준 저장 (여기 한 번만!)
+            window.originalTripCounts = {};
+            for (const tripNum in tripSummary) {
+                window.originalTripCounts[tripNum] = Number(tripSummary[tripNum]?.count ?? 0);
+            }
         }
         
         // 최대운송 25톤시 차수 조정 테이블 렌더링
         function renderAdjustedTransportVolumeTripSummary() {
             const tbody = document.getElementById('adjusted-transport-volume-trip-summary-tbody');
             if (!tbody) return;
-            
-            if (!transportVolumeData || transportVolumeData.length === 0 || !adjustedTransportPlan || Object.keys(adjustedTransportPlan).length === 0) {
+
+            if (!Array.isArray(transportVolumeData) || transportVolumeData.length === 0) {
+                console.warn('[AdjustedTripSummary] transportVolumeData empty -> summary will be 0 (data not loaded yet)');
                 tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#888;padding:16px;">"최대운송25톤" 버튼을 클릭하면 조정된 차수계획이 표시됩니다.</td></tr>';
                 return;
             }
-            
-            // 차수별 집계 데이터 생성
-            const tripSummary = {}; // { tripNum: { count: 0, totalWeight: 0, date: '' } }
-            
-            // adjustedTransportPlan의 모든 차수에 대해 집계
-            for (let tripNum in adjustedTransportPlan) {
+            if (!adjustedTransportPlan || typeof adjustedTransportPlan !== 'object') {
+                console.warn('[AdjustedTripSummary] adjustedTransportPlan missing');
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#888;padding:16px;">"최대운송25톤" 버튼을 클릭하면 조정된 차수계획이 표시됩니다.</td></tr>';
+                return;
+            }
+
+            console.log('sample adjustedTransportPlan:', adjustedTransportPlan);
+            console.log('sample transportVolumeData[0]:', transportVolumeData?.[0]);
+            console.log('transportVolumeData keys:', transportVolumeData?.[0] ? Object.keys(transportVolumeData[0]) : null);
+
+            // ---- 내부 유틸(충돌/중복 방지) ----
+            const normalizeColValue = (col) => {
+                if (col == null) return '';
+                if (typeof col === 'string' || typeof col === 'number') return String(col).trim();
+                return String(col.colId ?? col.columnId ?? col.id ?? col.col ?? col.no ?? col.dno ?? col.column ?? col.name ?? '').trim();
+            };
+            const getTransportColNo = (d) => {
+                if (!d) return '';
+                if (d.no != null && String(d.no).trim() !== '') return String(d.no).trim();
+                const directKeys = ['dno','DNO','col','COL','column','COLUMN','colNo','COLNO','columnNo','COLUMNNO','D.NO','d.no'];
+                for (const k of directKeys) {
+                    if (d[k] != null && String(d[k]).trim() !== '') return String(d[k]).trim();
+                }
+                for (const k of Object.keys(d)) {
+                    const lk = k.toLowerCase();
+                    if (lk === 'weight') continue;
+                    if (lk.includes('no') || lk.includes('col') || lk.includes('column')) {
+                        const v = d[k];
+                        if (v != null && String(v).trim() !== '') return String(v).trim();
+                    }
+                }
+                return '';
+            };
+            const getColIndex = (v) => {
+                const s = String(v ?? '').trim();
+                const idx = getColumnIndexFromId(s);
+                if (idx != null) return idx;
+                const fallback = parseInt(s.replace(/[^0-9]/g, ''), 10);
+                return Number.isFinite(fallback) ? fallback : null;
+            };
+            const getSubIndex = (v) => {
+                if (typeof getSubIndexFromId === 'function') {
+                    const s = String(v ?? '').trim();
+                    return getSubIndexFromId(s);
+                }
+                return null;
+            };
+            const columnsMatchStrict = (aRaw, bRaw) => {
+                const a = normalizeColValue(aRaw);
+                const b = String(bRaw ?? '').trim();
+                if (!a || !b) return false;
+                if (a === b) return true;
+                const ai = getColIndex(a);
+                const bi = getColIndex(b);
+                if (ai == null || bi == null) return false;
+                if (ai !== bi) return false;
+                const as = getSubIndex(a);
+                const bs = getSubIndex(b);
+                if (as != null && bs != null) return as === bs;
+                return true;
+            };
+            // ---- 유틸 끝 ----
+
+            const tripSummary = {};
+            for (const tripNum in adjustedTransportPlan) {
                 const tripData = adjustedTransportPlan[tripNum];
-                if (tripData && tripData.columns) {
-                    tripSummary[tripNum] = {
-                        count: 0,
-                        totalWeight: 0, // ton 단위
-                        date: tripData.date || ''
-                    };
-                    
-                    // 해당 차수에 속한 기둥들의 중량 합산
-                    tripData.columns.forEach(col => {
-                        // colId 형식으로 변환
-                        let colId = null;
-                        if (typeof col === 'number') {
-                            colId = getColumnId(col, 1);
-                        } else {
-                            const colStr = String(col);
-                            if (colStr.match(/^\d+(?:TC|C)\d+$/i)) {
-                                colId = colStr;
-                            } else {
-                                const colNum = parseInt(colStr.replace(/[^0-9]/g, ''));
-                                if (colNum) {
-                                    colId = getColumnId(colNum, 1);
-                                }
-                            }
-                        }
-                        
-                        // transportVolumeData에서 해당 기둥 찾기
-                        if (colId) {
-                            const item = transportVolumeData.find(d => {
-                                const itemColId = d.no || '';
-                                return itemColId === colId || 
-                                       getColumnIndexFromId(itemColId) === getColumnIndexFromId(colId);
-                            });
-                            
-                            if (item) {
-                                const weight = parseFloat(String(item.weight).replace(/,/g, '')) || 0; // kg (천 단위 구분 기호 제거)
-                                if (weight > 0) {
-                                    tripSummary[tripNum].count++;
-                                    tripSummary[tripNum].totalWeight += weight / 1000; // ton으로 변환
-                                }
-                            }
-                        }
+                tripSummary[tripNum] = { count: 0, totalWeight: 0, date: tripData?.date || '' };
+                const cols = tripData?.columns;
+                if (!Array.isArray(cols) || cols.length === 0) continue;
+                for (const rawCol of cols) {
+                    const item = transportVolumeData.find(d => {
+                        const dCol = getTransportColNo(d);
+                        return columnsMatchStrict(rawCol, dCol);
                     });
+                    if (item) {
+                        tripSummary[tripNum].count++;
+                        const weightKg = parseFloat(String(item.weight ?? '').replace(/,/g, '')) || 0;
+                        if (weightKg > 0) tripSummary[tripNum].totalWeight += weightKg / 1000;
+                    }
                 }
             }
-            
+
             // 차수 번호로 정렬
             const sortedTrips = Object.keys(tripSummary)
                 .map(Number)
@@ -16249,27 +16610,23 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
                 const isOver25Ton = totalWeightTon > 25;
                 const marginWeight = 25 - totalWeightTon; // 25톤 - 차수합산중량 (초과시 마이너스)
                 
-                // 기존 운송차수계획과 비교
-                const originalCount = originalTripCounts[tripNum] || 0;
-                const adjustedCount = summary.count;
-                const increase = adjustedCount > originalCount ? adjustedCount - originalCount : 0;
-                const countDisplay = increase > 0 
-                    ? `${adjustedCount.toLocaleString('ko-KR')} 개 <span style="color:#f44336;font-weight:bold;">(+${increase})</span>`
-                    : `${adjustedCount.toLocaleString('ko-KR')} 개`;
-                
                 const isLastTrip = idx === sortedTrips.length - 1;
                 const currentDelta = tripCountDeltas[tripNum] ?? 0;
-                const deltaOpts = isLastTrip ? [-3, -2, -1, 0] : [-3, -2, -1, 0, 1, 2, 3];
+                const deltaOpts = isLastTrip ? [-10,-9,-8,-7,-6,-5,-4,-3,-2,-1,0] : [-10,-9,-8,-7,-6,-5,-4,-3,-2,-1,0,1,2,3,4,5,6,7,8,9,10];
+                const selVal = deltaOpts.includes(currentDelta) ? currentDelta : 0;
                 const deltaSelectHtml = `
                     <select onchange="adjustAdjustedTripCount(${tripNum}, this.value)" style="margin-left:6px;width:auto;min-width:48px;padding:2px 4px;font-size:11px;border:1px solid #ddd;border-radius:4px;background:#fff;cursor:pointer;" title="부재수 조정">
-                        ${deltaOpts.map(d => `<option value="${d}"${currentDelta === d ? ' selected' : ''}>${d >= 0 ? '+' : ''}${d}</option>`).join('')}
+                        ${deltaOpts.map(d => `<option value="${d}"${selVal === d ? ' selected' : ''}>${d >= 0 ? '+' : ''}${d}</option>`).join('')}
                     </select>
                 `;
+                const adjusted = Number(tripSummary[tripNum]?.count ?? 0);
+                const original = Number((window.originalTripCounts && window.originalTripCounts[tripNum]) ?? originalTripCounts?.[tripNum] ?? adjusted);
+                const delta = adjusted - original;
                 
                 return `
                     <tr>
                         <td style="text-align:center;font-weight:bold;">${tripNum}</td>
-                        <td style="text-align:center;">${countDisplay} ${deltaSelectHtml}</td>
+                        <td style="text-align:center;">${adjusted}개${delta !== 0 ? ` (${delta > 0 ? '+' : ''}${delta})` : ''}${deltaSelectHtml}</td>
                         <td style="text-align:right;">${totalWeightTon.toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ton</td>
                         <td style="text-align:center;${isOver25Ton ? 'color:#f44336;font-weight:bold;' : 'color:#000;'}">${isOver25Ton ? '초과' : '정상'}</td>
                         <td style="text-align:right;${marginWeight < 0 ? 'color:#f44336;font-weight:bold;' : 'color:#000;'}">${marginWeight.toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ton</td>
@@ -16279,6 +16636,26 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
             });
             
             tbody.innerHTML = rows.join('');
+            console.log('[DEBUG] adjusted summary first row HTML:', tbody.querySelector('tr')?.innerHTML);
+            console.log('[DEBUG] adjusted summary first row text:', tbody.querySelector('tr')?.innerText);
+            setTimeout(() => {
+                console.log('[DEBUG] adjusted summary after 200ms first row text:', tbody.querySelector('tr')?.innerText);
+            }, 200);
+        }
+
+        function renderAdjustedTripSummarySafe() {
+            const readyVolume =
+                Array.isArray(transportVolumeData) &&
+                transportVolumeData.length > 0;
+
+            const readyPlan =
+                adjustedTransportPlan &&
+                typeof adjustedTransportPlan === 'object' &&
+                Object.keys(adjustedTransportPlan).length > 0;
+
+            if (!readyVolume || !readyPlan) return;
+
+            renderAdjustedTransportVolumeTripSummary();
         }
 
         // 현장설치현황: 설치 상태 렌더링
