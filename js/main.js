@@ -41,34 +41,10 @@
           }
         }
         
-        // EX-Slim-Beam (운영자 전용) 처리
-        // #region agent log
-        if (DEBUG_MODE) {
-          fetch('http://127.0.0.1:7242/ingest/f6b33b86-5eb3-41dd-83f7-9e0a0382507b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'main.js:39',message:'Checking EX-Slim-Beam condition',data:{text:text,id:this.id,includesBeam:text.includes('EX-Slim-Beam'),includesBox:text.includes('EX-Slim-Box'),idMatch:this.id === 'ex-slim-box-nav'},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
-        }
-        // #endregion
-        
-        if (text.includes('EX-Slim-Beam') || text.includes('EX-Slim-Box') || this.id === 'ex-slim-box-nav') {
-          // #region agent log
-          if (DEBUG_MODE) {
-            const targetUrl = '/pages/k-col web software/compositebeam-calculator.html';
-            const encodedUrl = encodeURI(targetUrl);
-            fetch('http://127.0.0.1:7242/ingest/f6b33b86-5eb3-41dd-83f7-9e0a0382507b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'main.js:45',message:'EX-Slim-Beam clicked - redirecting',data:{text:text,id:this.id,url:targetUrl,encodedUrl:encodedUrl},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
-          }
-          // #endregion
+        // Web Software II / III 트리거: 직접 이동·모달 차단, 사이드 드롭다운으로만 진입
+        if (this.id === 'ex-slim-box-nav' || this.id === 'ex-2') {
           e.preventDefault();
           e.stopPropagation();
-          // 운영자만 접근 가능 - 이미 표시된 것은 운영자이므로 바로 이동
-          // URL 인코딩하여 공백 처리
-          window.location.href = encodeURI('/pages/k-col web software/compositebeam-calculator.html');
-          return false;
-        }
-        
-        // ex-2 (Web Software III / Castellated Beam) 클릭 처리 - 일반 사용자 포함 모두 모달 표시
-        if (this.id === 'ex-2') {
-          e.preventDefault();
-          e.stopPropagation();
-          showCastellatedBeamSelectionModal();
           return false;
         }
         
@@ -114,6 +90,37 @@
     }).catch(function() {
       alert('로그인 상태를 확인할 수 없습니다.');
     });
+  }, true);
+
+  // Web Software I: K-COL SRC Design → 운영자만 이동, 일반 사용자 클릭 시 안내 메시지
+  document.addEventListener('click', function(e) {
+    var a = e.target && e.target.closest('a.nav-dropdown-item[data-operator-only]');
+    if (a) {
+      e.preventDefault();
+      e.stopPropagation();
+      var targetHref = (a.getAttribute('href') || '').replace(/^\s*|\s*$/g, '');
+      if (!targetHref) return;
+      if (!window.SDP || !window.SDP.auth) {
+        alert('이 기능은 운영자만 사용할 수 있습니다. 운영자권한이 필요합니다.');
+        return;
+      }
+      window.SDP.auth.getSession().then(function(session) {
+        if (!session) {
+          alert('이 기능은 운영자만 사용할 수 있습니다. 운영자권한이 필요합니다.');
+          return;
+        }
+        return window.SDP.auth.getProfile();
+      }).then(function(profile) {
+        if (profile && window.SDP.auth.isAdmin()) {
+          window.location.href = targetHref;
+        } else {
+          alert('이 기능은 운영자만 사용할 수 있습니다. 운영자권한이 필요합니다.');
+        }
+      }).catch(function() {
+        alert('이 기능은 운영자만 사용할 수 있습니다. 운영자권한이 필요합니다.');
+      });
+      return;
+    }
   }, true);
 
   // Web Software IV: CFT-BOX / CFT-Circular / H형강-Column → 운영자만 이동, 일반 사용자 클릭 시 안내 메시지

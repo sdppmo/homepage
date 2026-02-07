@@ -109,6 +109,7 @@
             padding: 50px;
             box-shadow: 0 10px 40px rgba(0,0,0,0.15);
             border: 2px solid rgba(255,255,255,0.3);
+            scroll-margin-top: 24px;
         }
 
         .consulting-section-title {
@@ -387,8 +388,8 @@
 
             <div class="consulting-sections">
                 <!-- 1. 엔지니어링 컨설팅 -->
-                <div class="consulting-section">
-                    <h2 class="consulting-section-title">공법/엔지니어링 컨설팅</h2>
+                <div class="consulting-section" id="engineering">
+                    <h2 class="consulting-section-title">공법 / 엔지니어링 컨설팅</h2>
                     <div class="consulting-grid">
                         <div class="consulting-panel">
                             <div class="consulting-icon">🏢</div>
@@ -430,7 +431,7 @@
                 </div>
 
                 <!-- 2. Product 개발 -->
-                <div class="consulting-section">
+                <div class="consulting-section" id="product">
                     <h2 class="consulting-section-title">Product 개발</h2>
                     <div class="consulting-grid">
                         <div class="consulting-panel">
@@ -481,8 +482,8 @@
                 </div>
 
                 <!-- 3. 철골공정 Web software 개발 -->
-                <div class="consulting-section">
-                    <h2 class="consulting-section-title">철공공정 Web Software개발</h2>
+                <div class="consulting-section" id="web-software">
+                    <h2 class="consulting-section-title">철골공정 Web Software개발</h2>
                     <div class="consulting-grid">
                         <div class="consulting-panel">
                             <div class="consulting-icon">⚙️</div>
@@ -522,7 +523,7 @@
                 </div>
 
                 <!-- 4. 지반안정성검토 자동화 TOOL 개발 -->
-                <div class="consulting-section">
+                <div class="consulting-section" id="ground-tool">
                     <h2 class="consulting-section-title">지반안정성검토TOOL개발 (지하흙막이벽체용)</h2>
                     <div class="consulting-grid">
                         <div class="consulting-panel">
@@ -562,5 +563,24 @@
             </div>
         </div>
     </div>
+    <script>
+      (function() {
+        function scrollToSection() {
+          var hash = location.hash;
+          if (!hash) return;
+          var id = hash.replace(/^#/, '');
+          var el = document.getElementById(id);
+          if (el) {
+            setTimeout(function() { el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 100);
+          }
+        }
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', scrollToSection);
+        } else {
+          scrollToSection();
+        }
+        window.addEventListener('hashchange', scrollToSection);
+      })();
+    </script>
 </body>
 </html>

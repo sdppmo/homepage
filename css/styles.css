@@ -432,17 +432,6 @@ div.nav-item {
   background: #000;
 }
 
-/* ex-2 메뉴 항목: 흰색 글자, 검정 배경 (gold 클래스가 있어도 무시) */
-div.nav-item#ex-2 {
-  color: #fff !important;
-  background: #000 !important;
-}
-
-div.nav-item#ex-2:hover {
-  color: #fff !important;
-  background: #222 !important;
-}
-
 a.nav-item:hover {
   color: #fff;
   background: #222;
