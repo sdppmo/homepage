@@ -8,6 +8,9 @@
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js" 
             onload="window.html2canvasLoaded = true; console.log('html2canvas loaded');"
             onerror="console.error('html2canvas failed to load');"></script>
+    <!-- 인증: 8m 초과 시 운영자 여부 확인용 (window.SDP.auth) -->
+    <script src="../../js/auth-config.js"></script>
+    <script src="../../js/auth.js"></script>
     <style>
         html {
             scroll-behavior: smooth;
@@ -1439,6 +1442,50 @@
             return grades[grade] || 355;
         }
 
+        // Beam span 8m limit: general users 8m only; >8m requires operator pre-approval
+        var BEAM_SPAN_LIMIT = 8;
+        var spanLimitMessage = '8m를 넘으면 운영자의 사전승인이 필요합니다. 일반 로그인 사용자는 8m까지만 사용할 수 있습니다.';
+        function checkBeamSpanLimit(callback) {
+            var el = document.getElementById('beamSpan');
+            if (!el) { if (callback) callback(true); return; }
+            var val = parseFloat(el.value) || 0;
+            if (val <= BEAM_SPAN_LIMIT) { if (callback) callback(true); return; }
+            if (!window.SDP || !window.SDP.auth) {
+                if (callback) callback(false);
+                return;
+            }
+            window.SDP.auth.getSession().then(function(session) {
+                if (!session) { if (callback) callback(false); return; }
+                return window.SDP.auth.getProfile();
+            }).then(function(profile) {
+                if (callback) callback(profile && window.SDP.auth.isAdmin());
+            }).catch(function() { if (callback) callback(false); });
+        }
+        function applyBeamSpanLimit() {
+            var el = document.getElementById('beamSpan');
+            if (!el) return;
+            var val = parseFloat(el.value) || 0;
+            if (val <= BEAM_SPAN_LIMIT) return;
+            checkBeamSpanLimit(function(isAdmin) {
+                if (!isAdmin) {
+                    el.value = BEAM_SPAN_LIMIT;
+                    el.dispatchEvent(new Event('input', { bubbles: true }));
+                    alert(spanLimitMessage);
+                }
+            });
+        }
+        (function initBeamSpanLimit() {
+            function go() {
+                var el = document.getElementById('beamSpan');
+                if (!el) { setTimeout(go, 100); return; }
+                el.addEventListener('input', applyBeamSpanLimit);
+                el.addEventListener('change', applyBeamSpanLimit);
+                setTimeout(applyBeamSpanLimit, 500);
+            }
+            if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', go);
+            else go();
+        })();
+
         // Main calculation function
         function calculateBeam() {
             // #region agent log
@@ -1446,6 +1493,26 @@
             // 주석 처리: 디버깅 서버가 없어서 connection_refused 에러 발생
             fetch('http://127.0.0.1:7242/ingest/f6b33b86-5eb3-41dd-83f7-9e0a0382507b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'noncomposite-castellatedbeam-calculator.html:calculateBeam',message:'calculateBeam function called',data:{timestamp:Date.now()},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'CALC'})}).catch((err)=>{console.error('Log fetch error:',err);});
             // #endregion
+            var L = parseFloat(document.getElementById('beamSpan').value) || 0;
+            if (L > BEAM_SPAN_LIMIT) {
+                checkBeamSpanLimit(function(isAdmin) {
+                    if (!isAdmin) {
+                        alert(spanLimitMessage);
+                        var el = document.getElementById('beamSpan');
+                        if (el) {
+                            el.value = BEAM_SPAN_LIMIT;
+                            el.dispatchEvent(new Event('input', { bubbles: true }));
+                        }
+                        return;
+                    }
+                    runCastellatedBeamRest();
+                });
+                return;
+            }
+            runCastellatedBeamRest();
+        }
+
+        function runCastellatedBeamRest() {
             try {
                 // #region agent log
                 // 주석 처리: 디버깅 서버가 없어서 connection_refused 에러 발생

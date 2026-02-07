@@ -922,6 +922,11 @@
             
             document.body.classList.add('loaded');
             adminName.textContent = profile.email || '';
+            var roleBadge = document.getElementById('adminRoleBadge');
+            if (roleBadge) {
+              roleBadge.textContent = profile.role === 'admin' ? '관리자' : (profile.role || '일반');
+              roleBadge.title = '현재 계정 역할: ' + (profile.role === 'admin' ? '관리자' : (profile.role || '일반'));
+            }
             loadUsers();
         });
     });

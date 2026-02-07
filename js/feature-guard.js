@@ -279,6 +279,9 @@
       });
     }
 
+    // Allow one click through for dropdown open (avoids re-intercept)
+    var authGuardAllowClick = false;
+
     // Attach guards to protected elements
     function attachGuards() {
       // Handle login-only guards (data-requires-auth="true")
@@ -286,15 +289,25 @@
       
       authElements.forEach(function(el) {
         el.addEventListener('click', function(e) {
+          if (authGuardAllowClick) {
+            authGuardAllowClick = false;
+            return;
+          }
           e.preventDefault();
           e.stopPropagation();
           
           isLoggedIn().then(function(logged) {
             if (logged) {
-              // Logged in - proceed with original action
               var href = el.getAttribute('href');
               if (href && href !== '#') {
                 window.location.href = href;
+              } else {
+                // No href: dropdown wrapper – allow trigger click so menu opens
+                var trigger = el.querySelector('.nav-dropdown-trigger');
+                if (trigger) {
+                  authGuardAllowClick = true;
+                  trigger.click();
+                }
               }
             } else {
               showLoginModal();

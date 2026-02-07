@@ -977,6 +977,23 @@
             
         <!-- 메인 컨텐츠 -->
         <div class="main-content">
+            <!-- CFT-BOX / CFT-Circular / H형강-Column 안내 패널 (해시로 진입 시 표시, 계산서 미제공) -->
+            <div id="cft-box" class="coming-soon-panel" style="display:none; margin-bottom: 20px; padding: 24px; background: linear-gradient(135deg, #fff7ed 0%, #fef3c7 100%); border: 2px solid #f59e0b; border-radius: 12px;">
+                <div style="font-size: 18px; font-weight: 700; color: #92400e; margin-bottom: 8px;">CFT-BOX Column</div>
+                <p style="margin: 0 0 16px; color: #78350f; font-size: 14px; line-height: 1.6;">본 기능은 현재 개발 준비 중입니다. 계산서 및 별도 링크는 제공되지 않습니다.</p>
+                <p style="margin: 0; font-size: 13px; color: #1e3a5f;">Cross H Column 계산이 필요하시면 아래 <strong>구조 계산</strong> 영역을 이용해 주세요.</p>
+            </div>
+            <div id="cft-circular" class="coming-soon-panel" style="display:none; margin-bottom: 20px; padding: 24px; background: linear-gradient(135deg, #fff7ed 0%, #fef3c7 100%); border: 2px solid #f59e0b; border-radius: 12px;">
+                <div style="font-size: 18px; font-weight: 700; color: #92400e; margin-bottom: 8px;">CFT-Circular Column</div>
+                <p style="margin: 0 0 16px; color: #78350f; font-size: 14px; line-height: 1.6;">본 기능은 현재 개발 준비 중입니다. 계산서 및 별도 링크는 제공되지 않습니다.</p>
+                <p style="margin: 0; font-size: 13px; color: #1e3a5f;">Cross H Column 계산이 필요하시면 아래 <strong>구조 계산</strong> 영역을 이용해 주세요.</p>
+            </div>
+            <div id="h-beam" class="coming-soon-panel" style="display:none; margin-bottom: 20px; padding: 24px; background: linear-gradient(135deg, #fff7ed 0%, #fef3c7 100%); border: 2px solid #f59e0b; border-radius: 12px;">
+                <div style="font-size: 18px; font-weight: 700; color: #92400e; margin-bottom: 8px;">H형강-Column</div>
+                <p style="margin: 0 0 16px; color: #78350f; font-size: 14px; line-height: 1.6;">본 기능은 현재 개발 준비 중입니다. 계산서 및 별도 링크는 제공되지 않습니다.</p>
+                <p style="margin: 0; font-size: 13px; color: #1e3a5f;">Cross H Column 계산이 필요하시면 아래 <strong>구조 계산</strong> 영역을 이용해 주세요.</p>
+            </div>
+
             <!-- 좌측: 단면도 + 치수 -->
             <div class="left-section">
                 <!-- 사용설명서 패널 -->
@@ -4578,16 +4595,14 @@
                 return;
             }
             
-            valSpan.textContent = ratio.toFixed(3);
+            valSpan.textContent = ratio.toFixed(3) + ' ≤ 1.0';
             
-            // 계산서와 일치하는 로직 적용
-            // 모든 항목이 ratio <= 1.0이면 O.K (계산서 로직과 동일)
-            // Compressive, P-M-M, Bending, Shear 모두 동일한 기준 사용
+            // 판정 기준 통일: ratio <= 1.0 → OK, ratio > 1.0 → NG
             if (ratio <= 1.0) {
-                statusSpan.textContent = 'O.K';
+                statusSpan.textContent = '→ O.K';
                 statusSpan.className = 'result-status ok';
             } else {
-                statusSpan.textContent = 'N.G';
+                statusSpan.textContent = '→ N.G';
                 statusSpan.className = 'result-status ng';
             }
         }
@@ -4655,12 +4670,13 @@
             outputDiv.classList.add('active');
         }
 
-        // 간편계산 결과 항목 생성 함수
+        // 간편계산 결과 항목 생성 함수 (표시: ratio ≤ 1.0 → OK/NG)
         function createQuickCalcItem(label, value, status) {
+            const resultText = status === 'ok' ? '→ O.K' : '→ N.G';
             return `
                 <div class="quick-calc-result-item">
                     <span class="quick-calc-result-label">${label}:</span>
-                    <span class="quick-calc-result-value ${status}">${value}</span>
+                    <span class="quick-calc-result-value ${status}">${value} ≤ 1.0 ${resultText}</span>
                 </div>
             `;
         }
@@ -4985,6 +5001,23 @@
             `;
             document.body.insertAdjacentHTML('beforeend', modalHTML);
         }
+    </script>
+    <script>
+        // #cft-box, #cft-circular, #h-beam 해시일 때 해당 안내 패널만 표시
+        function updateComingSoonPanels() {
+            var hash = (window.location.hash || '').toLowerCase();
+            var ids = ['cft-box', 'cft-circular', 'h-beam'];
+            ids.forEach(function(id) {
+                var el = document.getElementById(id);
+                if (el) el.style.display = (hash === '#' + id) ? 'block' : 'none';
+            });
+        }
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', updateComingSoonPanels);
+        } else {
+            updateComingSoonPanels();
+        }
+        window.addEventListener('hashchange', updateComingSoonPanels);
     </script>
     <script src="../../js/auth-config.js"></script>
     <script src="../../js/auth.js"></script>

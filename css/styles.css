@@ -323,6 +323,73 @@ html, body {
   flex: 1;
 }
 
+/* D.M.I.S. Dropdown */
+.nav-dropdown {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.nav-dropdown-trigger {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nav-dropdown-menu {
+  position: absolute;
+  top: 0;
+  left: 100%;
+  z-index: 100;
+  background: #0d0d1a;
+  border-left: 2px solid rgba(255, 204, 0, 0.4);
+  border-top: 1px solid rgba(255, 215, 0, 0.2);
+  border-bottom: 1px solid rgba(255, 215, 0, 0.2);
+  border-right: 1px solid rgba(255, 215, 0, 0.2);
+  box-shadow: 6px 0 16px rgba(0, 0, 0, 0.4);
+  display: none;
+  flex-direction: column;
+  min-width: 240px;
+}
+
+.nav-dropdown:hover .nav-dropdown-menu,
+.nav-dropdown:focus-within .nav-dropdown-menu {
+  display: flex;
+}
+
+.nav-dropdown-item {
+  display: block;
+  padding: 10px 16px 10px 20px;
+  color: #ffcc00;
+  font-size: 15px;
+  font-weight: 500;
+  text-decoration: none;
+  background: #101535;
+  border-bottom: 1px solid rgba(255, 204, 0, 0.15);
+  transition: background 0.2s, color 0.2s;
+}
+
+.nav-dropdown-item:last-child {
+  border-bottom: none;
+}
+
+.nav-dropdown-item:hover {
+  background: #252a60;
+  color: #fff;
+}
+
+/* 관리자 모드에서 EXTRA SLIM Light/Heavy 항목 어둡게 */
+.nav-dropdown-item.admin-dim {
+  color: #5a5a5a !important;
+  opacity: 0.9;
+}
+.nav-dropdown-item.admin-dim:hover {
+  color: #7a7a7a !important;
+  background: #1a1a2e;
+}
+
 .nav-item {
   display: block;
   background: linear-gradient(180deg, #1a2050 0%, #101535 100%);
@@ -860,6 +927,35 @@ a.brochure-btn.white:hover {
   text-decoration: underline;
 }
 
+/* Footer 2-row buttons (left of db-button) */
+.footer-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.footer-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(180deg, #ffd700 0%, #cc9900 100%);
+  border: 2px solid #996600;
+  padding: 6px 12px;
+  min-width: 120px;
+  font-size: 11px;
+  font-weight: bold;
+  color: #000;
+  text-decoration: none;
+  text-align: center;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.footer-btn:hover {
+  background: linear-gradient(180deg, #ffe066 0%, #d4a800 100%);
+}
+
 /* Database Button */
 .db-button {
   background: linear-gradient(180deg, #ffd700 0%, #cc9900 100%);
@@ -1188,14 +1284,26 @@ a.brochure-btn.white:hover {
     margin-bottom: 5px;
   }
   
-  .db-button {
+  .footer-buttons {
     order: 2;
+    flex-direction: row;
+    justify-content: center;
+    gap: 10px;
+  }
+  
+  .footer-btn {
+    flex: 1;
+    min-width: 0;
+  }
+  
+  .db-button {
+    order: 3;
     width: 100%;
     padding: 12px;
   }
   
   .company-logos {
-    order: 3;
+    order: 4;
     width: 100%;
     grid-template-columns: repeat(3, 1fr);
     grid-template-rows: repeat(2, 40px);
@@ -1537,6 +1645,7 @@ a.brochure-btn.white:hover {
 
 .castellated-beam-modal {
   max-width: 700px;
+  min-width: 480px;
   width: 90%;
   background: rgba(255,255,255,0.95);
   border-radius: 18px;
@@ -1594,28 +1703,60 @@ a.brochure-btn.white:hover {
   border-color: rgba(255,255,255,0.5);
 }
 
+.castellated-beam-modal-image {
+  padding: 16px 24px 0;
+  text-align: center;
+  max-height: 180px;
+  overflow: hidden;
+}
+
+.castellated-beam-modal-image img {
+  max-height: 160px;
+  width: auto;
+  object-fit: contain;
+}
+
+.castellated-beam-modal-image-composite {
+  padding: 8px 18px 0;
+  max-height: 340px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
+}
+
+.castellated-beam-modal-image-composite img {
+  max-height: 300px;
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+  display: block;
+  object-fit: contain;
+}
+
 .castellated-beam-modal-content {
-  padding: 30px;
+  padding: 14px 18px 18px;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 20px;
+  gap: 12px;
   position: relative;
+  align-items: start;
 }
 
 .castellated-beam-option {
   background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
   border: 2px solid #cbd5e1;
-  border-radius: 12px;
-  padding: 30px 20px;
+  border-radius: 8px;
+  padding: 12px 10px;
   text-align: center;
   cursor: pointer;
   transition: all 0.3s;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 15px;
+  gap: 8px;
   position: relative;
-  margin-bottom: 20px;
+  margin-bottom: 8px;
 }
 
 .castellated-beam-option:not(:nth-last-child(-n+2))::after {
@@ -1638,29 +1779,45 @@ a.brochure-btn.white:hover {
 .castellated-beam-option-icon {
   font-size: 48px;
   line-height: 1;
+  width: 80px;
+  height: 56px;
+  max-width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.castellated-beam-option-icon img {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
 }
 
 .castellated-beam-option-title {
-  font-size: 18px;
+  font-size: 13px;
   font-weight: 700;
   color: #1e3a5f;
-  line-height: 1.4;
+  line-height: 1.3;
 }
 
 .castellated-beam-option-desc {
-  font-size: 13px;
+  font-size: 11px;
   color: #64748b;
-  line-height: 1.5;
+  line-height: 1.35;
 }
 
 @media (max-width: 768px) {
   .castellated-beam-modal-content {
-    grid-template-columns: 1fr;
-    gap: 15px;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
   }
   
   .castellated-beam-modal {
     max-width: 90%;
+    min-width: 320px;
   }
 }
 

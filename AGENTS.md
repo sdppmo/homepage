@@ -261,6 +261,15 @@ deploy.bat -stop
 
 ---
 
+## Admin (운영자)
+
+- **등록된 관리자**: teddy1092@gmail.com (이미 `user_profiles.role = 'admin'` 으로 등록됨)
+- 운영자 권한은 Supabase `user_profiles.role = 'admin'` 으로 판별됩니다.
+- 최초 운영자 부트스트랩: `admin-users` Edge Function의 `bootstrap_admin` 액션 사용 시, Supabase 시크릿 **ADMIN_EMAIL_ALLOWLIST**에 해당 이메일을 포함해야 합니다 (쉼표로 복수 지정 가능).
+- 추가 운영자는 기존 운영자 계정으로 `/pages/admin.html` 에서 사용자 역할을 "관리자"로 설정하면 됩니다.
+
+---
+
 ## Contact
 
 - Email: sbd_pmo@naver.com

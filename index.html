@@ -88,15 +88,77 @@
 
         <!-- Navigation Menu -->
         <nav class="nav-menu">
-          <a href="pages/consulting.html" class="nav-item gold">Consulting</a>
-          <a href="pages/products.html" class="nav-item gold">Products</a>
-          <a href="pages/slim-box-web-support.html" class="nav-item gold">D. M. I. S. (K-COL / Slim-Box)</a>
-          <a href="pages/k-col web software/crossHcolumnCalculator.html" class="nav-item active gold" data-requires-auth="true" data-required-groups="kcol-user">K-COL Web Software</a>
-          <a href="pages/K-product/2H_steel_product.html" class="nav-item gold" id="kcol-product-schedule-link" data-requires-auth="true" data-required-groups="kcol-admin">K-COL Product Schedule</a>
-          <div class="nav-item gold" id="ex-slim-box-nav" style="display: flex; cursor: pointer;">Composite Beam Design (H형강)</div>
-          <div class="nav-item gold" id="ex-2" style="display: flex; cursor: pointer;">Castellated composite Beam Design</div>
-          <a href="pages/ks-code-database.html" class="nav-item gold">KS code DB(철골용)</a>
-          <a href="pages/qa.html" class="nav-item gold">Q & A (logged-in user)</a>
+          <div class="nav-dropdown">
+            <a href="pages/consulting.html" class="nav-dropdown-trigger nav-item gold" aria-expanded="false" aria-haspopup="true">Business Consulting</a>
+            <div class="nav-dropdown-menu">
+              <a href="pages/consulting.html#engineering" class="nav-dropdown-item">공법/엔지니어링 컨설팅</a>
+              <a href="pages/consulting.html#product" class="nav-dropdown-item">Product 개발</a>
+              <a href="pages/consulting.html#web-software" class="nav-dropdown-item">철공공정 Web Software개발</a>
+              <a href="pages/consulting.html#ground-tool" class="nav-dropdown-item">지반안정성검토TOOL개발<br>(지하흙막이벽체용)</a>
+            </div>
+          </div>
+          <div class="nav-dropdown" data-requires-auth="true">
+            <div class="nav-dropdown-trigger nav-item gold" aria-expanded="false" aria-haspopup="true">Products</div>
+            <div class="nav-dropdown-menu">
+              <a href="pages/products.html#kcol" class="nav-dropdown-item">K-COL for Composite Column</a>
+              <a href="pages/products.html#slimbox" class="nav-dropdown-item">Slim-Box for CIP Soil Protection Wall</a>
+            </div>
+          </div>
+          <div class="nav-dropdown" data-requires-auth="true">
+            <div class="nav-dropdown-trigger nav-item gold" aria-expanded="false" aria-haspopup="true">D.M.I.S.</div>
+            <div class="nav-dropdown-menu">
+              <a href="pages/slim-box-web-support.html#kcol" class="nav-dropdown-item">DMIS for K-COL Project</a>
+              <a href="pages/slim-box-web-support.html" class="nav-dropdown-item">DMIS for Slim-Box Project</a>
+              <a href="pages/slim-box-web-support.html#extra" class="nav-dropdown-item">DMIS for EXTRA Slim-Beam</a>
+            </div>
+          </div>
+          <div class="nav-dropdown" data-requires-auth="true" data-required-groups="kcol-user">
+            <a href="pages/k-col web software/crossHcolumnCalculator.html" class="nav-dropdown-trigger nav-item active gold" aria-expanded="false" aria-haspopup="true">Web Software  I</a>
+            <div class="nav-dropdown-menu">
+              <a href="pages/k-col web software/crossHcolumnCalculator.html" class="nav-dropdown-item">K-COL Steel Column Design<br>(Cross H)</a>
+              <a href="pages/k-col web software/crossHcolumnCalculator.html" class="nav-dropdown-item">K-COL SRC Design</a>
+              <a href="pages/k-col web software/boq-report.html" class="nav-dropdown-item">K-COL BOQ</a>
+              <a href="pages/k-col web software/auto-find-section.html" class="nav-dropdown-item">K-COL A.F.C Function</a>
+              <a href="pages/k-col web software/crossHcolumnCalculator.html#adc" class="nav-dropdown-item">K-COL A.D.C Function</a>
+            </div>
+          </div>
+          <div class="nav-dropdown" data-requires-auth="true">
+            <a href="pages/k-col web software/compositebeam-calculator.html" class="nav-dropdown-trigger nav-item gold" id="ex-slim-box-nav" style="display: flex;" aria-expanded="false" aria-haspopup="true">Web Software II</a>
+            <div class="nav-dropdown-menu">
+              <a href="pages/k-col web software/compositebeam-calculator.html" class="nav-dropdown-item">Composite Beam Design<br>(H형강)</a>
+            </div>
+          </div>
+          <div class="nav-dropdown" data-requires-auth="true">
+            <div class="nav-dropdown-trigger nav-item gold" id="ex-2" style="display: flex; cursor: pointer;" aria-expanded="false" aria-haspopup="true">Web Software III</div>
+            <div class="nav-dropdown-menu">
+              <a href="pages/k-col%20web%20software/Composite_CastellatedBeam_Design_Calculator.html?type=without-slab" class="nav-dropdown-item" data-castellated-type="without-slab">Non Composite Beam</a>
+              <a href="pages/k-col%20web%20software/Composite_CastellatedBeam_Design_Calculator.html?type=with-slab" class="nav-dropdown-item" data-castellated-type="with-slab">Composite Castellated Beam</a>
+              <a href="pages/k-col web software/compositebeam-calculator.html#extra-slim-light" class="nav-dropdown-item" data-admin-dim>EXTRA SLIM Light<br>(Span&lt;13m, L.Load&lt;5kN/m2)</a>
+              <a href="pages/k-col web software/compositebeam-calculator.html#extra-slim-heavy" class="nav-dropdown-item" data-admin-dim>EXTRA Slim Heavy<br>(Span : Free, L.Load &gt; 10kN/m2)</a>
+            </div>
+          </div>
+          <div class="nav-dropdown">
+            <div class="nav-dropdown-trigger nav-item gold" id="web-software-iv" style="cursor: pointer;" aria-expanded="false" aria-haspopup="true">Web Software IV</div>
+            <div class="nav-dropdown-menu">
+              <a href="pages/k-col web software/crossHcolumnCalculator.html#cft-box" class="nav-dropdown-item">CFT-BOX Column</a>
+              <a href="pages/k-col web software/crossHcolumnCalculator.html#cft-circular" class="nav-dropdown-item">CFT-Circular Column</a>
+              <a href="pages/k-col web software/crossHcolumnCalculator.html#h-beam" class="nav-dropdown-item">H형강-Column</a>
+            </div>
+          </div>
+          <div class="nav-dropdown" data-requires-auth="true" data-required-groups="kcol-admin">
+            <div class="nav-dropdown-trigger nav-item gold" aria-expanded="false" aria-haspopup="true">Product Schedule</div>
+            <div class="nav-dropdown-menu">
+              <a href="pages/K-product/2H_steel_product.html" class="nav-dropdown-item" id="kcol-product-schedule-link">K-COL Product Schedule</a>
+              <a href="pages/K-product/2H_steel_product.html#slimbox" class="nav-dropdown-item">Slim-Box Product Schedule</a>
+            </div>
+          </div>
+                    <div class="nav-dropdown" data-requires-auth="true">
+            <a href="pages/slim-box-web-support.html" class="nav-dropdown-trigger nav-item gold" aria-expanded="false" aria-haspopup="true">Civil Soil Protection Wall</a>
+            <div class="nav-dropdown-menu">
+              <a href="pages/slim-box-web-support.html#guide" class="nav-dropdown-item">Slim-Box 안내서</a>
+              <a href="pages/slim-box-web-support.html#drawing" class="nav-dropdown-item">Slim-Box Drawing</a>
+            </div>
+          </div>
           <div class="nav-item gray-text" onclick="enableKosisMode()" style="cursor: pointer;">KOSIS (월평균가격)</div>
         </nav>
 
@@ -326,6 +388,10 @@
           <div>주식회사 송도파트너스피엠오 | 대표: 김대근 | 사업자등록번호: 899-87-01996</div>
           <div>인천광역시 연수구 컨벤시아대로42번길 77 | <a href="mailto:sbd_pmo@naver.com">sbd_pmo@naver.com</a></div>
           <div>Homepage: <a href="https://kcol.kr" target="_blank">https://kcol.kr</a></div>
+        </div>
+        <div class="footer-buttons">
+          <a href="pages/ks-code-database.html" class="footer-btn" data-requires-auth="true">KS CODE DB(철골용)</a>
+          <a href="pages/qa.html" class="footer-btn" data-requires-auth="true">Q & A (Logged-in User)</a>
         </div>
         <div class="db-button">
           <div class="main-text">

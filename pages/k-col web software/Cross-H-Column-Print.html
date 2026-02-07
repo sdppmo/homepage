@@ -491,7 +491,7 @@
                 <td class="yellow-cell" style="width:70px;" id="s_phiPn">5,015.36</td>
                 <td>=</td>
                 <td class="yellow-cell" style="width:55px;" id="s_compR">0.888</td>
-                <td>&lt;</td>
+                <td>≤</td>
                 <td style="width:50px;">1.0</td>
                 <td class="green-text" id="s_compOK">→ O.K</td>
             </tr>
@@ -506,7 +506,7 @@
                 <td class="yellow-cell" id="s_bendXR">0.000</td>
                 <td>≤</td>
                 <td>1.0</td>
-                <td class="green-text">→ O.K</td>
+                <td class="green-text" id="s_bendXOK">→ O.K</td>
             </tr>
             <tr>
                 <td class="label-cell"></td>
@@ -519,7 +519,7 @@
                 <td class="yellow-cell" id="s_bendYR">0.000</td>
                 <td>≤</td>
                 <td>1.0</td>
-                <td class="green-text">→ O.K</td>
+                <td class="green-text" id="s_bendYOK">→ O.K</td>
             </tr>
             <tr>
                 <td class="label-cell">P-M-M Combination</td>
@@ -528,7 +528,7 @@
                 <td class="yellow-cell" id="s_pmmR1">0.888</td>
                 <td>+</td>
                 <td class="yellow-cell" id="s_pmmR2">0.888</td>
-                <td>&lt;</td>
+                <td>≤</td>
                 <td>1.0</td>
                 <td class="green-text" id="s_pmmOK">→ O.K</td>
             </tr>
@@ -543,7 +543,7 @@
                 <td class="yellow-cell" id="s_shearXR">0.000</td>
                 <td>≤</td>
                 <td>1.0</td>
-                <td class="green-text">→ O.K</td>
+                <td class="green-text" id="s_shearXOK">→ O.K</td>
             </tr>
             <tr>
                 <td class="label-cell"></td>
@@ -556,7 +556,7 @@
                 <td class="yellow-cell" id="s_shearYR">0.000</td>
                 <td>≤</td>
                 <td>1.0</td>
-                <td class="green-text">→ O.K</td>
+                <td class="green-text" id="s_shearYOK">→ O.K</td>
             </tr>
         </table>
 
@@ -807,7 +807,7 @@
             <span class="calc-eq">=</span>
             <span class="calc-value" id="pm_r2">0.888</span>
             <span class="calc-unit"></span>
-            <span class="calc-compare">&lt; 1.000</span>
+            <span class="calc-compare">≤ 1.000</span>
             <span class="calc-result green-text" id="pm_result">→ O.K</span>
         </div>
 
@@ -1003,41 +1003,63 @@
             document.getElementById('s_phiPn').textContent=fmt(phi_Pn);
             document.getElementById('s_compR').textContent=fmt(rComp,3);
             
-            // Compressive 체크: rComp > 1.0이면 NG
+            // Compressive 체크: ratio <= 1.0 → OK, ratio > 1.0 → NG
             const compOK = document.getElementById('s_compOK');
-            if (rComp > 1.0) {
-                compOK.textContent = '→ N.G';
-                compOK.className = 'red-text';
-            } else {
+            if (rComp <= 1.0) {
                 compOK.textContent = '→ O.K';
                 compOK.className = 'green-text';
+            } else {
+                compOK.textContent = '→ N.G';
+                compOK.className = 'red-text';
             }
             
             document.getElementById('s_Mux').textContent=fmt(Mux);
             document.getElementById('s_phiMnx').textContent=fmt(phi_Mnx);
             document.getElementById('s_bendXR').textContent=fmt(rBendX,3);
+            const bendXOK = document.getElementById('s_bendXOK');
+            if (bendXOK) {
+                if (rBendX <= 1.0) { bendXOK.textContent = '→ O.K'; bendXOK.className = 'green-text'; }
+                else { bendXOK.textContent = '→ N.G'; bendXOK.className = 'red-text'; }
+            }
             document.getElementById('s_Muy').textContent=fmt(Muy);
             document.getElementById('s_phiMny').textContent=fmt(phi_Mny);
             document.getElementById('s_bendYR').textContent=fmt(rBendY,3);
+            const bendYOK = document.getElementById('s_bendYOK');
+            if (bendYOK) {
+                if (rBendY <= 1.0) { bendYOK.textContent = '→ O.K'; bendYOK.className = 'green-text'; }
+                else { bendYOK.textContent = '→ N.G'; bendYOK.className = 'red-text'; }
+            }
             document.getElementById('s_pmmR1').textContent=fmt(rComp,3);
             document.getElementById('s_pmmR2').textContent=fmt(rPmm,3);
             
-            // Summary P-M-M 체크: rPmm > 1.0이면 NG, 아니면 OK
+            // P-M-M 체크: ratio <= 1.0 → OK, ratio > 1.0 → NG
             const sPmmOK = document.getElementById('s_pmmOK');
-            if (rPmm > 1.0) {
-                sPmmOK.textContent = '→ N.G';
-                sPmmOK.className = 'red-text';
-            } else {
+            if (rPmm <= 1.0) {
                 sPmmOK.textContent = '→ O.K';
                 sPmmOK.className = 'green-text';
+            } else {
+                sPmmOK.textContent = '→ N.G';
+                sPmmOK.className = 'red-text';
             }
             
             document.getElementById('s_Vux').textContent=fmt(Vux);
             document.getElementById('s_phiVnx').textContent=fmt(phi_Vnx);
-            document.getElementById('s_shearXR').textContent=fmt(Vux/phi_Vnx,3);
+            const rShearX = phi_Vnx > 0 ? Vux/phi_Vnx : 0;
+            document.getElementById('s_shearXR').textContent=fmt(rShearX,3);
+            const shearXOK = document.getElementById('s_shearXOK');
+            if (shearXOK) {
+                if (rShearX <= 1.0) { shearXOK.textContent = '→ O.K'; shearXOK.className = 'green-text'; }
+                else { shearXOK.textContent = '→ N.G'; shearXOK.className = 'red-text'; }
+            }
             document.getElementById('s_Vuy').textContent=fmt(Vuy);
             document.getElementById('s_phiVny').textContent=fmt(phi_Vny);
-            document.getElementById('s_shearYR').textContent=fmt(Vuy/phi_Vny,3);
+            const rShearY = phi_Vny > 0 ? Vuy/phi_Vny : 0;
+            document.getElementById('s_shearYR').textContent=fmt(rShearY,3);
+            const shearYOK = document.getElementById('s_shearYOK');
+            if (shearYOK) {
+                if (rShearY <= 1.0) { shearYOK.textContent = '→ O.K'; shearYOK.className = 'green-text'; }
+                else { shearYOK.textContent = '→ N.G'; shearYOK.className = 'red-text'; }
+            }
 
             // Compressive
             document.getElementById('c_KLr').textContent=fmt(lambda);

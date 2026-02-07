@@ -64,73 +64,11 @@
           return false;
         }
         
-        // ex-2 (Castellated Beam) 클릭 처리 - 운영자만 접근 가능
+        // ex-2 (Web Software III / Castellated Beam) 클릭 처리 - 일반 사용자 포함 모두 모달 표시
         if (this.id === 'ex-2') {
-          // #region agent log
-          if (DEBUG_MODE) {
-            fetch('http://127.0.0.1:7242/ingest/f6b33b86-5eb3-41dd-83f7-9e0a0382507b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'main.js:ex-2-click',message:'ex-2 clicked - checking admin permission',data:{id:this.id,text:text,hasSDP:!!window.SDP,hasAuth:!!(window.SDP && window.SDP.auth)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'EX2'})}).catch(()=>{});
-          }
-          // #endregion
           e.preventDefault();
           e.stopPropagation();
-          
-          // 운영자 권한 체크
-          if (!window.SDP || !window.SDP.auth) {
-            // #region agent log
-            if (DEBUG_MODE) {
-              fetch('http://127.0.0.1:7242/ingest/f6b33b86-5eb3-41dd-83f7-9e0a0382507b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'main.js:ex-2-click',message:'Auth not available',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'EX2'})}).catch(()=>{});
-            }
-            // #endregion
-            alert('이 기능은 운영자만 사용할 수 있습니다.\n로그인 후 운영자 권한이 있는 계정으로 접근해주세요.');
-            return false;
-          }
-          
-          window.SDP.auth.getSession().then(function(session) {
-            if (!session) {
-              // #region agent log
-              if (DEBUG_MODE) {
-                fetch('http://127.0.0.1:7242/ingest/f6b33b86-5eb3-41dd-83f7-9e0a0382507b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'main.js:ex-2-click',message:'No session - access denied',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'EX2'})}).catch(()=>{});
-              }
-              // #endregion
-              alert('이 기능은 운영자만 사용할 수 있습니다.\n로그인 후 운영자 권한이 있는 계정으로 접근해주세요.');
-              return;
-            }
-            
-            window.SDP.auth.getProfile().then(function(profile) {
-              var isAdmin = profile && window.SDP.auth.isAdmin();
-              
-              // #region agent log
-              if (DEBUG_MODE) {
-                fetch('http://127.0.0.1:7242/ingest/f6b33b86-5eb3-41dd-83f7-9e0a0382507b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'main.js:ex-2-click',message:'Admin check result',data:{isAdmin:isAdmin,email:profile?.email},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'EX2'})}).catch(()=>{});
-              }
-              // #endregion
-              
-              if (isAdmin) {
-                // 운영자면 모달 표시
-                showCastellatedBeamSelectionModal();
-              } else {
-                // 운영자가 아니면 접근 거부
-                alert('이 기능은 운영자만 사용할 수 있습니다.\n운영자 권한이 필요합니다.');
-              }
-            }).catch(function(err) {
-              // #region agent log
-              if (DEBUG_MODE) {
-                fetch('http://127.0.0.1:7242/ingest/f6b33b86-5eb3-41dd-83f7-9e0a0382507b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'main.js:ex-2-click',message:'Error getting profile',data:{error:err.message},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'EX2'})}).catch(()=>{});
-              }
-              // #endregion
-              console.error('Error checking admin status:', err);
-              alert('권한 확인 중 오류가 발생했습니다.');
-            });
-          }).catch(function(err) {
-            // #region agent log
-            if (DEBUG_MODE) {
-              fetch('http://127.0.0.1:7242/ingest/f6b33b86-5eb3-41dd-83f7-9e0a0382507b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'main.js:ex-2-click',message:'Error getting session',data:{error:err.message},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'EX2'})}).catch(()=>{});
-            }
-            // #endregion
-            console.error('Error getting session:', err);
-            alert('로그인 상태 확인 중 오류가 발생했습니다.');
-          });
-          
+          showCastellatedBeamSelectionModal();
           return false;
         }
         
@@ -148,6 +86,132 @@
       });
     });
   }
+
+  // Product Schedule: K-COL / Slim-Box Product Schedule → 2H_steel_product.html 로 이동 (관리자만, 부모 data-requires-auth 가로채기 방지)
+  document.addEventListener('click', function(e) {
+    var a = e.target && e.target.closest('a.nav-dropdown-item[href*="2H_steel_product.html"]');
+    if (!a || !a.href) return;
+    e.preventDefault();
+    e.stopPropagation();
+    var targetHref = (a.getAttribute('href') || '').trim();
+    if (!targetHref || targetHref === '#') return;
+    if (!window.SDP || !window.SDP.auth) {
+      alert('이 메뉴는 로그인 후 이용할 수 있습니다.');
+      return;
+    }
+    window.SDP.auth.getSession().then(function(session) {
+      if (!session) {
+        alert('이 메뉴는 로그인 후 이용할 수 있습니다.');
+        return;
+      }
+      return window.SDP.auth.getProfile();
+    }).then(function(profile) {
+      if (!profile || !window.SDP.auth.isAdmin()) {
+        alert('Product Schedule 메뉴는 관리자만 이용할 수 있습니다.');
+        return;
+      }
+      window.location.href = targetHref;
+    }).catch(function() {
+      alert('로그인 상태를 확인할 수 없습니다.');
+    });
+  }, true);
+
+  // Web Software IV: CFT-BOX / CFT-Circular / H형강-Column → 운영자만 이동, 일반 사용자 클릭 시 안내 메시지
+  document.addEventListener('click', function(e) {
+    var a = e.target && e.target.closest('a.nav-dropdown-item[href*="crossHcolumnCalculator"]');
+    if (!a || !a.href) return;
+    var h = (a.getAttribute('href') || '');
+    if (h.indexOf('#cft-box') === -1 && h.indexOf('#cft-circular') === -1 && h.indexOf('#h-beam') === -1) return;
+    e.preventDefault();
+    e.stopPropagation();
+    var path = 'pages/k-col%20web%20software/crossHcolumnCalculator.html';
+    var hash = (h.indexOf('#') !== -1) ? h.substring(h.indexOf('#')) : '';
+    var targetHref = path + hash;
+    if (!window.SDP || !window.SDP.auth) {
+      alert('이 기능은 운영자만 사용할 수 있습니다. 운영자권한이 필요합니다.');
+      return;
+    }
+    window.SDP.auth.getSession().then(function(session) {
+      if (!session) {
+        alert('이 기능은 운영자만 사용할 수 있습니다. 운영자권한이 필요합니다.');
+        return;
+      }
+      return window.SDP.auth.getProfile();
+    }).then(function(profile) {
+      if (profile && window.SDP.auth.isAdmin()) {
+        window.location.href = targetHref;
+      } else {
+        alert('이 기능은 운영자만 사용할 수 있습니다. 운영자권한이 필요합니다.');
+      }
+    }).catch(function() {
+      alert('이 기능은 운영자만 사용할 수 있습니다. 운영자권한이 필요합니다.');
+    });
+  }, true);
+
+  // Web Software III: EXTRA SLIM Light / EXTRA Slim Heavy → 운영자만 이동, 일반 사용자 클릭 시 안내 메시지
+  document.addEventListener('click', function(e) {
+    var a = e.target && e.target.closest('a.nav-dropdown-item[href*="compositebeam-calculator.html"]');
+    if (!a || !a.href) return;
+    var h = (a.getAttribute('href') || '');
+    if (h.indexOf('extra-slim-light') === -1 && h.indexOf('extra-slim-heavy') === -1) return;
+    e.preventDefault();
+    e.stopPropagation();
+    var targetHref = 'pages/k-col%20web%20software/compositebeam-calculator.html' + (h.indexOf('#') !== -1 ? h.substring(h.indexOf('#')) : '');
+    if (!window.SDP || !window.SDP.auth) {
+      alert('이 기능은 운영자만 사용할 수 있습니다. 운영자권한이 필요합니다.');
+      return;
+    }
+    window.SDP.auth.getSession().then(function(session) {
+      if (!session) {
+        alert('이 기능은 운영자만 사용할 수 있습니다. 운영자권한이 필요합니다.');
+        return;
+      }
+      return window.SDP.auth.getProfile();
+    }).then(function(profile) {
+      if (profile && window.SDP.auth.isAdmin()) {
+        window.location.href = targetHref;
+      } else {
+        alert('이 기능은 운영자만 사용할 수 있습니다. 운영자권한이 필요합니다.');
+      }
+    }).catch(function() {
+      alert('이 기능은 운영자만 사용할 수 있습니다. 운영자권한이 필요합니다.');
+    });
+  }, true);
+
+  // Castellated Beam 드롭다운 하위 링크: with-slab만 운영자 확인 후 이동, 나머지는 바로 이동
+  // 항상 실제 파일명(Composite_CastellatedBeam_Design_Calculator.html)으로 이동 (캐시된 예전 href 무시)
+  var castellatedBasePath = 'pages/k-col%20web%20software/Composite_CastellatedBeam_Design_Calculator.html';
+  document.addEventListener('click', function(e) {
+    var a = e.target && e.target.closest('a.nav-dropdown-item[data-castellated-type]');
+    if (!a) return;
+    e.preventDefault();
+    e.stopPropagation();
+    var type = a.getAttribute('data-castellated-type') || 'without-slab';
+    var targetHref = castellatedBasePath + '?type=' + type;
+    if (type === 'with-slab') {
+      if (!window.SDP || !window.SDP.auth) {
+        alert('이 기능은 운영자만 사용할 수 있습니다. 운영자권한이 필요합니다.');
+        return;
+      }
+      window.SDP.auth.getSession().then(function(session) {
+        if (!session) {
+          alert('이 기능은 운영자만 사용할 수 있습니다. 운영자권한이 필요합니다.');
+          return;
+        }
+        return window.SDP.auth.getProfile();
+      }).then(function(profile) {
+        if (profile && window.SDP.auth.isAdmin()) {
+          window.location.href = targetHref;
+        } else {
+          alert('이 기능은 운영자만 사용할 수 있습니다. 운영자권한이 필요합니다.');
+        }
+      }).catch(function() {
+        alert('이 기능은 운영자만 사용할 수 있습니다. 운영자권한이 필요합니다.');
+      });
+    } else {
+      window.location.href = targetHref;
+    }
+  });
 
   // Initialize EX-Slim-Box nav item: show for everyone (public)
   function initExSlimBoxNav() {
@@ -266,6 +330,16 @@
           // Use updateNavVisibility function (defined below)
           updateNavVisibility(hasPermission);
           
+          // 관리자 모드일 때 EXTRA SLIM Light / EXTRA Slim Heavy 항목 어둡게
+          var adminDimItems = document.querySelectorAll('a.nav-dropdown-item[data-admin-dim]');
+          adminDimItems.forEach(function(el) {
+            if (isAdmin) {
+              el.classList.add('admin-dim');
+            } else {
+              el.classList.remove('admin-dim');
+            }
+          });
+          
           // #region agent log
           if (DEBUG_MODE && isAdmin && ex2Nav) {
             fetch('http://127.0.0.1:7242/ingest/f6b33b86-5eb3-41dd-83f7-9e0a0382507b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'main.js:128',message:'ex-2 nav shown',data:{display:ex2Nav.style.display},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
@@ -381,6 +455,9 @@
             </div>
             <button class="castellated-beam-modal-close" onclick="closeCastellatedBeamModal()">×</button>
           </div>
+          <div class="castellated-beam-modal-image castellated-beam-modal-image-composite">
+            <img src="/assets/images/composite_noncomposite.png" alt="비합성 / 합성 Castellated Beam" style="max-width: 100%; height: auto; display: block;">
+          </div>
           <div class="castellated-beam-modal-content">
             <div class="castellated-beam-option" onclick="selectCastellatedBeamType('without-slab')">
               <div class="castellated-beam-option-icon">
@@ -388,13 +465,6 @@
               </div>
               <div class="castellated-beam-option-title">Non Composite Castellated Beam<br>(Beam Only)</div>
               <div class="castellated-beam-option-desc">상부 슬래브가 없는 Castellated Beam 설계</div>
-            </div>
-            <div class="castellated-beam-option" onclick="selectCastellatedBeamType('without-slab-webpost')">
-              <div class="castellated-beam-option-icon">
-                <img src="/assets/images/No_Slab_Web-3.png" alt="No Slab Web Post" style="width: 100%; height: 100%; object-fit: contain;">
-              </div>
-              <div class="castellated-beam-option-title">Non Composite Castellated Beam<br>+ Web Post Reinforcing<br>(Beam only)</div>
-              <div class="castellated-beam-option-desc">상부 슬래브가 없는 Castellated Beam 설계 (Web Post 보강 포함)</div>
             </div>
             <div class="castellated-beam-option" onclick="selectCastellatedBeamType('with-slab')">
               <div class="castellated-beam-option-icon">
@@ -444,13 +514,10 @@
     
     if (type === 'without-slab') {
       // Redirect to Castellated Beam without top-slab calculator
-      window.location.href = '/pages/k-col web software/composite-castellatedbeam-calculator.html?type=without-slab';
-    } else if (type === 'without-slab-webpost') {
-      // Redirect to Castellated Beam without top-slab calculator (with web post reinforcing)
-      window.location.href = '/pages/k-col web software/composite-castellatedbeam-calculator.html?type=without-slab&webpost=reinforcing';
+      window.location.href = '/pages/k-col web software/Composite_CastellatedBeam_Design_Calculator.html?type=without-slab';
     } else if (type === 'with-slab') {
       // Redirect to Castellated Beam with top-slab calculator
-      window.location.href = '/pages/k-col web software/composite-castellatedbeam-calculator.html?type=with-slab';
+      window.location.href = '/pages/k-col web software/Composite_CastellatedBeam_Design_Calculator.html?type=with-slab';
     }
   }
 

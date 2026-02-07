@@ -757,12 +757,34 @@
                 }
             }
             
+            // Beam span 8m limit: general users 8m only; >8m requires operator approval (BEAM_SPAN_LIMIT, checkBeamSpanLimit defined at script level)
+            function applyBeamSpanLimit() {
+                var el = document.getElementById('beamSpan');
+                if (!el) return;
+                var val = parseFloat(el.value) || 0;
+                if (val <= BEAM_SPAN_LIMIT) return;
+                checkBeamSpanLimit(function(isAdmin) {
+                    if (!isAdmin) {
+                        el.value = BEAM_SPAN_LIMIT;
+                        updateBeamDiagram();
+                        alert(spanLimitMessage);
+                    }
+                });
+            }
             // Add event listener for beam span input
             const beamSpanInput = document.getElementById('beamSpan');
             if (beamSpanInput) {
                 updateBeamDiagram(); // Initial update
-                beamSpanInput.addEventListener('input', updateBeamDiagram);
-                beamSpanInput.addEventListener('change', updateBeamDiagram);
+                beamSpanInput.addEventListener('input', function() {
+                    updateBeamDiagram();
+                    applyBeamSpanLimit();
+                });
+                beamSpanInput.addEventListener('change', function() {
+                    updateBeamDiagram();
+                    applyBeamSpanLimit();
+                });
+                // Initial value: cap at 8m for non-admin
+                setTimeout(applyBeamSpanLimit, 500);
             }
             
             function updateInputFields(enable) {
@@ -1212,14 +1234,53 @@
         // DO NOT call updateSelfWeight() and updateSlabWeight() here
         // They will be called after localStorage restoration in DOMContentLoaded
 
+        // Beam span 8m limit (general users); >8m requires operator approval (used by calculateBeam)
+        var BEAM_SPAN_LIMIT = 8;
+        var spanLimitMessage = '8m를 넘으면 운영자의 사전승인이 필요합니다. 일반 로그인 사용자는 8m까지만 사용할 수 있습니다.';
+        function checkBeamSpanLimit(callback) {
+            var el = document.getElementById('beamSpan');
+            if (!el) { if (callback) callback(true); return; }
+            var val = parseFloat(el.value) || 0;
+            if (val <= BEAM_SPAN_LIMIT) { if (callback) callback(true); return; }
+            if (!window.SDP || !window.SDP.auth) {
+                if (callback) callback(false);
+                return;
+            }
+            window.SDP.auth.getSession().then(function(session) {
+                if (!session) { if (callback) callback(false); return; }
+                return window.SDP.auth.getProfile();
+            }).then(function(profile) {
+                if (callback) callback(profile && window.SDP.auth.isAdmin());
+            }).catch(function() { if (callback) callback(false); });
+        }
+
         // Main calculation function
         function calculateBeam() {
             // #region agent log
             fetch('http://127.0.0.1:7242/ingest/f6b33b86-5eb3-41dd-83f7-9e0a0382507b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'ex-slim-beam-calculator.html:374',message:'calculateBeam called',data:{timestamp:Date.now()},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
             // #endregion
             
+            const L = parseFloat(document.getElementById('beamSpan').value) || 0;
+            if (L > BEAM_SPAN_LIMIT) {
+                checkBeamSpanLimit(function(isAdmin) {
+                    if (!isAdmin) {
+                        alert(spanLimitMessage);
+                        var el = document.getElementById('beamSpan');
+                        if (el) {
+                            el.value = BEAM_SPAN_LIMIT;
+                            el.dispatchEvent(new Event('input', { bubbles: true }));
+                        }
+                        return;
+                    }
+                    runCalculateBeamRest();
+                });
+                return;
+            }
+            runCalculateBeamRest();
+        }
+        
+        function runCalculateBeamRest() {
             try {
-                // Get input values
                 const L = parseFloat(document.getElementById('beamSpan').value) || 0;
                 const B = parseFloat(document.getElementById('loadWidth').value) || 0;
                 const wL = parseFloat(document.getElementById('liveLoad').value) || 0;

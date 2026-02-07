@@ -513,7 +513,7 @@
                 <td class="yellow-cell" style="width:70px;" id="s_phiPn">5,015.36</td>
                 <td>=</td>
                 <td class="yellow-cell" style="width:55px;" id="s_compR">0.888</td>
-                <td>&lt;</td>
+                <td>≤</td>
                 <td style="width:50px;">1.0</td>
                 <td class="green-text" id="s_compOK">→ O.K</td>
             </tr>
@@ -558,7 +558,7 @@
                 <td colspan="5" style="font-size:7.5px;">Pu/φPn + 8/9*(Mux/φMnx + Muy/φMny)</td>
                 <td>=</td>
                 <td class="yellow-cell" id="s_pmmR2">0.888</td>
-                <td>&lt;</td>
+                <td>≤</td>
                 <td>1.0</td>
                 <td class="green-text" id="s_pmmOK">→ O.K</td>
             </tr>
@@ -812,14 +812,14 @@
             document.getElementById('s_phiPn').textContent=fmt(phi_Pn);
             document.getElementById('s_compR').textContent=fmt(rComp,3);
             
-            // Compressive 체크: rComp > 1.0이면 NG
+            // Compressive 체크: ratio <= 1.0 → OK, ratio > 1.0 → NG
             const compOK = document.getElementById('s_compOK');
-            if (rComp > 1.0) {
-                compOK.textContent = '→ N.G';
-                compOK.className = 'red-text';
-            } else {
+            if (rComp <= 1.0) {
                 compOK.textContent = '→ O.K';
                 compOK.className = 'green-text';
+            } else {
+                compOK.textContent = '→ N.G';
+                compOK.className = 'red-text';
             }
             
             document.getElementById('s_Mux').textContent=fmt(Mux);
@@ -852,14 +852,14 @@
             document.getElementById('s_pmmR1').textContent=fmt(rComp,3);
             document.getElementById('s_pmmR2').textContent=fmt(rPmm,3);
             
-            // P-M-M 체크: rPmm > 1.0이면 NG, 아니면 OK
+            // P-M-M 체크: ratio <= 1.0 → OK, ratio > 1.0 → NG
             const pmmOK = document.getElementById('s_pmmOK');
-            if (rPmm > 1.0) {
-                pmmOK.textContent = '→ N.G';
-                pmmOK.className = 'red-text';
-            } else {
+            if (rPmm <= 1.0) {
                 pmmOK.textContent = '→ O.K';
                 pmmOK.className = 'green-text';
+            } else {
+                pmmOK.textContent = '→ N.G';
+                pmmOK.className = 'red-text';
             }
             document.getElementById('s_Vux').textContent=fmt(Vux);
             document.getElementById('s_phiVnx').textContent=fmt(phi_Vnx);

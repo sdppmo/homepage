@@ -426,7 +426,7 @@
             <span class="calc-eq">=</span>
             <span class="calc-value" id="pm_r2">0.888</span>
             <span class="calc-unit"></span>
-            <span class="calc-compare">&lt; 1.000</span>
+            <span class="calc-compare">≤ 1.000</span>
             <span class="calc-result green-text" id="pm_result">→ O.K</span>
         </div>
 
@@ -729,9 +729,9 @@
                 pmCompResult.className = 'calc-result red-text';
             }
             
-            // P-M-M 체크: rPmm < 1.0이면 OK, 아니면 NG
+            // P-M-M 체크: ratio <= 1.0 → OK, ratio > 1.0 → NG
             const pmResult = document.getElementById('pm_result');
-            if (rPmm < 1.0) {
+            if (rPmm <= 1.0) {
                 pmResult.textContent = '→ O.K';
                 pmResult.className = 'calc-result green-text';
             } else {

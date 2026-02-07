@@ -229,17 +229,87 @@
             transition: none !important;
         }
 
-        /* K-COL 패널 - 파란색 계열 */
+        /* K-COL 패널 - 파란색 계열, 수평 배치 */
+        .products-grid > a:first-child {
+            grid-column: 1 / -1;
+        }
         .products-grid > a:first-child .product-panel {
             background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 50%, #ffffff 100%);
             border: 2px solid #0284c7;
         }
+        #kcol-user-panel {
+            display: flex;
+            flex-direction: row;
+            align-items: flex-start;
+            gap: 28px;
+            flex-wrap: wrap;
+        }
+        #kcol-user-panel .product-icon {
+            flex-shrink: 0;
+            width: 200px;
+            min-width: 200px;
+            height: 200px;
+        }
+        #kcol-user-panel .product-title,
+        #kcol-user-panel .product-description,
+        #kcol-user-panel .product-details {
+            flex: 1;
+            min-width: 280px;
+        }
 
-        /* Slim-Box 패널 - 초록색 계열 (준비중 - 어둡게) */
-        .products-grid > div.product-panel:nth-of-type(1) {
+        /* Slim-Box 패널 - 초록색 계열 (일반 사용자 노출), 수평 배치 */
+        .products-grid > div.product-panel:nth-of-type(1),
+        #slimbox {
             background: linear-gradient(135deg, #b0d4bf 0%, #90c4a0 50%, #d0d0d0 100%);
             border: 2px solid #16a34a;
-            opacity: 0.6;
+            opacity: 1;
+        }
+        .products-grid > div#slimbox {
+            grid-column: 1 / -1;
+        }
+        #slimbox {
+            display: flex;
+            flex-direction: row;
+            align-items: flex-start;
+            gap: 28px;
+            flex-wrap: wrap;
+        }
+        #slimbox .product-icon {
+            flex-shrink: 0;
+            width: 200px;
+            min-width: 200px;
+            height: 200px;
+            align-self: flex-start;
+            margin-top: 0;
+            margin-bottom: 0;
+        }
+        #slimbox .product-title,
+        #slimbox .product-description,
+        #slimbox .product-details {
+            flex: 1;
+            min-width: 280px;
+        }
+        #slimbox .product-details ul {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: nowrap;
+            gap: 16px 24px;
+            padding: 0;
+            list-style: none;
+            align-items: center;
+        }
+        #slimbox .product-details ul li {
+            flex: 0 0 auto;
+            padding: 10px 12px 10px 35px;
+            line-height: 1.6;
+            min-height: 2.5em;
+            display: flex;
+            align-items: center;
+            box-sizing: border-box;
+            white-space: nowrap;
+        }
+        #slimbox .product-details ul li:before {
+            left: 8px;
         }
 
         /* EX_Slim-Beam 패널 - 보라색 계열 (준비중 - 어둡게) */
@@ -444,7 +514,23 @@
         #kcol-user-panel .product-details ul {
             flex: 1;
             margin: 0;
-            min-width: 300px;
+            min-width: 0;
+            display: flex;
+            flex-direction: row;
+            flex-wrap: nowrap;
+            gap: 16px 24px;
+            padding: 0;
+            list-style: none;
+            align-items: center;
+        }
+        #kcol-user-panel .product-details ul li {
+            flex: 0 0 auto;
+            padding: 10px 12px 10px 35px;
+            line-height: 1.6;
+            display: flex;
+            align-items: center;
+            box-sizing: border-box;
+            white-space: nowrap;
         }
 
         @media (max-width: 768px) {
@@ -524,8 +610,23 @@
                     </div>
                 </a>
 
-                <!-- Panel 2: Slim-Box -->
-                <div class="product-panel">
+                <!-- K-COL 개발자 안내서 (운영자 전용, #kcol에서만 노출) -->
+                <a href="k-col web software/k-col-developer-guide.html" style="text-decoration: none; color: inherit; display: none;" id="developer-guide-link" data-requires-auth="true" data-required-role="admin">
+                    <div class="product-panel" id="developer-guide-panel" style="display: none; cursor: pointer;">
+                        <div style="display: flex; align-items: center; justify-content: flex-start; gap: 20px;">
+                            <div class="product-icon" style="width: 60px; height: 60px; min-width: 60px; min-height: 60px; margin: 0;">
+                                <img src="../assets/images/K-COL.jpg" alt="K-COL" style="width: 100%; height: 100%; object-fit: contain;">
+                            </div>
+                            <div style="display: flex; flex-direction: column; gap: 4px;">
+                                <h2 class="product-title" style="margin: 0; font-size: 18px;">K-COL 개발자 안내서</h2>
+                                <p style="margin: 0; font-size: 13px; color: #666;">운영자 전용 개발자 메뉴얼입니다.</p>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+
+                <!-- Panel 2: Slim-Box (Slim-Box for CIP Soil Protection Wall) -->
+                <div class="product-panel" id="slimbox">
                     <div class="product-icon">
                         <img src="../assets/images/product-2.png" alt="Slim-Box" style="width: 100%; height: 100%; object-fit: contain;">
                     </div>
@@ -544,43 +645,8 @@
                     </div>
                 </div>
 
-                <!-- Panel 3: EX_Slim-Beam -->
-                <div class="product-panel">
-                    <div class="product-icon">
-                        <img src="../assets/images/product-3.png" alt="EX_Slim-Beam" style="width: 100%; height: 100%; object-fit: contain;">
-                    </div>
-                    <h2 class="product-title">EX_Slim-Beam <span style="background: #fbbf24; color: #92400e; padding: 4px 12px; border-radius: 12px; font-size: 14px; font-weight: 600; margin-left: 10px; -webkit-text-fill-color: #92400e !important; background-clip: border-box !important;">준비중</span></h2>
-                    <p class="product-description">
-                        EX_Slim-Beam은 확장 가능한 슬림 빔 구조로 대형 공간 설계에 최적화된 제품입니다. 
-                        긴 경간 구조에 효율적으로 적용할 수 있습니다.
-                    </p>
-                    <div class="product-details">
-                        <ul>
-                            <li>확장 가능한 설계</li>
-                            <li>대형 경간 지원</li>
-                            <li>슬림한 단면</li>
-                            <li>구조 효율성</li>
-                            <li>시공 용이성</li>
-                        </ul>
-                    </div>
-                </div>
-
-                <!-- Small Panels Container (사진, 논문, 동영상) -->
-                <div class="small-panels-container">
-                    <!-- Panel 4: 개발자용 설명서 (운영자 전용) -->
-                    <a href="k-col web software/k-col-developer-guide.html" style="text-decoration: none; color: inherit;" id="developer-guide-link" data-requires-auth="true" data-required-role="admin">
-                        <div class="product-panel" id="developer-guide-panel" style="display: none; cursor: pointer;">
-                            <div style="display: flex; align-items: center; justify-content: flex-start; gap: 20px;">
-                                <div class="product-icon" style="width: 60px; height: 60px; min-width: 60px; min-height: 60px; margin: 0;">
-                                    <img src="../assets/images/K-COL.jpg" alt="K-COL" style="width: 100%; height: 100%; object-fit: contain;">
-                                </div>
-                                <div style="display: flex; flex-direction: column; gap: 4px;">
-                                    <h2 class="product-title" style="margin: 0; font-size: 18px;">K-COL 개발자 안내서</h2>
-                                    <p style="margin: 0; font-size: 13px; color: #666;">운영자 전용 개발자 메뉴얼입니다.</p>
-                                </div>
-                            </div>
-                        </div>
-                    </a>
+                <!-- Small Panels Container (사진, 논문, 동영상, Slim-Box 실험 - Slim-Box와 무관한 개발자 안내서는 제거됨) -->
+                <div class="small-panels-container" id="small-panels-container">
                     <a href="photo-gallery.html" style="text-decoration: none; color: inherit;">
                         <div class="product-panel small-panel" style="cursor: pointer;">
                             <div style="display: flex; align-items: flex-start; gap: 10px;">
@@ -664,8 +730,8 @@
                         </div>
                     </a>
 
-                    <!-- Panel 8: Slim-Box 실험 -->
-                    <div class="product-panel small-panel" style="cursor: default;">
+                    <!-- Panel 8: Slim-Box 실험 (Slim-Box for CIP 하위) -->
+                    <div class="product-panel small-panel" id="slimbox-experiment-panel" style="cursor: default;">
                         <div style="display: flex; align-items: flex-start; gap: 10px;">
                             <div style="display: flex; flex-direction: column; align-items: center;">
                                 <div class="product-icon">🔬</div>
@@ -690,6 +756,50 @@
     <script src="../js/auth.js"></script>
     <script src="../js/feature-guard.js"></script>
     <script>
+        // #kcol / #slimbox 시 해당 제품 관련 내용만 노출. 개발자 안내서는 K-COL 전용(#kcol에서만 표시)
+        function updateProductsVisibility() {
+            var kcolPanel = document.getElementById('kcol-panel');
+            var slimboxPanel = document.getElementById('slimbox');
+            var smallPanels = document.getElementById('small-panels-container');
+            var developerGuideLink = document.getElementById('developer-guide-link');
+            var hash = window.location.hash;
+            if (hash === '#kcol') {
+                if (kcolPanel) kcolPanel.style.display = '';
+                if (slimboxPanel) slimboxPanel.style.display = 'none';
+                if (developerGuideLink) developerGuideLink.style.display = '';
+                if (smallPanels) smallPanels.style.display = '';
+                if (smallPanels) {
+                    [].forEach.call(smallPanels.children, function(el) {
+                        el.style.display = (el.id === 'slimbox-experiment-panel') ? 'none' : '';
+                    });
+                }
+            } else if (hash === '#slimbox') {
+                if (kcolPanel) kcolPanel.style.display = 'none';
+                if (slimboxPanel) slimboxPanel.style.display = '';
+                if (developerGuideLink) developerGuideLink.style.display = 'none';
+                if (smallPanels) smallPanels.style.display = '';
+                if (smallPanels) {
+                    [].forEach.call(smallPanels.children, function(el) {
+                        el.style.display = (el.id === 'slimbox-experiment-panel') ? '' : 'none';
+                    });
+                }
+            } else {
+                if (kcolPanel) kcolPanel.style.display = '';
+                if (slimboxPanel) slimboxPanel.style.display = '';
+                if (developerGuideLink) developerGuideLink.style.display = 'none';
+                if (smallPanels) smallPanels.style.display = '';
+                if (smallPanels) {
+                    [].forEach.call(smallPanels.children, function(el) {
+                        el.style.display = '';
+                    });
+                }
+            }
+        }
+        document.addEventListener('DOMContentLoaded', function() {
+            updateProductsVisibility();
+            window.addEventListener('hashchange', updateProductsVisibility);
+        });
+
         // 페이지 로드 시 권한 체크
         document.addEventListener('DOMContentLoaded', function() {
             // K-COL 패널 (공개 - 로그인 불필요)

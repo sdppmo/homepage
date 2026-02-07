@@ -697,11 +697,15 @@
             addSubMaterialModal();
             addUnitPriceModal();
             
-            // 기둥 개수 변경 시 테이블 업데이트
+            // 기둥 개수 변경 시 테이블 업데이트 (Nos., 기둥이름 KC1~KCN 자동 반영)
             const columnCountInput = document.getElementById('columnCount');
             if (columnCountInput) {
                 columnCountInput.addEventListener('change', function() {
                     updateLoadTable();
+                });
+                columnCountInput.addEventListener('input', function() {
+                    const n = parseInt(this.value) || 0;
+                    if (n >= 1 && n <= 20) updateLoadTable();
                 });
             }
             
@@ -843,9 +847,50 @@
                         }
                     });
                         } else {
-                    // 이미 9개 컬럼이 있으면 재생성 생략 (행 개수는 무시)
-                    console.log('✅ 이미 9개 컬럼 테이블이 있습니다. 재생성 생략.');
-                    // 기존 HTML 행의 데이터를 columnData에 반영
+                    // 9개 컬럼이 있고 행 개수도 일치하면 재생성 생략
+                    if (currentRows.length === count) {
+                        console.log('✅ 이미 9개 컬럼 테이블이고 행 개수 일치. 재생성 생략.');
+                        existingRows.forEach((row, index) => {
+                            const rowNum = index + 1;
+                            const nameInput = row.querySelector(`#col${rowNum}_name`);
+                            const puInput = row.querySelector(`#col${rowNum}_Pu`);
+                            const muxInput = row.querySelector(`#col${rowNum}_Mux`);
+                            const muyInput = row.querySelector(`#col${rowNum}_Muy`);
+                            const lxInput = row.querySelector(`#col${rowNum}_Lx`);
+                            const lyInput = row.querySelector(`#col${rowNum}_Ly`);
+                            const kxInput = row.querySelector(`#col${rowNum}_Kx`);
+                            const kyInput = row.querySelector(`#col${rowNum}_Ky`);
+                            
+                            if (nameInput || puInput) {
+                                const existingCol = columnData.find(c => c.no === rowNum);
+                                if (existingCol) {
+                                    existingCol.name = nameInput?.value || `KC${rowNum}`;
+                                    existingCol.pu = parseFloat(puInput?.value) || 0;
+                                    existingCol.mux = parseFloat(muxInput?.value) || 0;
+                                    existingCol.muy = parseFloat(muyInput?.value) || 0;
+                                    existingCol.lx = parseFloat(lxInput?.value) || 4.5;
+                                    existingCol.ly = parseFloat(lyInput?.value) || 4.5;
+                                    existingCol.kx = parseFloat(kxInput?.value) || 0.8;
+                                    existingCol.ky = parseFloat(kyInput?.value) || 0.8;
+                                } else {
+                                    columnData.push({
+                                        no: rowNum,
+                                        name: nameInput?.value || `KC${rowNum}`,
+                                        pu: parseFloat(puInput?.value) || 0,
+                                        mux: parseFloat(muxInput?.value) || 0,
+                                        muy: parseFloat(muyInput?.value) || 0,
+                                        lx: parseFloat(lxInput?.value) || 4.5,
+                                        ly: parseFloat(lyInput?.value) || 4.5,
+                                        kx: parseFloat(kxInput?.value) || 0.8,
+                                        ky: parseFloat(kyInput?.value) || 0.8
+                                    });
+                                }
+                            }
+                        });
+                        return; // 기존 HTML 행 보존하고 종료
+                    }
+                    // 행 개수가 다르면 기존 데이터 수집 후 아래에서 재생성
+                    console.log(`📝 행 개수 변경: ${currentRows.length}개 → ${count}개, 테이블 재생성`);
                     existingRows.forEach((row, index) => {
                         const rowNum = index + 1;
                         const nameInput = row.querySelector(`#col${rowNum}_name`);
@@ -858,45 +903,25 @@
                         const kyInput = row.querySelector(`#col${rowNum}_Ky`);
                         
                         if (nameInput || puInput) {
-                            const existingCol = columnData.find(c => c.no === rowNum);
-                            if (existingCol) {
-                                existingCol.name = nameInput?.value || `KC${rowNum}`;
-                                existingCol.pu = parseFloat(puInput?.value) || 0;
-                                existingCol.mux = parseFloat(muxInput?.value) || 0;
-                                existingCol.muy = parseFloat(muyInput?.value) || 0;
-                                existingCol.lx = parseFloat(lxInput?.value) || 4.5;
-                                existingCol.ly = parseFloat(lyInput?.value) || 4.5;
-                                existingCol.kx = parseFloat(kxInput?.value) || 0.8;
-                                existingCol.ky = parseFloat(kyInput?.value) || 0.8;
-                            } else {
-                                columnData.push({
-                                    no: rowNum,
-                                    name: nameInput?.value || `KC${rowNum}`,
-                                    pu: parseFloat(puInput?.value) || 0,
-                                    mux: parseFloat(muxInput?.value) || 0,
-                                    muy: parseFloat(muyInput?.value) || 0,
-                                    lx: parseFloat(lxInput?.value) || 4.5,
-                                    ly: parseFloat(lyInput?.value) || 4.5,
-                                    kx: parseFloat(kxInput?.value) || 0.8,
-                                    ky: parseFloat(kyInput?.value) || 0.8
-                                });
-                            }
+                            existingData[rowNum] = {
+                                name: nameInput?.value || `KC${rowNum}`,
+                                pu: parseFloat(puInput?.value) || 0,
+                                mux: parseFloat(muxInput?.value) || 0,
+                                muy: parseFloat(muyInput?.value) || 0,
+                                lx: parseFloat(lxInput?.value) || 4.5,
+                                ly: parseFloat(lyInput?.value) || 4.5,
+                                kx: parseFloat(kxInput?.value) || 0.8,
+                                ky: parseFloat(kyInput?.value) || 0.8
+                            };
                         }
                     });
-                    return; // 기존 HTML 행 보존하고 종료
                 }
             }
             
             tbody.innerHTML = '';
-            if (Array.isArray(columnData)) {
-                columnData.forEach(col => {
-                    if (col && col.no) {
-                        existingData[col.no] = col;
-                    }
-                });
-            }
+            columnData = []; // 기둥 개수 변경 시 columnData 초기화 후 재구성
 
-            // 테이블 행 생성
+            // 테이블 행 생성 (기둥개수에 맞게 Nos. 1~N, 기둥이름 KC1~KCN)
             for (let i = 1; i <= count; i++) {
                 const existing = existingData[i];
                 const row = document.createElement('tr');
@@ -1004,20 +1029,18 @@
 
                 tbody.appendChild(row);
                             
-                // columnData 업데이트
-                if (!existing) {
-                    columnData.push({
-                        no: i,
-                        name: input2.value,
-                        pu: parseFloat(input3.value) || 0,
-                        mux: parseFloat(input4.value) || 0,
-                        muy: parseFloat(input5.value) || 0,
-                        lx: parseFloat(input6.value) || 4.5,
-                        ly: parseFloat(input7.value) || 4.5,
-                        kx: parseFloat(input8.value) || 0.8,
-                        ky: parseFloat(input9.value) || 0.8
-                    });
-                }
+                // columnData 업데이트 (모든 행 반영)
+                columnData.push({
+                    no: i,
+                    name: input2.value,
+                    pu: parseFloat(input3.value) || 0,
+                    mux: parseFloat(input4.value) || 0,
+                    muy: parseFloat(input5.value) || 0,
+                    lx: parseFloat(input6.value) || 4.5,
+                    ly: parseFloat(input7.value) || 4.5,
+                    kx: parseFloat(input8.value) || 0.8,
+                    ky: parseFloat(input9.value) || 0.8
+                });
             }
             
             console.log(`✅ 테이블 생성 완료: ${count}개 행, 각 행은 9개 컬럼 (Nos, 기둥이름, Pu, Mux, Muy, Lx, Ly, Kx, Ky)`);
