@@ -12412,6 +12412,7 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
             var mainCanvas = await html2canvas(container, html2canvasOpts);
             if (!mainCanvas.width || !mainCanvas.height) throw new Error('html2canvas 결과가 0입니다.');
 
+            await ensureJsPDFLoaded();
             var jsPDF = getJsPDF();
             if (!jsPDF) throw new Error('jsPDF가 로드되지 않았습니다. 네트워크를 확인한 뒤 새로고침 후 다시 시도해 주세요.');
             var pdf = new jsPDF('p', 'mm', 'a4');
@@ -12688,6 +12689,7 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
         }
 
         async function exportTransport_3PagesPDF(fileName, assets, opts) {
+            await ensureJsPDFLoaded();
             var jsPDF = getJsPDF();
             if (!jsPDF) throw new Error('jsPDF가 로드되지 않았습니다. 네트워크를 확인한 뒤 새로고침 후 다시 시도해 주세요.');
             var doc = new jsPDF('p', 'mm', 'a4');
