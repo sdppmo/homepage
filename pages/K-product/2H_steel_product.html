@@ -1594,7 +1594,7 @@
                 <button class="action-btn primary" onclick="downloadTransportVolumeTemplate()">📄 템플릿 다운로드</button>
                 <button class="action-btn" onclick="setDefaultTransportVolumeData()" style="background:#2196f3;color:white;">💾 기본값으로 저장</button>
                 <button class="action-btn" onclick="adjustTo25Ton()" style="background:#ff9800;color:white;">최대운송25톤</button>
-                <button class="action-btn" onclick="exportTransportVolumePanelPdf()" style="background:#9c27b0;color:white;" title="현재 운송물량산정 화면만 PDF로 저장 (3페이지 형식과 별도)">📄 이 화면 PDF로</button>
+                <button class="action-btn" onclick="exportTransportVolumePanelPdf()" style="background:#9c27b0;color:white;" title="현재 운송물량산정 화면만 PDF로 저장 (3페이지 형식과 별도)">📄 이 화면 → PDF 출력</button>
                 <div id="transport-volume-adjustment-panel" style="flex:1;min-width:300px;padding:12px;background:#f5f5f5;border-radius:6px;border:1px solid #ddd;display:none;">
                     <div style="font-weight:600;color:#2c4a7c;margin-bottom:8px;font-size:14px;">📊 조정 결과</div>
                     <div id="transport-volume-adjustment-info" style="font-size:13px;color:#555;line-height:1.6;">
@@ -1604,10 +1604,10 @@
                 <div id="adjusted-plan-toggle" style="padding:12px;background:#fff;border-radius:6px;border:1px solid #ddd;">
                     <div style="display:flex;gap:8px;">
                         <div id="original-plan-btn" onclick="showOriginalPlan()" style="flex:1;padding:8px 12px;background:#e3f2fd;border:2px solid #2196f3;border-radius:6px;cursor:pointer;text-align:center;font-size:13px;font-weight:600;color:#2196f3;transition:all 0.2s;white-space:nowrap;" onmouseover="this.style.background='#bbdefb';" onmouseout="this.style.background='#e3f2fd';">
-                            원공정표
+                            원공정표 보기
                         </div>
                         <div id="adjusted-plan-btn" onclick="showAdjustedPlan()" style="flex:1;padding:8px 12px;background:#fff;border:2px solid #ddd;border-radius:6px;cursor:pointer;text-align:center;font-size:13px;font-weight:600;color:#666;transition:all 0.2s;white-space:nowrap;" onmouseover="this.style.borderColor='#2196f3';this.style.background='#f5f5f5';" onmouseout="this.style.borderColor='#ddd';this.style.background='#fff';">
-                            조정공정표
+                            조정공정표 보기
                         </div>
                     </div>
                 </div>
@@ -1620,12 +1620,12 @@
                 </div>
                 <div id="export-filtered-data-panel" style="padding:12px;background:#fff;border-radius:6px;border:1px solid #ddd;min-width:246px;width:246px;box-sizing:border-box;text-align:center;">
                     <button class="action-btn" onclick="exportFilteredDataToExcel()" style="padding:6px 12px;background:#2196f3;color:white;border:none;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;width:100%;box-sizing:border-box;">
-                        엑셀다운로드
+                        이 화면 → 엑셀다운로드
                     </button>
                     <div style="font-weight:600;color:#2c4a7c;margin-top:8px;margin-bottom:0;font-size:14px;">규격별/차수부재별 필터링</div>
                 </div>
                 <div id="transport-volume-size-filter" style="padding:12px;background:#fff;border-radius:6px;border:1px solid #ddd;">
-                    <div style="font-weight:600;color:#2c4a7c;margin-bottom:8px;font-size:14px;">규격별 부재</div>
+                    <div style="font-weight:600;color:#2c4a7c;margin-bottom:8px;font-size:14px;">규격별 부재 - 필터링</div>
                     <div id="transport-volume-size-toggles" style="display:flex;gap:8px;flex-wrap:wrap;">
                         <!-- 규격별 토글 버튼이 여기에 동적으로 생성됩니다 -->
                     </div>
@@ -12390,9 +12390,33 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
             return getJsPDF();
         }
 
+        function getHtml2Canvas() {
+            if (typeof window === 'undefined') return null;
+            return (typeof window.html2canvas === 'function') ? window.html2canvas : (typeof html2canvas === 'function' ? html2canvas : null);
+        }
+
+        async function ensureHtml2CanvasLoaded() {
+            if (getHtml2Canvas()) return getHtml2Canvas();
+            var urls = [
+                'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js',
+                'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js'
+            ];
+            for (var i = 0; i < urls.length; i++) {
+                try {
+                    await loadScript(urls[i]);
+                    await new Promise(function(r) { setTimeout(r, 80); });
+                    if (getHtml2Canvas()) return getHtml2Canvas();
+                } catch (e) { console.warn('html2canvas CDN 로드 실패:', urls[i], e); }
+            }
+            return getHtml2Canvas();
+        }
+
         // ---------- PDF 생성: 웹헤더 반복 + 슬라이스 + 차수조정(숨김 시 강제 표시 후 캡처) ----------
         async function exportPdf(container, fileName, opts) {
             console.log('[PDF] exportPdf CALLED');
+            await ensureHtml2CanvasLoaded();
+            var h2c = getHtml2Canvas();
+            if (!h2c) throw new Error('html2canvas가 로드되지 않았습니다. 네트워크를 확인한 뒤 새로고침 후 다시 시도해 주세요.');
             opts = opts || {};
             opts.margin = opts.margin != null ? opts.margin : 10;
             opts.topMargin = opts.topMargin != null ? opts.topMargin : 5;
@@ -12409,7 +12433,7 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
 
             var html2canvasOpts = { scale: 2, useCORS: true, allowTaint: true, logging: false, backgroundColor: '#ffffff', width: w, height: h };
             try { html2canvasOpts.windowWidth = w; html2canvasOpts.windowHeight = h; html2canvasOpts.scrollY = -window.scrollY; } catch (e) {}
-            var mainCanvas = await html2canvas(container, html2canvasOpts);
+            var mainCanvas = await h2c(container, html2canvasOpts);
             if (!mainCanvas.width || !mainCanvas.height) throw new Error('html2canvas 결과가 0입니다.');
 
             await ensureJsPDFLoaded();
@@ -12454,7 +12478,7 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
                     var adjScale = opts.adjustScale != null ? opts.adjustScale : 1.3;
                     var adjOpts = { scale: adjScale, useCORS: true, allowTaint: true, logging: false, backgroundColor: '#ffffff', width: aw, height: ah };
                     try { adjOpts.windowWidth = aw; adjOpts.windowHeight = ah; adjOpts.scrollY = -window.scrollY; } catch (e2) {}
-                    adjustCanvas = await html2canvas(adjustEl, adjOpts);
+                    adjustCanvas = await h2c(adjustEl, adjOpts);
                 }
                 if (restore) restore();
             }
@@ -12541,15 +12565,21 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
             return function() { el.style.display = prev.display; el.style.visibility = prev.visibility; el.style.position = prev.position; el.style.left = prev.left; el.style.top = prev.top; };
         }
         async function captureElAsJpeg(el) {
+            await ensureHtml2CanvasLoaded();
+            var h2c = getHtml2Canvas();
+            if (!h2c) throw new Error('html2canvas가 로드되지 않았습니다.');
             var restore = await showForCapture(el);
-            var canvas = await html2canvas(el, { scale: 2.5, useCORS: true, allowTaint: true, logging: false, backgroundColor: '#ffffff' });
+            var canvas = await h2c(el, { scale: 2.5, useCORS: true, allowTaint: true, logging: false, backgroundColor: '#ffffff' });
             restore();
             if (!canvas || canvas.width === 0 || canvas.height === 0) throw new Error('캡처 0사이즈');
             return { img: canvas.toDataURL('image/jpeg', 0.95), w: canvas.width, h: canvas.height };
         }
         async function captureElAsPng(el, scale) {
+            await ensureHtml2CanvasLoaded();
+            var h2c = getHtml2Canvas();
+            if (!h2c) return '';
             if (scale == null) scale = 2;
-            var canvas = await html2canvas(el, { backgroundColor: null, scale: scale, useCORS: true });
+            var canvas = await h2c(el, { backgroundColor: null, scale: scale, useCORS: true });
             return canvas ? canvas.toDataURL('image/png') : '';
         }
         function hideHeaderUiForCapture(headerEl) {
@@ -12641,7 +12671,7 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
             return btoa(binary);
         }
 
-        /** DOM 테이블 → autoTable용 { head, body } (thead/th → head, tbody/td → body, innerText 사용 시 select 등 보이는 텍스트만 추출) */
+        /** DOM 테이블 → autoTable용 { head, body } (thead/th → head, tbody/td → body) */
         function tableDomToAutoTable(tableEl) {
             if (!tableEl) return { head: [], body: [] };
             var head = [];
@@ -12657,8 +12687,10 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
                     if (spanText) return spanText;
                     var select = td.querySelector('select');
                     if (select) {
-                        var val = select.value;
-                        return val ? val + '차' : '－';
+                        var clone = td.cloneNode(true);
+                        clone.querySelectorAll('select').forEach(function(s) { s.remove(); });
+                        var mainText = (clone.innerText || '').trim();
+                        if (mainText) return mainText;
                     }
                     return (td.innerText || '').trim();
                 }));
@@ -12689,6 +12721,7 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
         }
 
         async function exportTransport_3PagesPDF(fileName, assets, opts) {
+            await ensureHtml2CanvasLoaded();
             await ensureJsPDFLoaded();
             var jsPDF = getJsPDF();
             if (!jsPDF) throw new Error('jsPDF가 로드되지 않았습니다. 네트워크를 확인한 뒤 새로고침 후 다시 시도해 주세요.');
@@ -12755,6 +12788,8 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
 
             if (typeof ensureTransportVolumePanelVisible === 'function') await ensureTransportVolumePanelVisible();
             await new Promise(function(r) { setTimeout(r, 100); });
+            if (typeof renderTransportVolumeTripSummary === 'function') renderTransportVolumeTripSummary();
+            if (typeof renderAdjustedTripSummarySafe === 'function') renderAdjustedTripSummarySafe();
             renderTransportVolumeTable();
             await new Promise(function(r) { setTimeout(r, 150); });
 
@@ -12875,6 +12910,7 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
         }
 
         async function buildPdfAssets() {
+            await ensureHtml2CanvasLoaded();
             var now = new Date();
             var timeStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0') + ' ' + String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
             var headerDataUrl = '';
@@ -12884,8 +12920,9 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
                 // PDF 헤더: 지덕/유석/주신 포함 (되돌림 유지)
                 headerDiv.innerHTML = '<div style="font-size:16px;font-weight:bold;margin-bottom:4px;">K-COLUMN 공정관리 시스템</div><div style="font-size:11px;margin-bottom:2px;">K-COLUMN 100개 (상부 50)+(하부 50) 제작 및 설치 공정</div><div style="font-size:10px;">자료협조 : (주) 지덕이엔지 / (주) 유석철강산업 / (주) 주신산업</div>';
                 document.body.appendChild(headerDiv);
-                var headerCanvas = await html2canvas(headerDiv, { scale: 2, useCORS: true, logging: false, backgroundColor: '#ffffff' });
-                headerDataUrl = headerCanvas.toDataURL('image/png');
+                var h2c = getHtml2Canvas();
+                var headerCanvas = h2c ? await h2c(headerDiv, { scale: 2, useCORS: true, logging: false, backgroundColor: '#ffffff' }) : null;
+                if (headerCanvas) headerDataUrl = headerCanvas.toDataURL('image/png');
                 document.body.removeChild(headerDiv);
             } catch (e) { console.warn('PDF header image:', e); }
             var logo = new Image();
@@ -13056,6 +13093,11 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
 
         async function exportSelectedPdf() {
             var type = document.querySelector('input[name="pdfExportType"]:checked')?.value || 'transportVolume';
+            await ensureHtml2CanvasLoaded();
+            if (!getHtml2Canvas()) {
+                alert('html2canvas가 로드되지 않았습니다. 네트워크를 확인한 뒤 새로고침 후 다시 시도해 주세요.');
+                return;
+            }
             await ensurePdfPanelVisible(type);
             var panelId = (type === 'transportVolume') ? 'transportVolume' : type;
             var container = pickVisibleContainer(['#panel-' + panelId]) || getPdfContainerForType(type);
@@ -13142,6 +13184,54 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
         async function printTransportVolumeToPdf() {
             document.querySelector('input[name="pdfExportType"][value="transportVolume"]')?.click();
             await exportSelectedPdf();
+        }
+
+        async function exportTransportVolumePanelPdf() {
+            var panel = document.getElementById('panel-transportVolume');
+            if (!panel || !panel.offsetParent) {
+                alert('운송물량산정 패널이 보이지 않습니다. 해당 탭을 먼저 열어 주세요.');
+                return;
+            }
+            try {
+                await ensureHtml2CanvasLoaded();
+                var h2c = getHtml2Canvas();
+                if (!h2c) {
+                    alert('html2canvas가 로드되지 않았습니다. 네트워크를 확인한 뒤 새로고침 후 다시 시도해 주세요.');
+                    return;
+                }
+                await ensureJsPDFLoaded();
+                var jsPDF = getJsPDF();
+                if (!jsPDF) {
+                    alert('jsPDF가 로드되지 않았습니다. 네트워크를 확인한 뒤 새로고침 후 다시 시도해 주세요.');
+                    return;
+                }
+                var canvas = await h2c(panel, { scale: 2, useCORS: true, allowTaint: true, logging: false, backgroundColor: '#ffffff' });
+                if (!canvas || !canvas.width || !canvas.height) {
+                    alert('화면 캡처에 실패했습니다.');
+                    return;
+                }
+                var imgData = canvas.toDataURL('image/jpeg', 0.9);
+                var w = canvas.width;
+                var h = canvas.height;
+                var pdf = new jsPDF('p', 'mm', 'a4');
+                var pageW = pdf.internal.pageSize.getWidth();
+                var pageH = pdf.internal.pageSize.getHeight();
+                var margin = 10;
+                var contentW = pageW - margin * 2;
+                var contentH = pageH - margin * 2;
+                var imgW = contentW;
+                var imgH = (h / w) * imgW;
+                if (imgH > contentH) {
+                    imgH = contentH;
+                    imgW = (w / h) * imgH;
+                }
+                pdf.addImage(imgData, 'JPEG', margin, margin, imgW, imgH);
+                var dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+                var fileName = '운송물량산정_이화면_' + dateStr + '.pdf';
+                pdf.save(fileName);
+            } catch (e) {
+                alert('PDF 생성 중 오류가 발생했습니다: ' + (e.message || e));
+            }
         }
 
         // 운송물량산정: 템플릿 다운로드
@@ -16363,6 +16453,15 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
             averageWeightEl.textContent = averageWeight.toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' kg';
         }
         
+        // 조정부재 출력 형식: 조정부재수(증감) e.g. 9(+1), 8(+0), 3(-5)
+        function formatAdjustedCount(adjusted, original) {
+            const a = Number(adjusted ?? 0);
+            const o = Number(original ?? 0);
+            const diff = a - o;
+            const sign = diff >= 0 ? "+" : "";
+            return `${a}(${sign}${diff})`;
+        }
+
         // 차수별 집계 테이블 렌더링
         function renderTransportVolumeTripSummary(data = transportVolumeData) {
             const tbody = document.getElementById('transport-volume-trip-summary-tbody');
@@ -16424,9 +16523,10 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
                 }
             }
             
-            // 차수 번호로 정렬
+            // 차수 번호로 정렬 (0차 제외)
             const sortedTrips = Object.keys(tripSummary)
                 .map(Number)
+                .filter(t => t > 0)
                 .sort((a, b) => a - b);
             
             if (sortedTrips.length === 0) {
@@ -16476,10 +16576,6 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
                 tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#888;padding:16px;">"최대운송25톤" 버튼을 클릭하면 조정된 차수계획이 표시됩니다.</td></tr>';
                 return;
             }
-
-            console.log('sample adjustedTransportPlan:', adjustedTransportPlan);
-            console.log('sample transportVolumeData[0]:', transportVolumeData?.[0]);
-            console.log('transportVolumeData keys:', transportVolumeData?.[0] ? Object.keys(transportVolumeData[0]) : null);
 
             // ---- 내부 유틸(충돌/중복 방지) ----
             const normalizeColValue = (col) => {
@@ -16553,14 +16649,21 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
                 }
             }
 
-            // 차수 번호로 정렬
+            // 차수 번호로 정렬 (0차 제외)
             const sortedTrips = Object.keys(tripSummary)
                 .map(Number)
+                .filter(t => t > 0)
                 .sort((a, b) => a - b);
             
             if (sortedTrips.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#888;padding:16px;">조정된 차수계획 정보가 없습니다.</td></tr>';
                 return;
+            }
+            
+            // 조정 차수별 부재수 저장 (PDF/프린트 출력용)
+            window.adjustedTripCounts = {};
+            for (const tripNum in tripSummary) {
+                if (tripNum > 0) window.adjustedTripCounts[tripNum] = Number(tripSummary[tripNum]?.count ?? 0);
             }
             
             // 기존 운송차수계획 테이블의 부재수 계산 (비교용)
@@ -16621,14 +16724,14 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
                         ${deltaOpts.map(d => `<option value="${d}"${selVal === d ? ' selected' : ''}>${d >= 0 ? '+' : ''}${d}</option>`).join('')}
                     </select>
                 `;
-                const adjusted = Number(tripSummary[tripNum]?.count ?? 0);
-                const original = Number((window.originalTripCounts && window.originalTripCounts[tripNum]) ?? originalTripCounts?.[tripNum] ?? adjusted);
-                const delta = adjusted - original;
+                const original = Number((window.originalTripCounts && window.originalTripCounts[tripNum]) ?? originalTripCounts?.[tripNum] ?? 0);
+                const adjusted = Number((window.adjustedTripCounts && window.adjustedTripCounts[tripNum]) ?? tripSummary[tripNum]?.count ?? 0);
+                const text = formatAdjustedCount(adjusted, original);
                 
                 return `
                     <tr>
                         <td style="text-align:center;font-weight:bold;">${tripNum}</td>
-                        <td style="text-align:center;">${adjusted}개${delta !== 0 ? ` (${delta > 0 ? '+' : ''}${delta})` : ''}${deltaSelectHtml}</td>
+                        <td style="text-align:center;">${text}${deltaSelectHtml}</td>
                         <td style="text-align:right;">${totalWeightTon.toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ton</td>
                         <td style="text-align:center;${isOver25Ton ? 'color:#f44336;font-weight:bold;' : 'color:#000;'}">${isOver25Ton ? '초과' : '정상'}</td>
                         <td style="text-align:right;${marginWeight < 0 ? 'color:#f44336;font-weight:bold;' : 'color:#000;'}">${marginWeight.toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ton</td>
@@ -16638,11 +16741,6 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
             });
             
             tbody.innerHTML = rows.join('');
-            console.log('[DEBUG] adjusted summary first row HTML:', tbody.querySelector('tr')?.innerHTML);
-            console.log('[DEBUG] adjusted summary first row text:', tbody.querySelector('tr')?.innerText);
-            setTimeout(() => {
-                console.log('[DEBUG] adjusted summary after 200ms first row text:', tbody.querySelector('tr')?.innerText);
-            }, 200);
         }
 
         function renderAdjustedTripSummarySafe() {
