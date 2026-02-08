@@ -1,0 +1,1286 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SPTEP | Steel Production · Transport · Erection Platform</title>
+  <meta name="description" content="SPTEP는 철골 생산, 운송, 현장 설치 전 과정을 Firestore 기반 실시간 동기화 플랫폼에서 통합 관리하는 운영 시스템입니다." />
+  <link rel="icon" type="image/jpeg" href="../assets/images/sptep/favicon.jpg" />
+
+  <style>
+    :root{
+      --bg:#0b1220;
+      --card:#0f1a30;
+      --card2:#0c162a;
+      --text:#e9eefb;
+      --muted:#b8c3dd;
+      --line:rgba(255,255,255,.10);
+      --accent:#6aa3ff;
+      --accent2:#6ef0c2;
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --radius: 18px;
+      --max: 1080px;
+    }
+
+    *{ box-sizing:border-box; }
+    html{ scroll-behavior:smooth; }
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Noto Sans KR", Arial, sans-serif;
+      background: radial-gradient(1200px 600px at 20% -10%, rgba(106,163,255,.22), transparent 60%),
+                  radial-gradient(900px 500px at 90% 0%, rgba(110,240,194,.18), transparent 55%),
+                  linear-gradient(180deg, var(--bg), #070b14 70%);
+      color:var(--text);
+    }
+
+    a{ color:inherit; text-decoration:none; }
+    .container{ max-width:var(--max); margin:0 auto; padding:0 18px; }
+
+    /* Topbar */
+    .topbar{
+      position:sticky; top:0; z-index:50;
+      background: rgba(7,11,20,.72);
+      backdrop-filter: blur(10px);
+      border-bottom:1px solid var(--line);
+    }
+    .topbar-inner{
+      display:flex; align-items:center; justify-content:space-between;
+      gap:12px;
+      padding:12px 0;
+    }
+    .brand{
+      display:flex; align-items:center; gap:10px; min-width: 210px;
+    }
+    .brand-mark{
+      width:34px; height:34px; border-radius:10px;
+      background: linear-gradient(135deg, rgba(106,163,255,.95), rgba(110,240,194,.95));
+      box-shadow: 0 8px 20px rgba(106,163,255,.15);
+      display:grid; place-items:center;
+      color:#07101f;
+      font-weight:900;
+      letter-spacing:.5px;
+    }
+    .brand-title{
+      display:flex; flex-direction:column; line-height:1.1;
+    }
+    .brand-title strong{ font-size:14px; }
+    .brand-title span{ font-size:12px; color:var(--muted); }
+
+    .nav{
+      display:flex; flex-wrap:wrap; gap:10px 14px;
+      justify-content:flex-end;
+    }
+    .nav a{
+      font-size:12.5px;
+      padding:8px 10px;
+      border:1px solid transparent;
+      border-radius:999px;
+      color:var(--muted);
+    }
+    .nav a:hover{
+      border-color: var(--line);
+      color:var(--text);
+      background: rgba(255,255,255,.04);
+    }
+
+    /* Hero */
+    .hero{ padding:28px 0 18px; }
+    .hero-card{
+      border:1px solid var(--line);
+      border-radius: var(--radius);
+      background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .hero-inner{
+      padding:26px 22px 22px;
+      display:grid;
+      grid-template-columns: 1.25fr .75fr;
+      gap:18px;
+      align-items:start;
+    }
+    .kicker{
+      display:inline-flex; gap:8px; align-items:center;
+      padding:6px 10px;
+      border:1px solid var(--line);
+      border-radius:999px;
+      color:var(--muted);
+      font-size:12px;
+      width:fit-content;
+      background: rgba(255,255,255,.02);
+    }
+    .kicker .dot{
+      width:8px; height:8px; border-radius:99px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      box-shadow: 0 0 0 4px rgba(106,163,255,.12);
+    }
+    .hero-logo{
+      display:block; max-width:540px; height:auto;
+      margin-top:16px; margin-bottom:8px;
+      border-radius:12px; border:1px solid var(--line);
+    }
+    h1{
+      margin:12px 0 8px;
+      font-size:34px;
+      letter-spacing:-.5px;
+    }
+    .subtitle{
+      margin:0;
+      color:var(--muted);
+      font-size:15px;
+      line-height:1.6;
+      max-width: 64ch;
+    }
+    .chips{
+      margin-top:14px;
+      display:flex; flex-wrap:wrap; gap:8px;
+    }
+    .chip{
+      font-size:12px; color:var(--muted);
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.02);
+      padding:7px 10px;
+      border-radius:999px;
+    }
+    .hero-side{
+      border-left:1px solid var(--line);
+      padding-left:18px;
+    }
+    .hero-side h3{
+      margin:2px 0 10px;
+      font-size:14px;
+      color:var(--text);
+    }
+    .hero-side ul{
+      margin:0;
+      padding:0 0 0 18px;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.7;
+    }
+    @media (max-width: 920px){
+      .hero-inner{ grid-template-columns: 1fr; }
+      .hero-side{ border-left:none !important; padding-left:0 !important; border-top:1px solid var(--line); padding-top:14px; }
+    }
+
+    /* Global realtime map card */
+    .global-map-card{
+      margin-top: 14px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+      box-shadow: 0 10px 24px rgba(0,0,0,.28);
+      overflow: hidden;
+    }
+    .global-map-head{
+      padding: 12px 12px 0;
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+    }
+    .global-map-title{ font-size: 12.5px; color: var(--text); margin: 0; letter-spacing: -.1px; }
+    .global-map-badge{
+      font-size: 11px; color: var(--muted);
+      border: 1px solid var(--line); border-radius: 999px;
+      padding: 6px 8px; background: rgba(255,255,255,.02); white-space:nowrap;
+    }
+    .global-map-svg{ width: 100%; height: auto; display:block; }
+    .global-map-caption{
+      padding: 10px 12px 12px;
+      border-top: 1px solid var(--line);
+      color: var(--muted); font-size: 12px; line-height: 1.55;
+      background: rgba(0,0,0,.10);
+    }
+    .global-map-legend{
+      display:flex; flex-wrap:wrap; gap:10px; margin-top: 8px; font-size: 11.5px; color: var(--muted);
+    }
+    .global-map-legend .lg{ display:inline-flex; align-items:center; gap:8px; }
+    .global-map-legend .dot{ width:9px;height:9px;border-radius:999px; box-shadow: 0 0 0 4px rgba(255,255,255,.05); }
+    .global-map-legend .user{ background: var(--accent); }
+    .global-map-legend .cloud{ background: var(--accent2); }
+    .global-map-legend .sync{ background: #ffd36a; }
+
+    /* Sections */
+    .section{ padding:18px 0 40px; }
+    .section-card{
+      border:1px solid var(--line);
+      border-radius: var(--radius);
+      background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.02));
+      box-shadow: var(--shadow);
+      padding:18px;
+    }
+    .section-title{
+      display:flex; align-items:baseline; justify-content:space-between;
+      gap:12px; flex-wrap:wrap;
+      margin-bottom:10px;
+    }
+    .section-title h2{ margin:0; font-size:18px; }
+    .section-title p{ margin:0; color:var(--muted); font-size:13px; }
+
+    /* Transport action buttons */
+    .btn-row{ display:flex; gap:10px; flex-wrap:wrap; margin-top:12px; }
+    .btn{
+      appearance:none; border:1px solid var(--line);
+      background: rgba(255,255,255,.03);
+      color:var(--text);
+      border-radius: 999px;
+      padding:10px 12px;
+      font-size:13px;
+      cursor:pointer;
+      transition: transform .08s ease, background .15s ease, border-color .15s ease;
+    }
+    .btn:hover{ background: rgba(255,255,255,.06); border-color: rgba(255,255,255,.16); }
+    .btn:active{ transform: translateY(1px); }
+    .btn.primary{
+      border-color: rgba(106,163,255,.35);
+      background: linear-gradient(135deg, rgba(106,163,255,.18), rgba(110,240,194,.10));
+    }
+
+    /* Modal (fast open/close, no PDF iframe) */
+    .modal-backdrop{
+      position:fixed; inset:0;
+      background: rgba(0,0,0,.55);
+      display:none;
+      z-index:1000;
+      padding: 28px 16px;
+    }
+    .modal-backdrop.show{ display:block; }
+    .modal{
+      max-width: min(1100px, 100%);
+      margin: 0 auto;
+      border:1px solid var(--line);
+      border-radius: 16px;
+      background: linear-gradient(180deg, rgba(15,26,48,.98), rgba(12,22,42,.98));
+      box-shadow: 0 18px 50px rgba(0,0,0,.45);
+      overflow:hidden;
+    }
+    .modal-header{
+      display:flex; align-items:center; justify-content:space-between;
+      gap:10px;
+      padding: 12px 14px;
+      border-bottom:1px solid var(--line);
+      background: rgba(255,255,255,.02);
+    }
+    .modal-header .title{
+      display:flex; flex-direction:column;
+      gap:2px;
+    }
+    .modal-header .title strong{ font-size:14px; }
+    .modal-header .title span{ font-size:12px; color: var(--muted); }
+    .icon-btn{
+      width:34px; height:34px;
+      border-radius: 10px;
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.02);
+      color: var(--text);
+      cursor:pointer;
+      display:grid; place-items:center;
+    }
+    .icon-btn:hover{ background: rgba(255,255,255,.06); }
+
+    .modal-body{
+      padding: 12px 14px 16px;
+      max-height: calc(100vh - 140px);
+      overflow:auto;
+    }
+
+    .table{
+      width:100%;
+      border-collapse: collapse;
+      border:1px solid var(--line);
+      border-radius: 12px;
+      overflow:hidden;
+      background: rgba(255,255,255,.01);
+    }
+    .table th, .table td{
+      padding: 9px 10px;
+      border-bottom:1px solid var(--line);
+      font-size: 12.5px;
+      text-align:left;
+      vertical-align: top;
+      white-space: nowrap;
+    }
+    .table th{
+      background: rgba(255,255,255,.04);
+      color: var(--muted);
+      font-weight: 700;
+    }
+    .table tr:hover td{ background: rgba(255,255,255,.02); }
+    .table .right{ text-align:right; }
+    .table .wrap{ white-space: normal; min-width: 220px; }
+
+    .note{
+      margin: 10px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.55;
+    }
+
+    /* Section styles (first version) */
+    .section-head{
+      display:flex; align-items:flex-end; justify-content:space-between; gap:10px;
+      margin-bottom:10px;
+    }
+    .section-head h2{ margin:0; font-size:20px; letter-spacing:-.2px; }
+    .section-head .tag{
+      font-size:12px; color:var(--muted); border:1px solid var(--line);
+      padding:6px 10px; border-radius:999px; background: rgba(255,255,255,.02);
+    }
+    .lead{ margin:0 0 10px; color:var(--muted); line-height:1.7; font-size:14px; }
+    .grid-2{ display:grid; grid-template-columns: 1fr 1fr; gap:14px; margin-top:12px; }
+    .box{
+      border:1px solid var(--line); border-radius:16px;
+      background: rgba(15,26,48,.35); padding:14px;
+    }
+    .box h3{ margin:0 0 8px; font-size:14px; }
+    .box ul{ margin:0; padding:0 0 0 18px; color:var(--muted); font-size:13px; line-height:1.75; }
+    .mini-table{
+      width:100%; border-collapse:separate; border-spacing:0; overflow:hidden;
+      border-radius: 14px; border:1px solid var(--line);
+      background: rgba(255,255,255,.02); margin-top:10px;
+    }
+    .mini-table th, .mini-table td{
+      padding:10px 10px; border-bottom:1px solid var(--line);
+      font-size:13px; color:var(--muted); vertical-align:top;
+    }
+    .mini-table th{ color:var(--text); font-weight:700; background: rgba(255,255,255,.03); width: 170px; }
+    .mini-table tr:last-child th, .mini-table tr:last-child td{ border-bottom:none; }
+    .callout{
+      margin-top:12px; border:1px solid rgba(106,163,255,.35);
+      background: rgba(106,163,255,.10); border-radius: 16px;
+      padding:12px; color: var(--text); font-size:13px; line-height:1.6;
+    }
+    .callout strong{ color: #dbe8ff; }
+
+    /* Company / Process selector (Production section) */
+    .company-selector{
+      margin-top:20px;
+      border:1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(15,26,48,.35);
+      padding:14px;
+    }
+    .company-buttons{
+      display:grid;
+      grid-template-columns: auto repeat(6, 1fr);
+      gap:8px;
+      align-items:stretch;
+    }
+    @media (max-width: 920px){
+      .company-buttons{ grid-template-columns: auto repeat(3, 1fr); }
+    }
+    @media (max-width: 600px){
+      .company-buttons{ grid-template-columns: 1fr 1fr; }
+    }
+    .company-selector .tab-btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:12px 18px;
+      background: rgba(255,255,255,.04);
+      color: var(--text);
+      border:1px solid var(--line);
+      border-radius: 10px;
+      font-size:13px;
+      font-weight:600;
+      text-decoration:none;
+      transition: all 0.2s ease;
+    }
+    .company-selector .tab-btn:hover,
+    .company-selector .tab-btn.active{
+      background: rgba(106,163,255,.15);
+      border-color: rgba(106,163,255,.4);
+    }
+    .company-selector .process-btn{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      padding:10px 8px;
+      color: white;
+      border:1px solid rgba(255,255,255,.15);
+      border-radius: 10px;
+      font-size:12px;
+      font-weight:600;
+      text-decoration:none;
+      text-align:center;
+      transition: all 0.2s ease;
+    }
+    .company-selector .process-btn small{
+      display:block;
+      font-size:10px;
+      opacity:0.9;
+      margin-top:2px;
+    }
+    .company-selector .process-btn.p1{ background: linear-gradient(135deg, #e74c3c, #c0392b); }
+    .company-selector .process-btn.p2{ background: linear-gradient(135deg, #ff9800, #f57c00); }
+    .company-selector .process-btn.p3{ background: linear-gradient(135deg, #2196f3, #1976d2); }
+    .company-selector .process-btn.p4{ background: linear-gradient(135deg, #00bcd4, #0097a7); }
+    .company-selector .process-btn.p5{ background: linear-gradient(135deg, #9c27b0, #7b1fa2); }
+    .company-selector .process-btn.p6{ background: linear-gradient(135deg, #4caf50, #388e3c); }
+    .company-selector .process-btn:hover{
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,.3);
+    }
+
+    .media-row{ display:grid; grid-template-columns: 1fr 1fr; gap:14px; margin-top:12px; align-items:stretch; }
+    @media (max-width: 760px){
+      .media-row{ grid-template-columns: 1fr; }
+      .media-row figure.media{ height:auto; }
+      .media-row figure.media img{ height:auto; object-fit:contain; }
+    }
+    .media-row figure.media{
+      margin:0; height:360px; overflow:hidden;
+      display:flex; flex-direction:column;
+    }
+    .media-row figure.media img{
+      width:100%; height:100%; object-fit:cover; flex:1;
+      border-radius: 16px; border:1px solid var(--line);
+    }
+    .media-row figure.media figcaption{
+      flex-shrink:0; margin-top:8px;
+    }
+    figure.media img{
+      width:100%; max-width:100%; border-radius: 16px; display:block;
+      border:1px solid var(--line); background: rgba(255,255,255,.02);
+    }
+    figure.media figcaption{ margin-top:8px; color:var(--muted); font-size:12.5px; line-height:1.5; }
+    .transport-media img{ width:50%; max-width:50%; height:auto; }
+    footer{
+      margin-top:34px; padding:24px 0 40px;
+      border-top:1px solid var(--line); background: rgba(0,0,0,.18);
+    }
+    .footer-inner{ display:flex; gap:14px; align-items:center; flex-wrap:wrap; justify-content:space-between; }
+    .footer-left{ display:flex; gap:14px; align-items:center; flex-wrap:wrap; }
+    .footer-logo{ height:88px; width:auto; border-radius:10px; border:1px solid var(--line); background: rgba(255,255,255,.02); padding:6px 10px; }
+    .footer-text{ margin:0; color:var(--muted); font-size:12.5px; line-height:1.6; max-width: 78ch; }
+
+    @media (max-width: 900px){ .grid-2{ grid-template-columns: 1fr; } }
+    @media (max-width: 860px){
+      .hero-inner{ grid-template-columns: 1fr; }
+      .hero-side{ border-left:0; padding-left:0; border-top:1px solid var(--line); padding-top:14px; }
+      .table th, .table td{ font-size: 12px; }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Topbar -->
+  <div class="topbar">
+    <div class="container">
+      <div class="topbar-inner">
+        <a class="brand" href="#top">
+          <div class="brand-mark">S</div>
+          <div class="brand-title">
+            <strong>SPTEP</strong>
+            <span>Steel · Production · Transport · Erection · Platform</span>
+          </div>
+        </a>
+        <nav class="nav" aria-label="페이지 내 이동">
+          <a href="#index">INDEX</a>
+          <a href="#steel">Steel</a>
+          <a href="#production">Production</a>
+          <a href="#transport">Transport</a>
+          <a href="#erection">Erection</a>
+          <a href="#platform">Platform</a>
+          <a href="#roles">권한</a>
+          <a href="#manual">사용자 매뉴얼</a>
+          <a href="#effects">효과</a>
+          <a href="../index.html">홈</a>
+        </nav>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hero -->
+  <section class="hero" id="top">
+    <div class="container">
+      <div class="hero-card">
+        <div class="hero-inner">
+          <div>
+            <div class="kicker"><span class="dot"></span> 운영 시스템 소개</div>
+            <img src="../assets/images/sptep/sptep-logo.jpg" alt="SPTEP 로고" class="hero-logo" loading="lazy" />
+            <h1>SPTEP</h1>
+            <p class="subtitle">
+              철골 생산(Steel Production), 운송(Transport), 현장 설치(Erection) 전 과정을<br />
+              하나의 플랫폼(Platform)에서 통합 관리하는 운영 시스템
+            </p>
+            <div class="chips" aria-label="핵심 키워드">
+              <span class="chip">Firestore 실시간 동기화</span>
+              <span class="chip">운송차수 원본/조정 관리</span>
+              <span class="chip">25톤 적재 최적화</span>
+              <span class="chip">설치 마킹 기반 진척률</span>
+              <span class="chip">권한 기반 협업</span>
+              <span class="chip">멀티 공장 운영</span>
+              <span class="chip">Fast Modal Viewer</span>
+            </div>
+          </div>
+          <aside class="hero-side">
+            <h3>페이지 구성</h3>
+            <ul>
+              <li>INDEX: 실시간 공유 핵심</li>
+              <li>S/P/T/E: 단계별 운영 구조</li>
+              <li>Platform: 실시간 구독/이력/프로젝트 분리</li>
+              <li>권한: Admin / Editor / Viewer</li>
+              <li>사용자 매뉴얼: 역할별 실무 흐름</li>
+              <li>Transport: PDF 대신 모달로 즉시 표시</li>
+            </ul>
+
+            <div class="global-map-card">
+              <div class="global-map-head">
+                <p class="global-map-title">Global Real-time Sync</p>
+                <span class="global-map-badge">Cloud Firestore</span>
+              </div>
+
+              <svg class="global-map-svg" viewBox="0 0 680 420" role="img" aria-label="Global realtime collaboration diagram with world map and Cloud Firestore">
+                <defs>
+                  <radialGradient id="rg1" cx="30%" cy="20%" r="80%">
+                    <stop offset="0%" stop-color="rgba(106,163,255,.22)"/>
+                    <stop offset="60%" stop-color="rgba(106,163,255,0)"/>
+                  </radialGradient>
+                  <radialGradient id="rg2" cx="80%" cy="35%" r="75%">
+                    <stop offset="0%" stop-color="rgba(110,240,194,.18)"/>
+                    <stop offset="60%" stop-color="rgba(110,240,194,0)"/>
+                  </radialGradient>
+                  <filter id="softGlow" x="-30%" y="-30%" width="160%" height="160%">
+                    <feGaussianBlur stdDeviation="6" result="blur"/>
+                    <feMerge>
+                      <feMergeNode in="blur"/>
+                      <feMergeNode in="SourceGraphic"/>
+                    </feMerge>
+                  </filter>
+                  <pattern id="grid" width="28" height="28" patternUnits="userSpaceOnUse">
+                    <path d="M 28 0 L 0 0 0 28" fill="none" stroke="rgba(255,255,255,.06)" stroke-width="1"/>
+                  </pattern>
+                </defs>
+
+                <rect x="0" y="0" width="680" height="420" fill="rgba(255,255,255,.02)"/>
+                <rect x="0" y="0" width="680" height="420" fill="url(#grid)" opacity="0.7"/>
+                <rect x="0" y="0" width="680" height="420" fill="url(#rg1)"/>
+                <rect x="0" y="0" width="680" height="420" fill="url(#rg2)"/>
+
+                <g opacity="0.60">
+                  <path d="M92,190c32-30,85-58,145-54c42,3,74,24,82,44c8,20-8,40-32,52c-32,16-86,28-132,18c-44-10-77-31-63-60z"
+                        fill="rgba(255,255,255,.16)" />
+                  <path d="M310,155c34-24,74-28,110-18c26,8,56,28,64,52c7,22-18,44-52,54c-42,12-92,2-120-18c-28-20-32-48-2-70z"
+                        fill="rgba(255,255,255,.14)" />
+                  <path d="M435,245c22-10,54-10,80,0c24,9,44,26,44,42c0,18-26,34-60,38c-32,4-66-4-84-18c-18-14-12-44,20-62z"
+                        fill="rgba(255,255,255,.12)" />
+                  <path d="M170,270c18-10,46-12,66-6c20,6,38,20,38,34c0,16-18,30-46,34c-28,4-58-2-72-14c-14-12-10-36,14-48z"
+                        fill="rgba(255,255,255,.12)" />
+                </g>
+
+                <g transform="translate(340 215)" filter="url(#softGlow)">
+                  <path d="M-62,18c-20,0-36-14-36-31c0-14,10-26,24-30c4-20,26-36,52-36c22,0,40,10,48,24
+                           c4-2,10-3,16-3c18,0,32,12,32,28c0,2,0,4-1,6c16,4,28,16,28,30c0,18-18,32-40,32H-62z"
+                        fill="rgba(110,240,194,.18)" stroke="rgba(110,240,194,.55)" stroke-width="2"/>
+                  <text x="0" y="10" text-anchor="middle" fill="rgba(233,238,251,.95)" font-size="16" font-weight="800">
+                    Cloud Firestore
+                  </text>
+                  <text x="0" y="30" text-anchor="middle" fill="rgba(184,195,221,.95)" font-size="12">
+                    Real-time Sync
+                  </text>
+                </g>
+
+                <g font-size="11" fill="rgba(233,238,251,.92)">
+                  <g transform="translate(120 140)">
+                    <circle r="9" fill="rgba(106,163,255,.30)" stroke="rgba(106,163,255,.80)" stroke-width="2" filter="url(#softGlow)"></circle>
+                    <text x="0" y="26" text-anchor="middle">User</text>
+                  </g>
+                  <g transform="translate(160 300)">
+                    <circle r="9" fill="rgba(106,163,255,.26)" stroke="rgba(106,163,255,.75)" stroke-width="2" filter="url(#softGlow)"></circle>
+                    <text x="0" y="26" text-anchor="middle">User</text>
+                  </g>
+                  <g transform="translate(330 120)">
+                    <circle r="9" fill="rgba(106,163,255,.28)" stroke="rgba(106,163,255,.78)" stroke-width="2" filter="url(#softGlow)"></circle>
+                    <text x="0" y="26" text-anchor="middle">User</text>
+                  </g>
+                  <g transform="translate(360 335)">
+                    <circle r="9" fill="rgba(106,163,255,.24)" stroke="rgba(106,163,255,.70)" stroke-width="2" filter="url(#softGlow)"></circle>
+                    <text x="0" y="26" text-anchor="middle">User</text>
+                  </g>
+                  <g transform="translate(545 160)">
+                    <circle r="9" fill="rgba(106,163,255,.28)" stroke="rgba(106,163,255,.78)" stroke-width="2" filter="url(#softGlow)"></circle>
+                    <text x="0" y="26" text-anchor="middle">User</text>
+                  </g>
+                  <g transform="translate(560 295)">
+                    <circle r="9" fill="rgba(106,163,255,.22)" stroke="rgba(106,163,255,.66)" stroke-width="2" filter="url(#softGlow)"></circle>
+                    <text x="0" y="26" text-anchor="middle">User</text>
+                  </g>
+                </g>
+
+                <g stroke="rgba(255,211,106,.60)" stroke-width="2.2" fill="none" opacity="0.95">
+                  <path d="M120 140 C 190 150, 250 175, 305 195" />
+                  <path d="M160 300 C 220 290, 270 260, 305 225" />
+                  <path d="M330 120 C 335 150, 338 175, 338 195" />
+                  <path d="M360 335 C 350 300, 345 265, 340 240" />
+                  <path d="M545 160 C 505 175, 455 190, 385 205" />
+                  <path d="M560 295 C 515 280, 455 255, 385 230" />
+                </g>
+
+                <g fill="rgba(255,211,106,.85)" opacity="0.95">
+                  <polygon points="305,195 296,191 296,199"/>
+                  <polygon points="305,225 296,221 296,229"/>
+                  <polygon points="338,195 329,191 329,199"/>
+                  <polygon points="340,240 331,236 331,244"/>
+                  <polygon points="385,205 394,201 394,209"/>
+                  <polygon points="385,230 394,226 394,234"/>
+                </g>
+
+                <text x="14" y="405" fill="rgba(184,195,221,.90)" font-size="11">
+                  Global Users → Cloud Firestore → Instant Realtime Sync
+                </text>
+              </svg>
+
+              <div class="global-map-caption">
+                전 세계 어디서든 같은 공정 데이터를 동시에 확인/수정하고, 변경 사항은 즉시 동기화됩니다.
+                <div class="global-map-legend">
+                  <span class="lg"><i class="dot user"></i>사용자</span>
+                  <span class="lg"><i class="dot cloud"></i>Cloud Firestore</span>
+                  <span class="lg"><i class="dot sync"></i>실시간 동기화</span>
+                </div>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 1. 시스템 소개 -->
+  <section>
+    <div class="container">
+      <div class="section-card">
+        <div class="section-head">
+          <h2>1. 시스템 소개</h2>
+          <span class="tag">통합 운영 시스템</span>
+        </div>
+        <p class="lead">
+          SPTEP는 철골 생산, 운송, 현장 설치 전 과정을 하나의 플랫폼에서 연결하여 관리합니다.
+          초기 계획 단계부터 생산 공정, 운송차수, 설치 순서를 함께 고려하여 공정 흐름을 단절 없이 운영하고
+          전체 프로젝트 효율을 최적화합니다.
+        </p>
+        <div class="grid-2">
+          <div class="box">
+            <h3>주요 목적</h3>
+            <ul>
+              <li>생산–운송–설치 공정 통합</li>
+              <li>운송차수 및 물량 최적화</li>
+              <li>설치 기준 진척률 관리</li>
+              <li>Firestore 기반 실시간 동기화</li>
+              <li>권한 기반 협업 운영</li>
+            </ul>
+          </div>
+          <div class="box">
+            <h3>핵심 운영 흐름</h3>
+            <ul>
+              <li>초기 운송차수계획 → 설치 순서 예측</li>
+              <li>생산 공정 선제 구성</li>
+              <li>물량 기반 운송 최적화(25톤 기준)</li>
+              <li>설치 마킹 기반 실시간 진척률</li>
+              <li>실시간 공유로 협업 안정화</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. INDEX -->
+  <section id="index">
+    <div class="container">
+      <div class="section-card">
+        <div class="section-head">
+          <h2>2. INDEX</h2>
+          <span class="tag">Firestore 실시간 공유</span>
+        </div>
+        <p class="lead">
+          SPTEP는 Firestore 기반 실시간 동기화를 중심으로 운영됩니다.
+          공정표 전체 데이터가 저장되고 변경 즉시 모든 사용자 화면에 동기화되어,
+          공장(생산)·물류(운송)·현장(설치)이 동일한 최신 데이터를 동시에 확인합니다.
+        </p>
+        <div class="box">
+          <ul>
+            <li>공정표 전체 실시간 동기화</li>
+            <li>생산·운송·설치 데이터 통합 관리</li>
+            <li>설치 완료 기준 진척률 자동 계산</li>
+            <li>프로젝트 참여자 동일 정보 사용</li>
+            <li>권한 기반 접근 제어</li>
+          </ul>
+        </div>
+        <div class="callout">
+          <strong>핵심 메시지:</strong> 입력 즉시 공유되고, 모두가 같은 공정표를 보고 운영합니다.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. Steel -->
+  <section id="steel">
+    <div class="container">
+      <div class="section-card">
+        <div class="section-head">
+          <h2>3. S — Steel</h2>
+          <span class="tag">부재(기둥) 기준 관리</span>
+        </div>
+        <p class="lead">
+          SPTEP는 철골 부재(기둥) 기준으로 전체 공정을 관리합니다.
+          부재 고유 ID를 기준으로 생산 → 운송 → 설치 전 과정을 연결하여 동일 기준 데이터를 유지합니다.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. Production -->
+  <section id="production">
+    <div class="container">
+      <div class="section-card">
+        <div class="section-head">
+          <h2>4. P — Production</h2>
+          <span class="tag">멀티 공장 + 대량생산</span>
+        </div>
+        <p class="lead">
+          생산 공정은 생산성 향상을 위해 커팅 공정과 조립 공정을 분리 운영하며,
+          기둥조립은 Roll Beam / BH Beam 기반 끼움 방식으로 대량생산 체계를 구성합니다.
+        </p>
+
+        <div class="company-selector">
+          <div class="company-buttons">
+            <a href="K-product/2H_steel_product.html" class="tab-btn active">✏️ 일일 입력</a>
+            <a href="K-product/2H_steel_product.html?project=P1" class="company-btn process-btn p1" data-process="1">1. 주기둥커팅<small>유석철강(충주공장)</small></a>
+            <a href="K-product/2H_steel_product.html?project=P2" class="company-btn process-btn p2" data-process="2">2. 소부재커팅<small>유석철강(오창공장)</small></a>
+            <a href="K-product/2H_steel_product.html?project=P3" class="company-btn process-btn p3" data-process="3">3. 주기둥조립<small>유석철강(음성공장)</small></a>
+            <a href="K-product/2H_steel_product.html?project=P4" class="company-btn process-btn p4" data-process="4">4. 소부재조립<small>유석철강(음성공장)</small></a>
+            <a href="K-product/2H_steel_product.html?project=P5" class="company-btn process-btn p5" data-process="5">5. 현장배송<small>유석철강(음성공장)</small></a>
+            <a href="K-product/2H_steel_product.html?project=P6" class="company-btn process-btn p6" data-process="6">6. 현장설치<small>진흥기업</small></a>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="box">
+            <h3>공정 분리 생산 구조</h3>
+            <ul>
+              <li><b>커팅 공장</b>: 기둥커팅 / 소부재커팅</li>
+              <li><b>조립 공장</b>: 기둥조립 / 소부재조립</li>
+              <li>절단 공정 전문화로 병목 최소화</li>
+              <li>대기시간 감소, 생산 리드타임 단축</li>
+            </ul>
+          </div>
+          <div class="box">
+            <h3>기둥조립 대량생산 방식</h3>
+            <ul>
+              <li>Roll Beam 또는 BH Beam 기반</li>
+              <li>끼움 방식 조립, 표준화된 반복 생산</li>
+              <li>제작 시간 단축, 품질 편차 최소화</li>
+            </ul>
+          </div>
+        </div>
+        <table class="mini-table" aria-label="일일 공정 입력 단계">
+          <tr>
+            <th>일일 입력 단계(6)</th>
+            <td>기둥커팅 · 소부재커팅 · 기둥조립 · 소부재조립 · 현장운송 · 현장설치</td>
+          </tr>
+          <tr>
+            <th>상태값</th>
+            <td>예정 · 진행중 · 완료 · 지연</td>
+          </tr>
+        </table>
+        <div class="media-row">
+          <figure class="media">
+            <img src="../assets/images/sptep/column_cutting.webp" alt="기둥 커팅 공정" loading="lazy" />
+            <figcaption>기둥커팅 공정(별도 커팅 공장 운영)</figcaption>
+          </figure>
+          <figure class="media">
+            <img src="../assets/images/sptep/column_fabrication.jpg" alt="기둥 조립 공정" loading="lazy" />
+            <figcaption>기둥조립 공정(조립 공장 운영)</figcaption>
+          </figure>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. Transport -->
+  <section id="transport" class="section">
+    <div class="container">
+      <div class="section-card">
+        <div class="section-head">
+          <h2>5. T — Transport</h2>
+          <span class="tag">원본/조정 차수 + 25톤 최적화</span>
+        </div>
+        <p class="lead">
+          운송은 차수(Trip) 단위로 계획되며, 설치 순서 및 공정표 구성의 기준 데이터로 활용됩니다.
+          제작 초기 물량산정을 통해 차량 적재 중량을 사전에 계산하고 25톤 기준으로 운송차수를 최적화합니다.
+        </p>
+        <div class="grid-2">
+          <div class="box">
+            <h3>운송차수계획 (원본)</h3>
+            <ul>
+              <li>차수(Trip) 단위로 계획</li>
+              <li>제작 완료된 부재만 차수 배정</li>
+              <li>원본 차수표는 기준 집계 데이터로 유지</li>
+            </ul>
+          </div>
+          <div class="box">
+            <h3>조정운송차수계획</h3>
+            <ul>
+              <li>현장/제작 일정 변경 시 조정 가능</li>
+              <li>원본 계획을 유지하고 조정 계획을 별도 관리</li>
+              <li>원본 대비 증감 표시로 차이 즉시 파악</li>
+            </ul>
+          </div>
+        </div>
+        <table class="mini-table" aria-label="원본 대비 증감 표기">
+          <tr>
+            <th>표시 방식</th>
+            <td>증가: <b>9개 (+1)</b> · 감소: <b>9개 (-2)</b> · 변경 없음: <b>9개</b></td>
+          </tr>
+          <tr>
+            <th>의미</th>
+            <td>"9개 (+1)" = 조정 후 수량 9개, 원본 대비 1개 증가</td>
+          </tr>
+          <tr>
+            <th>기준 고정</th>
+            <td>표시 기준은 반드시 <b>원본 차수표</b>로 고정 (표시 기준 혼합 금지)</td>
+          </tr>
+        </table>
+        <div class="callout">
+          <strong>물류 최적화 포인트:</strong>
+          제작 초기 물량산정 → 적재 중량 계산 → 25톤 기준 최적화 → 기존 차수 순서 유지 → 운송차수 감소
+        </div>
+
+        <div class="btn-row" style="margin-top:20px;">
+          <button class="btn primary" data-open="modal-adjusted">조정 운송차수계획 보기</button>
+          <button class="btn" data-open="modal-original">조정 전(원본) 운송차수계획(13차) 보기</button>
+          <button class="btn" data-open="modal-parts">부재 리스트(원본+조정) 보기</button>
+        </div>
+        <p class="note">
+          * PDF 대신 HTML 표로 즉시 표시. 닫기: X / 바깥 클릭 / ESC
+        </p>
+
+        <figure class="media transport-media">
+          <img src="../assets/images/sptep/site_transport.png.png" alt="현장 운송" loading="lazy" />
+          <figcaption>현장운송(25톤 기준 적재/차수 계획 연동)</figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6. Erection -->
+  <section id="erection">
+    <div class="container">
+      <div class="section-card">
+        <div class="section-head">
+          <h2>6. E — Erection</h2>
+          <span class="tag">설치 마킹 + 진척률 자동 반영</span>
+        </div>
+        <p class="lead">
+          현장 설치 단계에서는 운송된 기둥 부재를 구조물에 접합하고 설치 완료 상태를 시스템에 반영합니다.
+          설치 완료 기둥은 마킹되어 전체 공정 진척률에 자동 반영됩니다.
+        </p>
+        <div class="grid-2">
+          <div class="box">
+            <h3>설치 단계</h3>
+            <ul>
+              <li>반입</li>
+              <li>설치 진행</li>
+              <li>설치 완료</li>
+            </ul>
+          </div>
+          <div class="box">
+            <h3>구조 접합 방식</h3>
+            <ul>
+              <li>볼트 체결 기반 기둥 접합</li>
+              <li>구조 정렬 후 고정</li>
+            </ul>
+          </div>
+        </div>
+        <div class="media-row">
+          <figure class="media">
+            <img src="../assets/images/sptep/site_erection.jpg" alt="현장 설치" loading="lazy" />
+            <figcaption>현장설치(설치 완료 마킹 → 진척률 자동 반영)</figcaption>
+          </figure>
+          <figure class="media">
+            <img src="../assets/images/sptep/column_splice.png" alt="기둥 접합 구조(Splice)" loading="lazy" />
+            <figcaption>기둥 접합 구조(볼트 체결 기반 스플라이스)</figcaption>
+          </figure>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7. Platform -->
+  <section id="platform">
+    <div class="container">
+      <div class="section-card">
+        <div class="section-head">
+          <h2>7. P — Platform</h2>
+          <span class="tag">실시간 구독/동기화/이력</span>
+        </div>
+        <p class="lead">
+          SPTEP는 Firestore의 실시간 구독(Realtime Subscribe) 방식으로 동작합니다.
+          사용자가 공정/운송/설치 데이터를 입력하면 즉시 저장되고, 접속 중인 사용자들은 새로고침 없이 자동으로 갱신된 데이터를 확인합니다.
+        </p>
+        <div class="grid-2">
+          <div class="box">
+            <h3>실시간 동작 방식</h3>
+            <ul>
+              <li>입력 즉시 Firestore 저장</li>
+              <li>사용자 화면 자동 갱신</li>
+              <li>프로젝트 단위 데이터 분리</li>
+              <li>변경 이력(누가/언제/무엇을) 기록</li>
+            </ul>
+          </div>
+          <div class="box">
+            <h3>실시간 공유 대상</h3>
+            <ul>
+              <li>일일 공정표(6단계 + 상태값)</li>
+              <li>운송차수(원본/조정, 증감 표기 포함)</li>
+              <li>설치 완료 마킹(진척률 자동 반영)</li>
+              <li>사용자 권한(Admin/Editor/Viewer)</li>
+            </ul>
+          </div>
+        </div>
+        <div class="callout">
+          <strong>협업 운영:</strong>
+          모든 입력은 Firestore에 즉시 반영되며 팀원 화면에 실시간 공유됩니다.
+          설치 완료 마킹은 즉시 진척률에 반영되어 보고서 없이도 현황 파악이 가능합니다.
+          운송차수 조정 시 원본 대비 증감(예: 9개 (+1))이 실시간 공유되어 커뮤니케이션 오류를 줄입니다.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 8. 권한 관리 -->
+  <section id="roles">
+    <div class="container">
+      <div class="section-card">
+        <div class="section-head">
+          <h2>8. 권한 관리</h2>
+          <span class="tag">프로젝트 단위</span>
+        </div>
+        <p class="lead">
+          SPTEP는 프로젝트 단위 권한 체계를 적용합니다. 권한이 없는 사용자는 해당 프로젝트 데이터에 접근할 수 없습니다.
+        </p>
+        <div class="grid-2">
+          <div class="box">
+            <h3>Administrator</h3>
+            <ul>
+              <li>전체 공정 데이터 관리</li>
+              <li>권한 설정 및 사용자 관리</li>
+              <li>운송 계획 조정</li>
+            </ul>
+          </div>
+          <div class="box">
+            <h3>Editor / Viewer</h3>
+            <ul>
+              <li><b>Editor</b>: 생산 입력 · 운송 입력 · 설치 업데이트</li>
+              <li><b>Viewer</b>: 조회 전용 사용자</li>
+            </ul>
+          </div>
+        </div>
+        <figure class="media">
+          <img src="../assets/images/sptep/Role.png" alt="K-COLUMN 권한" loading="lazy" />
+          <figcaption>K-COLUMN 권한 관리</figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- 9. 사용자 매뉴얼 -->
+  <section id="manual">
+    <div class="container">
+      <div class="section-card">
+        <div class="section-head">
+          <h2>9. 사용자 매뉴얼</h2>
+          <span class="tag">실무 운영 방법</span>
+        </div>
+        <p class="lead">
+          역할별 실무 흐름은 아래와 같습니다. 모든 입력은 실시간 공유되며, 설치 완료 마킹은 진척률에 자동 반영됩니다.
+        </p>
+        <div class="grid-2">
+          <div class="box">
+            <h3>생산 담당자</h3>
+            <ul>
+              <li>커팅 입력</li>
+              <li>조립 상태 업데이트</li>
+            </ul>
+          </div>
+          <div class="box">
+            <h3>물류 담당자</h3>
+            <ul>
+              <li>운송차수 관리</li>
+              <li>적재 상태 입력</li>
+            </ul>
+          </div>
+          <div class="box">
+            <h3>현장 담당자</h3>
+            <ul>
+              <li>반입 등록</li>
+              <li>설치 완료 마크</li>
+            </ul>
+          </div>
+          <div class="box">
+            <h3>관리자</h3>
+            <ul>
+              <li>전체 공정 모니터링</li>
+              <li>지연 공정 관리</li>
+            </ul>
+          </div>
+        </div>
+        <table class="mini-table" aria-label="운영 핵심 개념">
+          <tr>
+            <th>운영 핵심 개념</th>
+            <td>
+              1) 초기 운송차수계획 수립 → 2) 설치 순서 예측 → 3) 생산 공정 선제 구성 →
+              4) 물량 기반 운송 최적화 → 5) 설치 완료 기반 진척률 관리 → 6) 실시간 협업 운영
+            </td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- 10. 적용 효과 -->
+  <section id="effects">
+    <div class="container">
+      <div class="section-card">
+        <div class="section-head">
+          <h2>10. 적용 효과</h2>
+          <span class="tag">운영 성과</span>
+        </div>
+        <div class="box">
+          <ul>
+            <li>공정 병목 최소화</li>
+            <li>운송 효율 향상</li>
+            <li>설치 일정 안정화</li>
+            <li>협업 생산성 향상</li>
+            <li>프로젝트 가시성 확보</li>
+          </ul>
+        </div>
+        <div class="callout">
+          <strong>정의:</strong>
+          SPTEP는 Steel Production, Transport, Erection 전 과정을 Firestore 기반 플랫폼에서 통합 관리하고,
+          실시간 공유와 권한 제어를 통해 공정과 물류를 동시에 최적화하는 운영 시스템입니다.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <div class="footer-inner">
+        <div class="footer-left">
+          <img class="footer-logo" src="../assets/images/songdo_logo_transparent.png" alt="SongDoPartners 로고" loading="lazy" />
+          <p class="footer-text">
+            SPTEP는 Steel Production, Transport, Erection 전 과정을 하나의 플랫폼에서 통합 관리하는 운영 시스템입니다.
+          </p>
+        </div>
+        <div class="footer-right">
+          <p class="footer-text">© <span id="year"></span> SPTEP. All rights reserved.</p>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>document.getElementById("year").textContent = new Date().getFullYear();</script>
+
+  <!-- Modal Backdrop -->
+  <div id="modalBackdrop" class="modal-backdrop" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="modal" role="document">
+      <div class="modal-header">
+        <div class="title">
+          <strong id="modalTitle">제목</strong>
+          <span id="modalSub">설명</span>
+        </div>
+        <button class="icon-btn" id="modalCloseBtn" aria-label="닫기">✕</button>
+      </div>
+      <div class="modal-body" id="modalBody">
+        <!-- injected -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Templates (rendered only when opened) -->
+
+  <!-- Adjusted plan -->
+  <template id="tpl-adjusted">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>차수</th>
+          <th>부재수</th>
+          <th class="right">차수합산중량(ton)</th>
+          <th>25톤 초과여부</th>
+          <th class="right">추가운송여유중량(ton)</th>
+          <th>운송날짜</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>1</td><td>8(+0)</td><td class="right">23.95</td><td>정상</td><td class="right">1.05</td><td>2026-02-24</td></tr>
+        <tr><td>2</td><td>8(+0)</td><td class="right">23.78</td><td>정상</td><td class="right">1.22</td><td>2026-02-27</td></tr>
+        <tr><td>3</td><td>9(+1)</td><td class="right">23.68</td><td>정상</td><td class="right">1.32</td><td>2026-03-02</td></tr>
+        <tr><td>4</td><td>8(+0)</td><td class="right">24.64</td><td>정상</td><td class="right">0.36</td><td>2026-03-05</td></tr>
+        <tr><td>5</td><td>8(+0)</td><td class="right">21.90</td><td>정상</td><td class="right">3.10</td><td>2026-03-08</td></tr>
+        <tr><td>6</td><td>8(+0)</td><td class="right">23.75</td><td>정상</td><td class="right">1.25</td><td>2026-03-11</td></tr>
+        <tr><td>7</td><td>8(+0)</td><td class="right">22.27</td><td>정상</td><td class="right">2.73</td><td>2026-03-14</td></tr>
+        <tr><td>8</td><td>9(+1)</td><td class="right">24.48</td><td>정상</td><td class="right">0.52</td><td>2026-03-17</td></tr>
+        <tr><td>9</td><td>9(+1)</td><td class="right">22.64</td><td>정상</td><td class="right">2.36</td><td>2026-03-20</td></tr>
+        <tr><td>10</td><td>9(+1)</td><td class="right">24.15</td><td>정상</td><td class="right">0.85</td><td>2026-03-23</td></tr>
+        <tr><td>11</td><td>8(+0)</td><td class="right">24.18</td><td>정상</td><td class="right">0.82</td><td>2026-03-26</td></tr>
+        <tr><td>12</td><td>8(+0)</td><td class="right">24.26</td><td>정상</td><td class="right">0.74</td><td>2026-03-29</td></tr>
+      </tbody>
+    </table>
+    <p class="note">* "(+1)" 표기는 원본 대비 조정된 차수에서 부재가 추가된 수를 의미합니다.</p>
+  </template>
+
+  <!-- Original plan -->
+  <template id="tpl-original">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>차수</th>
+          <th>부재수</th>
+          <th class="right">차수합산중량(ton)</th>
+          <th>25톤 초과여부</th>
+          <th class="right">추가운송여유중량(ton)</th>
+          <th>운송날짜</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>1</td><td>8</td><td class="right">23.60</td><td>정상</td><td class="right">1.40</td><td>2026-02-24</td></tr>
+        <tr><td>2</td><td>8</td><td class="right">22.46</td><td>정상</td><td class="right">2.54</td><td>2026-02-27</td></tr>
+        <tr><td>3</td><td>8</td><td class="right">19.93</td><td>정상</td><td class="right">5.07</td><td>2026-03-02</td></tr>
+        <tr><td>4</td><td>8</td><td class="right">22.98</td><td>정상</td><td class="right">2.02</td><td>2026-03-05</td></tr>
+        <tr><td>5</td><td>8</td><td class="right">21.07</td><td>정상</td><td class="right">3.93</td><td>2026-03-08</td></tr>
+        <tr><td>6</td><td>8</td><td class="right">22.18</td><td>정상</td><td class="right">2.82</td><td>2026-03-11</td></tr>
+        <tr><td>7</td><td>8</td><td class="right">20.81</td><td>정상</td><td class="right">4.19</td><td>2026-03-14</td></tr>
+        <tr><td>8</td><td>8</td><td class="right">20.53</td><td>정상</td><td class="right">4.47</td><td>2026-03-17</td></tr>
+        <tr><td>9</td><td>8</td><td class="right">19.53</td><td>정상</td><td class="right">5.47</td><td>2026-03-20</td></tr>
+        <tr><td>10</td><td>8</td><td class="right">21.12</td><td>정상</td><td class="right">3.88</td><td>2026-03-23</td></tr>
+        <tr><td>11</td><td>8</td><td class="right">20.04</td><td>정상</td><td class="right">4.96</td><td>2026-03-26</td></tr>
+        <tr><td>12</td><td>8</td><td class="right">23.45</td><td>정상</td><td class="right">1.55</td><td>2026-03-29</td></tr>
+        <tr><td>13</td><td>4</td><td class="right">11.69</td><td>정상</td><td class="right">13.31</td><td>2026-04-01</td></tr>
+      </tbody>
+    </table>
+    <p class="note">* 원본 운송차수계획(13차) 표</p>
+  </template>
+
+  <!-- Parts list -->
+  <template id="tpl-parts">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>공종</th>
+          <th>도면번호</th>
+          <th>기둥번호</th>
+          <th class="wrap">규격</th>
+          <th class="right">길이(mm)</th>
+          <th class="right">중량(kg)</th>
+          <th>원본(13차)</th>
+          <th>조정</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>K.COLUMN</td><td>1C001</td><td>1C001</td><td class="wrap">H506*201*11*19</td><td class="right">15,300</td><td class="right">3,565.2</td><td>1 - 2026-02-24</td><td>1차 2026-02-24</td></tr>
+        <tr><td>K.COLUMN</td><td>1C002</td><td>1C002</td><td class="wrap">H506*201*11*19</td><td class="right">12,794</td><td class="right">3,367.7</td><td>1 - 2026-02-24</td><td>1차 2026-02-24</td></tr>
+        <tr><td>K.COLUMN</td><td>2C001</td><td>2C001</td><td class="wrap">H500*200*10*16</td><td class="right">12,800</td><td class="right">2,724.6</td><td>1 - 2026-02-24</td><td>1차 2026-02-24</td></tr>
+        <tr><td>K.COLUMN</td><td>2C002</td><td>2C002</td><td class="wrap">H500*200*10*16</td><td class="right">12,794</td><td class="right">3,123.6</td><td>1 - 2026-02-24</td><td>1차 2026-02-24</td></tr>
+        <tr><td>K.COLUMN</td><td>3C001</td><td>3C001</td><td class="wrap">H500*200*10*16</td><td class="right">12,000</td><td class="right">2,600</td><td>1 - 2026-02-24</td><td>1차 2026-02-24</td></tr>
+        <tr><td>K.COLUMN</td><td>3C002</td><td>3C002</td><td class="wrap">H500*200*10*16</td><td class="right">11,994</td><td class="right">2,828.6</td><td>1 - 2026-02-24</td><td>1차 2026-02-24</td></tr>
+        <tr><td>K.COLUMN</td><td>4C001</td><td>4C001</td><td class="wrap">H500*200*10*16</td><td class="right">13,500</td><td class="right">2,908.4</td><td>1 - 2026-02-24</td><td>1차 2026-02-24</td></tr>
+        <tr><td>K.COLUMN</td><td>4C002</td><td>4C002</td><td class="wrap">H500*200*10*16</td><td class="right">11,994</td><td class="right">2,828.6</td><td>1 - 2026-02-24</td><td>1차 2026-02-24</td></tr>
+
+        <tr><td>K.COLUMN</td><td>10C001</td><td>10C001</td><td class="wrap">H506*201*11*19</td><td class="right">12,800</td><td class="right">2,991.2</td><td>2 - 2026-02-27</td><td>2차 2026-02-27</td></tr>
+        <tr><td>K.COLUMN</td><td>10C002</td><td>10C002</td><td class="wrap">H506*201*11*19</td><td class="right">12,794</td><td class="right">3,351.4</td><td>2 - 2026-02-27</td><td>2차 2026-02-27</td></tr>
+        <tr><td>K.COLUMN</td><td>11C001</td><td>11C001</td><td class="wrap">H506*201*11*19</td><td class="right">12,800</td><td class="right">2,991.2</td><td>2 - 2026-02-27</td><td>2차 2026-02-27</td></tr>
+        <tr><td>K.COLUMN</td><td>11C002</td><td>11C002</td><td class="wrap">H506*201*11*19</td><td class="right">12,794</td><td class="right">3,320.3</td><td>2 - 2026-02-27</td><td>2차 2026-02-27</td></tr>
+        <tr><td>K.COLUMN</td><td>12C001</td><td>12C001</td><td class="wrap">H500*200*10*16</td><td class="right">12,800</td><td class="right">2,676.3</td><td>2 - 2026-02-27</td><td>2차 2026-02-27</td></tr>
+        <tr><td>K.COLUMN</td><td>12C002</td><td>12C002</td><td class="wrap">H500*200*10*16</td><td class="right">12,794</td><td class="right">3,052.9</td><td>2 - 2026-02-27</td><td>2차 2026-02-27</td></tr>
+        <tr><td>K.COLUMN</td><td>5C001</td><td>5C001</td><td class="wrap">H500*200*10*16</td><td class="right">12,800</td><td class="right">2,569.5</td><td>2 - 2026-02-27</td><td>2차 2026-02-27</td></tr>
+        <tr><td>K.COLUMN</td><td>5C002</td><td>5C002</td><td class="wrap">H500*200*10*16</td><td class="right">11,994</td><td class="right">2,828.6</td><td>2 - 2026-02-27</td><td>2차 2026-02-27</td></tr>
+
+        <tr><td>K.COLUMN</td><td>19C001</td><td>19C001</td><td class="wrap">H500*200*10*16</td><td class="right">12,800</td><td class="right">2,569.5</td><td>3 - 2026-03-02</td><td>3차 2026-03-02</td></tr>
+        <tr><td>K.COLUMN</td><td>19C002</td><td>19C002</td><td class="wrap">H500*200*10*16</td><td class="right">11,994</td><td class="right">2,828.6</td><td>3 - 2026-03-02</td><td>3차 2026-03-02</td></tr>
+        <tr><td>K.COLUMN</td><td>20C001</td><td>20C001</td><td class="wrap">H500*200*10*16</td><td class="right">11,500</td><td class="right">2,340.2</td><td>3 - 2026-03-02</td><td>3차 2026-03-02</td></tr>
+        <tr><td>K.COLUMN</td><td>20C002</td><td>20C002</td><td class="wrap">H500*200*10*16</td><td class="right">11,994</td><td class="right">2,828.6</td><td>3 - 2026-03-02</td><td>3차 2026-03-02</td></tr>
+        <tr><td>K.COLUMN</td><td>6C001</td><td>6C001</td><td class="wrap">H506*201*11*19</td><td class="right">12,800</td><td class="right">2,903.4</td><td>3 - 2026-03-02</td><td>3차 2026-03-02</td></tr>
+        <tr><td>K.COLUMN</td><td>6C002</td><td>6C002</td><td class="wrap">H506*201*11*19</td><td class="right">11,994</td><td class="right">3,151.3</td><td>3 - 2026-03-02</td><td>3차 2026-03-02</td></tr>
+        <tr><td>T.COLUMN</td><td>7TC001</td><td>7TC001</td><td class="wrap">H450*200*9*14</td><td class="right">12,800</td><td class="right">2,152.6</td><td>3 - 2026-03-02</td><td>3차 2026-03-02</td></tr>
+        <tr><td>T.COLUMN</td><td>7TC002</td><td>7TC002</td><td class="wrap">H450*200*9*14</td><td class="right">12,794</td><td class="right">2,473</td><td>3 - 2026-03-02</td><td>3차 2026-03-02</td></tr>
+
+        <tr><td>T.COLUMN</td><td>8TC001</td><td>8TC001</td><td class="wrap">H450*200*9*14</td><td class="right">14,200</td><td class="right">2,433</td><td>4 - 2026-03-05</td><td>3차 2026-03-02</td></tr>
+        <tr><td>T.COLUMN</td><td>8TC002</td><td>8TC002</td><td class="wrap">H450*200*9*14</td><td class="right">12,794</td><td class="right">2,679</td><td>4 - 2026-03-05</td><td>4차 2026-03-05</td></tr>
+      </tbody>
+    </table>
+
+    <p class="note">
+      * 위 표는 "운송물량 리스트"의 일부이며, PDF에는 총부재수 100개/전체합산중량 283,689.20kg가 표시됩니다.
+    </p>
+  </template>
+
+  <script>
+    (function(){
+      const backdrop = document.getElementById('modalBackdrop');
+      const modalTitle = document.getElementById('modalTitle');
+      const modalSub = document.getElementById('modalSub');
+      const modalBody = document.getElementById('modalBody');
+      const closeBtn = document.getElementById('modalCloseBtn');
+
+      function openModal({title, sub, tplId}){
+        const tpl = document.getElementById(tplId);
+        if(!tpl) return;
+
+        modalTitle.textContent = title;
+        modalSub.textContent = sub || "";
+        modalBody.innerHTML = "";
+        modalBody.appendChild(tpl.content.cloneNode(true));
+
+        backdrop.classList.add('show');
+        backdrop.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+      }
+
+      function closeModal(){
+        backdrop.classList.remove('show');
+        backdrop.setAttribute('aria-hidden', 'true');
+        modalBody.innerHTML = "";
+        document.body.style.overflow = '';
+      }
+
+      // buttons
+      document.querySelectorAll('[data-open]').forEach(btn=>{
+        btn.addEventListener('click', () => {
+          const key = btn.getAttribute('data-open');
+          if(key === 'modal-adjusted'){
+            openModal({
+              title: '조정 운송차수계획',
+              sub: 'PDF 대신 HTML 표로 즉시 표시 (닫기: X/바깥/ESC)',
+              tplId: 'tpl-adjusted'
+            });
+          } else if(key === 'modal-original'){
+            openModal({
+              title: '조정 전(원본) 운송차수계획 (13차)',
+              sub: '원본 차수/부재수/톤수/날짜',
+              tplId: 'tpl-original'
+            });
+          } else if(key === 'modal-parts'){
+            openModal({
+              title: '부재 리스트 (원본 13차 + 조정 차수)',
+              sub: '원본 운송차수계획과 조정된 차수계획을 한 번에 표시',
+              tplId: 'tpl-parts'
+            });
+          }
+        });
+      });
+
+      // close actions
+      closeBtn.addEventListener('click', closeModal);
+      backdrop.addEventListener('click', (e) => {
+        if(e.target === backdrop) closeModal();
+      });
+      document.addEventListener('keydown', (e) => {
+        if(e.key === 'Escape' && backdrop.classList.contains('show')) closeModal();
+      });
+    })();
+  </script>
+</body>
+</html>

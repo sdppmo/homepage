@@ -338,6 +338,25 @@ html, body {
   justify-content: center;
 }
 
+/* S.P.T.E.P: 줄바꿈 허용, 공간 부족 시 글자 크기 축소 */
+.nav-trigger-sptep {
+  white-space: normal;
+  line-height: 1.25;
+  font-size: clamp(10px, 2.2vw, 14px);
+  padding: 6px 12px;
+  text-align: center;
+}
+
+.nav-dropdown-panel {
+  display: block;
+  padding: 10px 16px 10px 20px;
+  color: #ffcc00;
+  font-size: 15px;
+  font-weight: 500;
+  background: #101535;
+  border-bottom: 1px solid rgba(255, 204, 0, 0.15);
+}
+
 .nav-dropdown-menu {
   position: absolute;
   top: 0;
@@ -378,6 +397,48 @@ html, body {
 .nav-dropdown-item:hover {
   background: #252a60;
   color: #fff;
+}
+
+/* K-COL Product Schedule P1~P6 사이드 드롭다운 */
+.nav-dropdown-sub {
+  position: relative;
+  display: block;
+  overflow: visible;
+}
+.nav-dropdown-sub .nav-dropdown-trigger-sub {
+  display: block;
+  padding: 10px 16px 10px 20px;
+  color: #ffcc00;
+  font-size: 15px;
+  font-weight: 500;
+  background: #101535;
+  border-bottom: 1px solid rgba(255, 204, 0, 0.15);
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.nav-dropdown-sub:hover .nav-dropdown-trigger-sub {
+  background: #252a60;
+  color: #fff;
+}
+.nav-dropdown-submenu {
+  position: absolute;
+  top: 0;
+  left: 100%;
+  margin-left: 0;
+  z-index: 102;
+  min-width: 200px;
+  background: #0d0d1a;
+  border-left: 2px solid rgba(255, 204, 0, 0.4);
+  border-top: 1px solid rgba(255, 215, 0, 0.2);
+  border-bottom: 1px solid rgba(255, 215, 0, 0.2);
+  border-right: 1px solid rgba(255, 215, 0, 0.2);
+  box-shadow: 6px 0 16px rgba(0, 0, 0, 0.4);
+  display: none;
+  flex-direction: column;
+  overflow: visible;
+}
+.nav-dropdown-sub:hover .nav-dropdown-submenu {
+  display: flex;
 }
 
 /* 관리자 모드에서 EXTRA SLIM Light/Heavy 항목 어둡게 */

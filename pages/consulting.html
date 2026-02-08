@@ -109,7 +109,6 @@
             padding: 50px;
             box-shadow: 0 10px 40px rgba(0,0,0,0.15);
             border: 2px solid rgba(255,255,255,0.3);
-            scroll-margin-top: 24px;
         }
 
         .consulting-section-title {
@@ -563,24 +562,5 @@
             </div>
         </div>
     </div>
-    <script>
-      (function() {
-        function scrollToSection() {
-          var hash = location.hash;
-          if (!hash) return;
-          var id = hash.replace(/^#/, '');
-          var el = document.getElementById(id);
-          if (el) {
-            setTimeout(function() { el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 100);
-          }
-        }
-        if (document.readyState === 'loading') {
-          document.addEventListener('DOMContentLoaded', scrollToSection);
-        } else {
-          scrollToSection();
-        }
-        window.addEventListener('hashchange', scrollToSection);
-      })();
-    </script>
 </body>
 </html>
