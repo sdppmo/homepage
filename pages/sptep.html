@@ -343,8 +343,11 @@
       border:1px solid var(--line); border-radius:16px;
       background: rgba(15,26,48,.35); padding:14px;
     }
-    .box h3{ margin:0 0 8px; font-size:14px; }
-    .box ul{ margin:0; padding:0 0 0 18px; color:var(--muted); font-size:13px; line-height:1.75; }
+    .box h3,.box h4{ margin:0 0 8px; font-size:14px; color:var(--text); }
+    .box ul{ margin:0 0 16px; padding:0 0 0 18px; color:var(--muted); font-size:13px; line-height:1.75; }
+    .box .effect-section:last-child ul{ margin-bottom:0; }
+    .box .effect-section{ margin-bottom:16px; }
+    .box .effect-section:last-child{ margin-bottom:0; }
     .mini-table{
       width:100%; border-collapse:separate; border-spacing:0; overflow:hidden;
       border-radius: 14px; border:1px solid var(--line);
@@ -1079,13 +1082,34 @@
           <span class="tag">운영 성과</span>
         </div>
         <div class="box">
-          <ul>
-            <li>공정 병목 최소화</li>
-            <li>운송 효율 향상</li>
-            <li>설치 일정 안정화</li>
-            <li>협업 생산성 향상</li>
-            <li>프로젝트 가시성 확보</li>
-          </ul>
+          <div class="effect-section">
+            <h4>✅ 비용 절감 (Cost)</h4>
+            <ul>
+              <li>폐기, 재작업, 공정 지연 비용 최소화</li>
+              <li>실시간 데이터 기반 원가 예측 신뢰도 향상</li>
+            </ul>
+          </div>
+          <div class="effect-section">
+            <h4>✅ 시간 단축 (Time)</h4>
+            <ul>
+              <li>설계–제작–설치 간 공정 충돌 감소</li>
+              <li>데이터 기반 의사결정으로 결정 속도 가속</li>
+            </ul>
+          </div>
+          <div class="effect-section">
+            <h4>✅ 책임성과 투명성 (Accountability)</h4>
+            <ul>
+              <li>누가, 언제, 어떤 기준으로 작업했는지 명확한 이력 관리</li>
+              <li>분쟁 발생 시 데이터 자체가 객관적 증거</li>
+            </ul>
+          </div>
+          <div class="effect-section">
+            <h4>✅ 확장성과 미래 대응력 (Scalability)</h4>
+            <ul>
+              <li>BIM, 디지털 트윈, 스마트팩토리와 즉시 연동 가능</li>
+              <li>프로젝트 규모가 클수록 효과는 기하급수적으로 확대</li>
+            </ul>
+          </div>
         </div>
         <div class="callout">
           <strong>정의:</strong>

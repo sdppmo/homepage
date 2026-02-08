@@ -79,7 +79,7 @@ html, body {
   flex-direction: column;
   flex-shrink: 0;
   min-height: 0;
-  background: #d0d0d0;
+  background: transparent;
   position: relative;
   z-index: 10;
 }
@@ -343,24 +343,43 @@ html, body {
   color: #cbd5e1;
 }
 
+/* 좌측 메뉴 패널 8개 공통 그룹 - 동일 높이·여백 정렬 */
+.left-nav-group {
+  flex: 1 1 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 0 6px;
+}
+/* nav-menu는 display:contents로 6개 nav-dropdown이 그룹의 직접 자식이 됨 */
+.menu-panels-group .nav-menu {
+  display: contents;
+}
+.menu-panels-group > .nav-dropdown,
+.menu-panels-group > .menu-panel {
+  flex: 1 1 0;
+  min-height: 0;
+  margin: 2px 0;
+}
+
 /* Navigation Menu */
 .nav-menu {
   display: flex;
   flex-direction: column;
   background: #1a1a3a;
-  flex: 7 1 0;
+  flex: 1 1 0;
   min-height: 0;
   margin-top: -6px;
 }
 
-/* D.M.I.S. Dropdown - 패널 세트: 수직높이 자동 균등 분배 */
+/* D.M.I.S. Dropdown - 8개 패널 중 하나 */
 .nav-dropdown {
   position: relative;
   flex: 1 1 0;
   min-height: 0;
   display: flex;
   flex-direction: column;
-  margin: 2px 6px;
+  margin: 2px 0;
 }
 .nav-dropdown.web-software-moved {
   display: none;
@@ -640,40 +659,58 @@ div.nav-item.active.gold {
   box-sizing: border-box;
 }
 
-/* 패널: Visual Portfolio 아래 */
+/* 패널: Visual Portfolio 아래 - 상단 메뉴와 동일 height/margin/border-radius */
 .below-visual-portfolio-panel {
-  flex: 0 0 auto;
-  margin: 2px 6px;
-  min-height: 48px;
+  flex: 1 1 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  margin: 2px 0;
   background: transparent;
   border-left: 8px solid #ff6600;
   border-radius: 8px;
   box-sizing: border-box;
 }
 .below-visual-portfolio-panel-inner {
-  min-height: 48px;
-  padding: 10px 14px;
+  flex: 1 1 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
 }
 .below-visual-portfolio-panel .brochure-dropdown {
+  flex: 1 1 0;
+  min-height: 0;
   width: 100%;
+  display: flex;
+  flex-direction: column;
 }
 .below-visual-portfolio-panel .brochure-dropdown-trigger {
+  flex: 1 1 0;
+  min-height: 0;
   width: 100%;
-  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 16px;
+  border-bottom: 1px solid rgba(255, 215, 0, 0.3);
+  border-radius: 8px;
+  box-sizing: border-box;
 }
 
-/* Brochure Grid */
+/* Brochure Grid - 상단 메뉴와 동일 height/margin/border-radius */
 .brochure-grid {
   display: grid;
   grid-template-columns: 1fr;
   grid-template-rows: 1fr;
-  gap: 6px;
-  padding: 6px;
-  margin: 0 6px;
+  gap: 0;
+  padding: 0;
+  margin: 2px 0;
   flex: 1 1 0;
   min-height: 0;
   background: transparent;
   border-left: 8px solid #ff6600;
+  border-radius: 8px;
   box-sizing: border-box;
 }
 
@@ -681,6 +718,11 @@ div.nav-item.active.gold {
   min-height: 0;
   box-sizing: border-box;
   border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 16px;
+  border-bottom: 1px solid rgba(255, 215, 0, 0.3);
 }
 
 .brochure-btn {
