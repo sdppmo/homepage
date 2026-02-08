@@ -460,7 +460,9 @@
       border:1px solid var(--line); background: rgba(255,255,255,.02);
     }
     figure.media figcaption{ margin-top:8px; color:var(--muted); font-size:12.5px; line-height:1.5; }
-    section#roles figure.media img{ transform:scale(1.1); transform-origin:center center; }
+    section#roles figure.media{ display:flex; flex-direction:column; }
+    section#roles figure.media img{ display:block; }
+    section#roles figure.media figcaption{ flex-shrink:0; margin-top:12px; }
     .transport-media img{ width:280px; max-width:70%; height:auto; display:block; margin:0 auto; }
     .firebase-media img{ width:50%; max-width:50%; height:auto; display:block; }
     footer{
@@ -771,13 +773,13 @@
 
         <div class="company-selector">
           <div class="company-buttons">
-            <a href="K-product/2H_steel_product.html" class="tab-btn active">✏️ 일일 입력</a>
-            <a href="K-product/2H_steel_product.html?project=P1" class="company-btn process-btn p1" data-process="1">1. 주기둥커팅<small>유석철강(충주공장)</small></a>
-            <a href="K-product/2H_steel_product.html?project=P2" class="company-btn process-btn p2" data-process="2">2. 소부재커팅<small>유석철강(오창공장)</small></a>
-            <a href="K-product/2H_steel_product.html?project=P3" class="company-btn process-btn p3" data-process="3">3. 주기둥조립<small>유석철강(음성공장)</small></a>
-            <a href="K-product/2H_steel_product.html?project=P4" class="company-btn process-btn p4" data-process="4">4. 소부재조립<small>유석철강(음성공장)</small></a>
-            <a href="K-product/2H_steel_product.html?project=P5" class="company-btn process-btn p5" data-process="5">5. 현장배송<small>유석철강(음성공장)</small></a>
-            <a href="K-product/2H_steel_product.html?project=P6" class="company-btn process-btn p6" data-process="6">6. 현장설치<small>진흥기업</small></a>
+            <a href="K-product/2H_steel_product.html?project=P1&process=1" class="tab-btn active">✏️ 일일 입력</a>
+            <span class="company-btn process-btn p1" data-process="1">1. 주기둥커팅<small>유석철강(충주공장)</small></span>
+            <span class="company-btn process-btn p2" data-process="2">2. 소부재커팅<small>유석철강(오창공장)</small></span>
+            <span class="company-btn process-btn p3" data-process="3">3. 주기둥조립<small>유석철강(음성공장)</small></span>
+            <span class="company-btn process-btn p4" data-process="4">4. 소부재조립<small>유석철강(음성공장)</small></span>
+            <span class="company-btn process-btn p5" data-process="5">5. 현장배송<small>유석철강(음성공장)</small></span>
+            <span class="company-btn process-btn p6" data-process="6">6. 현장설치<small>진흥기업</small></span>
           </div>
         </div>
 

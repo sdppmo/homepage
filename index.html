@@ -99,14 +99,14 @@
             </div>
           </div>
           <div class="nav-dropdown" data-requires-auth="true">
-            <div class="nav-dropdown-trigger nav-item gold" aria-expanded="false" aria-haspopup="true">Products</div>
+            <div class="nav-dropdown-trigger nav-item gold" aria-expanded="false" aria-haspopup="true">Steel Hardware Products<br>(K-COL, Slim-Box, EX Slim-Beam)</div>
             <div class="nav-dropdown-menu">
               <a href="pages/products.html#kcol" class="nav-dropdown-item">K-COL for Composite Column</a>
               <a href="pages/products.html#slimbox" class="nav-dropdown-item">Slim-Box for CIP Soil Protection Wall</a>
             </div>
           </div>
           <div class="nav-dropdown" data-requires-auth="true">
-            <div class="nav-dropdown-trigger nav-item gold" aria-expanded="false" aria-haspopup="true">D.M.I.S.</div>
+            <div class="nav-dropdown-trigger nav-item gold" aria-expanded="false" aria-haspopup="true">Design M.I.S</div>
             <div class="nav-dropdown-menu">
               <a href="pages/slim-box-web-support.html#kcol" class="nav-dropdown-panel nav-dropdown-item">DMIS for K-COL Project</a>
               <a href="pages/slim-box-web-support.html" class="nav-dropdown-panel nav-dropdown-item">DMIS for Slim-Box Project</a>
@@ -139,7 +139,7 @@
             </div>
           </div>
           <div class="nav-dropdown">
-            <div class="nav-dropdown-trigger nav-item gold" id="web-software-iv" style="cursor: pointer;" aria-expanded="false" aria-haspopup="true">Web Software IV</div>
+            <div class="nav-dropdown-trigger nav-item gold" id="web-software-iv" style="cursor: pointer;" aria-expanded="false" aria-haspopup="true">Web Software IV - 기존기둥</div>
             <div class="nav-dropdown-menu">
               <a href="pages/k-col web software/crossHcolumnCalculator.html#cft-box" class="nav-dropdown-item">CFT-BOX Column</a>
               <a href="pages/k-col web software/crossHcolumnCalculator.html#cft-circular" class="nav-dropdown-item">CFT-Circular Column</a>
@@ -147,7 +147,7 @@
             </div>
           </div>
           <div class="nav-dropdown" id="nav-dropdown-schedule" data-requires-auth="true" data-required-groups="kcol-admin">
-            <div class="nav-dropdown-trigger nav-item gold nav-trigger-sptep" aria-expanded="false" aria-haspopup="true" role="button" tabindex="0" style="cursor: pointer;">S.P.T.E.P<br>(Steel Production-Transport-Erection-Platform)</div>
+            <div class="nav-dropdown-trigger nav-item gold nav-trigger-sptep" aria-expanded="false" aria-haspopup="true" role="button" tabindex="0" style="cursor: pointer;">S.P.T.E.P 제작관리<br>(Steel Production-Transport-Erection-Platform)</div>
             <div class="nav-dropdown-menu" id="nav-menu-schedule" aria-label="Product Schedule 메뉴">
               <a href="pages/sptep.html" class="nav-dropdown-panel nav-dropdown-item">What is S.P.T.E.P ?</a>
               <div class="nav-dropdown-sub" aria-haspopup="true">
@@ -165,23 +165,30 @@
             </div>
           </div>
                     <div class="nav-dropdown" data-requires-auth="true">
-            <a href="pages/slim-box-web-support.html" class="nav-dropdown-trigger nav-item gold" aria-expanded="false" aria-haspopup="true">Civil Soil Protection Wall</a>
+            <a href="pages/slim-box-web-support.html" class="nav-dropdown-trigger nav-item gold" aria-expanded="false" aria-haspopup="true">Soil Protection Wall - Slim-Box</a>
             <div class="nav-dropdown-menu">
               <a href="pages/slim-box-web-support.html#guide" class="nav-dropdown-item">Slim-Box 안내서</a>
               <a href="pages/slim-box-web-support.html#drawing" class="nav-dropdown-item">Slim-Box Drawing</a>
             </div>
           </div>
-          <div class="nav-item gray-text" onclick="enableKosisMode()" style="cursor: pointer;">KOSIS (월평균가격)</div>
+          <div class="nav-dropdown" id="nav-dropdown-brochure">
+            <div class="nav-dropdown-trigger nav-item gold" aria-expanded="false" aria-haspopup="true" role="button" tabindex="0" style="cursor: pointer;">Visual Portfolio</div>
+          </div>
         </nav>
 
         <!-- Brochure Grid -->
-        <div class="brochure-grid">
-          <a href="pages/k-col web software/k-col-user-guide.html#kcol-guide-header" class="brochure-btn">K-COL Brochure</a>
-          <a href="assets/pdf/hyundai-steel-h-beam.pdf" target="_blank" class="brochure-btn">현대제철 H형강</a>
-          <button class="brochure-btn gray-text">SLim-Box Brochure</button>
-          <a href="assets/pdf/Pos-H Brochure step4.pdf" target="_blank" class="brochure-btn white">POS H 형강</a>
-          <button class="brochure-btn gray-text">Ex_Slim-Beam Brochure</button>
-          <button class="brochure-btn yellow">Sunex MTL</button>
+        <div class="brochure-grid" id="brochure-grid">
+          <button class="brochure-btn gold">KOSIS (월평균가격)</button>
+          <div class="brochure-dropdown">
+            <button type="button" class="brochure-btn gold brochure-dropdown-trigger" aria-expanded="false" aria-haspopup="true">Brochure</button>
+            <div class="brochure-dropdown-menu">
+              <a href="pages/k-col web software/k-col-user-guide.html#kcol-guide-header" class="nav-dropdown-item">K-COL</a>
+              <a href="pages/slim-box-web-support.html#guide" class="nav-dropdown-item">Slim-Box</a>
+              <a href="#" class="nav-dropdown-item">EX Slim-Beam</a>
+              <a href="assets/pdf/hyundai-steel-h-beam.pdf" target="_blank" class="nav-dropdown-item">현대제철 H 형강</a>
+              <a href="assets/pdf/Pos-H Brochure step4.pdf" target="_blank" class="nav-dropdown-item">POS H 형강</a>
+            </div>
+          </div>
         </div>
       </aside>
 
@@ -279,7 +286,7 @@
             </div>
           </aside>
 
-          <!-- Exchange Table - 좌측 하단 -->
+          <!-- Exchange Table - 좌측 하단 (환율 + 월별 가격) -->
           <div class="exchange-table exchange-table-bottom-left">
             <div class="exchange-header">
               환율(won/$): <span id="exchange-rate">로딩중...</span>

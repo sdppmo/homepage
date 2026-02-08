@@ -378,6 +378,57 @@ html, body {
   display: flex;
 }
 
+/* Brochure: drop-up (메뉴가 트리거 위로 열림) */
+#nav-dropdown-brochure .nav-dropdown-menu {
+  top: auto;
+  bottom: 100%;
+  margin-bottom: 2px;
+}
+
+/* Brochure 버튼 드롭업 (5개 메뉴) */
+.brochure-dropdown {
+  position: relative;
+  flex: 1;
+  display: flex;
+}
+.brochure-dropdown-trigger {
+  width: 100%;
+  cursor: pointer;
+  border: none;
+  font: inherit;
+}
+/* side drop-up: 버튼 오른쪽에 붙고, 위로 열림 */
+.brochure-dropdown-menu {
+  position: absolute;
+  bottom: 0;
+  left: 100%;
+  margin-left: 4px;
+  z-index: 100;
+  background: #0d0d1a;
+  border: 1px solid rgba(255, 215, 0, 0.2);
+  border-left: 2px solid rgba(255, 204, 0, 0.4);
+  border-radius: 8px;
+  box-shadow: 6px 0 16px rgba(0, 0, 0, 0.4);
+  display: none;
+  flex-direction: column;
+  min-width: 220px;
+}
+.brochure-dropdown:hover .brochure-dropdown-menu,
+.brochure-dropdown:focus-within .brochure-dropdown-menu {
+  display: flex;
+}
+.brochure-dropdown-menu .nav-dropdown-item {
+  border-radius: 0;
+  font-size: 14px;
+  padding: 8px 12px;
+}
+.brochure-dropdown-menu .nav-dropdown-item:first-child {
+  border-radius: 8px 8px 0 0;
+}
+.brochure-dropdown-menu .nav-dropdown-item:last-child {
+  border-radius: 0 0 8px 8px;
+}
+
 .nav-dropdown-item {
   display: block;
   padding: 10px 16px 10px 20px;
@@ -546,13 +597,27 @@ div.nav-item.active.gold {
   color: #ffcc00;
 }
 
+/* Visual Portfolio 행과 Brochure Grid 행 수직 높이 통일 */
+#nav-dropdown-brochure .nav-dropdown-trigger {
+  min-height: 52px;
+  height: 52px;
+  box-sizing: border-box;
+}
+
 /* Brochure Grid */
 .brochure-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
+  grid-auto-rows: 52px;
   background: #1a1a2a;
   flex-shrink: 0;
   border-left: 8px solid #ff6600;
+}
+
+.brochure-grid .brochure-btn {
+  min-height: 52px;
+  height: 52px;
+  box-sizing: border-box;
 }
 
 .brochure-btn {
@@ -593,6 +658,17 @@ a.brochure-btn:hover {
 
 .brochure-btn:hover {
   background: linear-gradient(180deg, #2a2a3a 0%, #1a1a2a 100%);
+}
+
+/* Brochure 버튼 - Brochure 네비와 동일 (gold) */
+.brochure-btn.gold {
+  color: #ffcc00;
+  background: linear-gradient(180deg, #1a2050 0%, #101535 100%);
+  border-color: rgba(255, 204, 0, 0.3);
+}
+.brochure-btn.gold:hover {
+  color: #ffcc00;
+  background: linear-gradient(180deg, #252a60 0%, #1a1f45 100%);
 }
 
 .brochure-btn.yellow {
