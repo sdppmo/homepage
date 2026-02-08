@@ -6,250 +6,247 @@
     <title>Consulting - SongDoPartners</title>
     <link rel="stylesheet" href="../css/styles.css">
     <style>
+        :root{
+            --bg:#0b1220;
+            --text:#e9eefb;
+            --muted:#b8c3dd;
+            --line:rgba(255,255,255,.10);
+            --accent:#6aa3ff;
+            --accent2:#6ef0c2;
+            --shadow: 0 10px 30px rgba(0,0,0,.35);
+            --radius: 18px;
+            --max: 1080px;
+        }
         html, body {
             overflow: auto !important;
             overflow-x: hidden !important;
-            height: auto !important;
             min-height: 100vh;
+            font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Noto Sans KR", Arial, sans-serif;
+            background: radial-gradient(1200px 600px at 20% -10%, rgba(106,163,255,.22), transparent 60%),
+                        radial-gradient(900px 500px at 90% 0%, rgba(110,240,194,.18), transparent 55%),
+                        linear-gradient(180deg, var(--bg), #070b14 70%);
+            color: var(--text);
         }
 
         .consulting-container {
             min-height: 100vh;
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 25%, #4facfe 50%, #00f2fe 100%);
-            background-size: 400% 400%;
-            animation: gradientShift 15s ease infinite;
-            padding: 60px 20px;
-            position: relative;
+            padding-top: 56px;
         }
 
-        @keyframes gradientShift {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        .consulting-container::before {
-            content: '';
-            position: absolute;
+        .consulting-topbar {
+            position: fixed;
             top: 0;
             left: 0;
             right: 0;
-            bottom: 0;
-            background: radial-gradient(circle at 20% 50%, rgba(240, 147, 251, 0.1) 0%, transparent 50%),
-                        radial-gradient(circle at 80% 80%, rgba(79, 172, 254, 0.1) 0%, transparent 50%);
-            pointer-events: none;
+            height: 56px;
+            background: rgba(7,11,20,.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--line);
+            z-index: 50;
+        }
+
+        .consulting-topbar-inner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 12px 18px;
+            max-width: var(--max);
+            margin: 0 auto;
+        }
+
+        .consulting-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .consulting-brand-mark {
+            width: 34px;
+            height: 34px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, rgba(106,163,255,.95), rgba(110,240,194,.95));
+            box-shadow: 0 8px 20px rgba(106,163,255,.15);
+            display: grid;
+            place-items: center;
+            color: #07101f;
+            font-weight: 900;
+            font-size: 16px;
+        }
+
+        .consulting-brand-title {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.1;
+        }
+
+        .consulting-brand-title strong {
+            font-size: 14px;
+        }
+
+        .consulting-brand-title span {
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        .consulting-nav {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px 14px;
+            justify-content: flex-end;
+        }
+
+        .consulting-nav a {
+            font-size: 12.5px;
+            padding: 8px 12px;
+            color: var(--muted);
+            text-decoration: none;
+            border-radius: 999px;
+            border: 1px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .consulting-nav a:hover {
+            border-color: var(--line);
+            color: var(--text);
+            background: rgba(255,255,255,.04);
         }
 
         .consulting-wrapper {
-            max-width: 1400px;
+            max-width: var(--max);
             margin: 0 auto;
-            position: relative;
-            z-index: 1;
+            padding: 40px 18px 60px;
         }
 
         .consulting-header {
             text-align: center;
-            color: white;
             margin-bottom: 60px;
         }
 
         .consulting-header h1 {
-            font-size: 56px;
+            font-size: 48px;
             font-weight: 800;
             margin-bottom: 15px;
             letter-spacing: -1px;
-            text-shadow: 0 4px 20px rgba(0,0,0,0.3);
-            background: linear-gradient(135deg, #ffffff 0%, #e0e7ff 100%);
+            background: linear-gradient(135deg, #fff 0%, var(--accent) 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
 
         .consulting-header .subtitle {
-            font-size: 24px;
-            opacity: 0.95;
-            font-weight: 400;
-            text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            font-size: 20px;
+            color: var(--muted);
         }
 
         .consulting-header .home-link {
             display: inline-block;
             margin-top: 25px;
             padding: 12px 28px;
-            background: rgba(255,255,255,0.15);
-            -webkit-backdrop-filter: blur(10px);
-            backdrop-filter: blur(10px);
-            color: white;
+            background: rgba(106,163,255,.15);
+            color: var(--text);
             text-decoration: none;
             border-radius: 12px;
             transition: all 0.3s ease;
-            border: 2px solid rgba(255,255,255,0.3);
+            border: 1px solid var(--line);
             font-weight: 600;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }
 
         .consulting-header .home-link:hover {
-            background: rgba(255,255,255,0.25);
-            transform: translateY(-3px);
-            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+            background: rgba(106,163,255,.25);
+            transform: translateY(-2px);
         }
 
         .consulting-sections {
             display: flex;
             flex-direction: column;
-            gap: 60px;
-            margin-top: 40px;
+            gap: 48px;
         }
 
         .consulting-section {
-            background: rgba(255, 255, 255, 0.95);
-            -webkit-backdrop-filter: blur(10px);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 50px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
-            border: 2px solid rgba(255,255,255,0.3);
+            border: 1px solid var(--line);
+            border-radius: var(--radius);
+            background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.02));
+            box-shadow: var(--shadow);
+            padding: 40px;
         }
 
         .consulting-section-title {
-            font-size: 42px;
-            font-weight: 800;
-            color: #1a1a2e;
-            margin-bottom: 30px;
-            text-align: center;
-            padding-bottom: 20px;
-            border-bottom: 4px solid #4facfe;
-        }
-
-        .consulting-section-number {
-            display: inline-block;
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 50%, #4facfe 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 24px;
+            padding-bottom: 12px;
+            border-bottom: 3px solid var(--accent);
         }
 
         .consulting-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
-            gap: 35px;
-            margin-top: 30px;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+            margin-top: 20px;
+        }
+
+        .consulting-grid.consulting-grid-1 {
+            grid-template-columns: 1fr;
+        }
+
+        @media (max-width: 900px) {
+            .consulting-grid {
+                grid-template-columns: 1fr;
+            }
         }
 
         .consulting-panel {
-            background: rgba(255, 255, 255, 0.95);
-            -webkit-backdrop-filter: blur(10px);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 40px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            border: 2px solid rgba(255,255,255,0.3);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .consulting-panel::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 5px;
-            background: linear-gradient(90deg, #f093fb 0%, #f5576c 50%, #4facfe 100%);
-            transform: scaleX(0);
-            transition: transform 0.4s ease;
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            background: rgba(15,26,48,.35);
+            padding: 28px;
+            transition: all 0.3s ease;
         }
 
         .consulting-panel:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 20px 60px rgba(0,0,0,0.25);
-        }
-
-        .consulting-panel:hover::before {
-            transform: scaleX(1);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 30px rgba(0,0,0,.3);
         }
 
         .consulting-icon {
-            width: 100px;
-            height: 100px;
-            margin: 0 auto 20px;
+            width: 160px;
+            height: 160px;
+            margin: 0 auto 16px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 64px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 20px;
-            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
+            font-size: 96px;
+            background: rgba(106,163,255,.15);
+            border-radius: 16px;
+            border: 1px solid var(--line);
         }
 
-        .consulting-icon::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-        }
-
-        .consulting-panel:nth-of-type(1) .consulting-icon {
-            background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
-            box-shadow: 0 8px 20px rgba(2, 132, 199, 0.3);
-        }
-
-        .consulting-panel:nth-of-type(2) .consulting-icon {
-            background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
-            box-shadow: 0 8px 20px rgba(22, 163, 74, 0.3);
-        }
-
-        .consulting-panel:nth-of-type(3) .consulting-icon {
-            background: linear-gradient(135deg, #9333ea 0%, #7e22ce 100%);
-            box-shadow: 0 8px 20px rgba(147, 51, 234, 0.3);
-        }
-
-        .consulting-panel:hover .consulting-icon {
-            transform: scale(1.1) rotate(5deg);
-        }
-
-        .consulting-panel:nth-of-type(1):hover .consulting-icon {
-            box-shadow: 0 12px 30px rgba(2, 132, 199, 0.4);
-        }
-
-        .consulting-panel:nth-of-type(2):hover .consulting-icon {
-            box-shadow: 0 12px 30px rgba(22, 163, 74, 0.4);
-        }
-
-        .consulting-panel:nth-of-type(3):hover .consulting-icon {
-            box-shadow: 0 12px 30px rgba(147, 51, 234, 0.4);
-        }
+        .consulting-panel:nth-of-type(1) .consulting-icon { background: rgba(2,132,199,.2); }
+        .consulting-panel:nth-of-type(2) .consulting-icon { background: rgba(22,163,74,.2); }
+        .consulting-panel:nth-of-type(3) .consulting-icon { background: rgba(147,51,234,.2); }
 
         .consulting-icon img {
             width: 100%;
             height: 100%;
             object-fit: contain;
-            border-radius: 20px;
-            position: relative;
-            z-index: 1;
+            border-radius: 16px;
         }
 
         .consulting-title {
-            font-size: 28px;
+            font-size: 20px;
             font-weight: 700;
-            color: #1a1a2e;
-            margin-bottom: 15px;
+            color: var(--text);
+            margin-bottom: 12px;
             text-align: center;
         }
 
         .consulting-description {
-            font-size: 16px;
-            color: #4a5568;
+            font-size: 14px;
+            color: var(--muted);
             line-height: 1.7;
-            margin-bottom: 25px;
+            margin-bottom: 16px;
             text-align: center;
         }
 
@@ -260,125 +257,114 @@
         }
 
         .consulting-details li {
-            padding: 12px 0;
-            padding-left: 30px;
+            padding: 8px 0;
+            padding-left: 24px;
             position: relative;
-            color: #2d3748;
-            font-size: 15px;
-            transition: all 0.3s ease;
+            color: var(--muted);
+            font-size: 14px;
         }
 
         .consulting-details li::before {
             content: '✓';
             position: absolute;
             left: 0;
-            color: #4facfe;
+            color: var(--accent);
             font-weight: bold;
-            font-size: 18px;
-        }
-
-        .consulting-details li:hover {
-            color: #1a1a2e;
-            padding-left: 35px;
         }
 
         .contact-section {
-            background: rgba(255, 255, 255, 0.95);
-            -webkit-backdrop-filter: blur(10px);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 50px;
-            margin-top: 50px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
-            border: 2px solid rgba(255,255,255,0.3);
+            border: 1px solid var(--line);
+            border-radius: var(--radius);
+            background: rgba(15,26,48,.35);
+            padding: 40px;
+            margin-top: 48px;
             text-align: center;
         }
 
         .contact-section h2 {
-            font-size: 36px;
+            font-size: 24px;
             font-weight: 700;
-            color: #1a1a2e;
-            margin-bottom: 30px;
+            color: var(--text);
+            margin-bottom: 24px;
+        }
+
+        .contact-section > p {
+            color: var(--muted);
+            margin-bottom: 24px;
         }
 
         .contact-info {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 30px;
-            margin-top: 30px;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
         }
 
         .contact-item {
-            padding: 25px;
-            background: rgba(79, 172, 254, 0.1);
+            padding: 20px;
+            background: rgba(106,163,255,.08);
+            border: 1px solid var(--line);
             border-radius: 12px;
             transition: all 0.3s ease;
         }
 
         .contact-item:hover {
-            background: rgba(79, 172, 254, 0.2);
-            transform: translateY(-5px);
+            background: rgba(106,163,255,.15);
+            transform: translateY(-2px);
         }
 
         .contact-item h3 {
-            font-size: 20px;
+            font-size: 16px;
             font-weight: 600;
-            color: #1a1a2e;
-            margin-bottom: 10px;
+            color: var(--text);
+            margin-bottom: 8px;
         }
 
         .contact-item p {
-            font-size: 16px;
-            color: #4a5568;
-            margin: 5px 0;
+            font-size: 14px;
+            color: var(--muted);
+            margin: 4px 0;
         }
 
         .contact-item a {
-            color: #4facfe;
+            color: var(--accent);
             text-decoration: none;
             font-weight: 600;
-            transition: color 0.3s ease;
         }
 
         .contact-item a:hover {
-            color: #f5576c;
+            color: var(--accent2);
         }
 
         @media (max-width: 768px) {
-            .consulting-header h1 {
-                font-size: 36px;
-            }
-
-            .consulting-sections {
-                gap: 40px;
-            }
-
-            .consulting-section {
-                padding: 30px;
-            }
-
-            .consulting-section-title {
-                font-size: 32px;
-            }
-
-            .consulting-grid {
-                grid-template-columns: 1fr;
-                gap: 25px;
-            }
-
-            .consulting-panel {
-                padding: 30px;
-            }
-
-            .contact-info {
-                grid-template-columns: 1fr;
-            }
+            .consulting-header h1 { font-size: 36px; }
+            .consulting-section { padding: 28px; }
+            .consulting-section-title { font-size: 20px; }
+            .consulting-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
+    <nav class="consulting-topbar">
+        <div class="consulting-topbar-inner">
+            <a class="consulting-brand" href="#top">
+                <div class="consulting-brand-mark">C</div>
+                <div class="consulting-brand-title">
+                    <strong>Business Consulting</strong>
+                    <span>Web Tool 기반 구조공법개발</span>
+                </div>
+            </a>
+            <div class="consulting-nav">
+                <a href="#engineering">공법/엔지니어링</a>
+                <a href="#product">Product</a>
+                <a href="#web-software">Web Software</a>
+                <a href="#ground-tool">지반안정성</a>
+                <a href="../index.html">홈</a>
+            </div>
+        </div>
+    </nav>
+
     <div class="consulting-container">
-        <div class="consulting-wrapper">
+        <div class="consulting-wrapper" id="top">
             <div class="consulting-header">
                 <h1>💼 Consulting</h1>
                 <div class="subtitle">Web Tool 기반 구조공법개발</div>
@@ -524,7 +510,7 @@
                 <!-- 4. 지반안정성검토 자동화 TOOL 개발 -->
                 <div class="consulting-section" id="ground-tool">
                     <h2 class="consulting-section-title">지반안정성검토TOOL개발 (지하흙막이벽체용)</h2>
-                    <div class="consulting-grid">
+                    <div class="consulting-grid consulting-grid-1">
                         <div class="consulting-panel">
                             <div class="consulting-icon">🏗️</div>
                             <h2 class="consulting-title">지반안정성검토 자동화 TOOL 개발</h2>
@@ -541,7 +527,7 @@
 
             <div class="contact-section">
                 <h2>📞 컨설팅 문의</h2>
-                <p style="font-size: 18px; color: #4a5568; margin-bottom: 20px;">
+                <p style="font-size: 16px; color: #b8c3dd; margin-bottom: 20px;">
                     전문 컨설팅 서비스에 대한 문의사항이 있으시면 언제든지 연락주세요.
                 </p>
                 <div class="contact-info">

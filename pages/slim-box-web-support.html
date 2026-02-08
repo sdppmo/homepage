@@ -6,35 +6,54 @@
     <title>D. M. I. S. (K-COL / Slim-BOX) - SongDoPartners</title>
     <link rel="stylesheet" href="../css/styles.css">
     <style>
-        /* Override global styles for this page */
+        :root {
+            --bg: #0b1220;
+            --card: #0f1a30;
+            --text: #e9eefb;
+            --muted: #b8c3dd;
+            --line: rgba(255,255,255,.10);
+            --accent: #6aa3ff;
+            --accent2: #6ef0c2;
+            --shadow: 0 10px 30px rgba(0,0,0,.35);
+            --radius: 18px;
+            --max: 1080px;
+        }
         html, body {
             overflow: auto !important;
             overflow-x: hidden !important;
             height: auto !important;
             min-height: 100vh;
+            font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Noto Sans KR", Arial, sans-serif;
+            background: radial-gradient(1200px 600px at 20% -10%, rgba(106,163,255,.22), transparent 60%),
+                        radial-gradient(900px 500px at 90% 0%, rgba(110,240,194,.18), transparent 55%),
+                        linear-gradient(180deg, var(--bg), #070b14 70%);
+            color: var(--text);
         }
 
-        /* D.M.I.S. Page Styles */
+        /* D.M.I.S. Page Styles - SPTEP dark theme */
         .dmis-container {
-            max-width: 1600px;
+            max-width: var(--max);
             margin: 0 auto;
-            padding: 40px 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px 18px 60px;
             min-height: 100vh;
         }
 
         .dmis-wrapper {
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            background: rgba(7,11,20,.72);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--line);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
             overflow: visible;
         }
 
         .dmis-header {
-            background: linear-gradient(135deg, #1e3a5f, #2d5a87);
-            color: white;
+            background: rgba(7,11,20,.72);
+            backdrop-filter: blur(10px);
+            color: var(--text);
             padding: 40px;
             text-align: center;
+            border-bottom: 1px solid var(--line);
         }
 
         .dmis-header h1 {
@@ -46,25 +65,26 @@
 
         .dmis-header .subtitle {
             font-size: 23.4px;
-            opacity: 0.9;
+            color: var(--muted);
             font-weight: 300;
         }
 
         .dmis-header .home-link {
             display: inline-block;
             margin-top: 20px;
-            padding: 10px 20px;
-            background: rgba(255,255,255,0.2);
-            color: white;
+            padding: 12px 28px;
+            background: rgba(106,163,255,.15);
+            color: var(--text);
             text-decoration: none;
-            border-radius: 8px;
+            border-radius: 12px;
             transition: all 0.3s;
-            border: 1px solid rgba(255,255,255,0.3);
+            border: 1px solid var(--line);
         }
 
         .dmis-header .home-link:hover {
-            background: rgba(255,255,255,0.3);
+            background: rgba(106,163,255,.25);
             transform: translateY(-2px);
+            border-color: var(--accent);
         }
 
         .dmis-content {
@@ -81,10 +101,11 @@
         }
 
         .system-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            background: linear-gradient(135deg, rgba(106,163,255,.25) 0%, rgba(110,240,194,.15) 100%);
+            border: 1px solid var(--line);
+            color: var(--text);
             padding: 30px 40px;
-            border-radius: 16px 16px 0 0;
+            border-radius: var(--radius) var(--radius) 0 0;
             margin-bottom: 0;
         }
 
@@ -97,7 +118,7 @@
 
         .system-header .system-subtitle {
             font-size: 18px;
-            opacity: 0.9;
+            color: var(--muted);
             margin-top: 8px;
             font-weight: 300;
         }
@@ -108,36 +129,39 @@
             grid-template-columns: repeat(2, 1fr);
             gap: 30px;
             padding: 40px;
-            background: #f8fafc;
-            border-radius: 0 0 16px 16px;
+            background: rgba(15,26,48,.5);
+            border: 1px solid var(--line);
+            border-top: none;
+            border-radius: 0 0 var(--radius) var(--radius);
         }
 
         .project-panel {
-            background: white;
-            border-radius: 16px;
+            background: rgba(7,11,20,.72);
+            backdrop-filter: blur(10px);
+            border-radius: var(--radius);
             padding: 30px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+            box-shadow: var(--shadow);
             transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            border: 2px solid #e2e8f0;
+            border: 1px solid var(--line);
             cursor: pointer;
         }
 
         .project-panel:hover {
             transform: translateY(-8px);
-            box-shadow: 0 16px 40px rgba(0,0,0,0.15);
-            border-color: #667eea;
+            box-shadow: 0 16px 40px rgba(0,0,0,.4);
+            border-color: var(--accent);
         }
 
         .project-panel.empty {
-            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-            border: 2px dashed #cbd5e0;
+            background: rgba(12,22,42,.6);
+            border: 1px dashed var(--line);
             cursor: default;
         }
 
         .project-panel.empty:hover {
             transform: none;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
-            border-color: #cbd5e0;
+            box-shadow: var(--shadow);
+            border-color: var(--line);
         }
 
         .project-header {
@@ -146,24 +170,25 @@
             gap: 15px;
             margin-bottom: 20px;
             padding-bottom: 15px;
-            border-bottom: 2px solid #e2e8f0;
+            border-bottom: 1px solid var(--line);
         }
 
         .project-icon {
             width: 60px;
             height: 60px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);
             border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 28px;
-            color: white;
+            color: #07101f;
             flex-shrink: 0;
         }
 
         .project-panel.empty .project-icon {
-            background: linear-gradient(135deg, #cbd5e0 0%, #a0aec0 100%);
+            background: rgba(255,255,255,.1);
+            color: var(--muted);
         }
 
         .project-title-area {
@@ -173,17 +198,17 @@
         .project-title {
             font-size: 24px;
             font-weight: 700;
-            color: #1e3a5f;
+            color: var(--text);
             margin: 0 0 5px 0;
         }
 
         .project-panel.empty .project-title {
-            color: #a0aec0;
+            color: var(--muted);
         }
 
         .project-subtitle {
             font-size: 14px;
-            color: #718096;
+            color: var(--muted);
             margin: 0;
         }
 
@@ -205,7 +230,7 @@
 
         .info-label {
             font-size: 12px;
-            color: #718096;
+            color: var(--muted);
             text-transform: uppercase;
             letter-spacing: 0.5px;
             margin-bottom: 5px;
@@ -214,23 +239,23 @@
 
         .info-value {
             font-size: 16px;
-            color: #1e3a5f;
+            color: var(--text);
             font-weight: 600;
         }
 
         .project-panel.empty .info-value {
-            color: #a0aec0;
+            color: var(--muted);
         }
 
         .project-description {
             font-size: 14px;
-            color: #4a5568;
+            color: var(--muted);
             line-height: 1.6;
             margin-top: 15px;
         }
 
         .project-panel.empty .project-description {
-            color: #a0aec0;
+            color: var(--muted);
             font-style: italic;
         }
 
@@ -238,13 +263,13 @@
         .document-control {
             margin-top: 20px;
             padding-top: 20px;
-            border-top: 2px solid #e2e8f0;
+            border-top: 1px solid var(--line);
         }
 
         .document-control-title {
             font-size: 16px;
             font-weight: 700;
-            color: #1e3a5f;
+            color: var(--text);
             margin-bottom: 12px;
             display: flex;
             align-items: center;
@@ -259,7 +284,7 @@
 
         .document-control-item {
             font-size: 14px;
-            color: #4a5568;
+            color: var(--muted);
             padding: 8px 0;
             padding-left: 20px;
             position: relative;
@@ -275,13 +300,13 @@
 
         .project-panel.empty .document-control-title,
         .project-panel.empty .document-control-item {
-            color: #a0aec0;
+            color: var(--muted);
         }
 
         .empty-placeholder {
             text-align: center;
             padding: 40px 20px;
-            color: #a0aec0;
+            color: var(--muted);
         }
 
         .empty-placeholder-icon {
