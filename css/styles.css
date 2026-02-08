@@ -78,6 +78,7 @@ html, body {
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
+  min-height: 0;
   background: #d0d0d0;
   position: relative;
   z-index: 10;
@@ -88,6 +89,16 @@ html, body {
   background: linear-gradient(180deg, #e8e8e8 0%, #c8c8c8 100%);
   padding: 8px 12px;
   border-bottom: 2px solid #999;
+}
+
+.logo-tagline-box {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #001f3f;
+  border-radius: 12px;
+  padding: 10px 12px 2px 12px;
+  background: rgba(220, 235, 255, 0.65);
+  margin-bottom: 0;
 }
 
 .logo-container {
@@ -106,6 +117,21 @@ html, body {
   font-size: 16px;
   font-weight: bold;
   margin: 6px 0;
+}
+
+.tagline {
+  text-align: center;
+  color: #3a3a38;
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  font-weight: bold;
+  line-height: 1.5;
+  margin: -4px 12px 0 12px;
+  text-shadow:
+    0 0 8px rgba(220, 218, 210, 0.8),
+    0 0 18px rgba(200, 198, 190, 0.5),
+    1px 1px 0 rgba(255, 255, 255, 0.4),
+    0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
 /* Language Toggle */
@@ -131,7 +157,9 @@ html, body {
 
 /* Auth Section - Modern Design */
 .auth-section {
-  margin-top: 12px;
+  width: 100%;
+  box-sizing: border-box;
+  margin-top: 4px;
   padding: 10px 12px;
   background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
   border-radius: 12px;
@@ -320,25 +348,35 @@ html, body {
   display: flex;
   flex-direction: column;
   background: #1a1a3a;
-  flex: 1;
+  flex: 7 1 0;
+  min-height: 0;
+  margin-top: -6px;
 }
 
-/* D.M.I.S. Dropdown */
+/* D.M.I.S. Dropdown - 패널 세트: 수직높이 자동 균등 분배 */
 .nav-dropdown {
   position: relative;
-  flex: 1;
+  flex: 1 1 0;
+  min-height: 0;
   display: flex;
   flex-direction: column;
+  margin: 2px 6px;
+}
+.nav-dropdown.web-software-moved {
+  display: none;
 }
 
 .nav-dropdown-trigger {
-  flex: 1;
+  flex: 1 1 0;
+  min-height: 0;
   display: flex;
   align-items: center;
   justify-content: center;
+  box-sizing: border-box;
+  line-height: 1.4;
 }
 
-/* S.P.T.E.P: 줄바꿈 허용, 공간 부족 시 글자 크기 축소 */
+/* S.P.T.E.P: 줄바꿈 허용, 공간 부족 시 글자 크기 축소, 두 줄이므로 높이 약간 확대 */
 .nav-trigger-sptep {
   white-space: normal;
   line-height: 1.25;
@@ -503,22 +541,23 @@ html, body {
 }
 
 .nav-item {
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background: linear-gradient(180deg, #1a2050 0%, #101535 100%);
   border-left: 8px solid #ff6600;
   border-bottom: 1px solid rgba(255, 215, 0, 0.3);
   padding: 0 16px;
   color: #ffcc00;
-  font-size: 18px;
+  font-size: 16px;
+  line-height: 1.4;
   font-weight: 600;
   cursor: pointer;
   text-align: center;
   transition: background 0.2s;
   text-decoration: none;
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  box-sizing: border-box;
+  border-radius: 8px;
 }
 
 .nav-item:hover {
@@ -597,27 +636,51 @@ div.nav-item.active.gold {
   color: #ffcc00;
 }
 
-/* Visual Portfolio 행과 Brochure Grid 행 수직 높이 통일 */
 #nav-dropdown-brochure .nav-dropdown-trigger {
-  min-height: 52px;
-  height: 52px;
   box-sizing: border-box;
+}
+
+/* 패널: Visual Portfolio 아래 */
+.below-visual-portfolio-panel {
+  flex: 0 0 auto;
+  margin: 2px 6px;
+  min-height: 48px;
+  background: transparent;
+  border-left: 8px solid #ff6600;
+  border-radius: 8px;
+  box-sizing: border-box;
+}
+.below-visual-portfolio-panel-inner {
+  min-height: 48px;
+  padding: 10px 14px;
+}
+.below-visual-portfolio-panel .brochure-dropdown {
+  width: 100%;
+}
+.below-visual-portfolio-panel .brochure-dropdown-trigger {
+  width: 100%;
+  min-height: 44px;
 }
 
 /* Brochure Grid */
 .brochure-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-auto-rows: 52px;
-  background: #1a1a2a;
-  flex-shrink: 0;
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr;
+  gap: 6px;
+  padding: 6px;
+  margin: 0 6px;
+  flex: 1 1 0;
+  min-height: 0;
+  background: transparent;
   border-left: 8px solid #ff6600;
+  box-sizing: border-box;
 }
 
 .brochure-grid .brochure-btn {
-  min-height: 52px;
-  height: 52px;
+  min-height: 0;
   box-sizing: border-box;
+  border-radius: 8px;
 }
 
 .brochure-btn {
@@ -625,6 +688,7 @@ div.nav-item.active.gold {
   border: 1px solid #444;
   padding: 10px 8px;
   color: #ffcc00;
+  border-radius: 8px;
 }
 
 button.brochure-btn {
@@ -770,6 +834,66 @@ a.brochure-btn.white:hover {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+}
+
+/* Web Software 패널 - 메인 영역 우측 상단 (사이드바 왼쪽, 4개 항목 모두 노출) */
+.web-software-panel {
+  position: absolute;
+  top: 0;
+  right: 20px;
+  z-index: 3;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  gap: 6px;
+  align-items: center;
+  padding: 4px 0 0 0;
+}
+.web-software-panel-item {
+  display: inline-block;
+  white-space: nowrap;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+  color: #ffcc00;
+  background: linear-gradient(180deg, #1a2050 0%, #101535 100%);
+  border: 1px solid rgba(255, 204, 0, 0.35);
+  border-radius: 8px;
+  text-decoration: none;
+  transition: background 0.2s, color 0.2s;
+}
+.web-software-panel-item:hover {
+  color: #ffcc00;
+  background: linear-gradient(180deg, #252a60 0%, #1a1f45 100%);
+  text-decoration: none;
+}
+
+/* 패널 내 드롭다운: 하위 메뉴를 트리거 바로 아래에 표시 */
+.web-software-panel-dropdown {
+  position: relative;
+}
+.web-software-panel-dropdown .web-software-panel-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 4px;
+  min-width: 220px;
+  flex-direction: column;
+  display: none;
+  border-left: 2px solid rgba(255, 204, 0, 0.4);
+}
+.web-software-panel-dropdown:hover .web-software-panel-menu,
+.web-software-panel-dropdown:focus-within .web-software-panel-menu {
+  display: flex;
+}
+.web-software-panel-trigger {
+  cursor: pointer;
+  border: none;
+  outline: none;
+}
+.web-software-panel-trigger:focus {
+  outline: 1px solid rgba(255, 204, 0, 0.5);
 }
 
 /* ==========================================================================
@@ -984,7 +1108,7 @@ a.brochure-btn.white:hover {
 
 /* News Section - Semi-transparent */
 .news-section {
-  margin-top: 20px;
+  margin-top: 80px;
 }
 
 .news-title {
@@ -1170,6 +1294,111 @@ a.brochure-btn.white:hover {
    8. WORLD CLOCKS
    ========================================================================== */
 
+/* Waterfall Banner: 아래에서 끝까지 상부로 올라가 화면 위로 사라짐 (중간 멈춤 없음) */
+.waterfall-banner {
+  position: absolute;
+  bottom: 0;
+  left: 44%;
+  transform: translateX(-50%);
+  width: 380px;
+  max-width: 90vw;
+  height: 100%;
+  overflow: hidden;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.waterfall-banner-inner {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  min-height: 200vh;
+  box-sizing: border-box;
+  transform-origin: center bottom;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 0 16px 20px;
+  will-change: transform;
+  animation: waterfall-curve-up 120s linear infinite;
+  animation-iteration-count: infinite;
+}
+
+.waterfall-banner-text {
+  flex-shrink: 0;
+  min-height: 50vh;
+  padding: 12px 0;
+  font-size: 14px;
+  line-height: 1.5;
+  text-align: center;
+  /* 전반 60초 흰색 → 후반 60초 Navy Blue (120초 주기) */
+  animation: waterfall-text-color 120s linear infinite;
+  /* 글자 주변 dust 같은 부드러운 후광 – 돋보이게 */
+  text-shadow:
+    0 0 4px rgba(255, 255, 255, 0.9),
+    0 0 12px rgba(255, 255, 255, 0.6),
+    0 0 24px rgba(255, 248, 240, 0.5),
+    0 0 40px rgba(255, 240, 220, 0.35),
+    0 1px 2px rgba(0, 0, 0, 0.8),
+    0 2px 6px rgba(0, 0, 0, 0.5);
+  white-space: normal;
+  max-width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 초기 60초 흰색 → 후반 60초 Navy Blue (120초 주기) */
+@keyframes waterfall-text-color {
+  0%   { color: #fff; }
+  50%  { color: #fff; }
+  50%  { color: #001f3f; }
+  100% { color: #001f3f; }
+}
+
+/* 끊김 없이 계속 위로 올라감. 120초마다 루프되어 아래에서 이어서 올라옴 */
+@keyframes waterfall-curve-up {
+  0%   { transform: translateY(0); }
+  100% { transform: translateY(-50%); }
+}
+
+/* 상단 베셀 – 환호성(반짝임) 영역 */
+.waterfall-cheer {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 120px;
+  height: 80px;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.cheer-dot {
+  display: block;
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff 0%, #ffd700 40%, transparent 70%);
+  box-shadow: 0 0 12px #ffd700, 0 0 6px #fff;
+  animation: cheer-burst 1.8s ease-in-out infinite;
+}
+
+.cheer-dot:nth-child(1) { left: 50%; top: 20%; margin-left: -4px; animation-delay: 0s; }
+.cheer-dot:nth-child(2) { left: 75%; top: 35%; margin-left: -4px; animation-delay: 0.2s; }
+.cheer-dot:nth-child(3) { left: 68%; top: 60%; margin-left: -4px; animation-delay: 0.4s; }
+.cheer-dot:nth-child(4) { left: 32%; top: 60%; margin-left: -4px; animation-delay: 0.6s; }
+.cheer-dot:nth-child(5) { left: 25%; top: 35%; margin-left: -4px; animation-delay: 0.8s; }
+.cheer-dot:nth-child(6) { left: 50%; top: 50%; margin-left: -4px; animation-delay: 1s; }
+
+@keyframes cheer-burst {
+  0%, 100% { transform: scale(0.4); opacity: 0.3; }
+  50%      { transform: scale(1.4); opacity: 1; }
+}
+
 .world-clocks {
   position: absolute;
   top: 15px;
@@ -1307,9 +1536,12 @@ a.brochure-btn.white:hover {
     width: 250px;
     padding: 10px;
   }
+  .web-software-panel {
+    right: 60px;
+  }
   
   .news-section {
-    margin-top: 100px;
+    margin-top: 120px;
   }
   
   .news-item {
@@ -1449,9 +1681,12 @@ a.brochure-btn.white:hover {
     padding: 15px;
     background: rgba(0, 0, 0, 0.8);
   }
+  .web-software-panel {
+    right: 20px;
+  }
   
   .news-section {
-    margin-top: 20px;
+    margin-top: 60px;
   }
   
   /* World clocks */
@@ -1463,6 +1698,16 @@ a.brochure-btn.white:hover {
     padding: 15px;
     background: rgba(0, 0, 0, 0.5);
     flex-wrap: wrap;
+  }
+  
+  .waterfall-banner {
+    position: relative;
+    left: 0;
+    top: 0;
+    width: 100%;
+    max-width: 100%;
+    margin: 10px 0;
+    box-sizing: border-box;
   }
   
   .clock {
@@ -1501,6 +1746,10 @@ a.brochure-btn.white:hover {
   }
   
   .welcome-text {
+    font-size: 14px;
+  }
+  
+  .tagline {
     font-size: 14px;
   }
   
@@ -1637,6 +1886,10 @@ a.brochure-btn.white:hover {
     font-size: 12px;
   }
   
+  .tagline {
+    font-size: 12px;
+  }
+  
   .nav-item {
     font-size: 13px;
     padding: 8px 10px;
@@ -1690,6 +1943,10 @@ a.brochure-btn.white:hover {
   .welcome-text {
     font-size: 12px;
     margin: 4px 0;
+  }
+  
+  .tagline {
+    font-size: 12px;
   }
 }
 

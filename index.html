@@ -15,10 +15,16 @@
       <aside class="left-column" id="left-column" data-selectable="true">
         <!-- Logo Section -->
         <div class="logo-section" id="logo-section" data-selectable="true">
-          <div class="logo-container" id="logo-container" data-selectable="true">
-            <img src="assets/images/sdppmo_logo.png" alt="SongDoPartners">
+          <div class="logo-tagline-box">
+            <div class="logo-container" id="logo-container" data-selectable="true">
+              <img src="assets/images/sdppmo_logo.png" alt="SongDoPartners">
+            </div>
+            <div class="tagline">
+              We develop the structure.<br>
+              We supply web software system. And<br>
+              we produce and control the execution.
+            </div>
           </div>
-          <div class="welcome-text">Welcome to SongDoPartners !!</div>
 
           <!-- Auth Section (hidden until auth check completes) -->
           <div class="auth-section" id="authSection" style="visibility: hidden; opacity: 0;">
@@ -98,7 +104,7 @@
               <a href="pages/consulting.html#ground-tool" class="nav-dropdown-item" data-nav-section="ground-tool">지반안정성검토TOOL개발<br>(지하흙막이벽체용)</a>
             </div>
           </div>
-          <div class="nav-dropdown" data-requires-auth="true">
+          <div class="nav-dropdown" id="nav-dropdown-steel-products" data-requires-auth="true">
             <div class="nav-dropdown-trigger nav-item gold" aria-expanded="false" aria-haspopup="true">Steel Hardware Products<br>(K-COL, Slim-Box, EX Slim-Beam)</div>
             <div class="nav-dropdown-menu">
               <a href="pages/products.html#kcol" class="nav-dropdown-item">K-COL for Composite Column</a>
@@ -113,7 +119,7 @@
               <a href="pages/slim-box-web-support.html#extra" class="nav-dropdown-panel nav-dropdown-item">DMIS for EXTRA Slim-Beam</a>
             </div>
           </div>
-          <div class="nav-dropdown" data-requires-auth="true" data-required-groups="kcol-user">
+          <div class="nav-dropdown web-software-moved" data-requires-auth="true" data-required-groups="kcol-user">
             <a href="pages/k-col web software/crossHcolumnCalculator.html" class="nav-dropdown-trigger nav-item active gold" aria-expanded="false" aria-haspopup="true">Web Software I – K-COL</a>
             <div class="nav-dropdown-menu">
               <a href="pages/k-col web software/crossHcolumnCalculator.html" class="nav-dropdown-item">K-COL Steel Column Design<br>(Cross H)</a>
@@ -123,13 +129,13 @@
               <a href="pages/k-col web software/crossHcolumnCalculator.html#adc" class="nav-dropdown-item">K-COL A.D.C Function</a>
             </div>
           </div>
-          <div class="nav-dropdown" data-requires-auth="true">
+          <div class="nav-dropdown web-software-moved" data-requires-auth="true">
             <a href="pages/k-col web software/compositebeam-calculator.html" class="nav-dropdown-trigger nav-item gold" id="ex-slim-box-nav" style="display: flex;" aria-expanded="false" aria-haspopup="true">Web Software II – 합성보</a>
             <div class="nav-dropdown-menu">
               <a href="pages/k-col web software/compositebeam-calculator.html" class="nav-dropdown-item">Composite Beam Design<br>(H형강)</a>
             </div>
           </div>
-          <div class="nav-dropdown" data-requires-auth="true">
+          <div class="nav-dropdown web-software-moved" data-requires-auth="true">
             <div class="nav-dropdown-trigger nav-item gold" id="ex-2" style="display: flex; cursor: pointer;" aria-expanded="false" aria-haspopup="true">Web Software III – 특수보</div>
             <div class="nav-dropdown-menu">
               <a href="pages/k-col%20web%20software/Composite_CastellatedBeam_Design_Calculator.html?type=without-slab" class="nav-dropdown-item" data-castellated-type="without-slab">Non Composite Beam</a>
@@ -138,7 +144,7 @@
               <a href="pages/k-col web software/compositebeam-calculator.html#extra-slim-heavy" class="nav-dropdown-item" data-admin-dim>EXTRA Slim Heavy<br>(Span : Free, L.Load &gt; 10kN/m2)</a>
             </div>
           </div>
-          <div class="nav-dropdown">
+          <div class="nav-dropdown web-software-moved">
             <div class="nav-dropdown-trigger nav-item gold" id="web-software-iv" style="cursor: pointer;" aria-expanded="false" aria-haspopup="true">Web Software IV - 기존기둥</div>
             <div class="nav-dropdown-menu">
               <a href="pages/k-col web software/crossHcolumnCalculator.html#cft-box" class="nav-dropdown-item">CFT-BOX Column</a>
@@ -147,7 +153,7 @@
             </div>
           </div>
           <div class="nav-dropdown" id="nav-dropdown-schedule" data-requires-auth="true" data-required-groups="kcol-admin">
-            <div class="nav-dropdown-trigger nav-item gold nav-trigger-sptep" aria-expanded="false" aria-haspopup="true" role="button" tabindex="0" style="cursor: pointer;">S.P.T.E.P 제작관리<br>(Steel Production-Transport-Erection-Platform)</div>
+            <div class="nav-dropdown-trigger nav-item gold nav-trigger-sptep" aria-expanded="false" aria-haspopup="true" role="button" tabindex="0" style="cursor: pointer;">S.P.T.E.P 제작관리</div>
             <div class="nav-dropdown-menu" id="nav-menu-schedule" aria-label="Product Schedule 메뉴">
               <a href="pages/sptep.html" class="nav-dropdown-panel nav-dropdown-item">What is S.P.T.E.P ?</a>
               <div class="nav-dropdown-sub" aria-haspopup="true">
@@ -165,7 +171,7 @@
             </div>
           </div>
                     <div class="nav-dropdown" data-requires-auth="true">
-            <a href="pages/slim-box-web-support.html" class="nav-dropdown-trigger nav-item gold" aria-expanded="false" aria-haspopup="true">Soil Protection Wall - Slim-Box</a>
+            <a href="pages/slim-box-web-support.html" class="nav-dropdown-trigger nav-item gold" aria-expanded="false" aria-haspopup="true">Soil Protection Wall<br>(Slim-Box)</a>
             <div class="nav-dropdown-menu">
               <a href="pages/slim-box-web-support.html#guide" class="nav-dropdown-item">Slim-Box 안내서</a>
               <a href="pages/slim-box-web-support.html#drawing" class="nav-dropdown-item">Slim-Box Drawing</a>
@@ -176,19 +182,25 @@
           </div>
         </nav>
 
-        <!-- Brochure Grid -->
-        <div class="brochure-grid" id="brochure-grid">
-          <button class="brochure-btn gold">KOSIS (월평균가격)</button>
-          <div class="brochure-dropdown">
-            <button type="button" class="brochure-btn gold brochure-dropdown-trigger" aria-expanded="false" aria-haspopup="true">Brochure</button>
-            <div class="brochure-dropdown-menu">
-              <a href="pages/k-col web software/k-col-user-guide.html#kcol-guide-header" class="nav-dropdown-item">K-COL</a>
-              <a href="pages/slim-box-web-support.html#guide" class="nav-dropdown-item">Slim-Box</a>
-              <a href="#" class="nav-dropdown-item">EX Slim-Beam</a>
-              <a href="assets/pdf/hyundai-steel-h-beam.pdf" target="_blank" class="nav-dropdown-item">현대제철 H 형강</a>
-              <a href="assets/pdf/Pos-H Brochure step4.pdf" target="_blank" class="nav-dropdown-item">POS H 형강</a>
+        <!-- 패널: Visual Portfolio 아래 (Brochure 버튼 포함) -->
+        <div class="below-visual-portfolio-panel" id="below-visual-portfolio-panel">
+          <div class="below-visual-portfolio-panel-inner">
+            <div class="brochure-dropdown">
+              <button type="button" class="brochure-btn gold brochure-dropdown-trigger" aria-expanded="false" aria-haspopup="true">Brochure</button>
+              <div class="brochure-dropdown-menu">
+                <a href="pages/k-col web software/k-col-user-guide.html#kcol-guide-header" class="nav-dropdown-item">K-COL</a>
+                <a href="pages/slim-box-web-support.html#guide" class="nav-dropdown-item">Slim-Box</a>
+                <a href="#" class="nav-dropdown-item">EX Slim-Beam</a>
+                <a href="assets/pdf/hyundai-steel-h-beam.pdf" target="_blank" class="nav-dropdown-item">현대제철 H 형강</a>
+                <a href="assets/pdf/Pos-H Brochure step4.pdf" target="_blank" class="nav-dropdown-item">POS H 형강</a>
+              </div>
             </div>
           </div>
+        </div>
+
+        <!-- Brochure Grid (KOSIS만) -->
+        <div class="brochure-grid" id="brochure-grid">
+          <button class="brochure-btn gold">KOSIS (월평균가격)</button>
         </div>
       </aside>
 
@@ -199,6 +211,55 @@
 
         <!-- Content Layer - On top of background -->
         <div class="content-layer" id="content-layer" data-selectable="true">
+          <!-- Web Software 메뉴 - 가운데(메인) 영역 우측 상단 (사이드 드롭다운과 동일한 하위 메뉴) -->
+          <div class="web-software-panel">
+            <div class="web-software-panel-dropdown">
+              <a href="pages/k-col web software/crossHcolumnCalculator.html" class="web-software-panel-item" aria-haspopup="true" aria-expanded="false">Web Software I – K-COL</a>
+              <div class="nav-dropdown-menu web-software-panel-menu">
+                <a href="pages/k-col web software/crossHcolumnCalculator.html" class="nav-dropdown-item">K-COL Steel Column Design<br>(Cross H)</a>
+                <a href="pages/k-col web software/crossHcolumnCalculator.html" class="nav-dropdown-item">K-COL SRC Design</a>
+                <a href="pages/k-col web software/boq-report.html" class="nav-dropdown-item">K-COL BOQ</a>
+                <a href="pages/k-col web software/auto-find-section.html" class="nav-dropdown-item">K-COL A.F.C Function</a>
+                <a href="pages/k-col web software/crossHcolumnCalculator.html#adc" class="nav-dropdown-item">K-COL A.D.C Function</a>
+              </div>
+            </div>
+            <div class="web-software-panel-dropdown">
+              <a href="pages/k-col web software/compositebeam-calculator.html" class="web-software-panel-item" aria-haspopup="true" aria-expanded="false">Web Software II – 합성보</a>
+              <div class="nav-dropdown-menu web-software-panel-menu">
+                <a href="pages/k-col web software/compositebeam-calculator.html" class="nav-dropdown-item">Composite Beam Design<br>(H형강)</a>
+              </div>
+            </div>
+            <div class="web-software-panel-dropdown">
+              <span class="web-software-panel-item web-software-panel-trigger" aria-haspopup="true" aria-expanded="false" role="button" tabindex="0">Web Software III – 특수보</span>
+              <div class="nav-dropdown-menu web-software-panel-menu">
+                <a href="pages/k-col%20web%20software/Composite_CastellatedBeam_Design_Calculator.html?type=without-slab" class="nav-dropdown-item" data-castellated-type="without-slab">Non Composite Beam</a>
+                <a href="pages/k-col%20web%20software/Composite_CastellatedBeam_Design_Calculator.html?type=with-slab" class="nav-dropdown-item" data-castellated-type="with-slab">Composite Castellated Beam</a>
+                <a href="pages/k-col web software/compositebeam-calculator.html#extra-slim-light" class="nav-dropdown-item" data-admin-dim>EXTRA SLIM Light<br>(Span&lt;13m, L.Load&lt;5kN/m2)</a>
+                <a href="pages/k-col web software/compositebeam-calculator.html#extra-slim-heavy" class="nav-dropdown-item" data-admin-dim>EXTRA Slim Heavy<br>(Span : Free, L.Load &gt; 10kN/m2)</a>
+              </div>
+            </div>
+            <div class="web-software-panel-dropdown">
+              <span class="web-software-panel-item web-software-panel-trigger" aria-haspopup="true" aria-expanded="false" role="button" tabindex="0">Web Software IV - 기존기둥</span>
+              <div class="nav-dropdown-menu web-software-panel-menu">
+                <a href="pages/k-col web software/crossHcolumnCalculator.html#cft-box" class="nav-dropdown-item">CFT-BOX Column</a>
+                <a href="pages/k-col web software/crossHcolumnCalculator.html#cft-circular" class="nav-dropdown-item">CFT-Circular Column</a>
+                <a href="pages/k-col web software/crossHcolumnCalculator.html#h-beam" class="nav-dropdown-item">H형강-Column</a>
+              </div>
+            </div>
+          </div>
+          <!-- Waterfall Banner: 베셀 옆을 타고 올라가며 상단에서 환호와 함께 사라짐 -->
+          <div class="waterfall-banner">
+            <div class="waterfall-banner-inner">
+              <div class="waterfall-banner-text">We develop the structure, we supply web software system, and we produce and control the execution.</div>
+              <div class="waterfall-banner-text">We develop the structure, we supply web software system, and we produce and control the execution.</div>
+              <div class="waterfall-banner-text">We develop the structure, we supply web software system, and we produce and control the execution.</div>
+              <div class="waterfall-banner-text">We develop the structure, we supply web software system, and we produce and control the execution.</div>
+            </div>
+            <div class="waterfall-cheer" aria-hidden="true">
+              <span class="cheer-dot"></span><span class="cheer-dot"></span><span class="cheer-dot"></span>
+              <span class="cheer-dot"></span><span class="cheer-dot"></span><span class="cheer-dot"></span>
+            </div>
+          </div>
           <!-- World Clocks -->
           <div class="world-clocks">
             <div class="clock-container">
