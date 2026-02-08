@@ -124,6 +124,12 @@
       font-size:34px;
       letter-spacing:-.5px;
     }
+    .hero-acronym{
+      margin:0 0 8px;
+      font-size:14px;
+      color:var(--muted);
+      letter-spacing:.5px;
+    }
     .subtitle{
       margin:0;
       color:var(--muted);
@@ -443,7 +449,8 @@
       border:1px solid var(--line); background: rgba(255,255,255,.02);
     }
     figure.media figcaption{ margin-top:8px; color:var(--muted); font-size:12.5px; line-height:1.5; }
-    .transport-media img{ width:50%; max-width:50%; height:auto; }
+    .transport-media img{ width:50%; max-width:260px; height:auto; display:block; }
+    .firebase-media img{ width:50%; max-width:50%; height:auto; display:block; }
     footer{
       margin-top:34px; padding:24px 0 40px;
       border-top:1px solid var(--line); background: rgba(0,0,0,.18);
@@ -499,6 +506,7 @@
             <div class="kicker"><span class="dot"></span> 운영 시스템 소개</div>
             <img src="../assets/images/sptep/sptep-logo.jpg" alt="SPTEP 로고" class="hero-logo" loading="lazy" />
             <h1>SPTEP</h1>
+            <p class="hero-acronym">S-Steel / P-Production / T-Transport / E-Erection / P-Platform</p>
             <p class="subtitle">
               철골 생산(Steel Production), 운송(Transport), 현장 설치(Erection) 전 과정을<br />
               하나의 플랫폼(Platform)에서 통합 관리하는 운영 시스템
@@ -697,6 +705,10 @@
           공정표 전체 데이터가 저장되고 변경 즉시 모든 사용자 화면에 동기화되어,
           공장(생산)·물류(운송)·현장(설치)이 동일한 최신 데이터를 동시에 확인합니다.
         </p>
+        <figure class="media firebase-media">
+          <img src="../assets/images/sptep/firebase.png" alt="Firebase" loading="lazy" />
+          <figcaption>Cloud Firestore 실시간 동기화</figcaption>
+        </figure>
         <div class="box">
           <ul>
             <li>공정표 전체 실시간 동기화</li>
