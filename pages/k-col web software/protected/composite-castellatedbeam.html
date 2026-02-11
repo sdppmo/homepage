@@ -3,11 +3,19 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Composite Castellated Beam</title>
+  <title>Composite Castellated Beam - Loading...</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Arial, sans-serif; }
+  </style>
 </head>
 <body>
-  <script src="/homepage/js/auth-config.js"></script>
-  <script src="/homepage/js/auth.js"></script>
-  <script src="/homepage/js/protected-loader.js"></script>
+  <!-- Content will be replaced by protected-loader.js -->
+  <script src="../../../js/auth-config.js"></script>
+  <script src="../../../js/auth.js"></script>
+  <script src="../../../js/protected-loader.js"></script>
+
+  <!-- ✅ 핵심: pageId 명시 호출 -->
+  <script>loadProtectedPage('composite-castellatedbeam');</script>
 </body>
 </html>
