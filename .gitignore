@@ -225,4 +225,5 @@ supabase/.temp/
 # Firebase service account key (SENSITIVE - NEVER commit)
 serviceAccountKey.json
 *serviceAccount*.json
-*firebase-admin*.json
+*firebase-admin*.jsonassets/excel/
+*.xlsx
