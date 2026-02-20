@@ -10318,6 +10318,7 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
 
             // projectRef 설정
             projectRef = firebaseDb.collection("projects").doc(projectId);
+            console.log('DBG projectId=', projectId, 'projectRef=', projectRef.path ?? projectRef);
 
             // 초기 상태 리셋
             isInitialLoad = true;
@@ -10359,20 +10360,14 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
 
                     if (docSnapshot.exists) {
                         const projectData = docSnapshot.data();
+                        window.__lastProjectData = projectData;
                         console.log('📡 Firebase 실시간 데이터 수신:', projectId);
 
-                        // ============================================================
-                        // ⚠️ 중요: "자기 업데이트 스킵" 로직은 데이터 렌더 최적화에만 사용됩니다.
-                        // role/UI 갱신에는 절대 적용되지 않습니다.
-                        // ============================================================
-                        const updatedBy = projectData.updatedBy;
-                        const currentUser = (typeof firebaseAuth !== 'undefined' && firebaseAuth) ? firebaseAuth.currentUser : null;
-
-                        if (updatedBy && currentUser && updatedBy === currentUser.uid) {
-                            console.log('ℹ️ [데이터 렌더] 자신이 업데이트한 프로젝트 데이터이므로 UI 업데이트 건너뜀 (최적화)');
-                            console.log('💡 [role/UI] role/UI는 별도 members 리스너에서 항상 재적용됩니다.');
+                        const pending = docSnapshot.metadata?.hasPendingWrites === true;
+                        if (pending) {
+                            console.log('ℹ️ [데이터 렌더] pendingWrites라 UI 업데이트 스킵');
                             isApplyingRemoteData = false;
-                            return; // ✅ 데이터 렌더링만 스킵 (role/UI는 별도 처리)
+                            return;
                         }
 
                         // ✅ 여기서 docSnapshot.data()를 UI/state에 반영
@@ -10488,16 +10483,31 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
             }
 
             // ② 빈 객체 제거
-            const safePayload = omitEmptyObjects(projectData);
+            let safePayload = omitEmptyObjects(projectData);
 
-            // ③ payload 자체가 비어 있으면 저장 안 함
-            if (Object.keys(safePayload).length === 0) {
+            // ✅ 강제 포함(필터링으로 다 날아가는 문제 우회)
+            safePayload = safePayload || {};
+            safePayload.columnData = JSON.parse(JSON.stringify(columnData || {}));
+            safePayload.dailyData = JSON.parse(JSON.stringify(dailyData || {}));
+            safePayload.transportPlan = JSON.parse(JSON.stringify(transportPlan || {}));
+
+            // ③ columnData/dailyData/transportPlan 중 하나라도 키가 있으면 저장 진행
+            const hasData =
+                Object.keys(safePayload?.columnData || {}).length > 0 ||
+                Object.keys(safePayload?.dailyData || {}).length > 0 ||
+                Object.keys(safePayload?.transportPlan || {}).length > 0;
+            if (!hasData) {
                 console.warn("⛔ empty payload → save skipped");
                 return;
             }
 
             // ④ 덮어쓰기 방지 merge 저장
-            await projectRef.set(safePayload, { merge: true });
+            try {
+                await projectRef.set(safePayload, { merge: true });
+                console.log('✅ Firestore WRITE OK', { path: projectRef.path ?? '(path-unknown)', keys: Object.keys(safePayload || {}) });
+            } catch (e) {
+                console.error('❌ Firestore WRITE FAIL', e);
+            }
         }
         
         // 3️⃣ 안전 저장 함수 (빈 데이터 완전 차단 + merge 저장)
