@@ -63,7 +63,7 @@
     });
   }
 
-  // Product Schedule: K-COL / Slim-Box Product Schedule → 2H_steel_product.html 로 이동 (관리자만, 부모 data-requires-auth 가로채기 방지)
+  // Product Schedule: K-COL / Slim-Box → 2H_steel_product.html (admin·editor·viewer 진입 허용. 저장은 공정표 페이지에서 role/allowedProcesses로 제어)
   document.addEventListener('click', function(e) {
     var a = e.target && e.target.closest('a.nav-dropdown-item[href*="2H_steel_product.html"]');
     if (!a || !a.href) return;
@@ -82,8 +82,14 @@
       }
       return window.SDP.auth.getProfile();
     }).then(function(profile) {
-      if (!profile || !window.SDP.auth.isAdmin()) {
-        alert('Product Schedule 메뉴는 관리자만 이용할 수 있습니다.');
+      if (!profile) {
+        alert('로그인 상태를 확인할 수 없습니다.');
+        return;
+      }
+      var role = (profile.role || '').toLowerCase();
+      var allowed = role === 'admin' || role === 'editor' || role === 'viewer';
+      if (!allowed) {
+        alert('Product Schedule 메뉴는 관리자, 편집자, 열람 권한이 있는 사용자만 이용할 수 있습니다.');
         return;
       }
       window.location.href = targetHref;

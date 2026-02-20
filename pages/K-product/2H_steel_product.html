@@ -10326,6 +10326,8 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
 
             // 실시간 수신 (지수 백오프 재시도 포함)
             startProjectListener(projectRef, function(docSnapshot) {
+                    console.log('[DBG SNAP] entered', { projectId: projectId, fromCache: docSnapshot.metadata?.fromCache, pending: docSnapshot.metadata?.hasPendingWrites, exists: docSnapshot.exists });
+
                     // 원격 데이터 적용 시작
                     isApplyingRemoteData = true;
 
@@ -10351,12 +10353,7 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
                         }
                     }
 
-                    // 역할 확인 (클라이언트 측 보안)
-                    if (typeof userRole === 'undefined' || !userRole) {
-                        console.warn('⚠️ 사용자 역할이 설정되지 않았습니다. 데이터 접근을 제한합니다.');
-                        isApplyingRemoteData = false;
-                        return;
-                    }
+                    // ※ 읽기+렌더는 role 미로드/viewer여도 진행. 쓰기(save)는 saveProjectData/saveToStorage에서 role 가드함.
 
                     if (docSnapshot.exists) {
                         const projectData = docSnapshot.data();
@@ -10370,7 +10367,6 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
                             return;
                         }
 
-                        // ✅ 여기서 docSnapshot.data()를 UI/state에 반영
                         const newColumnData = projectData.columnData || {};
                         const newDailyData = projectData.dailyData || {};
                         const newColumnCoordinates = projectData.columnCoordinates || {};
@@ -10378,15 +10374,13 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
                         const newActualDeliveryDate = projectData.actualDeliveryDate || {};
                         const newTransportPlan = projectData.transportPlan || {};
 
-                        // 데이터가 변경되었는지 확인 (전역 변수가 정의되어 있는지 확인)
                         const currentColumnData = (typeof columnData !== 'undefined') ? columnData : {};
                         const currentDailyData = (typeof dailyData !== 'undefined') ? dailyData : {};
                         const currentColumnCoordinates = (typeof columnCoordinates !== 'undefined') ? columnCoordinates : {};
                         const currentDeliveryConfirmed = (typeof deliveryConfirmed !== 'undefined') ? deliveryConfirmed : {};
                         const currentActualDeliveryDate = (typeof actualDeliveryDate !== 'undefined') ? actualDeliveryDate : {};
                         const currentTransportPlan = (typeof transportPlan !== 'undefined') ? transportPlan : {};
-                        
-                        const dataChanged = 
+                        const dataChanged =
                             JSON.stringify(currentColumnData) !== JSON.stringify(newColumnData) ||
                             JSON.stringify(currentDailyData) !== JSON.stringify(newDailyData) ||
                             JSON.stringify(currentColumnCoordinates) !== JSON.stringify(newColumnCoordinates) ||
@@ -10394,34 +10388,41 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
                             JSON.stringify(currentActualDeliveryDate) !== JSON.stringify(newActualDeliveryDate) ||
                             JSON.stringify(currentTransportPlan) !== JSON.stringify(newTransportPlan);
 
+                        // ✅ 항상 전역/window 반영 (viewer·최초 로딩 포함)
+                        window.__lastProjectData = projectData;
+                        window.columnData = newColumnData;
+                        window.dailyData = newDailyData;
+                        window.transportPlan = newTransportPlan;
+                        window.columnCoordinates = newColumnCoordinates;
+                        window.deliveryConfirmed = newDeliveryConfirmed;
+                        window.actualDeliveryDate = newActualDeliveryDate;
+                        if (typeof columnData !== 'undefined') columnData = newColumnData;
+                        if (typeof dailyData !== 'undefined') dailyData = newDailyData;
+                        if (typeof transportPlan !== 'undefined') transportPlan = newTransportPlan;
+                        if (typeof columnCoordinates !== 'undefined') columnCoordinates = newColumnCoordinates;
+                        if (typeof deliveryConfirmed !== 'undefined') deliveryConfirmed = newDeliveryConfirmed;
+                        if (typeof actualDeliveryDate !== 'undefined') actualDeliveryDate = newActualDeliveryDate;
+                        if (typeof columnData === 'undefined') window.columnData = newColumnData;
+                        if (typeof dailyData === 'undefined') window.dailyData = newDailyData;
+                        if (typeof transportPlan === 'undefined') window.transportPlan = newTransportPlan;
+
+                        // 전역 반영 직후 렌더 보장
+                        if (typeof syncTransportToDailyData === 'function') syncTransportToDailyData(false);
+                        if (typeof renderColumnGrid === 'function') {
+                            renderColumnGrid('column-grid-overview');
+                            renderColumnGrid('column-grid-input');
+                        }
+                        if (typeof renderGanttChart === 'function') renderGanttChart();
+                        if (typeof updateProgressBars === 'function') updateProgressBars();
+
                         if (dataChanged) {
                             console.log('🔄 실시간 데이터 변경 감지 - UI 업데이트 중...');
-
-                            // 데이터 업데이트 (전역 변수가 정의되어 있는 경우에만)
-                            if (typeof columnData !== 'undefined') columnData = newColumnData;
-                            if (typeof dailyData !== 'undefined') dailyData = newDailyData;
-                            if (typeof columnCoordinates !== 'undefined') columnCoordinates = newColumnCoordinates;
-                            if (typeof deliveryConfirmed !== 'undefined') deliveryConfirmed = newDeliveryConfirmed;
-                            if (typeof actualDeliveryDate !== 'undefined') actualDeliveryDate = newActualDeliveryDate;
-                            if (typeof transportPlan !== 'undefined') transportPlan = newTransportPlan;
-                            
-                            // 전역 변수가 없으면 window 객체에 할당
-                            if (typeof columnData === 'undefined') window.columnData = newColumnData;
-                            if (typeof dailyData === 'undefined') window.dailyData = newDailyData;
-                            if (typeof columnCoordinates === 'undefined') window.columnCoordinates = newColumnCoordinates;
-                            if (typeof deliveryConfirmed === 'undefined') window.deliveryConfirmed = newDeliveryConfirmed;
-                            if (typeof actualDeliveryDate === 'undefined') window.actualDeliveryDate = newActualDeliveryDate;
-                            if (typeof transportPlan === 'undefined') window.transportPlan = newTransportPlan;
-                            
-                            // 참조 업데이트
                             const finalColumnData = (typeof columnData !== 'undefined') ? columnData : window.columnData;
                             const finalDailyData = (typeof dailyData !== 'undefined') ? dailyData : window.dailyData;
                             const finalColumnCoordinates = (typeof columnCoordinates !== 'undefined') ? columnCoordinates : window.columnCoordinates;
                             const finalDeliveryConfirmed = (typeof deliveryConfirmed !== 'undefined') ? deliveryConfirmed : window.deliveryConfirmed;
                             const finalActualDeliveryDate = (typeof actualDeliveryDate !== 'undefined') ? actualDeliveryDate : window.actualDeliveryDate;
                             const finalTransportPlan = (typeof transportPlan !== 'undefined') ? transportPlan : window.transportPlan;
-
-                            // localStorage에도 동기화 (백업)
                             if (typeof kcolKey === 'function') {
                                 localStorage.setItem(kcolKey('steelColumnData'), JSON.stringify(finalColumnData));
                                 localStorage.setItem(kcolKey('steelColumnDaily'), JSON.stringify(finalDailyData));
@@ -10430,27 +10431,7 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
                                 localStorage.setItem(kcolKey('actualDeliveryDate'), JSON.stringify(finalActualDeliveryDate));
                                 localStorage.setItem(kcolKey('transportPlan'), JSON.stringify(finalTransportPlan));
                             }
-
-                            // UI 업데이트
-                            if (typeof syncTransportToDailyData === 'function') {
-                                syncTransportToDailyData(false);
-                            }
-                            if (typeof renderColumnGrid === 'function') {
-                                renderColumnGrid('column-grid-overview');
-                                renderColumnGrid('column-grid-input');
-                            }
-                            if (typeof renderGanttChart === 'function') {
-                                renderGanttChart();
-                            }
-                            if (typeof updateProgressBars === 'function') {
-                                updateProgressBars();
-                            }
-
-                            // 실시간 업데이트 알림
-                            if (typeof showToast === 'function') {
-                                showToast('🔄 실시간 데이터 업데이트됨', 'info');
-                            }
-
+                            if (typeof showToast === 'function') showToast('🔄 실시간 데이터 업데이트됨', 'info');
                             console.log('✅ 실시간 데이터 업데이트 완료');
                         }
                     } else {
