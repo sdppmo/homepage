@@ -15,6 +15,8 @@ const PROTECTED_PAGES: Record<string, { permission: "column" | "beam"; file: str
   "auto-find-section": { permission: "column", file: "auto-find-section.html" },
   "cross-h-calculator": { permission: "column", file: "crossHcolumnCalculator-protected.html" },
   "boq-report": { permission: "column", file: "boq-report.html" },
+  "compositebeam-calculator": { permission: "beam", file: "compositebeam-calculator.html" },
+  "composite-castellatedbeam-design-calculator": { permission: "beam", file: "composite-castellatedbeam-design-calculator.html" },
 };
 
 // In-memory cache for HTML content (persists across warm invocations)
