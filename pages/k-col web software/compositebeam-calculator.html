@@ -258,6 +258,9 @@
     </style>
 </head>
 <body>
+    <!-- Auth: 8m 제한 예외(관리자). protected/xxx.html 기준 4단계 상위=사이트루트 -->
+    <script src="../../../../js/auth-config.js"></script>
+    <script src="../../../../js/auth.js"></script>
     <div class="calculator-wrapper">
         <div class="header">
             <h1>Composite Beam Design ( H형강 )</h1>
@@ -757,7 +760,7 @@
                 }
             }
             
-            // Beam span 8m limit: general users 8m only; >8m requires operator approval (BEAM_SPAN_LIMIT, checkBeamSpanLimit defined at script level)
+            // Beam span 8m limit: general users 8m only; admin has no limit. Always use async check so profile is loaded.
             function applyBeamSpanLimit() {
                 var el = document.getElementById('beamSpan');
                 if (!el) return;
@@ -783,8 +786,19 @@
                     updateBeamDiagram();
                     applyBeamSpanLimit();
                 });
-                // Initial value: cap at 8m for non-admin
-                setTimeout(applyBeamSpanLimit, 500);
+                // Initial cap at 8m for non-admin only; run after auth ready so admin value is not wrongly capped
+                function runInitialBeamSpanLimit() {
+                    if (window.SDP && window.SDP.auth && typeof window.SDP.auth.getSession === 'function') {
+                        window.SDP.auth.getSession().then(function(session) {
+                            if (session && typeof window.SDP.auth.getProfile === 'function') return window.SDP.auth.getProfile();
+                        }).then(function() {
+                            applyBeamSpanLimit();
+                        }).catch(function() { applyBeamSpanLimit(); });
+                    } else {
+                        setTimeout(applyBeamSpanLimit, 500);
+                    }
+                }
+                setTimeout(runInitialBeamSpanLimit, 300);
             }
             
             function updateInputFields(enable) {
@@ -1234,7 +1248,7 @@
         // DO NOT call updateSelfWeight() and updateSlabWeight() here
         // They will be called after localStorage restoration in DOMContentLoaded
 
-        // Beam span 8m limit (general users); >8m requires operator approval (used by calculateBeam)
+        // Beam span 8m limit (general users only); admin has no limit
         var BEAM_SPAN_LIMIT = 8;
         var spanLimitMessage = '8m를 넘으면 운영자의 사전승인이 필요합니다. 일반 로그인 사용자는 8m까지만 사용할 수 있습니다.';
         function checkBeamSpanLimit(callback) {
@@ -1246,6 +1260,7 @@
                 if (callback) callback(false);
                 return;
             }
+            // Always fetch profile then decide (admin has no 8m limit)
             window.SDP.auth.getSession().then(function(session) {
                 if (!session) { if (callback) callback(false); return; }
                 return window.SDP.auth.getProfile();

@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Protected</title>
+</head>
+<body>
+<div style="font-family:system-ui; padding:16px;">불러오는 중...</div>
+
+<script>
+(async () => {
+  const page = new URLSearchParams(location.search).get("page");
+  if (!page) { document.body.innerText = "Missing ?page="; return; }
+
+  const tokenKey = Object.keys(localStorage).find(k => k.includes("sb-") && k.includes("-auth-token"));
+  const tokenRaw = tokenKey ? localStorage.getItem(tokenKey) : null;
+
+  let accessToken = "";
+  try {
+    const parsed = tokenRaw ? JSON.parse(tokenRaw) : null;
+    accessToken = parsed?.access_token || parsed?.currentSession?.access_token || "";
+  } catch {}
+
+  if (!accessToken) { document.body.innerText = "로그인이 필요합니다."; return; }
+
+  const url = "https://iwudkwhafyrhgzuntdgm.supabase.co/functions/v1/serve-protected-page?page=" + encodeURIComponent(page);
+  const res = await fetch(url, { headers: { Authorization: "Bearer " + accessToken } });
+  const text = await res.text();
+
+  if (!res.ok) { document.body.innerText = "ERROR " + res.status + "\n\n" + text; return; }
+
+  document.open(); document.write(text); document.close();
+})();
+</script>
+</body>
+</html>

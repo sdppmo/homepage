@@ -1,7 +1,7 @@
 # AI Agent Context - SongDoPartners Homepage
 
 > This document provides context for AI agents working on this project.
-> Last updated: 2026-01-25
+> Last updated: 2026-02-06
 
 ## Project Overview
 
@@ -254,10 +254,21 @@ deploy.bat -stop
 6. When verified, auto-login and redirect to homepage
 
 ### Protected Pages
+- **소스(HTML)** : `dev/` 하위 (4개) — `upload-protected-pages.py`로 Supabase Storage에 업로드
+  - `dev/auto-find-section.html`, `dev/boq-report.html`, `dev/compositebeam-calculator.html`, `dev/composite-castellatedbeam-design-calculator.html`
 - Loader shells in `/pages/k-col web software/protected/`
 - Calls `serve-protected-page` Edge Function
 - Edge Function validates JWT and checks permissions
 - Returns page content from Supabase Storage if authorized
+
+### 보 스팬(Beam span) 8m 제한
+- 적용 페이지: 합성보 계산기(`dev/compositebeam-calculator.html`), 합성 캐스틀레이티드 보(`dev/composite-castellatedbeam-design-calculator.html`)
+- 관리자 여부: `user_profiles.role === 'admin'` (Supabase, `js/auth.js`의 `isAdmin()`)
+
+| 사용자     | 보 스팬 입력        | 계산 실행      |
+|-----------|---------------------|----------------|
+| 일반 사용자 | 8m 초과 시 8m로 제한 | 8m 초과 시 승인 안내 후 제한 |
+| 관리자     | 제한 없음 (예: 50m까지) | 8m 초과도 그대로 계산 |
 
 ---
 

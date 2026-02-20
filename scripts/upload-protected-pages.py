@@ -39,14 +39,21 @@ except ImportError:
 BUCKET_NAME = 'protected-pages'
 PROTECTED_FILES = [
     {
-        'local_path': 'pages/k-col web software/auto-find-section.html',
+        'local_path': 'dev/auto-find-section.html',
         'storage_path': 'auto-find-section.html'
     },
     {
-        'local_path': 'pages/k-col web software/boq-report.html',
+        'local_path': 'dev/boq-report.html',
         'storage_path': 'boq-report.html'
-    }
-    # Add more protected files here as needed
+    },
+    {
+        'local_path': 'dev/compositebeam-calculator.html',
+        'storage_path': 'compositebeam-calculator.html'
+    },
+    {
+        'local_path': 'dev/composite-castellatedbeam-design-calculator.html',
+        'storage_path': 'composite-castellatedbeam-design-calculator.html'
+    },
 ]
 
 # Colors for terminal output

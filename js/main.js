@@ -186,8 +186,8 @@
   }, true);
 
   // Castellated Beam 드롭다운 하위 링크: with-slab만 운영자 확인 후 이동, 나머지는 바로 이동
-  // 항상 실제 파일명(Composite_CastellatedBeam_Design_Calculator.html)으로 이동 (캐시된 예전 href 무시)
-  var castellatedBasePath = 'pages/k-col%20web%20software/Composite_CastellatedBeam_Design_Calculator.html';
+  // protected 로더 페이지로 이동 (캐시된 예전 href 무시)
+  var castellatedBasePath = 'pages/k-col%20web%20software/protected/composite-castellatedbeam-design-calculator.html';
   document.addEventListener('click', function(e) {
     var a = e.target && e.target.closest('a.nav-dropdown-item[data-castellated-type]');
     if (!a) return;
@@ -521,10 +521,10 @@
     
     if (type === 'without-slab') {
       // Redirect to Castellated Beam without top-slab calculator
-      window.location.href = '/pages/k-col web software/Composite_CastellatedBeam_Design_Calculator.html?type=without-slab';
+      window.location.href = '/pages/k-col web software/protected/composite-castellatedbeam-design-calculator.html?type=without-slab';
     } else if (type === 'with-slab') {
       // Redirect to Castellated Beam with top-slab calculator
-      window.location.href = '/pages/k-col web software/Composite_CastellatedBeam_Design_Calculator.html?type=with-slab';
+      window.location.href = '/pages/k-col web software/protected/composite-castellatedbeam-design-calculator.html?type=with-slab';
     }
   }
 

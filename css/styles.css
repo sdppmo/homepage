@@ -923,7 +923,11 @@ a.brochure-btn.white:hover {
   min-width: 220px;
   flex-direction: column;
   display: none;
+  z-index: 110;
+  background: #0d0d1a;
+  border: 1px solid rgba(255, 215, 0, 0.2);
   border-left: 2px solid rgba(255, 204, 0, 0.4);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
 }
 .web-software-panel-dropdown:hover .web-software-panel-menu,
 .web-software-panel-dropdown:focus-within .web-software-panel-menu {
@@ -1150,7 +1154,7 @@ a.brochure-btn.white:hover {
 
 /* News Section - Semi-transparent */
 .news-section {
-  margin-top: 80px;
+  margin-top: 140px;
 }
 
 .news-title {
@@ -1583,7 +1587,7 @@ a.brochure-btn.white:hover {
   }
   
   .news-section {
-    margin-top: 120px;
+    margin-top: 160px;
   }
   
   .news-item {
