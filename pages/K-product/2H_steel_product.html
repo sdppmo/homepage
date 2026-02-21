@@ -3003,6 +3003,7 @@
             listenRetryTimer = setTimeout(function() { startFn(); }, delay);
         }
         function startProjectListener(projectRef, onData, label) {
+            console.log('[DBG INIT] startProjectListener called', { id: projectRef && projectRef.id });
             label = label || 'PROJECT';
             if (realtimeUnsubscribe) { try { realtimeUnsubscribe(); } catch (e) {} realtimeUnsubscribe = null; }
             _clearProjectRetry();
@@ -3370,6 +3371,7 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
                 console.log('✅ [가드] 멤버 확인 완료 후 onSnapshot 시작');
                 
                 // ✅ initProjectRealtime 함수로 통일된 실시간 구독 초기화
+                console.log('[DBG INIT] setupFirebaseRealtimeListener → calling initProjectRealtime');
                 initProjectRealtime(window.PROJECT_ID);
                 
                 console.log('✅ Firebase 실시간 동기화 리스너 설정 완료');
@@ -3615,12 +3617,10 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
                     // ✅ gate 통과 후에만 실행됨
                     watchMyMemberDoc();
                     
-                    // 실시간 동기화 시작 (admin/editor만)
-                    // ✅ gate 통과 후에만 실행됨
-                    if (userRole === "admin" || userRole === "editor") {
-                        if (typeof setupFirebaseRealtimeListener === 'function') {
-                            setupFirebaseRealtimeListener();
-                        }
+                    // 실시간 동기화(프로젝트 문서 onSnapshot) 시작 - admin/editor/viewer 모두 (읽기용)
+                    // ✅ gate 통과 후에만 실행됨. 쓰기 권한은 saveToStorage/canWrite에서 role별 제어
+                    if (typeof setupFirebaseRealtimeListener === 'function') {
+                        setupFirebaseRealtimeListener();
                     }
                     
                     // 검증 로그
@@ -5936,9 +5936,12 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
         //   사용자 화면에서 즉시 권한 반영
         // ============================================================
         function watchMyMemberDoc() {
+            console.log('[DBG INIT] watchMyMemberDoc start');
             var projectId = window.PROJECT_ID;
             var uid = firebaseAuth.currentUser ? firebaseAuth.currentUser.uid : null;
-            return startMyMemberDocListener(projectId, uid);
+            var result = startMyMemberDocListener(projectId, uid);
+            console.log('[DBG INIT] watchMyMemberDoc ready');
+            return result;
         }
         
         // ============================================================
@@ -10314,18 +10317,20 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
         
         // projectRef + 실시간 구독 초기화 (PROJECT_ID 확보 후 1회 호출)
         function initProjectRealtime(projectId) {
+            console.log('[DBG INIT] initProjectRealtime start');
             if (!projectId) throw new Error("projectId missing");
+            try {
+                // projectRef 설정
+                projectRef = firebaseDb.collection("projects").doc(projectId);
+                console.log('DBG projectId=', projectId, 'projectRef=', projectRef.path ?? projectRef);
 
-            // projectRef 설정
-            projectRef = firebaseDb.collection("projects").doc(projectId);
-            console.log('DBG projectId=', projectId, 'projectRef=', projectRef.path ?? projectRef);
+                // 초기 상태 리셋
+                isInitialLoad = true;
+                isApplyingRemoteData = false;
 
-            // 초기 상태 리셋
-            isInitialLoad = true;
-            isApplyingRemoteData = false;
-
-            // 실시간 수신 (지수 백오프 재시도 포함)
-            startProjectListener(projectRef, function(docSnapshot) {
+                console.log('[DBG INIT] before startProjectListener');
+                // 실시간 수신 (지수 백오프 재시도 포함)
+                startProjectListener(projectRef, function(docSnapshot) {
                     console.log('[DBG SNAP] entered', { projectId: projectId, fromCache: docSnapshot.metadata?.fromCache, pending: docSnapshot.metadata?.hasPendingWrites, exists: docSnapshot.exists });
 
                     // 원격 데이터 적용 시작
@@ -10441,6 +10446,10 @@ firebase.auth().signInWithEmailAndPassword("email@example.com", "password")
                     // 원격 데이터 적용 종료
                     isApplyingRemoteData = false;
                 }, 'PROJECT');
+                console.log('[DBG INIT] after startProjectListener');
+            } catch (e) {
+                console.error('[DBG INIT] failed', e);
+            }
         }
         
         // ③④(+루프차단) 최종 저장 함수: 반드시 이것으로만 저장
